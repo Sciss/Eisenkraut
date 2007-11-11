@@ -1,20 +1,68 @@
-<?xml version="1.0" ?> 
+<?xml version="1.0" ?>
 <!--                               -->
 <!-- ANT BUILD FILE FOR EISENKRAUT -->
 <!--                               -->
-<project default="jar"> 
-<target name="jar"> 
- 	<jar jarfile="Eisenkraut.jar" basedir="bin">
- 		<manifest>
- 			<attribute name="Main-Class" value="de.sciss.eisenkraut.Main"/>
- 			<attribute name="Class-Path" value="libraries/MRJAdapter.jar libraries/JCollider.jar libraries/NetUtil.jar libraries/SwingOSC.jar libraries/Normalizer.jar"/>
-		</manifest>
- 	</jar>
- 	<!-- <jar jarfile="Eisenkraut.jar" basedir="libraries" update="true"/> -->
- 	<jar jarfile="Eisenkraut.jar" basedir="resources" update="true"/>
-</target>
-<target name="osx-app" depends="jar">
-	<copy file="Eisenkraut.jar" todir="Eisenkraut.app/Contents/Resources/Java"/>
-	<touch><fileset dir="Eisenkraut.app"/></touch>
-</target>
+<project name="Eisenkraut" default="main">
+	<property name="src.dir"		value="src"/>
+	<property name="build.dir"		value="build"/>
+	<property name="dist.dir"		value="dist"/>
+	<property name="classes.dir"	value="${build.dir}/classes"/>
+	<property name="jar.dir"		value="${build.dir}"/>
+	<property name="resources.dir"	value="resources"/>
+	<property name="main-class"		value="de.sciss.eisenkraut.Main"/>
+	<property name="lib.dir"		value="libraries"/>
+	<property name="libraries"		value="${lib.dir}/JCollider.jar:${lib.dir}/MRJAdapter.jar:${lib.dir}/NetUtil.jar:${lib.dir}/Normalizer.jar:${lib.dir}/SwingOSC.jar"/>
+	<property name="version"		value="0.70unstable"/>
+	<property name="debug"			value="false"/>
+
+	<target name="clean">
+		<delete dir="${build.dir}" />
+		<delete dir="${dist.dir}" />
+		<delete includeemptydirs="true">
+			<fileset dir="${lib.dir}" excludes="*.jar"/>
+		</delete>
+	</target>
+	<target name="compile">
+		<mkdir dir="${classes.dir}" />
+		<javac debug="${debug}" srcdir="${src.dir}" destdir="${classes.dir}" classpath="${libraries}" source="1.4" target="1.4"/>
+	</target>
+	<target name="jar" depends="compile">
+		<mkdir dir="${jar.dir}" />
+		<jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${classes.dir}">
+			<manifest>
+				<attribute name="Main-Class" value="${main-class}" />
+				<!-- <attribute name="Class-Path" value="${libraries}" /> -->
+				<!-- <attribute name="Class-Path" value="libraries/MRJAdapter.jar libraries/JCollider.jar libraries/NetUtil.jar libraries/SwingOSC.jar libraries/Normalizer.jar"/> -->
+			</manifest>
+		</jar>
+		<jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${resources.dir}" update="true"/>
+		<!-- <unjar src="${libraries}" dest="${lib.dir}" />
+		<jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${lib.dir}" excludes="*.jar" update="true" />
+		<delete includeemptydirs="true">
+			<fileset dir="${lib.dir}" excludes="*.jar" />
+		</delete> -->
+	</target>
+<!--	<target name="jar">
+		<jar jarfile="Eisenkraut.jar" basedir="bin">
+			<manifest>
+				<attribute name="Main-Class" value="de.sciss.eisenkraut.Main"/>
+				<attribute name="Class-Path" value="libraries/MRJAdapter.jar libraries/JCollider.jar libraries/NetUtil.jar libraries/SwingOSC.jar libraries/Normalizer.jar"/>
+			</manifest>
+		</jar>
+		<jar jarfile="Eisenkraut.jar" basedir="resources" update="true" />
+	</target> -->
+	<target name="main" depends="clean,compile" />
+	<target name="dist" depends="clean,jar">
+		<!-- sucky zip task don't create separate folder -->
+		<dirname property="parent.dir" file="${basedir}"/>
+		<basename property="folder.name" file="${basedir}"/>
+		<mkdir dir="${dist.dir}"/>
+		<zip destfile="${dist.dir}/${ant.project.name}-${version}.zip" basedir="${parent.dir}" includes="${folder.name}/**" excludes="${folder.name}/${classes.dir}/**, ${folder.name}/${dist.dir}, **/.DS_Store"/>
+	</target>
+	<target name="osx-app" depends="jar">
+		<copy file="${jar.dir}/${ant.project.name}.jar" todir="${ant.project.name}.app/Contents/Resources/Java" />
+		<touch>
+			<fileset dir="${ant.project.name}.app" />
+		</touch>
+	</target>
 </project>
