@@ -1,0 +1,1 @@
+(FIXED) clicking on marker moves marker??!

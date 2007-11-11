@@ -1,0 +1,20 @@
+<?xml version="1.0" ?> 
+<!--                               -->
+<!-- ANT BUILD FILE FOR EISENKRAUT -->
+<!--                               -->
+<project default="jar"> 
+<target name="jar"> 
+ 	<jar jarfile="Eisenkraut.jar" basedir="bin">
+ 		<manifest>
+ 			<attribute name="Main-Class" value="de.sciss.eisenkraut.Main"/>
+ 			<attribute name="Class-Path" value="libraries/MRJAdapter.jar libraries/JCollider.jar libraries/NetUtil.jar libraries/SwingOSC.jar libraries/Normalizer.jar"/>
+		</manifest>
+ 	</jar>
+ 	<!-- <jar jarfile="Eisenkraut.jar" basedir="libraries" update="true"/> -->
+ 	<jar jarfile="Eisenkraut.jar" basedir="resources" update="true"/>
+</target>
+<target name="osx-app" depends="jar">
+	<copy file="Eisenkraut.jar" todir="Eisenkraut.app/Contents/Resources/Java"/>
+	<touch><fileset dir="Eisenkraut.app"/></touch>
+</target>
+</project>

@@ -1,0 +1,91 @@
+{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf420
+{\fonttbl\f0\fswiss\fcharset77 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww13540\viewh9800\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
+
+\f0\fs24 \cf0 Idee : weitere views, z.B. einen mitlaufenden View in gr\'9a\'a7erem Zoom\
+\
+\
+\
+Visual Guides for Blendtime!!\
+\
+\
+\
+Go-To-Dialog --> danach ist CtrlRoom fokussiert ;-(\
+\
+\
+Go-To-Dialog : Schalter um aktuelle TL Position zu uebernehmen\
+\
+Exception in thread "AWT-EventQueue-0" java.lang.IllegalArgumentException: Tried to overwrite existing router for sub path markers\
+	at de.sciss.eisenkraut.net.OSCRouterWrapper.oscAddRouter(OSCRouterWrapper.java:162)\
+	at de.sciss.eisenkraut.session.Session.oscAddRouter(Session.java:428)\
+	at de.sciss.eisenkraut.net.OSCRouterWrapper.<init>(OSCRouterWrapper.java:57)\
+	at de.sciss.eisenkraut.io.MarkerTrail.<init>(MarkerTrail.java:73)\
+	at de.sciss.eisenkraut.io.MarkerTrail.createEmptyCopy(MarkerTrail.java:78)\
+	at de.sciss.timebased.BasicTrail.getCuttedTrail(BasicTrail.java:694)\
+	at de.sciss.eisenkraut.session.ClipboardTrackList.<init>(ClipboardTrackList.java:85)\
+	at de.sciss.eisenkraut.session.ClipboardTrackList.<init>(ClipboardTrackList.java:72)\
+	at de.sciss.eisenkraut.session.Session$actionCopyClass.getSelectionAsTrackList(Session.java:713)\
+	at de.sciss.eisenkraut.session.Session$actionCopyClass.perform(Session.java:723)\
+	at de.sciss.eisenkraut.session.Session$actionCopyClass.actionPerformed(Session.java:701)\
+	at javax.swing.AbstractButton.fireActionPerformed(AbstractButton.java:1882)\
+	at javax.swing.AbstractButton$Handler.actionPerformed(AbstractButton.java:2202)\
+	at javax.swing.DefaultButtonModel.fireActionPerformed(DefaultButtonModel.java:420)\
+	at javax.swing.DefaultButtonModel.setPressed(DefaultButtonModel.java:258)\
+	at javax.swing.AbstractButton.doClick(AbstractButton.java:334)\
+	at javax.swing.AbstractButton.doClick(AbstractButton.java:282)\
+	at javax.swing.plaf.basic.BasicMenuItemUI$Actions.actionPerformed(BasicMenuItemUI.java:969)\
+	at javax.swing.SwingUtilities.notifyAction(SwingUtilities.java:1576)\
+	at javax.swing.JComponent.processKeyBinding(JComponent.java:2763)\
+	at javax.swing.JMenuBar.processBindingForKeyStrokeRecursive(JMenuBar.java:656)\
+	at javax.swing.JMenuBar.processBindingForKeyStrokeRecursive(JMenuBar.java:664)\
+	at javax.swing.JMenuBar.processBindingForKeyStrokeRecursive(JMenuBar.java:664)\
+	at javax.swing.JMenuBar.processKeyBinding(JMenuBar.java:640)\
+	at javax.swing.KeyboardManager.fireBinding(KeyboardManager.java:255)\
+	at javax.swing.KeyboardManager.fireKeyboardAction(KeyboardManager.java:242)\
+	at javax.swing.JComponent.processKeyBindingsForAllComponents(JComponent.java:2840)\
+	at javax.swing.SwingUtilities.processKeyBindings(SwingUtilities.java:1488)\
+	at javax.swing.UIManager$2.postProcessKeyEvent(UIManager.java:1291)\
+	at java.awt.DefaultKeyboardFocusManager.dispatchKeyEvent(DefaultKeyboardFocusManager.java:682)\
+	at java.awt.DefaultKeyboardFocusManager.preDispatchKeyEvent(DefaultKeyboardFocusManager.java:920)\
+	at java.awt.DefaultKeyboardFocusManager.typeAheadAssertions(DefaultKeyboardFocusManager.java:798)\
+	at java.awt.DefaultKeyboardFocusManager.dispatchEvent(DefaultKeyboardFocusManager.java:636)\
+	at java.awt.Component.dispatchEventImpl(Component.java:3907)\
+	at java.awt.Container.dispatchEventImpl(Container.java:2068)\
+	at java.awt.Window.dispatchEventImpl(Window.java:1774)\
+	at java.awt.Component.dispatchEvent(Component.java:3869)\
+	at java.awt.EventQueue.dispatchEvent(EventQueue.java:463)\
+	at java.awt.EventDispatchThread.pumpOneEventForHierarchy(EventDispatchThread.java:269)\
+	at java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:190)\
+	at java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:184)\
+	at java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:176)\
+	at java.awt.EventDispatchThread.run(EventDispatchThread.java:110)\
+\
+\
+\
+\
+Snap to ...\
+\
+\
+\
+Channel Meters : display peak in cursor tab of the observer!\
+\
+\
+\
+\
+\
+\
+Alternative Panner :  - none (direkt auf einen kanal = busse einsparen bei vielen kanaelen !)\
+				- binaural\
+				- amisonics\
+				- panaz (wie jetzt)\
+\
+oder : bus pro sound file waehlbar ! d.h. mixer fenster\
+\
+\
+\
+\
+\
+overlay darstellung (ein chan row header mit allen channel nummern, horiz. kette von meters, ein waveform display mit multichannel overlay)\
+}

@@ -1,0 +1,14 @@
+java.lang.IndexOutOfBoundsException: Index: 1, Size: 1
+	at java.util.ArrayList.RangeCheck(ArrayList.java:546)
+	at java.util.ArrayList.get(ArrayList.java:321)
+	at de.sciss.eisenkraut.io.AudioTrail.readFrames(AudioTrail.java:824)
+	at de.sciss.eisenkraut.io.AudioTrail.readFrames(AudioTrail.java:836)
+	at de.sciss.eisenkraut.io.AudioTrail.readFrames(AudioTrail.java:842)
+	at de.sciss.eisenkraut.io.AudioTrail.copyRangeFrom(AudioTrail.java:515)
+	at de.sciss.eisenkraut.session.Session$actionPasteClass.processRun(Session.java:1110)
+	at de.sciss.common.ProcessingThread.run(ProcessingThread.java:279)
+
+
+
+pasting to end of doc when blending enabled
+(FIXED)

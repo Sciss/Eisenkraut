@@ -1,0 +1,1 @@
+(FIXED) der volume bug : SuperColliderPlayer sollte wahrscheinlich gar kein gain argument bekommen!

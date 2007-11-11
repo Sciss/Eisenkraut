@@ -1,0 +1,21 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Timeline Scrollbar</title>
+<LINK REL="stylesheet" TYPE="text/css" HREF="stylesheet.css">
+</head>
+<body>
+<h1>Timeline Scrollbar</h1>
+<p>
+The timelime scrollbar is used to select the portion of the timeline which
+is visible in the timeline frame. The scrollbars indicate the visible portion and can be dragged with the mouse to navigate through the session. They disappear when the total session's duration is visible in the timeline frame.
+</p>
+<IMG SRC="TimelineScroll.png">
+<p>
+A blue shaded rectangle indicates the current timeline selection in respect to the total session duration. A red vertical line indicates the current timeline position in respect to the total session duration. To alter these, use the
+<A HREF="TimelineAxis.html">timeline axis</A> or the <A HREF="TimelineToolPointer.html">pointer tool</A>.
+</p><P>
+Typing <code>Ctrl+Cursor Left</code> will zom out, <code>Ctrl+Cursor Right</code> will zoom in. For zoom-in, when the timeline position (vertical red bar) is visible, the zoom will try to retain the relative timeline position; when timeline position is before the visible span, the left margin will not be altered, when the timeline position is after the visible span, the right margin will not be altered. Alternatively you can use the <A HREF="TimelineToolZoom.html">zoom tool</A>.
+</P>
+</body>
+</html>

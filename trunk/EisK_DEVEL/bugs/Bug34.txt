@@ -1,0 +1,3 @@
+Drawing even zoomed in portions of files with lots of markers is hell slow ; probably a bug in MarkAxis painting (maybe wrong sub set of stakes) ???
+
+numMarkers is ok ; probably some method in BasicTrail, e.g. getRange ??

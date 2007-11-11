@@ -1,0 +1,17 @@
+java.lang.IndexOutOfBoundsException: Index: 5, Size: 5
+	at java.util.ArrayList.RangeCheck(ArrayList.java:546)
+	at java.util.ArrayList.get(ArrayList.java:321)
+	at de.sciss.eisenkraut.io.AudioTrail.readFrames(AudioTrail.java:897)
+	at de.sciss.eisenkraut.io.AudioTrail.readFrames(AudioTrail.java:909)
+	at de.sciss.eisenkraut.io.DecimatedTrail.addAllDep(DecimatedTrail.java:1379)
+	at de.sciss.timebased.BasicTrail.editAddAll(BasicTrail.java:1004)
+	at de.sciss.eisenkraut.io.AudioTrail.clearRangeOvr(AudioTrail.java:883)
+	at de.sciss.eisenkraut.io.AudioTrail.clearRange(AudioTrail.java:652)
+	at de.sciss.eisenkraut.session.Session$actionDeleteClass.processRun(Session.java:1443)
+	at de.sciss.common.ProcessingThread.run(ProcessingThread.java:350)
+	at java.lang.Thread.run(Thread.java:613)
+
+w/ timeline selection in file "test3.aif":
+
+start	12462740
+stop	29931880

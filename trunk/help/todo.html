@@ -1,0 +1,87 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>known issues, future plans</title>
+<LINK REL="stylesheet" TYPE="text/css" HREF="stylesheet.css">
+</head>
+<body>
+<h3>bugs + known issues</h3>
+<p>this list never gets shorter...</p>
+<ul>
+<li>DO NOT: close or save a file while portions of it are concurrently being pasted into another document!</li>
+<li>Sometimes supercollider boot fails with a message saying &quot;RegisterProcess failed (error = xyz)&quot;; this bug occurs on Mac OS X 10.3.9 (Panther) with fixed port numbers. Simply press &quot;Boot&quot; once more.</li>
+<!-- <li>(fixed?) it was reported that the waveform cache directory may fail to be created automatically. if you activate waveform cache and are confronted with errors, check that the folder <code>~/Eisenkraut/cache</code> (i.e. in your home folder) exists.</li> -->
+<!-- <li>when deleting and inserting in the timeline, after a while the overviews become uncorrelated (you hear the sound earlier than you except from the waveform view ;-). if this crosses your threshold of confusion, save the file and re-open it from the open-recent-menu (overview is clean again).</li> -->
+<li>switching the blending time unit between samples and milliseconds will not automatically translate the value.</li>
+<li>keyboard focus is lost when opening a file by doubling clicking its icon in the finder. i'm not sure if this is a bug of the apple vm and will have to check if it can be solved. for now, to re-gain keyboard focus, select a different window (e.g. the main window), and the document waveform window successively.</li>
+<li>undoing an edit will not free the corresponding temp file space (not even when the redo-list is overwritten); the fix requires some changes to the internal track list representation and clipboard management, so it may take a while. just remember that your temp files will grow constantly. the temp files will be purged when the file is saved.</li>
+<!-- <li>in sample-rate-conversion mode there may be audible low volume clicks
+resulting from a buffer boundary wrap problem in supercollider. this will
+be fixed in the next version.</li> -->
+<li>markers are only read and written for aiff and wave files at the moment! when you choose save-as and switch to a sound file format other than these two, they are silently lost. at least ircam supports regions, there should be at least a warning message in a next version.</li>
+<!-- <li>markers are not copied and pasted in clipboard operations</li> -->
+<!-- <li>processes are not marker aware, though some should (i.e. time reversal)</li> -->
+<li>there is no &quot;protection&quot; against making many many tiny short edits which fragment the playlist. it's unlikely but possible that you create a fragmented playlist that cannot be played back click-free. (imagine cutting out all even-numbered samples ;--)</li>
+<li>changing the sound file rate in the header info will not be immediately recognized by a running transport</li>
+<li>eisenkraut does not track free disk space, i.e. you have to check yourself that the partition holding the temporary folder is big enough and that there is enough disk space to save a document</li>
+<li>fscape->needlehole : for center clipping, the delay compensation is a bit wrong and will produce a comb filter effect when used with the subtract-dry option</li>
+<li>(FIXED?) reveal-in-finder : fails if pathname contains whitespaces</li>
+<li>(FIXED?) you can cause a deadlock when hectically clicking buttons, especially while eisenkraut is rendering. the fix requires an architectural change of the semaphore mechanism and is delayed till i find a lot of time</li>
+<li>audio file names and directories must not contain umlauts (any ascii >127). this will be fixed in a future version of NetUtil (requires UTF-8 encoding for OSC strings).</li>
+<li>scsynth sometimes crashes when switching solo/mute buttons (&quot;scsynth terminated (138)&quot; . the only OSC messages send are <code>/n_run</code>s so most likely a weird SuperCollider bug.</li>
+<li>scsynth and or eisenkraut are likely to crash when opening or playing back floating point sound files that contain illegal samples (socalled NaN values and infinity values). you can get NaNs for example when recording from within the SuperCollider application and some UGens go nuts (e.g. divisions by zero). to fix these files, convert them into an integer format using fscape, for example. </li>
+<li>scsynth cannot play back certain AIFF files which contain markers (or it plays back noise bursts). this is a bug libsndfile up to version 1.0.17. when this problem occurs, a solution is to save a copy of your file in WAVE format.</li>
+<li>scsynth crashes when soundfiles with more than 16 channels are played back. this is a bug in SuperCollider, and it is still unclear when it will be fixed. in the meantime, you may try to edit multiple mono versions of your files.</li>
+<li>playback is corrupted or loops when AIFF files greater than 2 GB in size are used. this is a general problem of the AIFF format but also maybe of libsndfile. make the soundfile smaller by splitting channels or the timeline. also using au/snd format should avoid the problem.</li>
+<!-- <li>playback is corrupted or does not work when OSC dump is on. this is a bug in scsynth. use OSC dump only for debugging purposes.</li> -->
+<li>[FIXED?] after opening a lot of files, out-of-memory exceptions get thrown. i found and fixed some memory leaks, but it's possible there are more of them. in this case, you have to quit and restart the application.</li>
+<li>scsynth may crash if hitting play and the harddisk yet has to spin up for a few seconds.</li>
+<li><code>&quot;ERROR: CGContextGetPixelAccess returns NULL in syncToJavaPixels!&quot;</code> messages appear the console. this is a bug of the apple VM. it's harmless.</li>
+<li>a <code>&quot;java.lang.ArrayIndexOutOfBoundsException&quot;</code> message appears when connecting a second screen display. this is a bug of the apple VM. it's harmless.</li>
+<li>no audio playback after computer went to sleep. scsynth is irresponsive when sleep mode is entered. after waking up the computer, you will need to kill scsynth from the terminal (<code>killall scsynth</code>), and re-boot it from within eisenkraut.</li>
+<li>scsynth is irresponsive for a few seconds when plugging-in or out headphones in the built-in soundcard (Mac OS X). A lot of &quot;Server.status : java.nio.channels.ClosedChannelException&quot; messages are printed. This is a problem in scsynth which might be addressed in a future JCollider version. You will need to kill scsynth from the terminal (<code>killall scsynth</code>), and re-boot it from within eisenkraut.</li>
+<li>a null pointer exception is thrown when trying to show the about box in cde/motif look-and-feel mode. this is a bug in mrjadapter.</li>
+<li>in multi-mono file mode, markers are only read from and written to the first file. if you feel this is an issue and you have a clever suggestion, let me know.</li>
+<li>trying to quit application while server is booting may result in ChannelsNotYetConnected exception (you will have to force-quit eisenkraut). hopefully fixed soon.</li>
+<!-- <li>loop playback &quot;needs&quot; one full buffer to capture new loop region (when adjusting the loop while playing, audio playback needs around one second to &quot;snap&quot; to the new loop region).</li> -->
+<!-- <li>&quot;jumping&quot; timeline position when turning on or off loop while playing</li> -->
+<li>way too wide tool buttons with gnome look-and-feel. why?</li>
+<li>when scsynth is used in TCP mode, with fixed port number, sometimes when rebooting the socket doesn't get properly freed, resulting in an &quot;Exception in World_OpenTCP: unable to bind tcp socket&quot;. the only way to get scsynth running again in this case is to change the port preferences setting. It is recommended to use port <code>0</code> in which case Eisenkraut picks an arbitrary free port each time the server it booted.</li>
+<LI>when inserting a live recording, the recorded sound is pasted into the document, requiring twice as much harddisk space! all temporary files are 32bit, so to record one hour of stereo sound at 44.1 kHz, be sure to have free harddisk space >2.4 GB! the duplication when pasting the final recording should be avoided in a future version.</LI>
+<LI>FSc Needhole w/ Min Phase filter produces a few clicks in the very beginning</LI>
+</ul>
+<P><P>See also the <A HREF="http://sourceforge.net/tracker/?group_id=132039&atid=722995" CLASS="ext">sf.net bug tracker</A>.</P>
+</P>
+<h3>future plans</h3>
+<ul>
+<li>more manual pages, tutorial, index</li>
+<li>realtime supercollider plug-ins</li>
+<li>fscape as a plug-in.</li>
+<li>region support</li>
+<!-- <li>insert/overwrite/shuffle mode</li> -->
+<li>optional fast waveform display mode for slow computers</li>
+<!-- <li>multi-mono file support. adding and removing channels. selecting channels and processing them separately.</li> -->
+<li>show/hide tracks</li>
+<!-- <li>save selection as / export regions as separate files</li> -->
+<li>some kind of spectrum or sonagramme view</li>
+<!-- <li>MIDI learn for param fields?</li> -->
+<!-- <li>scripting interface (using Jatha, SISC, Groovy or sclang)</li> -->
+<!-- <li>OSC controlable?</li> -->
+<li>workspace windows onto which settings can be dragged+dropped</li>
+<li>possibility to split the view of a document</li>
+<li>management of multiple scratch disk and automatic detection of full or unavailable scratch disks</li>
+<li>optional overlay display for multichannel files</li>
+<li>synchronizable video display OSC client</li>
+<li>storage of &quot;session data&quot; (such as channel panorama and gain) in xml files belonging to audio files</li>
+<li>alternative panorama modes (such as discrete channel map or binaural filters)</li>
+<li>verzweigte undo/redo b&auml;ume mit &quot;snapshots&quot; wie in sonicworx</li>
+<li>pre/post settings for meters</li>
+<li>synchronizable transports and/or views across documents</li>
+<li>possibility to drop markers during recording</li>
+<!-- <li>continuous loop playback</li> -->
+<li>option to use apple help viewer</li>
+<li>add missing pencil tool</li>
+</ul>
+<P>See also the <A HREF="http://sourceforge.net/tracker/?group_id=132039&atid=722998" CLASS="ext">sf.net feature request tracker</A>.</P>
+</body>
+</html>

@@ -1,0 +1,7 @@
+java.lang.IllegalArgumentException: 1373567 ... 1381759 not within 1217919 ... 1375560
+	at de.sciss.eisenkraut.io.InterleavedAudioStake.writeFrames(InterleavedAudioStake.java:133)
+	at de.sciss.eisenkraut.io.AudioTrail.clearRangeOvr(AudioTrail.java:1441)
+	at de.sciss.eisenkraut.io.AudioTrail.clearRange(AudioTrail.java:1259)
+	at de.sciss.eisenkraut.session.Session$actionDeleteClass.processRun(Session.java:1434)
+	at de.sciss.common.ProcessingThread.run(ProcessingThread.java:365)
+	at java.lang.Thread.run(Thread.java:613)

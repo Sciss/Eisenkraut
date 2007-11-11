@@ -1,0 +1,1 @@
+open one file, make new documents from selections, start their transports, then close doc after doc ---> garantueed to produce scsynth terminated (138) crashes

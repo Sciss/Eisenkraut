@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>aif</string>
+				<string>aiff</string>
+				<string>aifc</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>aiff.icns</string>
+			<key>CFBundleTypeMIMETypes</key>
+			<array>
+				<string>audio/aiff</string>
+				<string>audio/x-aiff</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>AIFF Audio File</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>AIFF</string>
+				<string>AIFC</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>wav</string>
+				<string>wave</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>wave.icns</string>
+			<key>CFBundleTypeMIMETypes</key>
+			<array>
+				<string>audio/wav</string>
+				<string>audio/x-wav</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>WAVE Audio File</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>WAVE</string>
+				<string>WAV </string>
+				<string>wav </string>
+				<string>wave</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>irc</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>ircam.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>IRCAM Audio File</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>snd</string>
+				<string>au</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>au.icns</string>
+			<key>CFBundleTypeMIMETypes</key>
+			<array>
+				<string>audio/au</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>NeXT/Sun Audio File</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>AU  </string>
+				<string>au  </string>
+				<string>snd </string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>cache</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>cache.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>Waveform Cache File</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+		</dict>
+	</array>
+	<key>CFBundleExecutable</key>
+	<string>Eisenkraut</string>
+	<key>CFBundleGetInfoString</key>
+	<string>Eisenkraut 0.70beta. Copyright © 2004-2007 by Hanns Holger Rutz. All rights reserved.</string>
+	<key>CFBundleIconFile</key>
+	<string>application.icns</string>
+	<key>CFBundleIdentifier</key>
+	<string>de.sciss.eisenkraut</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>Eisenkraut</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.70</string>
+	<key>CFBundleSignature</key>
+	<string>EisK</string>
+	<key>CFBundleVersion</key>
+	<string>0.70</string>
+	<key>Java</key>
+	<dict>
+		<key>ClassPath</key>
+		<array>
+			<string>$JAVAROOT/Eisenkraut.jar</string>
+			<string>libraries/MRJAdapter.jar</string>
+			<string>libraries/JCollider.jar</string>
+			<string>libraries/Normalizer.jar</string>
+			<string>libraries/NetUtil.jar</string>
+			<string>libraries/SwingOSC.jar</string>
+		</array>
+		<key>JVMVersion</key>
+		<string>1.4+</string>
+		<key>MainClass</key>
+		<string>de.sciss.eisenkraut.Main</string>
+		<key>Properties</key>
+		<dict>
+			<key>apple.laf.useScreenMenuBar</key>
+			<string>true</string>
+		</dict>
+		<key>VMOptions</key>
+		<string>-ea</string>
+	</dict>
+	<key>NSJavaNeeded</key>
+	<string>YES</string>
+	<key>NSJavaPath</key>
+	<array>
+		<string>Eisenkraut.jar</string>
+	</array>
+	<key>NSJavaRoot</key>
+	<string>Contents/Resources/Java</string>
+</dict>
+</plist>

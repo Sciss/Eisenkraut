@@ -1,0 +1,15 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Audio Prefs : Hardware Sample Rate</title>
+<LINK REL="stylesheet" TYPE="text/css" HREF="stylesheet.css">
+</head>
+<body>
+<h1>Audio Prefs : Hardware Sample Rate</h1>
+<p>
+this is a parameter used when booting supercollider (<code>-S</code>). it specifies the sampling rate which shall be used by supercollider. convenient sample rates are 44100, 48000, 88200, 96000... note that supercollider tries to switch your hardware's rate when booting which may cause it fail when the rate is not supported. for example, the macintosh built-in soundcard can only run at 44.1 kHz. usually you will set the preferences field to 0 (zero) in which case supercollider does not switch the rate but uses the currently active sample rate.
+</P><P>
+eisenkraut uses built-in sample rate conversion, so there is no need to switch the hardware rate when playing back files that have a different rate, unless you are a audiophile purist (sample rate conversion will slightly degrade the audio quality). sample rate conversion is indicated by a red &quot;SRC&quot; label in bottom right of the soundfile's waveform window.
+</P>
+</body>
+</html>

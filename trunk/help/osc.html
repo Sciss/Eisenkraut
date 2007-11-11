@@ -1,0 +1,204 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>OSC Command Reference</title>
+<LINK REL="stylesheet" TYPE="text/css" HREF="stylesheet.css">
+</head>
+<body>
+<h2>OSC Command Reference</h2>
+<P>as of: 05-aug-07<br>
+<b>warning:</b> OSC command set may be subject to changes.</P>
+
+<UL>
+<!-- <LI><CODE>/sync &lt;<VAR>id</VAR>&gt;   </CODE>// NOT YET WORKING</LI> -->
+<LI><CODE>/dumpOSC &lt;(int) <VAR>incomingMod</VAR>e&gt; [&lt;(int) <VAR>outgoingMode</VAR>&gt;]</CODE></LI>
+<LI><CODE>/main</CODE><UL>
+	<LI><CODE>quit [&lt;(int) <VAR>force</VAR>=(0|1)&gt;]</CODE></LI>
+	<LI>query properties:
+		<TABLE>
+		<TR><TD><CODE>version</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(float) <VAR>version</VAR>&gt;</CODE></TD></TR>
+		</TABLE>
+	</LI>
+</UL></LI>
+<LI><CODE>/sc</CODE><UL>
+	<LI><CODE>boot</CODE></LI>
+	<LI><CODE>terminate</CODE></LI>
+	<LI><CODE>volume &lt;(float) <VAR>vol</VAR>&gt;</CODE></LI>
+	<LI><CODE>allocBus ("audio"|"control") [&lt;(int) <VAR>numChannels</VAR>&gt;]</CODE></LI>
+	<LI><CODE>freeBus &lt;(int) <VAR>index</VAR>&gt;</CODE></LI>
+	<LI><CODE>allocBuf &lt;(int) <VAR>numFrames</VAR>&gt; [&lt;(int) <VAR>numChannels</VAR>&gt;]</CODE></LI>
+	<LI><CODE>freeBuf &lt;(int) <VAR>bufNum</VAR>&gt;</CODE></LI>
+	<LI>query properties:
+		<TABLE>
+		<TR><TD><CODE>port</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(int) <VAR>oscPort</VAR>&gt;</CODE></TD></TR>
+		<TR><TD><CODE>protocol</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(String) <VAR>protocol</VAR>=("tcp"|"udp")&gt;</CODE></TD></TR>
+		<TR><TD><CODE>running</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(int) <VAR>isRunning</VAR>=(0|1)&gt;</CODE></TD></TR>
+		<TR><TD><CODE>volume</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(float) <VAR>vol</VAR>&gt;</CODE></TD></TR>
+		<TR><TD><CODE>masterGroup</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(int) <VAR>masterGroup-nodeID</VAR>&gt;</CODE></TD></TR>
+		</TABLE>
+	</LI>
+<!--	<LI>getter commands:
+		<TABLE>
+		<TR><TD><CODE>outputChannels</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD>T.B.A. !!! this will change because there will be a continuous master bus !!!</TD></TR>
+		</TABLE>
+	</LI> -->
+</UL></LI>
+<LI><CODE>/doc</CODE><UL>
+	<LI></CODE>open &lt;(String) <VAR>path</VAR>&gt;</CODE></LI>
+	<LI>query properties:
+		<TABLE>
+		<TR><TD><CODE>count</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(int) <VAR>numberOfDocs</VAR>&gt;</CODE></TD></TR>
+		</TABLE>
+	</LI>
+</UL></LI>
+<LI><CODE>/doc/&lt;<VAR>address</VAR>&gt;</CODE><br><UL>
+	<LI>where <CODE>&lt;<VAR>address</VAR>&gt;</CODE> is one of:
+	<UL>
+		<LI><CODE>active</CODE></LI>
+		<LI><CODE>index/&lt;(int) <VAR>idx</VAR>&gt;</CODE></LI>
+		<LI><CODE>id/&lt;(int) <VAR>id</VAR>&gt;</CODE></LI>
+	</UL>
+	</LI>
+	<LI><CODE>close [&lt;(int) <VAR>force</VAR>=(0|1)&gt;]</CODE></LI>
+	<LI><CODE>activate</CODE></LI>
+	<LI><CODE>cut</CODE></LI>
+	<LI><CODE>copy</CODE></LI>
+	<LI><CODE>paste</CODE></LI>
+	<LI><CODE>delete</CODE></LI>
+	<LI><CODE>insertSilence &lt;(long) <VAR>numFrames</VAR>&gt;</CODE></LI>
+	<LI>query properties:
+		<TABLE>
+		<TR><TD><CODE>id</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(int) <VAR>id</VAR>&gt;</CODE></TD></TR>
+		<TR><TD><CODE>dirty</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(int) <VAR>isDirty</VAR>=(0|1)&gt;</CODE></TD></TR>
+		<TR><TD><CODE>editMode</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(String) <VAR>mode</VAR>=("insert"|"overwrite"|"mix")&gt;</CODE></TD></TR>
+		<TR><TD><CODE>name</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(String) <VAR>name</VAR>&gt;</CODE></TD></TR>
+		</TABLE>
+	</LI>
+</UL></LI>
+<LI><CODE>/doc/&lt;<VAR>address</VAR>&gt;/markers</CODE><UL>
+	<LI><CODE>add [ &lt;(long) <VAR>pos</VAR>&gt;, &lt;(String) <VAR>name</VAR>&gt; ] * <VAR>N</VAR></CODE></LI>
+	<LI>remove
+	<UL>
+		<LI><CODE>span &lt;(long) <VAR>startPos</VAR>&gt; &lt;(long) <VAR>stopPos</VAR>&gt;</CODE></LI>
+		<LI><CODE>range &lt;(int) <VAR>startIdx</VAR>&gt; &lt;(int) <VAR>stopIdx</VAR>&gt;</CODE></LI>
+		<LI><CODE>at [ &lt;(int) <VAR>idx</VAR>&gt; ] * <VAR>N</VAR></CODE></LI>
+	</UL>
+	</LI>
+	<LI><CODE>trackSelected &lt;(int) <VAR>selected</VAR>=(0|1)&gt;</CODE> NOTYETWORKING</LI>
+	<LI>query properties:
+		<TABLE>
+		<TR><TD><CODE>spanStart</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(long) <VAR>startFrame</VAR>&gt;</CODE></TD></TR>
+		<TR><TD><CODE>spanStop</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(long) <VAR>stopFrame</VAR>&gt;</CODE></TD></TR>
+		<TR><TD><CODE>count</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(long) <VAR>numberOfMarkers</VAR>&gt;</CODE></TD></TR>
+		<TR><TD><CODE>trackSelected</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(int) <VAR>trackSelected</VAR>=(0|1)&gt;</CODE></TD></TR>
+		</TABLE>
+	</LI>
+	<LI>getter commands:
+		<TABLE>
+		<TR><TD><CODE>span &lt;(long) <VAR>startPos</VAR>&gt; &lt;(long) <VAR>stopPos</VAR>&gt;</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD>T.B.A.</TD></TR>
+		<TR><TD><CODE>range &lt;(int) <VAR>startIdx</VAR>&gt; &lt;(int) <VAR>stopIdx</VAR>&gt;</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD>T.B.A.</TD></TR>
+		<TR><TD><CODE>at [ &lt;(int) <VAR>idx</VAR>&gt; ] * <VAR>N</VAR></CODE></TD><TD>&nbsp;:&nbsp;</TD><TD>T.B.A.</TD></TR>
+		<TR><TD><CODE>indexOf [ &lt;(long) <VAR>pos</VAR>&gt; ] * <VAR>N</VAR></CODE></TD><TD>&nbsp;:&nbsp;</TD><TD>T.B.A.</TD></TR>
+		</TABLE>
+	</LI>
+</UL></LI>
+<LI><CODE>/doc/&lt;<VAR>address</VAR>&gt;/audio</CODE><UL>
+	<LI>query properties:
+		<TABLE>
+		<TR><TD><CODE>count</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(int) <VAR>numberOfAudioTracks</VAR>&gt;</CODE></TD></TR>
+		</TABLE>
+	</LI>
+</UL></LI>
+<LI><CODE>/doc/&lt;<VAR>address</VAR>&gt;/audio/&lt;<VAR>trackIndex</VAR>&gt;</CODE><br><UL>
+	<LI><CODE>trackSelected &lt;(int) <VAR>selected</VAR>=(0|1)&gt;</CODE> NOTYETWORKING</LI>
+	<LI><CODE>flags &lt;(int) <VAR>flagsToSet</VAR>&gt;, &lt;(int) <VAR>flagsToClear</VAR>&gt;</CODE></LI>
+	<LI><CODE>pan &lt;(float) <VAR>azimuth</VAR>=(0...360)&gt;, &lt;(float) <VAR>spread</VAR>=(0...1)&gt;</CODE></LI>
+	<LI>query properties:
+		<TABLE>
+		<TR><TD><CODE>flags</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(int) <VAR>flags</VAR>&gt;</CODE></TD></TR>
+		<TR><TD><CODE>trackSelected</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(int) <VAR>selected</VAR>=(0|1)&gt;</CODE></TD></TR>
+		<TR><TD><CODE>panAzimuth</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(float) <VAR>azimuth</VAR>=(0...360)&gt;</CODE></TD></TR>
+		<TR><TD><CODE>panSpread</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(float) <VAR>spread</VAR>=(0...1)&gt;</CODE></TD></TR>
+		</TABLE>
+	</LI>
+</UL></LI>
+<LI><CODE>/doc/&lt;<VAR>address</VAR>&gt;/transport</CODE><UL>
+	<LI><CODE>play [&lt;(float) <VAR>rate</VAR>&gt;]</CODE></LI>
+	<LI><CODE>stop</CODE></LI>
+</UL></LI>
+<LI><CODE>/doc/&lt;<VAR>address</VAR>&gt;/timeline</CODE><UL>
+	<LI><CODE>position &lt;(long) <VAR>frame</VAR>&gt;</CODE></LI>
+	<LI><CODE>select &lt;(long) <VAR>start</VAR>&gt; &lt;(long) <VAR>stop</VAR>&gt;</CODE></LI>
+	<LI>query properties:
+		<TABLE>
+		<TR><TD><CODE>position</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(long) <VAR>currentFrame</VAR>&gt;</CODE></TD></TR>
+		<TR><TD><CODE>length</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(long) <VAR>numFrames</VAR>&gt;</CODE></TD></TR>
+		<TR><TD><CODE>selectionStart</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(long) <VAR>startFrame</VAR>&gt;</CODE></TD></TR>
+		<TR><TD><CODE>selectionStop</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(long) <VAR>stopFrame</VAR>&gt;</CODE></TD></TR>
+		<TR><TD><CODE>rate</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(double) <VAR>sampleRate</VAR>&gt;</CODE></TD></TR>
+		</TABLE>
+	</LI>
+</UL></LI>
+<LI><CODE>/doc/&lt;<VAR>address</VAR>&gt;/sc</CODE><UL>
+	<LI>query properties:
+		<TABLE>
+		<TR><TD><CODE>inputGroup</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(int) <VAR>inputGroup-nodeID</VAR>&gt;</CODE></TD></TR>
+		<TR><TD><CODE>outputGroup</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(int) <VAR>outputGroup-nodeID</VAR>&gt;</CODE></TD></TR>
+		<TR><TD><CODE>diskBusIndex</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(int) <VAR>diskBus-index</VAR>&gt;</CODE></TD></TR>
+		<TR><TD><CODE>diskBusNumChannels</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(int) <VAR>diskBus-numChannels</VAR>&gt;</CODE></TD></TR>
+		<TR><TD><CODE>panBusIndex</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(int) <VAR>panBus-index</VAR>&gt;</CODE></TD></TR>
+		<TR><TD><CODE>panBusNumChannels</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(int) <VAR>panBus-numChannels</VAR>&gt;</CODE></TD></TR>
+		</TABLE>
+	</LI>
+<!--	<LI>getter commands:
+		<TABLE>
+		<TR><TD><CODE>diskBus</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>[ &lt;(int) <VAR>diskBus-index</VAR>&gt;, &lt;(int) <VAR>diskBus-numChannels</VAR>&gt; ]</CODE></TD></TR>
+		<TR><TD><CODE>panBus</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>[ &lt;(int) <VAR>panBus-index</VAR>&gt;, &lt;(int) <VAR>panBus-numChannels</VAR>&gt; ]</CODE></TD></TR>
+		</TABLE>
+	</LI> -->
+</UL></LI>
+<LI><CODE>/doc/&lt;<VAR>address</VAR>&gt;/recorder</CODE><UL>
+	<LI><CODE>resetHeadroom</CODE></LI>
+	<LI>query properties:
+		<TABLE>
+		<TR><TD><CODE>recording</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(int) <VAR>isRecording</VAR>=(0|1)&gt;</CODE></TD></TR>
+		<TR><TD><CODE>monitoring</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(int) <VAR>isMonitoring</VAR>=(0|1)&gt;</CODE></TD></TR>
+		<TR><TD><CODE>headroom</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(float) <VAR>headroomDecibels</VAR>&gt;</CODE></TD></TR>
+		<TR><TD><CODE>length</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(long) <VAR>recordedFrames</VAR>&gt;</CODE></TD></TR>
+		</TABLE>
+	</LI>
+</UL></LI>
+<LI><CODE>/gui</CODE><UL>
+	<LI><CODE>initSwing</CODE></LI>
+	<LI>query properties:
+		<TABLE>
+		<TR><TD><CODE>swingPort</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(int) <VAR>swingOSCPort</VAR>&gt;</CODE></TD></TR>
+		<TR><TD><CODE>swingProtocol</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(String) <VAR>swingOSCProtocol</VAR>=("tcp"|"udp")&gt;</CODE></TD></TR>
+		<TR><TD><CODE>swingRunning</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(int) <VAR>swingOSCIsRunning</VAR>=(0|1)&gt;</CODE></TD></TR>
+		</TABLE>
+	</LI>
+</UL></LI>
+<LI><CODE>/gui/menu</CODE><UL>
+	<LI><CODE>add &lt;(int) <VAR>id</VAR>&gt;, &lt;(String) <VAR>type</VAR>=("item"|"group"|"separator"|"check")&gt;, &lt;(String) <VAR>menuHierarchy</VAR>&gt;, [ &lt;(String) <VAR>text</VAR>&gt;, &lt;(String) <VAR>keystroke</VAR>|(int) 0&gt; ]</CODE></LI>
+	<LI><CODE>remove &lt;(int) <VAR>id</VAR>&gt;</CODE></LI>
+</UL></LI>
+</UL>
+
+<h3>querying single values</h3>
+<P>
+<CODE>query &lt;<VAR>id</VAR>&gt; [ &lt;(String) <VAR>property</VAR>&gt; ] * <VAR>N</VAR></CODE>
+</P><P>
+replies with
+</P><P>
+<CODE>/query.reply &lt;<VAR>id</VAR>&gt; [ &lt;(Object) <VAR>value</VAR>&gt; ] * <VAR>N</VAR></CODE>
+</P>
+<h3>getting complex objects</h3>
+<P>
+<CODE>get &lt;<VAR>id</VAR>&gt; &lt;... <VAR>args</VAR>&gt;</CODE>
+</P><P>
+replies with
+</P><P>
+<CODE>/get.reply &lt;<VAR>id</VAR>&gt; &lt;... <VAR>args</VAR>&gt;</CODE>
+</P>
+</body>
+</html>

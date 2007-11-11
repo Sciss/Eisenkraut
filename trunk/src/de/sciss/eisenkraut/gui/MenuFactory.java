@@ -1,0 +1,858 @@
+/*
+ *  MenuFactory.java
+ *  Eisenkraut
+ *
+ *  Copyright (c) 2004-2007 Hanns Holger Rutz. All rights reserved.
+ *
+ *	This software is free software; you can redistribute it and/or
+ *	modify it under the terms of the GNU General Public License
+ *	as published by the Free Software Foundation; either
+ *	version 2, june 1991 of the License, or (at your option) any later version.
+ *
+ *	This software is distributed in the hope that it will be useful,
+ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *	General Public License for more details.
+ *
+ *	You should have received a copy of the GNU General Public
+ *	License (gpl.txt) along with this software; if not, write to the Free Software
+ *	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ *
+ *	For further information, please contact Hanns Holger Rutz at
+ *	contact@sciss.de
+ *
+ *
+ *  Changelog:
+ *		25-Jan-05	created from de.sciss.meloncillo.gui.MenuFactory
+ *		02-Aug-05	confirms to new document handler
+ *		15-Sep-05	openDocument checks if file is already open
+ */
+
+package de.sciss.eisenkraut.gui;
+
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.FileDialog;
+import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.io.File;
+import java.io.IOException;
+import java.util.prefs.Preferences;
+import javax.swing.Action;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.KeyStroke;
+
+import de.sciss.eisenkraut.Main;
+import de.sciss.eisenkraut.io.AudioStake;
+import de.sciss.eisenkraut.io.PrefCacheManager;
+import de.sciss.eisenkraut.net.SuperColliderClient;
+import de.sciss.eisenkraut.session.Session;
+import de.sciss.eisenkraut.util.PrefsUtil;
+
+import de.sciss.app.AbstractApplication;
+import de.sciss.app.AbstractWindow;
+import de.sciss.common.BasicApplication;
+import de.sciss.common.BasicMenuFactory;
+import de.sciss.common.ProcessingThread;
+import de.sciss.gui.AbstractWindowHandler;
+import de.sciss.gui.BooleanPrefsMenuAction;
+import de.sciss.gui.GUIUtil;
+import de.sciss.gui.IntPrefsMenuAction;
+import de.sciss.gui.MenuAction;
+import de.sciss.gui.MenuCheckItem;
+import de.sciss.gui.MenuGroup;
+import de.sciss.gui.MenuItem;
+import de.sciss.gui.MenuRadioGroup;
+import de.sciss.gui.MenuRadioItem;
+import de.sciss.gui.MenuSeparator;
+import de.sciss.io.AudioFileDescr;
+import de.sciss.io.AudioFileFormatPane;
+import de.sciss.util.Flag;
+import de.sciss.util.Param;
+
+import de.sciss.jcollider.Server;
+
+/**
+ *  <code>JMenu</code>s cannot be added to more than
+ *  one frame. Since on MacOS there's one
+ *  global menu for all the application windows
+ *  we need to 'duplicate' a menu prototype.
+ *  Synchronizing all menus is accomplished
+ *  by using the same action objects for all
+ *  menu copies. However when items are added
+ *  or removed, synchronization needs to be
+ *  performed manually. That's the point about
+ *  this class.
+ *  <p>
+ *  There can be only one instance of <code>MenuFactory</code>
+ *  for the application, and that will be created by the
+ *  <code>Main</code> class.
+ *
+ *  @author		Hanns Holger Rutz
+ *  @version	0.70, 27-Sep-07
+ *
+ *  @see	de.sciss.eisenkraut.Main#menuFactory
+ */
+public class MenuFactory
+extends BasicMenuFactory
+{
+	// ---- misc actions ----
+	private actionOpenClass				actionOpen;
+	private actionOpenMMClass			actionOpenMM;
+	private actionNewEmptyClass			actionNewEmpty;
+
+//	private final List					collGlobalKeyCmd	= new ArrayList();
+	
+//	private static final String			CLIENT_BG	= "de.sciss.gui.BG";	// radio button group
+
+	/**
+	 *  The constructor is called only once by
+	 *  the <code>Main</code> class and will create a prototype
+	 *  main menu from which all copies are
+	 *  derived.
+	 *
+	 *  @param  root	application root
+	 */
+	public MenuFactory( BasicApplication app )
+	{
+		super( app );
+		createActions();
+	}
+	
+	public ProcessingThread closeAll( boolean force, Flag confirmed )
+	{
+		final de.sciss.app.DocumentHandler	dh	= AbstractApplication.getApplication().getDocumentHandler();
+		Session								doc;
+		ProcessingThread					pt;
+
+		while( dh.getDocumentCount() > 0 ) {
+			doc	= (Session) dh.getDocument( 0 );
+if( doc.getFrame() == null ) {
+	System.err.println( "Yukk, no doc frame for "+doc.getDisplayDescr().file );
+	try {
+		Thread.sleep( 4000 );
+	} catch( InterruptedException e1 ) {}
+	confirmed.set( true );
+	return null;
+}
+			pt	= doc.getFrame().closeDocument( force, confirmed );
+			if( pt == null ) {
+				if( !confirmed.isSet() ) return null;
+			} else {
+				return pt;
+			}
+		}
+		confirmed.set( true );
+		return null;
+	}
+
+	/**
+	 *  Sets all JMenuBars enabled or disabled.
+	 *  When time taking asynchronous processing
+	 *  is done, like loading a session or bouncing
+	 *  it to disk, the menus need to be disabled
+	 *  to prevent the user from accidentally invoking
+	 *  menu actions that can cause deadlocks if they
+	 *  try to gain access to blocked doors. This
+	 *  method traverses the list of known frames and
+	 *  sets each frame's menu bar enabled or disabled.
+	 *
+	 *  @param  enabled		<code>true</code> to enable
+	 *						all menu bars, <code>false</code>
+	 *						to disable them.
+	 *  @synchronization	must be called in the event thread
+	 */
+//	public void setMenuBarsEnabled( boolean enabled )
+//	{
+//		MenuHost	host;
+//		JMenuBar	mb;
+//	
+//		for( int i = 0; i < collMenuHosts.size(); i++ ) {
+//			host	= (MenuHost) collMenuHosts.get( i );
+//			mb		= host.who.getJMenuBar();
+//			if( mb != null ) mb.setEnabled( enabled );
+//		}
+//	}
+
+//	private static int uniqueNumber = 0;	// increased by addGlobalKeyCommand()
+	/**
+	 *  Adds an action object invisibly to all
+	 *  menu bars, enabling its keyboard shortcut
+	 *  to be accessed no matter what window
+	 *  has the focus.
+	 *
+	 *  @param  a   the <code>Action</code> whose
+	 *				accelerator key should be globally
+	 *				accessible. The action
+	 *				is stored in the input and action map of each
+	 *				registered frame's root pane, thus being
+	 *				independant of calls to <code>setMenuBarsEnabled/code>.
+	 *
+	 *  @throws java.lang.IllegalArgumentException  if the action does
+	 *												not have an associated
+	 *												accelerator key
+	 *
+	 *  @see  javax.swing.Action#ACCELERATOR_KEY
+	 *  @synchronization	must be called in the event thread
+	 */
+//	public void addGlobalKeyCommand( Action a )
+//	{
+//System.err.println( "addGlobalKeyCommand : NOT YET FULLY WORKING" );
+//		final KeyStroke		acc		= (KeyStroke) a.getValue( Action.ACCELERATOR_KEY );
+//		final String		entry;
+//		MenuHost			host;
+////		JRootPane			rp;
+//		InputMap			imap;
+//		ActionMap			amap;
+//		
+//		if( acc == null ) throw new IllegalArgumentException();
+//		
+//		entry = "key" + String.valueOf( uniqueNumber++ );
+//		a.putValue( Action.NAME, entry );
+//
+//		for( int i = 0; i < collMenuHosts.size(); i++ ) {
+//			host	= (MenuHost) collMenuHosts.get( i );
+//			imap	= host.who.getInputMap( JComponent.WHEN_IN_FOCUSED_WINDOW );
+////			rp		= host.who.getRootPane();
+////			imap	= rp.getInputMap( JComponent.WHEN_IN_FOCUSED_WINDOW );
+////			amap	= rp.getActionMap();
+//			amap	= host.who.getActionMap();
+//			imap.put( acc, entry );
+//			amap.put( entry, a );
+//		}
+//		collGlobalKeyCmd.add( a );
+//	}
+
+	private void createActions()
+	{
+		// --- file menu ---
+		actionNewEmpty	= new actionNewEmptyClass( getResourceString( "menuNewEmpty" ),
+												KeyStroke.getKeyStroke( KeyEvent.VK_N, MENU_SHORTCUT ));
+		actionOpen		= new actionOpenClass(  getResourceString( "menuOpen" ),
+												KeyStroke.getKeyStroke( KeyEvent.VK_O, MENU_SHORTCUT ));
+		actionOpenMM	= new actionOpenMMClass( getResourceString( "menuOpenMM" ),
+												KeyStroke.getKeyStroke( KeyEvent.VK_O, MENU_SHORTCUT + KeyEvent.SHIFT_MASK ));
+	}
+	
+	// @todo	this should eventually read the tree from an xml file
+	protected void addMenuItems()
+	{
+		MenuGroup				mg, smg;
+		MenuCheckItem			mci;
+		MenuRadioGroup			rg;
+//		Action					a;
+		BooleanPrefsMenuAction	ba;
+		IntPrefsMenuAction		ia;
+		Preferences				prefs;
+		int						i;
+		
+		// Ctrl on Mac / Ctrl+Alt on PC
+		final int myCtrl = MENU_SHORTCUT == KeyEvent.CTRL_MASK ? KeyEvent.CTRL_MASK | KeyEvent.ALT_MASK : KeyEvent.CTRL_MASK;
+
+		// --- file menu ---
+		
+		mg	= (MenuGroup) this.get( "file" );
+		smg = new MenuGroup( "new", getResourceString( "menuNew" ));
+		smg.add( new MenuItem( "empty", actionNewEmpty ));
+		smg.add( new MenuItem( "fromSelection", getResourceString( "menuNewFromSelection" )));
+		mg.add( smg, 0 );
+//		mg.add( new MenuItem( "open", actionOpen ));
+		i	= mg.indexOf( "open" );
+		mg.add( new MenuItem( "openMultipleMono", actionOpenMM ), i + 1 );
+//		mgRecent = new MenuGroup( "openRecent", actionOpenRecent );
+//		if( openRecentPaths.getPathCount() > 0 ) {
+//			for( int i = 0; i < openRecentPaths.getPathCount(); i++ ) {
+//				mgRecent.add( new MenuItem( String.valueOf( uniqueNumber++ ), new actionOpenRecentClass( openRecentPaths.getPath( i ))));
+//			}
+//			actionOpenRecent.setPath( openRecentPaths.getPath( 0 ));
+//			actionOpenRecent.setEnabled( true );
+//			actionClearRecent.setEnabled( true );
+//		}
+//		mgRecent.addSeparator();
+//		mgRecent.add( new MenuItem( "clearRecent", actionClearRecent ));
+//		mg.add( mgRecent );
+//		mg.add( new MenuItem( "close", getResourceString( "menuClose" ), KeyStroke.getKeyStroke( KeyEvent.VK_W, MenuFactory.MENU_SHORTCUT )));
+//		mg.add( new MenuItem( "closeAll", actionCloseAll ));
+//		mg.add( new MenuSeparator() );
+		i	= mg.indexOf( "closeAll" );
+//		smg	= new MenuGroup( "import", getResourceString( "menuImport" ));
+//		smg.add( new MenuItem( "markers", getResourceString( "menuImportMarkers" )));
+//		mg.add( smg, i + 2 );
+		mg.add( new MenuSeparator(), i + 3 );
+//		mg.add( new MenuItem( "save", getResourceString( "menuSave" ), KeyStroke.getKeyStroke( KeyEvent.VK_S, MenuFactory.MENU_SHORTCUT )));
+//		mg.add( new MenuItem( "saveAs", getResourceString( "menuSaveAs" ), KeyStroke.getKeyStroke( KeyEvent.VK_S, MenuFactory.MENU_SHORTCUT + KeyEvent.SHIFT_MASK )));
+//		mg.add( new MenuItem( "saveCopyAs", getResourceString( "menuSaveCopyAs" )));
+		i = mg.indexOf( "saveCopyAs" );
+		mg.add( new MenuItem( "saveSelectionAs", getResourceString( "menuSaveSelectionAs" )), i + 1 );
+//		if( QuitJMenuItem.isAutomaticallyPresent() ) {
+//			root.getQuitJMenuItem().setAction( root.getQuitAction() );
+//		} else {
+//			mg.addSeparator();
+//			mg.add( new MenuItem( "quit", root.getQuitAction() ));
+//		}
+//		this.add( mg );
+
+//		// --- edit menu ---
+//		mg	= new MenuGroup( "edit", getResourceString( "menuEdit" ));
+//		mg.add( new MenuItem( "undo", getResourceString( "menuUndo" ), KeyStroke.getKeyStroke( KeyEvent.VK_Z, MENU_SHORTCUT )));
+//		mg.add( new MenuItem( "redo", getResourceString( "menuRedo" ), KeyStroke.getKeyStroke( KeyEvent.VK_Z, MENU_SHORTCUT + KeyEvent.SHIFT_MASK )));
+//		mg.addSeparator();
+//		mg.add( new MenuItem( "cut", getResourceString( "menuCut" ), KeyStroke.getKeyStroke( KeyEvent.VK_X, MENU_SHORTCUT )));
+//		mg.add( new MenuItem( "copy", getResourceString( "menuCopy" ), KeyStroke.getKeyStroke( KeyEvent.VK_C, MENU_SHORTCUT )));
+//		mg.add( new MenuItem( "paste", getResourceString( "menuPaste" ), KeyStroke.getKeyStroke( KeyEvent.VK_V, MENU_SHORTCUT )));
+//		mg.add( new MenuItem( "clear", getResourceString( "menuClear" ), KeyStroke.getKeyStroke( KeyEvent.VK_BACK_SPACE, 0 )));
+//		mg.addSeparator();
+//		mg.add( new MenuItem( "selectAll", getResourceString( "menuSelectAll" ), KeyStroke.getKeyStroke( KeyEvent.VK_A, MENU_SHORTCUT )));
+//		if( PreferencesJMenuItem.isAutomaticallyPresent() ) {
+//			root.getPreferencesJMenuItem().setAction( actionPreferences );
+//		} else {
+//			mg.addSeparator();
+//			mg.add( new MenuItem( "preferences", actionPreferences ));
+//		}
+//		this.add( mg );
+		
+		// --- timeline menu ---
+		i	= this.indexOf( "edit" );
+		mg	= new MenuGroup( "timeline", getResourceString( "menuTimeline" ));
+		mg.add( new MenuItem( "trimToSelection", getResourceString( "menuTrimToSelection" ),
+							  KeyStroke.getKeyStroke( KeyEvent.VK_F5, MENU_SHORTCUT )));
+
+		mg.add( new MenuItem( "insertSilence", getResourceString( "menuInsertSilence" ),
+							  KeyStroke.getKeyStroke( KeyEvent.VK_E, MENU_SHORTCUT + KeyEvent.SHIFT_MASK )));
+		mg.add( new MenuItem( "insertRecording", getResourceString( "menuInsertRec" )));
+		this.add( mg, i + 1 );
+
+		// --- process menu ---
+		mg  = new MenuGroup( "process", getResourceString( "menuProcess" ));
+		mg.add( new MenuItem( "again", getResourceString( "menuProcessAgain" ), KeyStroke.getKeyStroke( KeyEvent.VK_F, MENU_SHORTCUT )));
+		mg.addSeparator();
+		smg  = new MenuGroup( "fscape", getResourceString( "menuFScape" ));
+		smg.add( new MenuItem( "needlehole", getResourceString( "menuFScNeedlehole" )));
+		mg.add( smg );
+		smg = new MenuGroup( "sc", getResourceString( "menuSuperCollider" ));
+		mg.add( smg );
+		mg.addSeparator();
+		mg.add( new MenuItem( "fadeIn", getResourceString( "menuFadeIn" ), KeyStroke.getKeyStroke( KeyEvent.VK_I, myCtrl )));
+		mg.add( new MenuItem( "fadeOut", getResourceString( "menuFadeOut" ), KeyStroke.getKeyStroke( KeyEvent.VK_O, myCtrl )));
+		mg.add( new MenuItem( "gain", getResourceString( "menuGain" ), KeyStroke.getKeyStroke( KeyEvent.VK_N, myCtrl )));
+		mg.add( new MenuItem( "invert", getResourceString( "menuInvert" )));
+		mg.add( new MenuItem( "mix", getResourceString( "menuMix" )));
+		mg.add( new MenuItem( "reverse", getResourceString( "menuReverse" )));
+		mg.add( new MenuItem( "rotateChannels", getResourceString( "menuRotateChannels" )));
+		this.add( mg, i + 2 );
+
+		// --- operation menu ---
+		mg			= new MenuGroup( "operation", getResourceString( "menuOperation" ));
+		prefs		= root.getUserPrefs();
+		ba			= new BooleanPrefsMenuAction( getResourceString( "menuInsertionFollowsPlay" ), null );
+		mci			= new MenuCheckItem( "insertionFollowsPlay", ba );
+		ba.setCheckItem( mci );
+		ba.setPreferences( prefs, PrefsUtil.KEY_INSERTIONFOLLOWSPLAY );
+		mg.add( mci );
+		this.add( mg, i + 3 );
+
+		// --- view menu ---
+		mg			= new MenuGroup( "view", getResourceString( "menuView" ));
+		prefs		= root.getUserPrefs();
+		smg			= new MenuGroup( "timeUnits", getResourceString( "menuTimeUnits" ));
+		ia			= new IntPrefsMenuAction( getResourceString( "menuTimeUnitsSamples" ), null, PrefsUtil.TIME_SAMPLES );
+		rg			= new MenuRadioGroup();
+		smg.add( new MenuRadioItem( rg, "samples", ia ));	// crucial reihenfolge : erst item erzeugen, dann gruppe setzen, dann prefs
+		ia.setRadioGroup( rg );
+		ia.setPreferences( prefs, PrefsUtil.KEY_TIMEUNITS );
+		ia			= new IntPrefsMenuAction( getResourceString( "menuTimeUnitsMinSecs" ), null, PrefsUtil.TIME_MINSECS );
+		smg.add( new MenuRadioItem( rg, "minSecs", ia ));	// crucial reihenfolge : erst item erzeugen, dann gruppe setzen, dann prefs
+		ia.setRadioGroup( rg );
+		ia.setPreferences( prefs, PrefsUtil.KEY_TIMEUNITS );
+		mg.add( smg );
+
+		ba			= new BooleanPrefsMenuAction( getResourceString( "menuViewNullLinie" ), null );
+		mci			= new MenuCheckItem( "nullLinie", ba );
+		ba.setCheckItem( mci );
+		ba.setPreferences( prefs, PrefsUtil.KEY_VIEWNULLLINIE );
+		mg.add( mci );
+		ba			= new BooleanPrefsMenuAction( getResourceString( "menuViewVerticalRulers" ), null );
+		mci			= new MenuCheckItem( "verticalRulers", ba );
+		ba.setCheckItem( mci );
+		ba.setPreferences( prefs, PrefsUtil.KEY_VIEWVERTICALRULERS );
+		mg.add( mci );
+		ba			= new BooleanPrefsMenuAction( getResourceString( "menuViewChanMeters" ), null );
+		mci			= new MenuCheckItem( "channelMeters", ba );
+		ba.setCheckItem( mci );
+		ba.setPreferences( prefs, PrefsUtil.KEY_VIEWCHANMETERS );
+		mg.add( mci );
+		ba			= new BooleanPrefsMenuAction( getResourceString( "menuViewMarkers" ), null );
+		mci			= new MenuCheckItem( "markers", ba );
+		ba.setCheckItem( mci );
+		ba.setPreferences( prefs, PrefsUtil.KEY_VIEWMARKERS );
+		mg.add( mci );
+		this.add( mg, i + 4 );
+
+		// --- window menu ---
+//		mWindowRadioGroup = new MenuRadioGroup();
+//		mgWindow = new MenuGroup( "window", getResourceString( "menuWindow" ));
+		mg	= (MenuGroup) this.get( "window" );
+		mg.add( new MenuItem( "ioSetup", new actionIOSetupClass( getResourceString( "frameIOSetup" ), null )), 0 );
+		mg.add( new MenuSeparator(), 1 );
+		mg.add( new MenuItem( "main", new actionShowWindowClass( getResourceString( "frameMain" ), null, Main.COMP_MAIN )), 2 );
+		mg.add( new MenuItem( "observer", new actionObserverClass( getResourceString( "paletteObserver" ), KeyStroke.getKeyStroke( KeyEvent.VK_NUMPAD3, MENU_SHORTCUT ))), 3 );
+		mg.add( new MenuItem( "ctrlRoom", new actionCtrlRoomClass( getResourceString( "paletteCtrlRoom" ), KeyStroke.getKeyStroke( KeyEvent.VK_NUMPAD2, MENU_SHORTCUT ))), 4 );
+//		mg.add( new MenuSeparator(), 5 );
+//		mgWindow.add( new MenuItem( "collect", ((WindowHandler) root.getWindowHandler()).getCollectAction() ));
+//		mgWindow.addSeparator();
+//		this.add( mgWindow );
+
+		// --- debug menu ---
+		mg   = new MenuGroup( "debug", "Debug" );
+		mg.add( new MenuItem( "dumpPrefs", PrefsUtil.getDebugDumpAction() ));
+		mg.add( new MenuItem( "dumpRegions", "Dump Region Structure" ));
+		mg.add( new MenuItem( "verifyRegions", "Verify Regions Consistency" ));
+		mg.add( new MenuItem( "dumpCache", PrefCacheManager.getInstance().getDebugDumpAction() ));
+		mg.add( new MenuItem( "dumpAudioStakes", AudioStake.getDebugDumpAction() ));
+		mg.add( new MenuItem( "dumpNodeTree", SuperColliderClient.getInstance().getDebugNodeTreeAction() ));
+		mg.add( new MenuItem( "dumpKillAll", SuperColliderClient.getInstance().getDebugKillAllAction() ));
+		i	= this.indexOf( "help" );
+		this.add( mg, i );
+
+//		// --- help menu ---
+//		mg	= new MenuGroup( "help", getResourceString( "menuHelp" ));
+//		mg.add( new MenuItem( "manual", new actionURLViewerClass( getResourceString( "menuHelpManual" ), null, "index", false )));
+//		mg.add( new MenuItem( "shortcuts", new actionURLViewerClass( getResourceString( "menuHelpShortcuts" ), null, "Shortcuts", false )));
+//		mg.addSeparator();
+//		mg.add( new MenuItem( "website", new actionURLViewerClass( getResourceString( "menuHelpWebsite" ), null, getResourceString( "appURL" ), true )));
+//		a = new actionAboutClass( getResourceString( "menuAbout" ), null );
+//		if( AboutJMenuItem.isAutomaticallyPresent() ) {
+//			root.getAboutJMenuItem().setAction( a );
+//		} else {
+//			mg.addSeparator();
+//			mg.add( new MenuItem( "about", a ));
+//		}
+//
+//		this.add( mg );
+	}
+	
+	public void showPreferences()
+	{
+		PrefsFrame prefsFrame = (PrefsFrame) root.getComponent( Main.COMP_PREFS );
+	
+		if( prefsFrame == null ) {
+			prefsFrame = new PrefsFrame();
+		}
+		prefsFrame.setVisible( true );
+		prefsFrame.toFront();
+	}
+	
+	protected Action getOpenAction()
+	{
+		return actionOpen;
+	}
+
+	public void openDocument( File f )
+	{
+		actionOpen.perform( f );
+	}
+
+	public void openDocument( File[] fs )
+	{
+		actionOpenMM.perform( fs );
+	}
+
+	public Session newDocument( AudioFileDescr afd )
+	{
+		return actionNewEmpty.perform( afd );
+	}
+
+	public void addSCPlugIn( Action a, String[] hierarchy )
+	{
+System.err.println( "addSCPlugIn : NOT YET WORKING" );
+//		final JMenuItem mi = new JMenuItem( a );
+////		sma.setProtoType( rbmi );
+////		rbmi.putClientProperty( CLIENT_BG, CLIENT_BG + "window" );
+//		addMenuItem( mSuperCollider, mi );	// XXX traverse hierarchy
+	}
+
+	public void removeSCPlugIn( Action a )
+	{
+System.err.println( "removeSCPlugIn : NOT YET WORKING" );
+//		removeMenuItem( mSuperCollider, a );
+	}
+	
+	private Session findDocumentForPath( File f )
+	{
+		final de.sciss.app.DocumentHandler	dh	= AbstractApplication.getApplication().getDocumentHandler();
+		Session								doc;
+		AudioFileDescr[]					afds;
+	
+		for( int i = 0; i < dh.getDocumentCount(); i++ ) {
+			doc		= (Session) dh.getDocument( i );
+			afds	= doc.getDescr();
+			for( int j = 0; j < afds.length; j++ ) {
+				if( (afds[ j ].file != null) && afds[ j ].file.equals( f )) {
+					return doc;
+				}
+			}
+		}
+		return null;
+	}
+
+// ---------------- Action objects for file (session) operations ---------------- 
+
+	// action for the New-Empty Document menu item
+	private class actionNewEmptyClass
+	extends MenuAction
+	{
+		private JPanel				p	= null;
+		private AudioFileFormatPane	affp;
+	
+		private actionNewEmptyClass( String text, KeyStroke shortcut )
+		{
+			super( text, shortcut );
+		}
+
+		public void actionPerformed( ActionEvent e )
+		{
+			final AudioFileDescr afd = query();
+			if( afd != null ) perform( afd );
+		}
+		
+		private AudioFileDescr query()
+		{
+			final AudioFileDescr		afd			= new AudioFileDescr();
+//			final JOptionPane			dlg;
+			final String[]				queryOptions = { getResourceString( "buttonCreate" ),
+														 getResourceString( "buttonCancel" )};
+			final int					result;
+//			final Component				c			= ((AbstractWindow) root.getComponent( Main.COMP_MAIN )).getWindow();
+			final Server.Status			status;
+			final double				sampleRate;
+			final Param					param;
+			final Preferences			audioPrefs;
+
+			if( p == null ) {
+				affp		= new AudioFileFormatPane( AudioFileFormatPane.NEW_FILE_FLAGS );
+				p			= new JPanel( new BorderLayout() );
+				p.add( affp, BorderLayout.NORTH );
+				AbstractWindowHandler.setDeepFont( affp );
+			}
+
+			status		= SuperColliderClient.getInstance().getStatus();
+			if( status != null ) {
+				sampleRate	= status.sampleRate;
+			} else {
+				audioPrefs	= root.getUserPrefs().node( PrefsUtil.NODE_AUDIO );
+				param		= Param.fromPrefs( audioPrefs, PrefsUtil.KEY_AUDIORATE, null );
+				if( param != null ) {
+					sampleRate = param.val;
+				} else {
+					sampleRate = 0.0;
+				}
+			}
+			
+//			System.out.println( "sampleRate " + sampleRate );
+			
+			if( sampleRate != 0.0 ) {
+				affp.toDescr( afd );
+				afd.rate = sampleRate;
+				affp.fromDescr( afd );
+			}
+				
+			result		= JOptionPane.showOptionDialog( null, p, getValue( NAME ).toString(),
+														JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
+														null, queryOptions, queryOptions[ 0 ]);
+
+			if( result == 0 ) {
+				affp.toDescr( afd );
+				return afd;
+			} else {
+				return null;
+			}
+		}
+		
+		private Session perform( AudioFileDescr afd )
+		{
+			final Session doc;
+
+			try {
+				doc = Session.newEmpty( afd, true );
+				AbstractApplication.getApplication().getDocumentHandler().addDocument( this, doc );
+				doc.createFrame();
+				return doc;
+			}
+			catch( IOException e1 ) {	// should never happen
+				GUIUtil.displayError( null, e1, getValue( Action.NAME ).toString() );
+				return null;
+			}
+		}
+	}
+	
+	// action for the Open-Session menu item
+	private class actionOpenClass
+	extends MenuAction
+	{
+//		private String text;
+	
+		private actionOpenClass( String text, KeyStroke shortcut )
+		{
+			super( text, shortcut );
+			
+//			this.text = text;
+		}
+		
+		/*
+		 *  Open a Session. If the current Session
+		 *  contains unsaved changes, the user is prompted
+		 *  to confirm. A file chooser will pop up for
+		 *  the user to select the session to open.
+		 */
+		public void actionPerformed( ActionEvent e )
+		{
+			File f = queryFile();
+			if( f != null ) perform( f );
+		}
+
+		private File queryFile()
+		{
+			final FileDialog		fDlg;
+			final String			strFile, strDir;
+			final AbstractWindow	w		= (AbstractWindow) root.getComponent( Main.COMP_MAIN );
+			final Frame				frame	= (w.getWindow() instanceof Frame) ? (Frame) w.getWindow() : null;
+
+//System.err.println( "frame : "+frame );
+
+			fDlg	= new FileDialog( frame, getResourceString( "fileDlgOpen" ), FileDialog.LOAD );
+//			fDlg.setFilenameFilter( doc );
+			// fDlg.setDirectory();
+			// fDlg.setFile();
+			fDlg.setVisible( true );
+			strDir	= fDlg.getDirectory();
+			strFile	= fDlg.getFile();
+			
+			if( strFile == null ) return null;   // means the dialog was cancelled
+
+			return( new File( strDir, strFile ));
+		}
+		
+		/**
+		 *  Loads a new document file.
+		 *  a <code>ProcessingThread</code>
+		 *  started which loads the new session.
+		 *
+		 *  @param  path	the file of the document to be loaded
+		 *  
+		 *  @synchronization	this method must be called in event thread
+		 */
+		private void perform( File path )
+		{
+			Session	doc;
+			
+			// check if the document is already open
+			doc = findDocumentForPath( path );
+			if( doc != null ) {
+				doc.getFrame().setVisible( true );
+				doc.getFrame().toFront();
+				return;
+			}
+
+			try {
+				doc		= Session.newFrom( path, true );
+				addRecent( doc.getDisplayDescr().file );
+				AbstractApplication.getApplication().getDocumentHandler().addDocument( this, doc );
+				doc.createFrame();	// must be performed after the doc was added
+			}
+			catch( IOException e1 ) {
+				GUIUtil.displayError( null, e1, getValue( Action.NAME ).toString() );
+			}
+		}
+	}
+	
+	// action for the Open-Multiple-Mono menu item
+	private class actionOpenMMClass
+	extends MenuAction
+	{
+		private actionOpenMMClass( String text, KeyStroke shortcut )
+		{
+			super( text, shortcut );
+		}
+		
+		public void actionPerformed( ActionEvent e )
+		{
+			File[] fs = queryFiles();
+			if( fs != null ) {
+				if( fs.length == 0 ) {
+					JOptionPane.showMessageDialog( null, getResourceString( "errFileSelectionEmpty" ),
+												   getValue( NAME ).toString(), JOptionPane.ERROR_MESSAGE );
+					return;
+				}
+				perform( fs );
+			}
+		}
+
+		private File[] queryFiles()
+		{
+			final JFileChooser	fDlg	= new JFileChooser();
+			final int			result;
+			final Component		c		= ((AbstractWindow) root.getComponent( Main.COMP_MAIN )).getWindow();
+
+			fDlg.setMultiSelectionEnabled( true );
+			fDlg.setDialogTitle( getValue( Action.NAME ).toString() );
+			result	= fDlg.showOpenDialog( c );
+			
+			if( result == JFileChooser.APPROVE_OPTION ) {
+				return fDlg.getSelectedFiles();
+			} else {
+				return null;
+			}
+		}
+		
+		/**
+		 *  Loads a new document file.
+		 *  a <code>ProcessingThread</code>
+		 *  started which loads the new session.
+		 *
+		 *  @param  path	the file of the document to be loaded
+		 *  
+		 *  @synchronization	this method must be called in event thread
+		 */
+		private void perform( File[] paths )
+		{
+			if( paths.length == 0 ) return;
+		
+			Session		doc;
+//			File		f;
+			
+			// check if the document is already open
+			for( int j = 0; j < paths.length; j++ ) {
+				doc = findDocumentForPath( paths[ j ]);
+				if( doc != null ) {
+					doc.getFrame().setVisible( true );
+					doc.getFrame().toFront();
+					return;
+				}
+			}
+		
+			try {
+				doc	= Session.newFrom( paths, true );
+				addRecent( doc.getDisplayDescr().file );
+				AbstractApplication.getApplication().getDocumentHandler().addDocument( this, doc );
+				doc.createFrame();	// must be performed after the doc was added
+			}
+			catch( IOException e1 ) {
+				GUIUtil.displayError( null, e1, getValue( Action.NAME ).toString() );
+			}
+		}
+	}
+
+//	// action for the Save-Session menu item
+//	private class actionCloseAllClass
+//	extends MenuAction
+//	implements ProcessingThread.Listener
+//	{
+//		private actionCloseAllClass( String text, KeyStroke shortcut )
+//		{
+//			super( text, shortcut );
+//			setEnabled( false );	// initially no docs open
+//		}
+//
+//		public void actionPerformed( ActionEvent e )
+//		{
+//			perform();
+//		}
+//		
+//		private void perform()
+//		{
+//			final ProcessingThread pt = closeAll( false, new Flag( false ));
+//			if( pt != null ) {
+//				pt.addListener( this );	// ok, let's save the shit and re-try to close all after that
+//				pt.start();
+//			}
+//		}
+//		
+//		public void processStarted( ProcessingThread.Event e ) {}
+//
+//		// if the saving was successfull, we will call closeAll again
+//		public void processStopped( ProcessingThread.Event e )
+//		{
+//			if( e.isDone() ) {
+//				perform();
+//			}
+//		}
+//	}
+
+// ---------------- Action objects for window operations ---------------- 
+
+	// action for the IOSetup menu item
+	private class actionIOSetupClass
+	extends MenuAction
+	{
+		private actionIOSetupClass( String text, KeyStroke shortcut )
+		{
+			super( text, shortcut );
+		}
+
+		/**
+		 *  Brings up the IOSetup
+		 */
+		public void actionPerformed( ActionEvent e )
+		{
+			IOSetupFrame f = (IOSetupFrame) root.getComponent( Main.COMP_IOSETUP );
+		
+			if( f == null ) {
+				f = new IOSetupFrame();		// automatically adds component
+			}
+			f.setVisible( true );
+			f.toFront();
+		}
+	}
+
+	// action for the Control Room menu item
+	private class actionCtrlRoomClass
+	extends MenuAction
+	{
+		private actionCtrlRoomClass( String text, KeyStroke shortcut )
+		{
+			super( text, shortcut );
+		}
+
+		/**
+		 *  Brings up the IOSetup
+		 */
+		public void actionPerformed( ActionEvent e )
+		{
+			ControlRoomFrame f = (ControlRoomFrame) root.getComponent( Main.COMP_CTRLROOM );
+		
+			if( f == null ) {
+				f = new ControlRoomFrame();	// automatically adds component
+			}
+			f.setVisible( true );
+			f.toFront();
+		}
+	}
+
+	// action for the Observer menu item
+	private class actionObserverClass
+	extends MenuAction
+	{
+		private actionObserverClass( String text, KeyStroke shortcut )
+		{
+			super( text, shortcut );
+		}
+
+		/**
+		 *  Brings up the IOSetup
+		 */
+		public void actionPerformed( ActionEvent e )
+		{
+			ObserverPalette f = (ObserverPalette) root.getComponent( Main.COMP_OBSERVER );
+		
+			if( f == null ) {
+				f = new ObserverPalette();	// automatically adds component
+			}
+			f.setVisible( true );
+			f.toFront();
+		}
+	}
+}

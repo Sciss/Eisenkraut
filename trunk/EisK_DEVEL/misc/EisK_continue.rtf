@@ -1,0 +1,151 @@
+{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf420
+{\fonttbl\f0\fswiss\fcharset77 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww16780\viewh17120\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
+
+\f0\fs24 \cf0 in AUdioTrail\
+\
+Methode analog der paste Methode, nur da\'a7 audio nicht kopiert wird (au\'a7er blend span)\
+\
+in RenderPlugin : Query methode  resizesSpan --> boolean  wg. channel sync check\
+\
+\
+\
+\'9fberpr\'9ffen : SC Player transportPlay wird jeweils doppelt aufgerufen ?\
+\
+\
+Control room : Master Levels optional sowie Post/ Pre schaltbar\
+\
+\
+Waveform update nach processing & co.\
+\
+\
+Blending for Delete + Filter\
+\
+\
+Blending selections\
+\
+\
+Pencil tool\
+\
+\
+\
+Nadeln-Icon statt "smps" (UnitLabel)\
+\
+\
+Catch Mode :  beibehalten bei Loop r\'9fcksprung\
+\
+\
+\
+Insert Silence : should not ignore blending\
+\
+\
+\
+\
+Palette Windows : should copy menu bar from active document\
+\
+\
+\
+Meter Manager : auto pause wenn alle Transports stillstehen\
+\
+\
+\
+\
+New -> From Selection  : Markers track is nicht richtig angew\'8ahlt\
+\
+\
+\
+\
+\
+\
+\
+Exception in thread "AWT-EventQueue-0" java.lang.NullPointerException\
+	at de.sciss.jcollider.Buffer.alloc(Buffer.java:304)\
+	at de.sciss.jcollider.Buffer.alloc(Buffer.java:281)\
+	at de.sciss.jcollider.Buffer.alloc(Buffer.java:254)\
+	at de.sciss.eisenkraut.gui.RecorderDialog$Context.<init>(RecorderDialog.java:620)\
+	at de.sciss.eisenkraut.gui.RecorderDialog$Context.<init>(RecorderDialog.java:586)\
+	at de.sciss.eisenkraut.gui.RecorderDialog.rebuildSynths(RecorderDialog.java:349)\
+	at de.sciss.eisenkraut.gui.RecorderDialog.createRecordConfig(RecorderDialog.java:324)\
+	at de.sciss.eisenkraut.gui.RecorderDialog.access$1100(RecorderDialog.java:59)\
+	at de.sciss.eisenkraut.gui.RecorderDialog$3.laterInvocation(RecorderDialog.java:269)\
+	at de.sciss.app.LaterInvocationManager.processEvent(LaterInvocationManager.java:110)\
+	at de.sciss.app.EventManager.run(EventManager.java:159)\
+	at java.awt.event.InvocationEvent.dispatch(InvocationEvent.java:209)\
+	at java.awt.EventQueue.dispatchEvent(EventQueue.java:461)\
+	at java.awt.EventDispatchThread.pumpOneEventForHierarchy(EventDispatchThread.java:269)\
+	at java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:190)\
+	at java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:180)\
+	at java.awt.Dialog$1.run(Dialog.java:515)\
+	at java.awt.Dialog.show(Dialog.java:536)\
+	at java.awt.Component.show(Component.java:1300)\
+	at java.awt.Component.setVisible(Component.java:1253)\
+	at de.sciss.eisenkraut.gui.RecorderDialog.<init>(RecorderDialog.java:283)\
+	at de.sciss.eisenkraut.session.DocumentFrame$actionInsertRecClass.actionPerformed(DocumentFrame.java:1987)\
+	at javax.swing.AbstractButton.fireActionPerformed(AbstractButton.java:1882)\
+	at javax.swing.AbstractButton$Handler.actionPerformed(AbstractButton.java:2202)\
+	at javax.swing.DefaultButtonModel.fireActionPerformed(DefaultButtonModel.java:420)\
+	at javax.swing.DefaultButtonModel.setPressed(DefaultButtonModel.java:258)\
+	at javax.swing.AbstractButton.doClick(AbstractButton.java:334)\
+	at apple.laf.ScreenMenuItem.actionPerformed(ScreenMenuItem.java:104)\
+	at java.awt.MenuItem.processActionEvent(MenuItem.java:597)\
+	at java.awt.MenuItem.processEvent(MenuItem.java:556)\
+	at java.awt.MenuComponent.dispatchEventImpl(MenuComponent.java:298)\
+	at java.awt.MenuComponent.dispatchEvent(MenuComponent.java:286)\
+	at java.awt.EventQueue.dispatchEvent(EventQueue.java:466)\
+	at java.awt.EventDispatchThread.pumpOneEventForHierarchy(EventDispatchThread.java:269)\
+	at java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:190)\
+	at java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:184)\
+	at java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:176)\
+	at java.awt.EventDispatchThread.run(EventDispatchThread.java:110)\
+\
+\
+\
+View -> Markers  : window revalidation not fully working\
+\
+View : document local ( use setReadPrefs( false ) on window specific action copies )\
+	   same for catch + blend + loop\
+\
+\
+\
+Loop playback not working\
+\
+Display refresh not working when timeline not changed\
+\
+DocumentFrame default size (esp. ignore collapsed!)\
+\
+\
+Autom. Scrolling when making timeline selection beyond window bounds\
+\
+observer time tab : entering HH:MM:SS.mmm -> switch to other doc + back -> 1 millisecond is missing, must be some roundoff problem\
+\
+\
+Two docs playing at once --> stop doc B --> doc A not playing any more as well (but strange high freq sine is heard) ...\
+probably a bus or buffer error?? (meters do work, graph shows node are active)\
+[FIXED? after deferring /tr reception to event thread?]\
+\
+timeline insertion follows playback not working now.\
+\
+go-to-time --> current gadget doesn't pick up current transport position\
+\
+keyboard short cut for increasing/decreasing master volume\
+\
+solo + mute buttons ohne pressed zustand (sofort an/aus)\
+\
+re-check against possibilities of concurrent modification after dismissal of shared lock waiting\
+\
+fix cursor tab in observer\
+\
+fix process --> again\
+\
+fix resizing bug (selection rectangles not updated ; marker sticks painted over each other)\
+\
+\
+\
+\
+\
+\
+CAREFULLY CHECK DEFAULT PREFS AFTER PREFS ARE DELETED\
+(i.e. SuperCollider OSC port might not be 0 etc.)\
+}

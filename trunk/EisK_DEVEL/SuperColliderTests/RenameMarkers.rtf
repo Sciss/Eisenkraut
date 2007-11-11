@@ -1,0 +1,193 @@
+{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf390
+{\fonttbl\f0\fnil\fcharset77 Monaco;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue191;\red191\green0\blue0;\red0\green115\blue0;
+\red96\green96\blue96;}
+{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{hyphen\}}{\leveltext\leveltemplateid0\'02\'05.;}{\levelnumbers\'01;}}{\listname ;}\listid1}
+{\list\listtemplateid2\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{hyphen\}}{\leveltext\leveltemplateid0\'02\'05.;}{\levelnumbers\'01;}}{\listname ;}\listid2}}
+{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}{\listoverride\listid2\listoverridecount0\ls2}}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\f0\fs18 \cf0 e = \cf2 Eisenkraut\cf0 .default;\
+\
+\cf3 // rename markers of the active document\cf0 \
+(\
+fork \{\
+	\cf2 var\cf0  msg, num, startIdx, stopIdx, newMarks, delMarks, oldName, newName;\
+	\
+	oldName	= \cf4 \\Mark\cf0 ;\
+	newName	= \cf4 \\attk\cf0 ;\
+	\
+	newMarks	= \cf2 List\cf0 .new;\
+	delMarks	= \cf2 List\cf0 .new;\
+	msg = e.query( \cf4 '/doc/active/markers'\cf0 , \cf4 \\count\cf0  );\
+	if( msg.notNil, \{\
+		num = msg[ 0 ];\
+		(\cf5 "Number of markers: "\cf0 ++num).postln;\
+		\
+		\cf3 // read markers\cf0 \
+		\
+		startIdx = 0;\
+		\cf3 // maximum 128 markers per query, based on an estimated of maximum marker names ...\cf0 \
+		\cf3 // 128 * (32 + 4 + 5) + headerSize = ca. 5000 bytes\cf0 \
+		stopIdx = min( num, startIdx + 128 );\
+		while(\{ startIdx < num \}, \{\
+			msg = e.get( \cf4 '/doc/active/markers'\cf0 , [ \cf4 \\range\cf0 , startIdx, stopIdx ]);\
+			if( msg.notNil, \{\
+				msg.pairsDo(\{ \cf2 arg\cf0  pos, name, i;\
+					if( name.asSymbol === oldName, \{\
+						newMarks.add( pos );\
+						newMarks.add( newName );\
+						delMarks.add( (i >> 1) + startIdx );\
+\cf3 //					\}, \{\cf0 \
+\cf3 //						("Not our marker : '"++name++"'").inform;\cf0 \
+					\});\
+				\});\
+			\}, \{\
+				\cf5 "timeout"\cf0 .warn;\
+			\});\
+			startIdx	= stopIdx;\
+			stopIdx	= min( num, startIdx + 128 );\
+		\});\
+		\
+		\cf3 // clear markers\cf0 \
+\
+		startIdx	= 0;\
+		num		= delMarks.size;\
+		stopIdx	= min( num, startIdx + 1024 );\
+		while(\{ startIdx < num \}, \{\
+			e.listSendMsg([ \cf4 '/doc/active/markers'\cf0 , \cf4 \\remove\cf0 , \cf4 \\at\cf0 , delMarks.copyRange( startIdx, stopIdx - 1 )].flatten );\
+			startIdx	= stopIdx;\
+			stopIdx	= min( num, startIdx + 1024 );\
+		\});\
+\
+		\cf3 // write markers\cf0 \
+\
+		startIdx	= 0;\
+		num		= newMarks.size;\
+		stopIdx	= min( num, startIdx + 256 );\
+		while(\{ startIdx < num \}, \{\
+			e.listSendMsg([ \cf4 '/doc/active/markers'\cf0 , \cf4 \\add\cf0 , newMarks.copyRange( startIdx, stopIdx - 1 )].flatten );\
+			startIdx	= stopIdx;\
+			stopIdx	= min( num, startIdx + 256 );\
+		\});\
+		\
+	\}, \{\
+		\cf5 "timeout"\cf0 .warn;\
+	\});\
+\}\
+\pard\tx220\tx720\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li720\fi-720\ql\qnatural\pardirnatural
+\ls1\ilvl0\cf0 )\
+\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf3 // kill duplicate markers\cf0 \
+(\
+fork \{\
+	\cf2 var\cf0  msg, num, startIdx, stopIdx, newMarks, delMarks, oldName, newName, lastName , lastPos;\
+	\
+	oldName	= \cf4 \\Mark\cf0 ;\
+	newName	= \cf4 \\attk\cf0 ;\
+	\
+	newMarks	= \cf2 List\cf0 .new;\
+	delMarks	= \cf2 List\cf0 .new;\
+	msg = e.query( \cf4 '/doc/active/markers'\cf0 , \cf4 \\count\cf0  );\
+	if( msg.notNil, \{\
+		num = msg[ 0 ];\
+		(\cf5 "Number of markers: "\cf0 ++num).postln;\
+		\
+		\cf3 // read markers\cf0 \
+		\
+		startIdx = 0;\
+		\cf3 // maximum 128 markers per query, based on an estimated of maximum marker names ...\cf0 \
+		\cf3 // 128 * (32 + 4 + 5) + headerSize = ca. 5000 bytes\cf0 \
+		stopIdx = min( num, startIdx + 128 );\
+		lastName = \cf2 nil\cf0 ;\
+		lastPos  = -1;\
+		while(\{ startIdx < num \}, \{\
+			msg = e.get( \cf4 '/doc/active/markers'\cf0 , [ \cf4 \\range\cf0 , startIdx, stopIdx ]);\
+			if( msg.notNil, \{\
+				msg.pairsDo(\{ \cf2 arg\cf0  pos, name, i;\
+					name = name.asSymbol;\
+					if( pos === lastPos, \{\
+						if( name === lastName, \{\
+							(\cf5 "Deleting duplicate pos "\cf0 ++pos).inform;\
+							delMarks.add( (i >> 1) + startIdx );\
+						\}, \{\
+							(\cf5 "Warning: duplicate pos "\cf0 ++pos++\cf5 " with different names ('"\cf0 ++lastName++\cf5 "', '"\cf0 ++name++\cf5 "')"\cf0 ).inform;\
+						\});\
+					\});\
+					lastName = name;\
+					lastPos  = pos;\
+				\});\
+			\}, \{\
+				\cf5 "timeout"\cf0 .warn;\
+			\});\
+			startIdx	= stopIdx;\
+			stopIdx	= min( num, startIdx + 128 );\
+		\});\
+		\
+		\cf3 // clear markers\cf0 \
+\
+		startIdx	= 0;\
+		num		= delMarks.size;\
+		stopIdx	= min( num, startIdx + 1024 );\
+		while(\{ startIdx < num \}, \{\
+			e.listSendMsg([ \cf4 '/doc/active/markers'\cf0 , \cf4 \\remove\cf0 , \cf4 \\at\cf0 , delMarks.copyRange( startIdx, stopIdx - 1 )].flatten );\
+			startIdx	= stopIdx;\
+			stopIdx	= min( num, startIdx + 1024 );\
+		\});		\
+	\}, \{\
+		\cf5 "timeout"\cf0 .warn;\
+	\});\
+\}\
+\pard\tx220\tx720\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li720\fi-720\ql\qnatural\pardirnatural
+\ls2\ilvl0\cf0 )\
+\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf3 // create markers for selection (w/ gui)\cf0 \
+(\
+	\cf2 var\cf0  w, ggLeftName, ggRightName, flow;\
+	\
+	w = \cf2 SCWindow\cf0 ( \cf5 "Markers for Selection"\cf0 , \cf2 Rect\cf0 ( 400, 700, 300, 100 ));\
+	flow = \cf2 FlowLayout\cf0 ( w.view.bounds );\
+	w.view.decorator = flow;\
+	\
+	\cf2 SCStaticText\cf0 ( w, \cf2 Rect\cf0 ( 0, 0, 80, 24 ))\
+		.string_( \cf5 "Left Name"\cf0  );\
+	ggLeftName = \cf2 SCTextField\cf0 ( w, \cf2 Rect\cf0 ( 0, 0, 120, 24 ))\
+		.string_( \cf5 "Left"\cf0  );\
+	flow.nextLine;\
+	\cf2 SCStaticText\cf0 ( w, \cf2 Rect\cf0 ( 0, 0, 80, 24 ))\
+		.string_( \cf5 "Right Name"\cf0  );\
+	ggRightName = \cf2 SCTextField\cf0 ( w, \cf2 Rect\cf0 ( 0, 0, 120, 24 ))\
+		.string_( \cf5 "Rght"\cf0  );\
+	flow.nextLine;\
+	\cf2 SCStaticText\cf0 ( w, \cf2 Rect\cf0 ( 0, 0, 80, 24 ));\
+	\cf2 SCButton\cf0 ( w, \cf2 Rect\cf0 ( 0, 0, 120, 24 ))\
+		.states_([[ \cf5 "Place"\cf0  ]])\
+		.action_(\{ \cf2 arg\cf0  b;\
+			\cf2 var\cf0  leftN, rightN, msg, start, stop;\
+			\
+			leftN	= ggLeftName.string;\
+			rightN	= ggRightName.string;\
+		\
+			fork \{\
+				msg = e.query( \cf4 '/doc/active/timeline'\cf0 , [ \cf4 \\selectionstart\cf0 , \cf4 \\selectionstop\cf0  ]);\
+				if( msg.notNil, \{\
+					start = msg[ 0 ];\
+					stop  = msg[ 1 ];\
+					(\cf5 "Selection: "\cf0  ++ start ++ \cf5 " ... "\cf0  ++ stop).inform;\
+					if( stop > start, \{\
+						e.sendMsg( \cf4 '/doc/active/markers'\cf0 , \cf4 \\add\cf0 , start, leftN, stop, rightN );\
+					\});\
+				\}, \{\
+					\cf5 "timeout"\cf0 .warn;\
+				\});\
+			\
+			\};\
+		\});\
+	\
+	w.front;\
+)\
+}

@@ -1,0 +1,17 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Blending Mode</title>
+<LINK REL="stylesheet" TYPE="text/css" HREF="stylesheet.css">
+</head>
+<body>
+<h1>Blending Mode</h1>
+<p>
+When the blending mode is activated (keyboard <code>Caps-Lock</code>), most editing operations are carried out in a smooth way, by applying a user definable crossfade at the margins of the processed selection. <STRONG>Example:</STRONG> in a ten second sound file, you select the portion from 0:04 till 0:06 and hit <code>Delete</code> to remove it. You may end up with a click sound at the cutting point because of the sudden jump in the waveform that may occur. An effective means to get rid of these clicks is to make a softer cut. To do this, activate blending. Assume, you have selected a blending duration of 20 milliseconds. Now the before mentioned cutting operation will be carried out, such that a sound bit 0:05.990 till 0:06.000 (re original timeline) will be faded in at 0:04 (re target timeline) and a sound bit 0:04.000 till 0:04.010 (re original timeline) will be faded out at 0:04 (re target timeline), while still exactly the portion from 0:04 till 0:06 is cutted out. This means, you get a 20 millisecond crossfade at the cutting position.
+</p><p>
+Blending is applied for cut, delete, paste, insert-silence and all operations from the process menu. Blending is not applied in trim-to-selection.
+</p><p>
+<code>Alt+Click</code> on the blending icon will open the blending settings, consisting of the crossfade duration and its shape. the shape can be controlled by pressing the mouse and dragging the two disc-shaped control points. keeping the points vertically centered results in a equal-amplitude crossfade, moving them to the top half will create equal-power crossfades which are often less audible when the crossfaded signal is not phase-correlated. Note that the blending span gets automatically truncated, if the possible crossfade span is too small.  Also note that blending may be undesired for many processes, notably when using fade-in and fade-out. The signal processing is not aware of this fact, so you may need to turn off blending temporarily in these cases.
+</p>
+</body>
+</html>

@@ -1,0 +1,32 @@
+== FIXED? ==
+
+Exception in thread "AWT-EventQueue-0" java.util.ConcurrentModificationException
+	at java.util.HashMap$HashIterator.nextEntry(HashMap.java:787)
+	at java.util.HashMap$KeyIterator.next(HashMap.java:823)
+	at de.sciss.eisenkraut.net.SuperColliderClient.dispose(SuperColliderClient.java:340)
+	at de.sciss.eisenkraut.net.SuperColliderClient.serverAction(SuperColliderClient.java:614)
+	at de.sciss.jcollider.Server.processEvent(Server.java:1584)
+	at de.sciss.jcollider.EventManager.run(EventManager.java:156)
+	at java.awt.event.InvocationEvent.dispatch(InvocationEvent.java:209)
+	at java.awt.EventQueue.dispatchEvent(EventQueue.java:461)
+	at java.awt.EventDispatchThread.pumpOneEventForHierarchy(EventDispatchThread.java:269)
+	at java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:190)
+	at java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:184)
+	at java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:176)
+	at java.awt.EventDispatchThread.run(EventDispatchThread.java:110)
+
+
+
+while processing (reverse) ????
+
+irgendwas mit den meters (zwei files waren offen), denn die channel-meter sind danach "tot" (master-meter _niet_)
+
+
+im graph sind noch vier meter synths die laufen (nicht ctrl room!), d.h. beide kanaele beider files , auch nachdem die files geschlossen wurden!
+
+(oder doch 2 zusätzliche im ctrl room?)
+
+
+
+offensichtlich wurde ein server stopped event gesendet, weil beim processing durch ein obsoleten lock-versuch der event thread blockiert wurde. trotzdem sollte der dispose vorgang korrekt ablaufen
+

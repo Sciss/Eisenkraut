@@ -1,0 +1,1 @@
+Recorder Dialog : re-opening it after it had clippings : headroom display colour still read

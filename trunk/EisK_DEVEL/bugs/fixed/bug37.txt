@@ -1,0 +1,3 @@
+(FIXED)
+
+in catch mode, clicking one page back doesn't work (jumps back immediately), while one page forward works .... should be consistent

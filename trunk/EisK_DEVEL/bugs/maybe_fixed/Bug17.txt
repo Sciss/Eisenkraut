@@ -1,0 +1,21 @@
+== FIXED? ==
+java.lang.ArrayIndexOutOfBoundsException: -1
+	at java.util.ArrayList.get(ArrayList.java:323)
+	at de.sciss.eisenkraut.io.AudioTrail.readFrames(AudioTrail.java:552)
+	at de.sciss.eisenkraut.io.AudioTrail.readFrames(AudioTrail.java:564)
+	at de.sciss.eisenkraut.io.AudioTrail.readFrames(AudioTrail.java:570)
+	at de.sciss.eisenkraut.io.AudioTrail.copyRangeFrom(AudioTrail.java:511)
+	at de.sciss.eisenkraut.session.Session$actionPasteClass.processRun(Session.java:1008)
+	at de.sciss.eisenkraut.util.ProcessingThread.run(ProcessingThread.java:289)
+	
+
+wenn nicht genuegend fade zeit vor oder nach paste in position
+
+
+
+
+
+
+
+== FIXED ==
+Blend Curve Editing : gadgets of other docs are not updated

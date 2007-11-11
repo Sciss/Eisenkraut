@@ -1,0 +1,24 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN"
+        "http://www.w3.org/MarkUp/Wilbur/HTML32.dtd">
+<html>
+<head>
+<title>Process : Mix</title>
+<LINK REL="stylesheet" TYPE="text/css" HREF="stylesheet.css">
+</head>
+<body>
+<h1>Needlehole Cherry Blossom</h1>
+<p>
+The idea is to provide a generic module for window based time domain processes. The general process is that some mathematic algorithm is applied to a running window of the specified length, it's result replacing the center sample of the current window. Most of the processes combine frequency filtering characteristics with frequency distortion. Generally, the longer the window, the more the filter gets a lowpass character.
+</P>
+<UL>
+<LI><strong>Median</strong> : the median of a vector is similar to the mean value, however being robust against some extreme samples. think of the median filter in photoshop; it can be used to eleminate short clicks of a few samples length. on the other side, using a short window of say eight samples and checking the &quot;subtract dry signal&quot; box, will create the inverse characteristic of an insectoid highpass filter</LI>
+<LI><strong>Standard Deviation</strong> : a means to describe the broadness of the variation inside a vector (the running window). a nice distortion process. the result is fed through a DC block filter.</LI>
+<LI><strong>Minimum</strong> : tracks the minimum value of the absolute sample values inside the window. somewhat similar to center clipping.</LI>
+<LI><strong>Center Clipping</strong> : keeps track of a histogram of samples in the window and uses the &quot;Clip Thresh&quot; setting to apply a dynamic noise gate to the window. that is, if the histogram says that 50% of the samples inside the running window are below the value of for example 0.12, then using a clip thresh of 50% will shift all samples towards the zero line by 0.12, setting all the samples to zero whose absolute value is below 0.12. also refer to the sonicworx plug-in manual for another description of center clipping. note that when using floating point sound files, samples shall not exceed +12 dBFS for the process to work correct.</LI>
+<LI><strong>Minimum II</strong> : similar to &quot;Minimum&quot; but without taking the abs() of the samples. the result is fed through a DC block filter.</LI>
+<LI><strong>Autocorrelation</strong> : (internal tuning still in progress). Calculates the sum of the autocorrelation vector of the running window. that is, takes the spectrum of the current window, squares it, zeroes the phases, goes back to time domain and adds up all the resulting samples, then applies a DC block filter and tries to compensate for gain changes (this is not yet perfect, so you'll mostly want to use normalization). beware that since we take two FFTs per sample of the next power of two of twice the chosen window size, this becomes very slow for window sizes greater than about sixteen samples! A nice application is running the filter with c. 32 samples over two sounds, then taking the hilbert transform of these two filtered sounds (in FScape), then applying a complex valued multiplication to the hilbert transforms (using BinaryOp in FScape), keeping only the real part of the result and flattening its natural amplitude.</LI>
+</UL>
+<P><strong>Clip Thresh</strong> is only used with the &quot;Center Clipping&quot; filter. <strong>Subtract Dry Signal</strong> is only useful with those filters that a) exhibit some phase correlation to the dry signal, and b) which approximately maintain the original gain: &quot;Median&quot;, &quot;Minimum&quot;, &quot;Center Clipping&quot;, &quot;Minimum II&quot;. Note that there is a bug in the delay compensation for &quot;Center Clipping&quot; as of v0.62 which renders &quot;Subtract Dry Signal&quot; useless here.
+</p>
+</BODY>
+</HTML>

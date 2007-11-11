@@ -1,0 +1,1 @@
+use LAF window deco + floating palettes --> AquaWindowTitle should not be added!

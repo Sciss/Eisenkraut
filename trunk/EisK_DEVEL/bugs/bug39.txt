@@ -1,0 +1,6 @@
+crossfade panel produces exceptions on WinXP (java2D problem auf windows)
+(kein fehler mit java 1.6, aber auch kein crossfade sichtbar)
+
+multistatebutton with custom composite produces exceptions on WinXP (java2D problem auf windows)
+
+Java 1.5.0_10

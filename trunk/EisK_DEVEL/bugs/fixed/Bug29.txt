@@ -1,0 +1,60 @@
+(FIXED)
+WARNING: trying to read beyond the trail's stop
+
+trying to "cut" a small piece near the end of the file in overwrite mode
+
+(beg. 0:05:39.717 ; end 0:05:43.931 ; total file length : 0:05:46.339, stereo)
+
+(blending active)
+
+----> ~/Desktop/debug2.aif :
+
+Span 0 ... 14534193; disposed ? false; created : 
+  de.sciss.eisenkraut.io.InterleavedAudioStake.replaceStop(InterleavedAudioStake.java:97)
+  de.sciss.timebased.BasicTrail.editClear(BasicTrail.java:638)
+  de.sciss.timebased.BasicTrail.editClear(BasicTrail.java:597)
+  de.sciss.eisenkraut.session.Session$actionDeleteClass.processRun(Session.java:1431)
+  de.sciss.common.ProcessingThread.run(ProcessingThread.java:365)
+  java.lang.Thread.run(Thread.java:613)
+ ; f = debug2.aif (file span 0 ... 14534193 )
+
+vvv first fade
+Span 14534193 ... 14535957; disposed ? false; created : 
+  de.sciss.eisenkraut.io.InterleavedAudioStake.<init>(InterleavedAudioStake.java:55)
+  de.sciss.eisenkraut.io.AudioTrail.alloc(AudioTrail.java:333)
+  de.sciss.eisenkraut.io.AudioTrail.clearRangeOvr(AudioTrail.java:1434)
+  de.sciss.eisenkraut.io.AudioTrail.clearRange(AudioTrail.java:1279)
+  de.sciss.eisenkraut.session.Session$actionDeleteClass.processRun(Session.java:1434)
+  de.sciss.common.ProcessingThread.run(ProcessingThread.java:365)
+  java.lang.Thread.run(Thread.java:613)
+ ; f = sciss56168.tmp (file span 0 ... 1764 )
+Span 14535957 ... 15165593; disposed ? false; created : 
+  de.sciss.eisenkraut.io.AudioTrail.allocSilent(AudioTrail.java:306)
+  de.sciss.eisenkraut.io.AudioTrail.clearRangeOvr(AudioTrail.java:1439)
+  de.sciss.eisenkraut.io.AudioTrail.clearRange(AudioTrail.java:1279)
+  de.sciss.eisenkraut.session.Session$actionDeleteClass.processRun(Session.java:1434)
+  de.sciss.common.ProcessingThread.run(ProcessingThread.java:365)
+  java.lang.Thread.run(Thread.java:613)
+  (silent)
+
+vvv obviously the second fade is missing, instead the silent region is duplicated!
+Span 14535957 ... 15165593; disposed ? false; created : 
+  de.sciss.eisenkraut.io.AudioTrail.allocSilent(AudioTrail.java:306)
+  de.sciss.eisenkraut.io.AudioTrail.clearRangeOvr(AudioTrail.java:1439)
+  de.sciss.eisenkraut.io.AudioTrail.clearRange(AudioTrail.java:1279)
+  de.sciss.eisenkraut.session.Session$actionDeleteClass.processRun(Session.java:1434)
+  de.sciss.common.ProcessingThread.run(ProcessingThread.java:365)
+  java.lang.Thread.run(Thread.java:613)
+  (silent)
+Span 15167357 ... 15273550; disposed ? false; created : 
+  de.sciss.eisenkraut.io.InterleavedAudioStake.replaceStart(InterleavedAudioStake.java:86)
+  de.sciss.timebased.BasicTrail.editClear(BasicTrail.java:640)
+  de.sciss.timebased.BasicTrail.editClear(BasicTrail.java:597)
+  de.sciss.eisenkraut.session.Session$actionDeleteClass.processRun(Session.java:1431)
+  de.sciss.common.ProcessingThread.run(ProcessingThread.java:365)
+  java.lang.Thread.run(Thread.java:613)
+ ; f = debug2.aif (file span 15167357 ... 15273550 )
+
+
+cutting region was : 14534193 ... 15167357
+blend size was : 40 ms (= 1764 smps)

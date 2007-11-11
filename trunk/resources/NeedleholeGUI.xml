@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<java version="1.4.2_05" class="java.beans.XMLDecoder"> 
+<object class="de.sciss.gui.SpringPanel">
+	<void method="putClientProperty"><string>de.sciss.gui.UT</string>
+		<object class="de.sciss.util.DefaultUnitTranslator" id="ut" />
+	</void>
+	<void method="gridAdd"> 
+		<object class="javax.swing.JLabel"><string>Gain</string><int>4</int></object>
+		<int>0</int><int>0</int>
+	</void>
+	<void method="gridAdd"> 
+		<object class="de.sciss.gui.PrefParamField"><object idref="ut" />
+			<void method="addSpace">
+				<object class="de.sciss.util.ParamSpace">
+					<double>-Infinity</double><double>Infinity</double><double>0.0</double><int>1</int><int>2</int>
+					<double>0.0</double><int>8449</int>
+				</object>
+			</void>
+			<void method="addSpace">
+				<object class="de.sciss.util.ParamSpace">
+					<double>0.0</double><double>Infinity</double><double>0.0</double><int>1</int><int>2</int>
+					<double>100.0</double><int>4353</int>
+				</object>
+			</void>
+			<void property="preferenceKey"><string>gain</string></void>
+		</object>
+		<int>1</int><int>0</int>
+	</void>
+	<void method="gridAdd"> 
+		<object class="de.sciss.gui.PrefComboBox">
+			<void method="addItem"><object class="de.sciss.gui.StringItem">
+				<string>norm</string><string>Normalized</string>
+			</object></void>
+			<void method="addItem"><object class="de.sciss.gui.StringItem">
+				<string>abs</string><string>Immediate</string>
+			</object></void>
+			<void property="preferenceKey"><string>gaintype</string></void>
+		</object>
+		<int>2</int><int>0</int>
+	</void>
+	
+	<void method="gridAdd"> 
+		<object class="javax.swing.JLabel"><string>Window Length</string><int>4</int></object>
+		<int>0</int><int>1</int>
+	</void>
+	<void method="gridAdd"> 
+		<object class="de.sciss.gui.PrefParamField"><object idref="ut" />
+			<void method="addSpace">
+				<object class="de.sciss.util.ParamSpace">
+					<double>0.0</double><double>Infinity</double><double>0.0</double><int>1</int><int>2</int>
+					<double>1.0</double><int>12322</int>
+				</object>
+			</void>
+			<void method="addSpace">
+				<object class="de.sciss.util.ParamSpace">
+					<double>2.0</double><double>Infinity</double><double>2.0</double><int>0</int><int>0</int>
+					<double>2.0</double><int>50</int>
+				</object>
+			</void>
+			<void property="preferenceKey"><string>length</string></void>
+		</object>
+		<int>1</int><int>1</int>
+	</void>
+	
+	<void method="gridAdd"> 
+		<object class="javax.swing.JLabel"><string>Filter</string><int>4</int></object>
+		<int>0</int><int>2</int>
+	</void>
+	<void method="gridAdd"> 
+		<object class="de.sciss.gui.PrefComboBox">
+			<void method="addItem"><object class="de.sciss.gui.StringItem">
+				<string>median</string><string>Median</string>
+			</object></void>
+			<void method="addItem"><object class="de.sciss.gui.StringItem">
+				<string>stddev</string><string>Standard Deviation</string>
+			</object></void>
+			<void method="addItem"><object class="de.sciss.gui.StringItem">
+				<string>minimum</string><string>Minimum</string>
+			</object></void>
+			<void method="addItem"><object class="de.sciss.gui.StringItem">
+				<string>center</string><string>Center Clipping</string>
+			</object></void>
+			<void method="addItem"><object class="de.sciss.gui.StringItem">
+				<string>min2</string><string>Minimum II</string>
+			</object></void>
+			<void method="addItem"><object class="de.sciss.gui.StringItem">
+				<string>autocorr</string><string>Autocorrelation</string>
+			</object></void>
+			<void method="addItem"><object class="de.sciss.gui.StringItem">
+				<string>autocorr2</string><string>Autocorrelation II</string>
+			</object></void>
+			<void method="addItem"><object class="de.sciss.gui.StringItem">
+				<string>minphase</string><string>Minimum Phase</string>
+			</object></void>
+			<void property="preferenceKey"><string>filter</string></void>
+		</object>
+		<int>1</int><int>2</int><int>2</int><int>1</int>
+	</void>
+
+	<void method="gridAdd"> 
+		<object class="javax.swing.JLabel"><string>Clip Thresh</string><int>4</int></object>
+		<int>0</int><int>3</int>
+	</void>
+	<void method="gridAdd"> 
+		<object class="de.sciss.gui.PrefParamField"><object idref="ut" />
+			<void method="addSpace">
+				<object class="de.sciss.util.ParamSpace">
+					<double>-Infinity</double><double>0.0</double><double>0.0</double><int>1</int><int>2</int>
+					<double>0.0</double><int>8449</int>
+				</object>
+			</void>
+			<void method="addSpace">
+				<object class="de.sciss.util.ParamSpace">
+					<double>0.0</double><double>100.0</double><double>0.0</double><int>1</int><int>2</int>
+					<double>100.0</double><int>4353</int>
+				</object>
+			</void>
+			<void property="preferenceKey"><string>thresh</string></void>
+		</object>
+		<int>1</int><int>3</int>
+	</void>
+	
+	<void method="gridAdd"> 
+		<object class="javax.swing.JLabel"><string>Subtract Dry Signal</string><int>4</int></object>
+		<int>0</int><int>4</int>
+	</void>
+	<void method="gridAdd"> 
+		<object class="de.sciss.gui.PrefCheckBox">
+			<void property="preferenceKey"><string>subdry</string></void>
+		</object>
+		<int>1</int><int>4</int>
+	</void>
+	<void method="makeCompactGrid" />
+</object>
+</java>

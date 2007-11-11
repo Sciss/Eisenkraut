@@ -1,0 +1,199 @@
+{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf420
+{\fonttbl\f0\fnil\fcharset77 Monaco;}
+{\colortbl;\red255\green255\blue255;\red191\green0\blue0;\red0\green0\blue0;\red0\green0\blue191;
+\red96\green96\blue96;\red0\green115\blue0;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\f0\fs18 \cf2 // 05-aug-07\cf3 \
+\
+e = \cf4 Eisenkraut\cf3 .default;\
+e.connect;\
+\cf2 //fork \{ e.initTree \};\cf3 \
+\cf2 //fork \{\'cae.initSwing \};\cf3 \
+\cf2 //e.swing.addr\cf3 \
+\
+\cf2 // WARNING : fails if scsynth wasn't yet booted!\cf3 \
+\
+(\
+\cf4 var\cf3  headerSuffix, ggTimer, ggChannelOffset, ggNumChannels, channelOffset = 0, numChannels = 2, headerFormat = \cf5 "aiff"\cf3 , ggHeaderFormat, ggSampleFormat, sampleFormat = \cf5 "float"\cf3 , folder, ggFolder, ggFile, file = \cf5 ""\cf3 , autoFile = \cf4 true\cf3 ;\
+\
+x = \cf4 EisKPlugIn\cf3 .new.name_( \cf5 "Control Room Recorder"\cf3  );\
+e.addProcessPlugIn( x );\
+fork \{ e.initTree; \};\
+\
+headerSuffix		= \cf4 IdentityDictionary\cf3 .new;\
+headerSuffix.put( \cf6 \\aiff\cf3 , \cf5 "aif"\cf3  );\
+headerSuffix.put( \cf6 \\next\cf3 , \cf5 "au"\cf3  );\
+headerSuffix.put( \cf6 \\wav\cf3 , \cf5 "wav"\cf3  );\
+headerSuffix.put( \cf6 \\ircam\cf3 , \cf5 "irc"\cf3  );\
+headerSuffix.put( \cf6 \\raw\cf3 , \cf5 "raw"\cf3  );\
+\
+folder = \cf5 "~/Desktop"\cf3 .standardizePath ++ \cf5 "/"\cf3 ;\
+\
+x.populateWindowFunc = \{ \cf4 arg\cf3  plug, win;\
+	\cf4 var\cf3  flow, gui, headerFormats, sampleFormats;\
+\
+if( \cf4 true\cf3 , \{\
+	\
+	gui = \cf4 GUI\cf3 .current;\
+	win.bounds_( win.bounds.resizeTo( 368, 156 ));\
+	\
+	flow = \cf4 FlowLayout\cf3 ( win.view.bounds );\
+	win.view.decorator = flow;\
+	\
+	\cf4 GUI\cf3 .staticText.new( win, \cf4 Rect\cf3 ( 0, 0, 48, 24 ))\
+		.align_( \cf6 \\right\cf3  )\
+		.string_( \cf5 "Folder"\cf3  );\
+\pard\pardeftab560\ql\qnatural
+\cf3 \
+	ggFolder = \cf4 GUI\cf3 .dragSink.new( win, \cf4 Rect\cf3 ( 0, 0, 280, 20 ))\
+\cf2 //		.resize_( 2 )\cf3 \
+		.object_( folder )\
+		.action_(\{ \cf4 arg\cf3  b;\
+			folder = b.object;\
+		\});\
+	\cf4 GUI\cf3 .button.new( win, \cf4 Rect\cf3 ( 0, 0, 20, 20 ))\
+\cf2 //		.resize_( 3 )\cf3 \
+		.states_([[ \cf5 "..."\cf3  ]])\
+		.canFocus_( \cf4 false\cf3  )\
+		.action_(\{ \cf4 arg\cf3  b;\
+			\cf4 GUI\cf3 .use( gui, \{\
+				\cf4 GUI\cf3 .dialog.
+\fs20 savePanel
+\fs18 (\{ \cf4 arg\cf3  path;\
+					ggFolder.object = path;\
+					ggFolder.doAction;\
+				\});\
+			\});\
+		\});\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf3 \
+	flow.nextLine;\
+\
+	\cf4 GUI\cf3 .staticText.new( win, \cf4 Rect\cf3 ( 0, 0, 48, 24 ))\
+		.align_( \cf6 \\right\cf3  )\
+		.string_( \cf5 "File"\cf3  );\
+\
+\pard\pardeftab560\ql\qnatural
+\cf3 	ggFile = \cf4 GUI\cf3 .textField.new( win, \cf4 Rect\cf3 ( 0, 0, 260, 20 ))\
+\cf2 //		.resize_( 2 )\cf3 \
+\cf2 //		.object_( file )\cf3 \
+		.enabled_( autoFile.not )\
+		.action_(\{ \cf4 arg\cf3  b;\
+			file = b.object;\
+		\});\
+	\cf4 GUI\cf3 .button.new( win, \cf4 Rect\cf3 ( 0, 0, 40, 20 ))\
+\cf2 //		.resize_( 3 )\cf3 \
+		.states_([[ \cf5 "Auto"\cf3  ], [ \cf5 "Auto"\cf3 , \cf4 Color\cf3 .white, \cf4 Color\cf3 .blue ]])\
+		.canFocus_( \cf4 false\cf3  )\
+		.value_( autoFile.binaryValue )\
+		.action_(\{ \cf4 arg\cf3  b;\
+			autoFile = b.value == 1;\
+			ggFile.enabled( autoFile.not );\
+		\});\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf3 \
+	flow.nextLine;\
+	\cf4 GUI\cf3 .staticText.new( win, \cf4 Rect\cf3 ( 0, 0, 48, 24 ))\
+		.align_( \cf6 \\right\cf3  )\
+		.string_( \cf5 "Format"\cf3  );\
+\
+	headerFormats = headerSuffix.keys.asArray.performUnaryOp( \cf6 \\asString\cf3  ).sort;\
+\
+	ggHeaderFormat = \cf4 GUI\cf3 .popUpMenu.new( win, \cf4 Rect\cf3 ( 0, 0, 80, 24 ))\
+\pard\pardeftab560\ql\qnatural
+\cf3 		.canFocus_( \cf4 false\cf3  )\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf3 		.items_( headerFormats )\
+\cf2 //		.value_( headerFormats.indexOf( headerFormat ))\cf3 \
+		.value_( headerFormats.collect(\{ \cf4 arg\cf3  item, idx; if( item == headerFormat, idx, -1 )\}).maxItem )\
+		.action_(\{ \cf4 arg\cf3  b;\
+			headerFormat = headerFormats[ b.value ];\
+		\});\
+\
+	sampleFormats = [ \cf5 "int16"\cf3 , \cf5 "int24"\cf3 , \cf5 "int32"\cf3 , \cf5 "float"\cf3  ];\
+	ggSampleFormat = \cf4 GUI\cf3 .popUpMenu.new( win, \cf4 Rect\cf3 ( 0, 0, 80, 24 ))\
+\pard\pardeftab560\ql\qnatural
+\cf3 		.canFocus_( \cf4 false\cf3  )\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf3 		.items_( sampleFormats )\
+\cf2 //		.value_( sampleFormats.indexOf( sampleFormat ))\cf3 \
+		.value_( sampleFormats.collect(\{ \cf4 arg\cf3  item, idx; if( item == sampleFormat, idx, -1 )\}).maxItem )\
+		.action_(\{ \cf4 arg\cf3  b;\
+			sampleFormat = sampleFormats[ b.value ];\
+		\});\
+	~ggSampleFormat = ggSampleFormat;\
+\
+	flow.nextLine;\
+\
+	\cf4 GUI\cf3 .staticText.new( win, \cf4 Rect\cf3 ( 0, 0, 48, 24 ))\
+		.align_( \cf6 \\right\cf3  )\
+		.string_( \cf5 "Bus"\cf3  );\
+\
+	ggChannelOffset = \cf4 GUI\cf3 .numberBox.new( win, \cf4 Rect\cf3 ( 0, 0, 36, 24 ))\
+		.align_( \cf6 \\right\cf3  )\
+		.object_( channelOffset )\
+		.action_(\{ \cf4 arg\cf3  b;\
+			channelOffset = b.value.asInteger;\
+		\});\
+		\
+	\cf4 GUI\cf3 .staticText.new( win, \cf4 Rect\cf3 ( 0, 0, 48, 24 ))\
+		.align_( \cf6 \\right\cf3  )\
+		.string_( \cf5 "Chans"\cf3  );\
+\
+	ggNumChannels = \cf4 GUI\cf3 .numberBox.new( win, \cf4 Rect\cf3 ( 0, 0, 36, 24 ))\
+		.align_( \cf6 \\right\cf3  )\
+		.object_( numChannels )\
+		.action_(\{ \cf4 arg\cf3  b;\
+			numChannels = b.value.asInteger;\
+		\});\
+			\
+	flow.nextLine;\
+	flow.shift( 48, 8 );\
+\
+	~ggRec = \cf4 GUI\cf3 .button.new( win, \cf4 Rect\cf3 ( 0, 0, 80, 24 ))\
+		.states_([[ \cf5 "Rec"\cf3  ]])\
+		.action_(\{ \cf4 arg\cf3  b;\
+			\cf4 var\cf3  path, target, targetAddAction;\
+			b.enabled = \cf4 false\cf3 ;\
+			\{\
+				target			= \cf4 nil\cf3 ;\
+				targetAddAction	= \cf6 \\addToTail\cf3 ;\
+		\cf2 //		folder = "recordings/";\cf3 \
+				if( autoFile, \{\
+					file = \cf5 "SC_"\cf3  ++ \cf4 Date\cf3 .localtime.stamp ++ \cf5 "."\cf3  ++ headerSuffix[ headerFormat.asSymbol ];\
+					ggFile.object = file;\
+				\});\
+				path = folder ++ file;\
+				~buf = \cf4 EisKBuffer\cf3 .alloc( e.scsynth, 65536, numChannels );\
+				~buf.write( path, headerFormat, sampleFormat, 0, 0, \cf4 true\cf3  );\
+				\cf4 SynthDef\cf3 ( \cf5 "simpleRecorder"\cf3  ++ numChannels, \{ \cf4 arg\cf3  i_bus, i_buf;\
+					\cf4 DiskOut\cf3 .ar( i_buf, \cf4 In\cf3 .ar( i_bus, numChannels )); \
+				\}).send( e.scsynth );\
+				e.scsynth.sync;\
+				~node = \cf4 Synth\cf3 ( \cf5 "simpleRecorder"\cf3  ++ ~buf.numChannels, [ \cf6 \\i_buf\cf3 ,  ~buf.bufnum,\
+					\cf6 \\i_bus\cf3 , channelOffset ], target ?? \{ \cf4 RootNode\cf3 ( e.scsynth )\}, targetAddAction );\
+				~ggStop.enabled = \cf4 true\cf3 ;\
+			\}.fork( \cf4 AppClock\cf3  );\
+		\});\
+	~ggStop = \cf4 GUI\cf3 .button.new( win, \cf4 Rect\cf3 ( 0, 0, 80, 24 ))\
+		.states_([[ \cf5 "Stop"\cf3  ]])\
+		.enabled_( \cf4 false\cf3  )\
+		.action_(\{ \cf4 arg\cf3  b;\
+			b.enabled = \cf4 false\cf3 ;\
+			~node.free;\
+			~node = \cf4 nil\cf3 ;\
+			if( ~buf.notNil, \{\
+				~buf.close(\{ \cf4 arg\cf3  buf; buf.free; \});\
+				~buf = \cf4 nil\cf3 ; \
+			\});\
+			~ggRec.enabled = \cf4 true\cf3 ;\
+		\});\
+\
+	ggTimer = \cf4 GUI\cf3 .staticText.new( win, \cf4 Rect\cf3 ( 0, 0, 72, 24 ))\
+		.string_( \cf5 "00:00:00"\cf3  );\
+	\
+\});\
+\};\
+)\
+}

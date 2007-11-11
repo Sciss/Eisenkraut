@@ -1,0 +1,15 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Audio Prefs : Audio Block Size</title>
+<LINK REL="stylesheet" TYPE="text/css" HREF="stylesheet.css">
+</head>
+<body>
+<h1>Audio Prefs : Audio Block Size</h1>
+<p>
+this is a parameter used when booting supercollider (<code>-z</code>). it specifies the number of audio samples calculated in each computation cycle. the default value is 64. lower values give lower latency at the expense of higher CPU load.
+</P><P>
+when using control rate signals, the audio block size specifies the rate at which control signals are calculated: one control sample is calculated for each audio block, hence for audio block size 64 and server running at 44.1 kHz, the control rate is 44100/64 = approx. 689 Hertz. decreasing the audio block size increases the control rate.
+</P>
+</body>
+</html>

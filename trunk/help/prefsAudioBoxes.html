@@ -1,0 +1,33 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Audio Prefs : Audio Interfaces</title>
+<LINK REL="stylesheet" TYPE="text/css" HREF="stylesheet.css">
+</head>
+<body>
+<h1>Audio Prefs : Audio Interfaces</h1>
+<p>
+this tables shows a list of audio interfaces you can choose from for input and output. you can add new interfaces by pressing the plus-gadget or delete the selected interface by pressing the minus-gadget.
+</P><p>
+when you add an interface, you can edit its name and the number of input and output channels. note that Eisenkraut has no knowledge about hardware devices, so there is no automatic device detection. make sure that the interface name corresponds to one of the names printed in the log window when SuperCollider is booted.
+</P><p>
+to use one of the audio interfaces, select its name in the <A HREF="ControlRoomFrame.html">control room window</A>.
+<h2>Device Name</h2>
+<p>
+this is a parameter used when booting supercollider (<code>-H</code>). it specifies the name of the soundcard/driver used by supercollider. the special value <code>&quot;default&quot;</code> either the system's default sound card or <A HREF="http://www.jackosx.com" CLASS="ext">jack audio router</A> will be used. note that the name must be exactly spelled.
+</P><P>
+to find out what the name of your soundcard or driver is, leave this field blank and boot supercollider. in the text console, you will see a list of soundcards supercollider recognizes, for example <code>&quot;DIGI96&nbsp;PAD&quot;</code>, <code>&quot;Mobile&nbsp;I/O&nbsp;2882&nbsp;[2600]&quot;</code>, <code>&quot;MOTU&nbsp;828&quot;</code>, <code>&quot;Digidesign&nbsp;Hardware&nbsp;(&nbsp;002&nbsp;)&quot;</code> etc. copy and paste the name to the table cell.
+</P>
+<h2>Input Channels</h2>
+<p>
+this is a parameter used when booting supercollider (<code>-i</code>). it specifies the number of channels which supercollider links to audio interface inputs. it need not be necessarily the real number of channels your interface has.
+<h2>Output Channels</h2>
+<p>
+this is a parameter used when booting supercollider (<code>-o</code>). it specifies the number of channels which supercollider links to audio interface outputs. it need not be necessarily the real number of channels your interface has, but to be able to access all your sound card's channels, this value must be at least as high as the number of your sound card's channels.
+</P><P>
+a value of 8 should be sufficient for the majority of applications. however, some soundcards address analog and digital outputs separately. for example, a motu 828 will start to play on its ADAT outputs starting from channel 9. to access these channels, increase the number of hardware outputs.
+</P><P>
+eisenkraut uses a separate <A HREF="IOSetup.html">I/O setup</A> to map logical channels to physical channels. each soundfile channel is played back through a <A HREF="ChannelPanorama.html">panorama processor</A> which is connected to the currently used output configuration. this configuration determines which of your soundcard channels is the &quot;left speaker&quot;, the &quot;right speaker&quot; etc.
+</P>
+</body>
+</html>

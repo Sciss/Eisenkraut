@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Menu Reference</title>
+<LINK REL="stylesheet" TYPE="text/css" HREF="stylesheet.css">
+</head>
+<body>
+<h1>Menu Reference</h1>
+<BLOCKQUOTE>
+addendum v0.5 : multiple files can be opened. there is a close and close-all item in the file menu. the supercollider window is now known as the <A HREF="MainFrame.html">main window</A>. there is no separate transport window, every soundfile has it's own transport attached to its waveform window (you can playback several sound files at once!). the view menu has a new item &quot;Markers&quot;. an <A HREF="IOSetup.html">I/O setup</A> item has been added to the window menu.	
+</BLOCKQUOTE>
+<P>Scroll down for <A HREF="#File" CLASS="anchor">File</A> | <A HREF="#Edit" CLASS="anchor">Edit</A> | <A HREF="#Timeline" CLASS="anchor">Timeline</A> | <A HREF="#Process" CLASS="anchor">Process</A> | <A HREF="#Operation" CLASS="anchor">Operation</A> | <A HREF="#View" CLASS="anchor">View</A> | <A HREF="#Window" CLASS="anchor">Window</A> | <A HREF="#Debug" CLASS="anchor">Debug</A> | <A HREF="#Help" CLASS="anchor">Help</A></P>
+<H3></A>Eisenkraut menu</H3>
+<P>
+On Mac OS X, this menu carries the items to open the about dialog, to open the <A HREF="PrefsFrame.html">preferences pane</A> and to quit the application. On other platforms, the about item appears in the <A HREF="#Help" CLASS="anchor">Help</A> menu, the preferences item appears in the <A HREF="#Edit" CLASS="anchor">Edit</A> menu, the quit item is listed in the <A HREF="#File" CLASS="anchor">File</A> menu.
+</P>
+<H3><A NAME="File"></A>File menu</H3>
+<UL>
+<LI><B>Open</B> : replaces the current document with a new sound file, prompted by a dialog. In this version, only one sound file can be open at a time.</LI>
+<LI><B>Open Recent</B> : the submenu contains the last eight sound files used for quick re-opening. &quot;Clear Menu&quot; will empty the list.<HR WIDTH="20%"></LI>
+<LI><B>Save (As)</B> : saves any changes made to the current file. if you choose &quot;Save As&quot;, a dialog pops up to enter the new file name and format. To browse the harddisk, click on the small folder icon in this dialog.</LI>
+</UL>
+<H3><A NAME="Edit"></A>Edit menu</H3>
+<UL>
+<LI><B>Undo</B> : makes the last editing operation undone. the number of undoable steps is not limited. once a soundfile is opened or saved, the undo buffer is erased.</LI>
+<LI><B>Redo</B> : when undo was invoked and no new editing has been performed, it is possible to redo the undone steps.<HR WIDTH="20%"></LI>
+<LI><B>Cut</B> : what this item does, depends on the window that is focussed. for the <A HREF="TimelineFrame.html">waveform frame</A>, the selected time span is removed and put in the clipboard.</LI>
+<LI><B>Copy</B> : what this item does, depends on the window that is focussed. for the <A HREF="TimelineFrame.html">waveform frame</A>, the selected time span is put in the clipboard.</LI>
+<LI><B>Paste</B> : what this item does, depends on the window that is focussed. for the <A HREF="TimelineFrame.html">waveform frame</A>, if soundfile portions had been put in the clipboard, they get pasted in at the current timeline position. note that in the paste operation, the current timeline selection is ignored, the material is always inserted, it never overwrites parts of the timeline. if you wish to overwrite a part, delete the old content first, then choose paste.</LI>
+<LI><B>Delete</B> : what this item does, depends on the window that is focussed. for the <A HREF="TimelineFrame.html">waveform frame</A>, the selected time span is removed.<HR WIDTH="20%"></LI>
+<LI><B>Select All</B> : what this item does, depends on the window that is focussed. for the <A HREF="TimelineFrame.html">waveform frame</A>, the selected time span is set to the whole soundfile extent.</LI>
+</UL>
+<H3><A NAME="Timeline"></A>Timeline menu</H3>
+<UL>
+<LI><B>Trim to Selection</B> : removes all parts left and right to the timeine selection (crop).</LI>
+<LI><B>Insert Silence</B> : opens a dialog to enter the length of the span in seconds. the time span is inserted at the current timeline position. This ignores the current timeline selection.</LI>
+<LI><B>Insert Recording</B> : opens the <A HREF="RecorderDialog.html">Audio Recorder</A> dialog to insert a piece of live recording.</LI>
+</UL>
+<H3><A NAME="Process"></A>Process menu</H3>
+<UL>
+<LI><B>Fade In</B> : applies a fade-in to the current timeline selection. If you hold down <code>Alt</code> when opening the menu and selecting the menu item, a dialog will pop up to adjust the shape of the fade curve.
+<LI><B>Fade Out</B> : applies a fade-out to the current timeline selection. If you hold down <code>Alt</code> when opening the menu and selecting the menu item, a dialog will pop up to adjust the shape of the fade curve.
+<LI><B>Gain</B> : opens a dialog with the processing parameters. The process changes the volume of the current timeline selection. In &quot;absolute&quot; mode, the gain is applied directly to the sound, for example -6 dB makes it half as loud. In &quot;normalized&quot; mode, the gain describes the headroom left after normalization, for example -3 dB/normalized makes the sound as loud as possible but leaves a 3 decibels headroom to the digital fullscale (DFS). Positive decibels in normalized-mode naturally distorts the sound unless you save it in floating point format.</LI>
+<LI><B>Invert</B> : inverts the phase of the sound, i.e. negative samples become positive and vice versa (180 degree phase shift).</LI>
+<LI><B>Reverse</B> : reverses the samples in the current timeline selection.</LI>
+<LI><B>Rotate Channels</B> : opens a dialog to specify the number of shifts to apply to the channels. This value naturally can be between -(NumberOfChannels-1) ... +(NumberOfChannels-1). For mono it's useless, for stereo the only usefull value is 1 which swaps left and right channel. For an eight channel sound file, choosing a value of 1 will put channel 1 in channel 2, channel 2 is put in channel 3 etc. For a value of 6, channel 1 is put in channel 7, channel 2 is put in channel 8, channel 3 is put in channel 1 (3 + 6 = 9, wraps to 1). etc.
+</LI>
+<LI><B>Silence</B> : fills the timeline selection with silence (zero amplitude samples).</LI>
+</UL>
+<H3><A NAME="Operation"></A>Operation menu</H3>
+<UL>
+<LI><B>Timeline Insertion follows Playback</B> : when checked, the timeline position (insertion point for paste operations for example) follows the transport playback. so when checked, whenever a running transport is stopped, the insertion point remains just at the place where it appeared when transport was stopped. If unchecked, the timeline position will jump back to its original position it had before transport was started.</LI>
+</UL>
+<H3><A NAME="View"></A>View menu</H3>
+<UL>
+<LI><B>Time Units</B> : what the horizontal timeline axis ruler should display (minutes:seconds.milliseconds or sample frames). doesn't yet affect observer palette or go-to-time dialog.</LI>
+<LI><B>Null Linie</B> : if checked, a dooted yellow line in the waveform display indicates the zero crossing line.</LI>
+<LI><B>Vertical Rulers</B> : if checked, a vertical (amplitude axis) ruler is displayed next to each channel, indicating the vertical zoom (shown in percent).</LI>
+<UL>
+<H3><A NAME="Window"></A>Window menu</H3>
+<UL>
+<LI><B>Transport</B> (<code>Meta+Numpad-1</code>) : opens the <A HREF="TransportPalette.html">transport palette</A> and brings it to the front.</LI>
+<LI><B>Observer</B> (<code>Meta+Numpad-3</code>) : opens the <A HREF="ObserverPalette.html">observer palette</A> and brings it to the front.</LI>
+<LI><B>SuperCollider Server</B> (<code>Meta+Numpad-2</code>) : opens the <A HREF="SuperCollider.html">supercollider server frame</A> and brings it to the front.</LI>
+</UL>
+<H3><A NAME="Debug"></A>Debug menu</H3>
+<H3><A NAME="Help"></A>Help menu</H3>
+<UL>
+<LI><B>Eisenkraut Help</B> : opens the <A HREF="HelpHTMLPane.html">help viewer</A> and shows the <A HREF="index.html">help index</A>.</LI>
+<LI><B>Keyboard Shortcuts</B> : opens the <A HREF="HelpHTMLPane.html">help viewer</A> and shows the <A HREF="Shortcuts.html">keyboard shortcuts</A>.<HR WIDTH="20%"></LI>
+<LI><B>Open Eisenkraut Website</B> : opens the application home page in the system's default web browser.</LI>
+</UL>
+</body>
+</html>

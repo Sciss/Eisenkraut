@@ -1,0 +1,97 @@
+== FIXED? ==
+
+Eisenkraut OSC server receiving at TCP port 17737
+Booting SuperCollider server at TCP port 57108 ...
+Using vector unit: no
+Number of Devices: 5
+   0 : "Built-in Microphone"
+   1 : "Built-in Input"
+   2 : "Built-in Output"
+   3 : "MOTU 828"
+   4 : "Built-in Audio"
+
+"MOTU 828" Input Device
+   Streams: 3
+      0  channels 8
+      1  channels 8
+      2  channels 2
+
+"MOTU 828" Output Device
+   Streams: 3
+      0  channels 8
+      1  channels 8
+      2  channels 2
+
+<-SC_CoreAudioDriver::Setup world 005138B0
+SC_AudioDriver: numSamples=512, sampleRate=44100.000000
+->SC_CoreAudioDriver::DriverStart
+start   UseSeparateIO?: 0
+<-SC_CoreAudioDriver::DriverStart
+SuperCollider 3 server ready..
+PublishPortToRendezvous 1 5343
+notification is on
+Exception in thread "AWT-EventQueue-0" java.nio.channels.NotYetConnectedException
+	at de.sciss.net.OSCTransmitter$TCPOSCTransmitter.send(OSCTransmitter.java:580)
+	at de.sciss.net.OSCClient.send(OSCClient.java:305)
+	at de.sciss.jcollider.Server.sendMsg(Server.java:1142)
+	at de.sciss.jcollider.Buffer.free(Buffer.java:1633)
+	at de.sciss.jcollider.Buffer.free(Buffer.java:1627)
+	at de.sciss.eisenkraut.gui.RecorderDialog$Context.dispose(RecorderDialog.java:775)
+	at de.sciss.eisenkraut.gui.RecorderDialog$Context.access$1800(RecorderDialog.java:678)
+	at de.sciss.eisenkraut.gui.RecorderDialog.disposeContext(RecorderDialog.java:498)
+	at de.sciss.eisenkraut.gui.RecorderDialog.disposeAll(RecorderDialog.java:419)
+	at de.sciss.eisenkraut.gui.RecorderDialog.disposeRecorder(RecorderDialog.java:488)
+	at de.sciss.eisenkraut.gui.RecorderDialog.serverAction(RecorderDialog.java:615)
+	at de.sciss.eisenkraut.net.SuperColliderClient.serverAction(SuperColliderClient.java:675)
+	at de.sciss.jcollider.Server.processEvent(Server.java:1584)
+	at de.sciss.jcollider.EventManager.run(EventManager.java:156)
+	at java.awt.event.InvocationEvent.dispatch(InvocationEvent.java:209)
+	at java.awt.EventQueue.dispatchEvent(EventQueue.java:461)
+	at java.awt.EventDispatchThread.pumpOneEventForHierarchy(EventDispatchThread.java:269)
+	at java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:190)
+	at java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:180)
+	at java.awt.Dialog$1.run(Dialog.java:515)
+	at java.awt.Dialog.show(Dialog.java:536)
+	at java.awt.Component.show(Component.java:1300)
+	at java.awt.Component.setVisible(Component.java:1253)
+	at de.sciss.eisenkraut.gui.RecorderDialog.<init>(RecorderDialog.java:350)
+	at de.sciss.eisenkraut.session.DocumentFrame$actionInsertRecClass.actionPerformed(DocumentFrame.java:2296)
+	at javax.swing.AbstractButton.fireActionPerformed(AbstractButton.java:1882)
+	at javax.swing.AbstractButton$Handler.actionPerformed(AbstractButton.java:2202)
+	at javax.swing.DefaultButtonModel.fireActionPerformed(DefaultButtonModel.java:420)
+	at javax.swing.DefaultButtonModel.setPressed(DefaultButtonModel.java:258)
+	at javax.swing.AbstractButton.doClick(AbstractButton.java:334)
+	at apple.laf.ScreenMenuItem.actionPerformed(ScreenMenuItem.java:104)
+	at java.awt.MenuItem.processActionEvent(MenuItem.java:597)
+	at java.awt.MenuItem.processEvent(MenuItem.java:556)
+	at java.awt.MenuComponent.dispatchEventImpl(MenuComponent.java:298)
+	at java.awt.MenuComponent.dispatchEvent(MenuComponent.java:286)
+	at java.awt.EventQueue.dispatchEvent(EventQueue.java:466)
+	at java.awt.EventDispatchThread.pumpOneEventForHierarchy(EventDispatchThread.java:269)
+	at java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:190)
+	at java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:184)
+	at java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:176)
+	at java.awt.EventDispatchThread.run(EventDispatchThread.java:110)
+Exception in thread "Timer-1" java.nio.channels.NotYetConnectedException
+	at de.sciss.net.OSCTransmitter$TCPOSCTransmitter.send(OSCTransmitter.java:580)
+	at de.sciss.net.OSCClient.send(OSCClient.java:305)
+	at de.sciss.jcollider.Server.sendMsg(Server.java:1142)
+	at de.sciss.jcollider.Server.status(Server.java:1125)
+	at de.sciss.jcollider.Server.access$2400(Server.java:104)
+	at de.sciss.jcollider.Server$StatusWatcher.run(Server.java:1814)
+	at java.util.TimerThread.mainLoop(Timer.java:512)
+	at java.util.TimerThread.run(Timer.java:462)
+
+
+
++ nach neuem boot-versuch mit neuer IP:
+
+scsynth didn't quit. we're killing it!
+Exception in thread "Eisenkraut" java.lang.IllegalStateException: Timer already cancelled.
+	at java.util.Timer.sched(Timer.java:354)
+	at java.util.Timer.schedule(Timer.java:222)
+	at de.sciss.jcollider.Server$StatusWatcher.start(Server.java:1783)
+	at de.sciss.jcollider.Server$StatusWatcher.access$600(Server.java:1754)
+	at de.sciss.jcollider.Server.startAliveThread(Server.java:1087)
+	at de.sciss.jcollider.Server$BootThread.run(Server.java:1655)
+

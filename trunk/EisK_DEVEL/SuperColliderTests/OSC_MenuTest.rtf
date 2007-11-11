@@ -1,0 +1,73 @@
+{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf420
+{\fonttbl\f0\fnil\fcharset77 Monaco;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue191;\red0\green115\blue0;\red96\green96\blue96;
+\red191\green0\blue0;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\f0\fs18 \cf0 e = \cf2 Eisenkraut\cf0 .default;\
+e.addr.connect;\
+e.dumpOSC( 0, 1 );\
+e.sendMsg( \cf3 '/gui/menu'\cf0 , \cf3 \\add\cf0 , 1, \cf3 \\item\cf0 , \cf3 'process.sc'\cf0 , \cf4 "Frequency Filter"\cf0  );\
+\
+(\
+n = \cf2 OSCresponderNode\cf0 ( e.addr, \cf3 '/gui/menu'\cf0 , \{ \cf2 arg\cf0  time, resp, msg;\
+	if( msg[ 1 ] === 1, \{\
+		if( msg[ 2 ].asSymbol === \cf3 'action'\cf0 , \{\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf5 //			"BANG!".inform;\cf0 \
+			if( ~winId.isNil, \{\
+				~winId = 1;\
+				~winPath = \cf4 "/gui/window/"\cf0  ++ ~winId;\
+				e.sendMsg( \cf3 '/gui/window'\cf0 , \cf3 \\add\cf0 , ~winId, \cf3 \\frame\cf0 , \cf4 "Frequency Filter"\cf0 , \cf2 false\cf0  );\
+				e.sendMsg( ~winPath, \cf3 \\add\cf0 , 1, \cf3 \\label\cf0 , 0, 0 );\
+				e.sendMsg( ~winPath ++ \cf4 "/1"\cf0 , \cf3 \\setText\cf0 , \cf4 "Type:"\cf0  );\
+				e.sendMsg( ~winPath, \cf3 \\add\cf0 , 2, \cf3 \\choice\cf0 , 1, 0 );\
+				e.sendMsg( ~winPath ++ \cf4 "/2"\cf0 , \cf3 \\setItems\cf0 , \cf4 "Lowpass"\cf0 , \cf4 "Highpass"\cf0 , \cf4 "Bandpass"\cf0 , \cf4 "Notch"\cf0  );\
+				e.sendMsg( ~winPath, \cf3 \\add\cf0 , 3, \cf3 \\label\cf0 , 0, 1 );\
+				e.sendMsg( ~winPath ++ \cf4 "/3"\cf0 , \cf3 \\setText\cf0 , \cf4 "Frequency:"\cf0  );\
+				e.sendMsg( ~winPath, \cf3 \\add\cf0 , 4, \cf3 \\hslider\cf0 , 1, 1, 1, 1, 2 );\
+				e.sendMsg( ~winPath, \cf3 \\add\cf0 , 5, \cf3 \\check\cf0 , 0, 2 );\
+				e.sendMsg( ~winPath ++ \cf4 "/5"\cf0 , \cf3 \\setText\cf0 , \cf4 "Preview"\cf0  );\
+				e.sendMsg( ~winPath, \cf3 \\add\cf0 , 6, \cf3 \\button\cf0 , 1, 2 );\
+				e.sendMsg( ~winPath ++ \cf4 "/6"\cf0 , \cf3 \\setText\cf0 , \cf4 "Apply"\cf0  );\
+			\});\
+			e.sendMsg( ~winPath, \cf3 \\show\cf0  );\
+		\}, \{\
+			(\cf4 "unknown cmd : "\cf0  + msg).inform;\
+		\});\
+	\}, \{\
+		(\cf4 "ne pas pour moi : "\cf0  + msg).inform;\
+	\});\
+\}).add;\
+)\
+\
+e.sendMsg( ~winPath, \cf3 \\hide\cf0  );\
+\
+\
+n.remove;\
+e.sendMsg( \cf3 '/gui/menu'\cf0 , \cf3 \\remove\cf0 , 1 );\
+e.sendMsg( \cf3 '/gui/window'\cf0 , \cf3 \\remove\cf0 , ~winId );\
+~winId = \cf2 nil\cf0 ;\
+\
+\
+e.sendMsg( ~winPath ++ \cf4 "/1"\cf0 , \cf3 \\setEnabled\cf0 , \cf2 false\cf0  );\
+e.sendMsg( ~winPath ++ \cf4 "/1"\cf0 , \cf3 \\setEnabled\cf0 , \cf2 true\cf0  );\
+\
+u = \cf2 Updater\cf0 ( \cf2 Main\cf0 , \{\'ca\cf2 arg\cf0  obj, what, time, resp, msg, handled; msg.postln; \});\
+\
+(\
+m = \cf2 OSCresponderNode\cf0 ( e.addr, ~winPath, \{ \cf2 arg\cf0  time, resp, msg;\
+	if( msg[ 1 ] === 2, \{\
+		if( msg[ 2 ].asSymbol === \cf3 'action'\cf0 , \{\
+\cf5 //			"BANG!".inform;\cf0 \
+			msg[ 4 ].postln;\
+		\}, \{\
+			(\cf4 "unknown cmd : "\cf0  + msg).inform;\
+		\});\
+	\}, \{\
+		(\cf4 "ne pas pour moi : "\cf0  + msg).inform;\
+	\});\
+\}).add;\
+)\
+\
+m.remove;}

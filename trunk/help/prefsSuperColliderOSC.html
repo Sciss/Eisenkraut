@@ -1,0 +1,17 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Audio Prefs : SuperCollider OSC Socket</title>
+<LINK REL="stylesheet" TYPE="text/css" HREF="stylesheet.css">
+</head>
+<body>
+<h1>Audio Prefs : SuperCollider OSC Socket</h1>
+<p>
+the audio playback through supercollider is accomplished by running a <code>scsynth</code> server and communicating with it through a protocol called open-sound-control (OSC). OSC requires a network socket which is specified here.  the port which is set to <code>0</code> by default, is arbitrary but must not conflict with other ports used on the same machine. The special port number of <code>0</code> picks any free port when the server is booted, which is the recommended way. Sometimes you may want a fixed port for easier access from SuperCollider language.
+</P><P>
+By default, Eisenkraut uses <B>TCP</B> for communication. Generally, TCP is more safe against network drop outs, but the TCP implementation is still preliminary and may cause more issues when the server unexpectly quits. Alternatively, you can use <B>UDP</B>.
+</P><P>
+Note that there is a general <STRONG>security issue</STRONG> with open network ports on your computer when it is connected to the internet. While it is highly unlikely, it's theoretically possible to use scsynth to write files onto your harddisk, for example. Using a dynamic port of <code>0</code> is recommended. You can also set your firewall to block incoming TCP and UDP communication from the internet. A future version of Eisenkraut may support the password option of SuperCollider.
+</P>
+</body>
+</html>

@@ -1,0 +1,3 @@
+(FIXED) ==> was missing file pos restore in AIFFHeader -> readMarkers !
+
+Cache-Overview absolut merkwŸrdig in vielen FŠllen, unklarer zusammenhang mit file-lŠnge oder bit-tiefe. --> max. zoom out sieht aus wie normalisiertes rauschen ; in-place-decimation von 1:1 zoom ist in ordnung
