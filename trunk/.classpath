@@ -7,5 +7,5 @@
 	<classpathentry kind="lib" path="libraries/NetUtil.jar"/>
 	<classpathentry kind="lib" path="libraries/MRJAdapter.jar"/>
 	<classpathentry kind="lib" path="libraries/JCollider.jar"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="output" path="build/classes"/>
 </classpath>
