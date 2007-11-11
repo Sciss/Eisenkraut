@@ -24,4 +24,4 @@ where=`followlink $0`
 where=`dirname ${where}`
 where=`absdir ${where}`
 cd ${where}
-java -Dswing.defaultlaf=com.sun.java.swing.plaf.gtk.GTKLookAndFeel -ea -cp "Eisenkraut.jar:libraries/JCollider.jar:libraries/MRJAdapter.jar:libraries/NetUtil.jar:libraries/Normalizer.jar:libraries/SwingOSC.jar" de.sciss.eisenkraut.Main $@
+java -Dswing.defaultlaf=com.sun.java.swing.plaf.gtk.GTKLookAndFeel -ea -cp "build/Eisenkraut.jar:libraries/JCollider.jar:libraries/MRJAdapter.jar:libraries/NetUtil.jar:libraries/Normalizer.jar:libraries/SwingOSC.jar" de.sciss.eisenkraut.Main $@
