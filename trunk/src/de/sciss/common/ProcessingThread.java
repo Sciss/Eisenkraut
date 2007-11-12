@@ -37,6 +37,7 @@ import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -57,7 +58,7 @@ import de.sciss.util.Disposable;
  *  displaying messages and exceptions.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 02-Nov-06
+ *  @version	0.70, 12-Nov-06
  */
 public class ProcessingThread
 //extends Thread
@@ -73,6 +74,7 @@ implements Runnable, EventManager.Processor, ActionListener, Disposable	// , Pro
 
 	private final Runnable				runProgressUpdate, runProcessFinished;
 	private volatile float				progress, progOff = 0f, progStop = 1f, progWeight = 1f;
+	private volatile boolean			progressInvoked	= false;
 //	private boolean						procAlive;
 	private volatile Exception			exception   = null;
 	private EventManager				elm			= null; // lazily created ; flushed due to synchronized()s?
@@ -127,6 +129,7 @@ implements Runnable, EventManager.Processor, ActionListener, Disposable	// , Pro
 		runProgressUpdate = new Runnable() {
 			public void run()
 			{
+				progressInvoked = false;
 				pc.setProgression( progress );
 			}
 		};
@@ -278,7 +281,7 @@ implements Runnable, EventManager.Processor, ActionListener, Disposable	// , Pro
 //	public static void setProgression( float p )
 //	{
 //		final ProcessingThread pt = currentThread();
-//		if( pt == null ) pt.setProgressin( p );
+//		if( pt != null ) pt.setProgressin( p );
 //	}
 	
 	public static boolean shouldCancel()
@@ -287,13 +290,19 @@ implements Runnable, EventManager.Processor, ActionListener, Disposable	// , Pro
 		return( pt == null ? false : pt.shouldCancel );
 	}
 	
-	public static void updateAndCheckChanel( float progress )
-	throws InterruptedException
+//	public static void progress( float p )
+//	{
+//		final ProcessingThread pt = currentThread();
+//		if( pt != null ) pt.setProgression( p );
+//	}
+	
+	public static void update( float progress )
+	throws CancelledException
 	{
 		final ProcessingThread pt = currentThread();
-		if( pt == null ) {
+		if( pt != null ) {
 			pt.setProgression( progress );
-			if( pt.shouldCancel ) throw new InterruptedException();
+			if( pt.shouldCancel ) throw new CancelledException();
 		}
 	}
 	
@@ -377,6 +386,9 @@ implements Runnable, EventManager.Processor, ActionListener, Disposable	// , Pro
 //			returnCode	= client.processRun( this, clientArg );
 			returnCode	= client.processRun( this );
 		}
+		catch( CancelledException e1 ) {
+			returnCode	= ProgressComponent.CANCELLED;
+		}
 		catch( Exception e1 ) {
 			exception	= e1;
 			returnCode	= ProgressComponent.FAILED;
@@ -421,15 +433,32 @@ implements Runnable, EventManager.Processor, ActionListener, Disposable	// , Pro
 		return exception;
 	}
 	
-	public void setNextProgStop( float p )
+	public static void setNextProgStop( float p )
 	{
-		progress	= progStop;
-		progOff		= progress;
-		progWeight	= p - progress;
-		progStop	= p;
+		final ProcessingThread pt = currentThread();
+		if( pt != null ) {
+//			progress	= progStop;
+			pt.progOff		= pt.progress;
+			pt.progStop		= p;
+			pt.progWeight	= pt.progStop - pt.progress;
+		}
 	}
+	
+	public static void flushProgression()
+	{
+		final ProcessingThread pt = currentThread();
+		if( pt != null ) {
+			pt.progOff		= pt.progress;
+			pt.progWeight	= pt.progStop - pt.progress;
+		}
+	}
+	
+//	public float getNextProgStop()
+//	{
+//		return progStop;
+//	}
 
-// ------------------ ActionLstener interface ------------------
+// ------------------ ActionListener interface ------------------
 
 	// events come from cancel gadget
 	public void actionPerformed( ActionEvent e )
@@ -485,7 +514,10 @@ implements Runnable, EventManager.Processor, ActionListener, Disposable	// , Pro
 	public void setProgression( float p )
 	{
 		progress = p * progWeight + progOff;
-		EventQueue.invokeLater( runProgressUpdate );
+		if( !progressInvoked ) {
+			progressInvoked = true;
+			EventQueue.invokeLater( runProgressUpdate );
+		} // else System.out.println( "clpse" );
 	}
 	
 	public void resetProgression()
@@ -524,7 +556,7 @@ implements Runnable, EventManager.Processor, ActionListener, Disposable	// , Pro
 		 *  @synchronization	like Thread's run method, this is called inside
 		 *						a custom thread
 		 */
-		public int processRun( ProcessingThread context );
+		public int processRun( ProcessingThread context ) throws IOException;
 
 		/**
 		 *  This gets invoked when <code>processRun()</code> is finished or
@@ -629,6 +661,12 @@ implements Runnable, EventManager.Processor, ActionListener, Disposable	// , Pro
 
 			} else return false;
 		}
+	}
+	
+	public static class CancelledException
+	extends IOException
+	{
+		
 	}
 	
 //	public interface Hook

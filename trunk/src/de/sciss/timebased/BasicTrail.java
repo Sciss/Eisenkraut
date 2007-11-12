@@ -1240,7 +1240,7 @@ if( DEBUG ) {
 		}
 	}
 
-	public void removeDependant( BasicTrail sub )
+	public void removeDependant( Trail sub )
 	{
 		synchronized( dependants ) {
 			if( !dependants.remove( sub )) {

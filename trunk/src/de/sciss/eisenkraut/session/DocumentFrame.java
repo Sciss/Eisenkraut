@@ -125,7 +125,7 @@ import org.unicode.Normalizer;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 06-Nov-07
+ *  @version	0.70, 12-Nov-07
  */
 public class DocumentFrame
 extends AppWindow
@@ -1742,8 +1742,8 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 	
 	public void	finishProgression( int result )
 	{
-		pProgress.finishProgression( result );
-		pOverlay.performFade( 0f, 4000, 250 );
+		if( result != CANCELLED ) pProgress.finishProgression( result );
+		pOverlay.performFade( 0f, result == CANCELLED ? 0 : 4000, 250 );
 	}
 	
 	public void setProgressionText( String text )

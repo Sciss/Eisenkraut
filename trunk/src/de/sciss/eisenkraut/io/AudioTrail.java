@@ -34,7 +34,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import de.sciss.eisenkraut.session.*;
+import de.sciss.eisenkraut.session.Session;
 
 import de.sciss.app.AbstractApplication;
 import de.sciss.app.AbstractCompoundEdit;
@@ -46,7 +46,8 @@ import de.sciss.io.InterleavedStreamFile;
 import de.sciss.io.Span;
 import de.sciss.jcollider.Buffer;
 import de.sciss.net.OSCBundle;
-import de.sciss.timebased.*;
+import de.sciss.timebased.BasicTrail;
+import de.sciss.timebased.Trail;
 
 /**
  *  This class provides means for automatic multirate handling
@@ -68,7 +69,7 @@ import de.sciss.timebased.*;
  *  by 4219 frames, thus maintaining low RAM and CPU consumption.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 05-Nov-07
+ *  @version	0.70, 12-Nov-07
  */
 public class AudioTrail
 extends BasicTrail
@@ -108,6 +109,9 @@ extends BasicTrail
     private AudioFile[]				tempF				= null;
 	
 	private final AudioFile[]		audioFiles;
+
+	private int						numDepDec			= 0;
+	
 
 	public static AudioTrail newFrom( AudioFile af )
 	throws IOException
@@ -513,9 +517,15 @@ extends BasicTrail
 	}
 
 	private static void setProgression( long len, double progWeight )
-	throws InterruptedException
+	throws ProcessingThread.CancelledException
 	{
-		ProcessingThread.updateAndCheckChanel( (float) (len * progWeight) );
+// System.err.println( "aud prog len " + len + ", p " + (float) (len * progWeight) );
+		ProcessingThread.update( (float) (len * progWeight) );
+	}
+	
+	private static void flushProgression()
+	{
+		ProcessingThread.flushProgression();
 	}
 	
 	private void insertRangeFrom( AudioTrail srcTrail, long srcStart, AudioStake writeStake, long insertPos, long len,
@@ -1307,6 +1317,22 @@ extends BasicTrail
 		}
 	}
 
+	public void addDependant( Trail sub )
+	{
+		super.addDependant( sub );
+		if( sub instanceof DecimatedTrail ) {
+			numDepDec++;
+		}
+	}
+
+	public void removeDependant( Trail sub )
+	{
+		super.removeDependant( sub );
+		if( sub instanceof DecimatedTrail ) {
+			numDepDec--;
+		}
+	}
+
 	/*
 	 *	contract: trackMap.length > 0
 	 */
@@ -1322,15 +1348,19 @@ extends BasicTrail
 			if( t1 != trackMap[ i ]) throw new IllegalStateException( getResourceString( "errAudioWillLooseSync" ));
 		}
 		
-		final long			left		= bc.getLeftLen();
-		final long			right		= bc.getRightLen();
-		final Span			fadeInSpan	= new Span( clearSpan.stop - left, clearSpan.stop + right );
-		final Span			fadeOutSpan	= new Span( clearSpan.start - left, clearSpan.start + right );
-		final int			bufLen		= (int) Math.min( blendLen, BUFSIZE );
-		final Span			writeSpan	= fadeOutSpan; // new Span( clearSpan.start, clearSpan.start + blendLen );
-		final int			numCh		= this.getChannelNum();
-		final float[][]		bufA		= new float[ numCh ][ bufLen ];
-		final float[][]		bufB		= new float[ numCh ][ bufLen ];
+		final double		perDecProgRatio	= 0.9;	// this to one decimtrail
+		final double		progRatio		= 1.0 / (1.0 + ((1.0 - perDecProgRatio) / perDecProgRatio) * numDepDec);
+		final double		progWeight		= progRatio / blendLen;
+
+		final long			left			= bc.getLeftLen();
+		final long			right			= bc.getRightLen();
+		final Span			fadeInSpan		= new Span( clearSpan.stop - left, clearSpan.stop + right );
+		final Span			fadeOutSpan		= new Span( clearSpan.start - left, clearSpan.start + right );
+		final int			bufLen			= (int) Math.min( blendLen, BUFSIZE );
+		final Span			writeSpan		= fadeOutSpan; // new Span( clearSpan.start, clearSpan.start + blendLen );
+		final int			numCh			= this.getChannelNum();
+		final float[][]		bufA			= new float[ numCh ][ bufLen ];
+		final float[][]		bufB			= new float[ numCh ][ bufLen ];
 		
 //System.err.println( "fadeInSpan = " + fadeInSpan + "; fadeOutSpan = " + fadeOutSpan );
 
@@ -1339,9 +1369,13 @@ extends BasicTrail
 		int					chunkLen;
 		long				n;
 		Span				chunkSpan;
+		boolean				success	= false;
+		
+//		final long time1 = System.currentTimeMillis();
 		
 		try {
-			writeStake	= alloc( writeSpan );
+			flushProgression();
+			writeStake		= alloc( writeSpan );
 			
 			for( long framesWritten = 0; framesWritten < blendLen; ) {
 				chunkLen	= (int) Math.min( bufLen, blendLen - framesWritten );
@@ -1356,17 +1390,23 @@ extends BasicTrail
 				chunkSpan	= new Span( n, n + chunkLen );
 				writeStake.writeFrames( bufA, 0, chunkSpan );
 				framesWritten += chunkLen;
+				
+				setProgression( framesWritten, progWeight );
 			}
 			writeStake.flush();
+			success = true;
 		}
-		catch( IOException e1 ) {
-			if( writeStake != null ) writeStake.dispose();
-			throw e1;
+		finally {
+			if( !success && (writeStake != null) ) writeStake.dispose();
 		}
 
+//		final long time2 = System.currentTimeMillis();
 		// XXX mode
 //System.err.println( "add "+writeSpan );
 		this.editAdd( source, writeStake, ce );
+//		final long time3 = System.currentTimeMillis();
+		
+//		System.out.println( "ratio " + (double) (time2 - time1) / (time3 - time1) );
 	}
 
 	/*
@@ -1381,6 +1421,7 @@ extends BasicTrail
 		final long			blendLen	= bc == null ? 0L : bc.getLen();
 		
 		boolean				sync		= true;
+		boolean				success		= false;
 		final boolean		t1			= trackMap[ 0 ];
 		for( int i = 1; i < trackMap.length; i++ ) {
 			if( t1 != trackMap[ i ]) {
@@ -1392,6 +1433,7 @@ extends BasicTrail
 
 		final List collStakes	= new ArrayList( 3 );
 		
+//final long time1 = System.currentTimeMillis();
 		try {
 			if( sync && !t1 ) return;			// all tracks unselected
 //			if( (blendLen == 0L) && sync ) {	// no fades, all tracks selected, let's just add a SilentAudioStake
@@ -1400,7 +1442,11 @@ extends BasicTrail
 //				return;
 //			}
 		
+			final double		perDecProgRatio	= 0.9;	// this to one decimtrail
+			final double		progRatio		= 1.0 / (1.0 + ((1.0 - perDecProgRatio) / perDecProgRatio) * numDepDec);
+
 			final boolean		hasBlend		= blendLen > 0L;
+			final long			blendLen2		= blendLen << 1;
 			final int			numCh			= this.getChannelNum();
 //			final float[][]		srcBuf			= new float[ numCh ][];
 //			final float[][]		outBuf			= new float[ numCh ][];
@@ -1414,11 +1460,15 @@ extends BasicTrail
 			final int			bufLen			= (int) Math.min( clearSpan.getLength(), BUFSIZE );
 			final boolean		useSilentStake	= sync && (silentLen >= MINSILENTSIZE);
 			final AudioStake	writeStake1, writeStake2, writeStake3;
+			final double		progWeight;
 			float[]				empty		= null;
 			float[]				temp;
 			int					chunkLen;
 			long				n;
+			long				totalFramesWritten	= 0;
 			Span				chunkSpan;
+
+			flushProgression();
 
 			// buffer regarding fade in / out
 			if( hasBlend ) {
@@ -1470,11 +1520,28 @@ extends BasicTrail
 				} else {
 					writeStake3	= null;
 				}
+//				final long myProc	= 9 * blendLen2;	// ratio 9:1
+//				final long decProc	= (blendLen2 + silentLen) * numDepDec;
+//				progWeight			= (double) myProc / ((myProc + decPro) * blendLen2);
+// bruch gekuerzt:
+//				progWeight			= 9.0 / (myProc + decProc);
+				
+//				progWeight			= progRatio * blendLen2 / ((blendLen2 + silentLen) * blendLen2);
+// bruch gekuerzt:
+//				progWeight			= progRatio / (blendLen2 + silentLen);
+//				progWeight			= progRatio / blendLen2 - 1.0 / silentLen;
+				
+				final double progRatio2		= 1.0 / (1.0 + numDepDec);  // inf:1 for silentLen
+				final double w				= (double) blendLen2 / (blendLen2 + silentLen); // weight of progRatio versus progRatio2
+				progWeight					= (progRatio*w + progRatio2*(1.0-w)) / blendLen2;
+			
 			} else {
 				writeStake2	= alloc( clearSpan );
 				writeStake1	= writeStake2;
 				writeStake3	= writeStake2;
 				collStakes.add( writeStake2 );
+				progWeight	= progRatio / (blendLen2 + silentLen);
+//				progWeight	= 9.0 / ((blendLen2 + silentLen) * (numDepDec + 9));
 			}
 
 			// ---- fade out part ----
@@ -1486,6 +1553,8 @@ extends BasicTrail
 				bc.fadeOut( framesWritten, fadeBuf, 0, fadeBuf, 0, chunkLen );		// only fade selected tracks
 				writeStake1.writeFrames( readWriteBufF, 0, chunkSpan );
 				framesWritten += chunkLen;
+				totalFramesWritten += chunkLen;
+				setProgression( totalFramesWritten, progWeight );
 			}
 			
 			// ---- middle part ----
@@ -1511,6 +1580,8 @@ extends BasicTrail
 					}
 					writeStake2.writeFrames( writeBufS, 0, chunkSpan );
 					framesWritten += chunkLen;
+					totalFramesWritten += chunkLen;
+					setProgression( totalFramesWritten, progWeight );
 				}
 			}
 
@@ -1523,19 +1594,26 @@ extends BasicTrail
 				bc.fadeIn( framesWritten, fadeBuf, 0, fadeBuf, 0, chunkLen );		// only fade selected tracks
 				writeStake3.writeFrames( readWriteBufF, 0, chunkSpan );
 				framesWritten += chunkLen;
+				totalFramesWritten += chunkLen;
+				setProgression( totalFramesWritten, progWeight );
 			}
 			writeStake1.flush();
 			if( writeStake1 != writeStake3 ) writeStake3.flush();
+			success = true;
 		}
-		catch( IOException e1 ) {
-			for( int i = 0; i < collStakes.size(); i++ ) {
-				((AudioStake) collStakes.get( i )).dispose();
+		finally {
+			if( !success ) {
+				for( int i = 0; i < collStakes.size(); i++ ) {
+					((AudioStake) collStakes.get( i )).dispose();
+				}
 			}
-			throw e1;
 		}
 
+//final long time2 = System.currentTimeMillis();
 		// XXX mode
 		this.editAddAll( source, collStakes, ce );
+//final long time3 = System.currentTimeMillis();
+//System.out.println( "ratio " + (double) (time2 - time1) / (time3 - time1) );
 	}
 
 	public static void readFrames( List stakesByStart, float[][] data, int dataOffset, Span readSpan )
@@ -1657,24 +1735,27 @@ System.err.println( "WARNING: trying to read beyond the trail's stop" );
 //		ste[0].insert( f, offset, totalSpan );
 //	}
 
-	public boolean flatten( InterleavedStreamFile f, Span span )
+	public void flatten( InterleavedStreamFile f, Span span )
     throws IOException
 	{
 		final Span			fileSpan	= new Span( f.getFramePosition(), span.getLength() );
 		final AudioStake	stake		= new InterleavedAudioStake( span, f, fileSpan );
 		
 		try {
-			return flatten( stake, span );
+			flatten( stake, span );
 		}
 		finally {
 			stake.dispose();
 		}
 	}
 
-	public boolean flatten( InterleavedStreamFile[] fs, Span span )
+	public void flatten( InterleavedStreamFile[] fs, Span span )
     throws IOException
 	{
-		if( fs.length == 1 ) return flatten( fs[ 0 ], span );	// more efficient
+		if( fs.length == 1 ) {
+			flatten( fs[ 0 ], span );	// more efficient
+			return;
+		}
 	
 		final Span[]		fileSpans	= new Span[ fs.length ];
 		for( int i = 0; i < fileSpans.length; i++ ) {
@@ -1683,23 +1764,23 @@ System.err.println( "WARNING: trying to read beyond the trail's stop" );
 		final AudioStake	stake		= new MultiMappedAudioStake( span, fs, fileSpans );
 
 		try {
-			return flatten( stake, span );
+			flatten( stake, span );
 		}
 		finally {
 			stake.dispose();
 		}
 	}
 	
-	private boolean flatten( AudioStake target, Span span )
+	private void flatten( AudioStake target, Span span )
     throws IOException
 	{
 		if( target.getChannelNum() != numChannels ) {
 			throw new IllegalArgumentException( "Wrong # of channels (required: " + numChannels +
 				" / got: " + target.getChannelNum() );
 		}
-		if( span.isEmpty() ) return true;
+		if( span.isEmpty() ) return;
 	
-		final ProcessingThread	pt			= ProcessingThread.currentThread();
+//		final ProcessingThread	pt			= ProcessingThread.currentThread();
 		final float[][]			data		= new float[ numChannels ][ BUFSIZE ];
 		final double			progWeight	= 1.0 / span.getLength();
 		final int				num			= getNumStakes();
@@ -1722,10 +1803,7 @@ System.err.println( "WARNING: trying to read beyond the trail's stop" );
 				source.readFrames( data, 0, subSpan );
 				target.writeFrames( data, 0, subSpan );
 				readOff += chunkLen;
-				if( pt != null ) {
-					pt.setProgression( (float) ((readOff - span.start) * progWeight) );
-					if( ProcessingThread.shouldCancel() ) return false;
-				}
+				setProgression( readOff - span.start, progWeight );
 //if( true ) throw new IOException( "FAIL TEST" );
 			}
 			idx++;
@@ -1742,249 +1820,8 @@ System.err.println( "WARNING: trying to flatten beyond the trail's stop" );
 				subSpan	 = new Span( readOff, readOff + chunkLen );
 				target.writeFrames( data, 0, subSpan );
 				readOff += chunkLen;
-				if( pt != null ) {
-					pt.setProgression( (float) ((readOff - span.start) * progWeight) );
-					if( ProcessingThread.shouldCancel() ) return false;
-				}
+				setProgression( readOff - span.start, progWeight );
 			}
 		}
-		
-		return true;
 	}
-	
-/*
-	public boolean flatten( InterleavedStreamFile[] fs, ProcessingThread pt, float progOff, float progWeight )
-    throws IOException
-	{
-		return ste[0].flatten( fs, pt, progOff, progWeight );
-	}
-
-//	public boolean flattenAndExchange( InterleavedStreamFile f, ProcessingThread pt,
-//									   float progOff, float progWeight )
-//    throws IOException
-//	{
-//		return ste[0].flattenAndExchange( f, pt, progOff, progWeight );
-//	}
-	
-	public boolean flattenAndExchange( InterleavedStreamFile[] fs, ProcessingThread pt,
-									   float progOff, float progWeight )
-    throws IOException
-	{
-		return ste[0].flattenAndExchange( fs, pt, progOff, progWeight );
-	}
-	
-	public boolean flattenAndExchange( InterleavedStreamFile[] fs, ProcessingThread pt,
-									   float progOff, float progWeight, CacheManager cm )
-    throws IOException
-	{
-//		if( !cm.isActive() ) {
-			return flattenAndExchange( fs, pt, progOff, progWeight );
-//		}
-//
-//		final Span				totalSpan	= new Span( 0, ste[0].getFrameNum() );
-//		InterleavedStreamFile	subFlatten	= createCacheFile( cm, f, totalSpan.getStop() );
-//		final long				lastMod		= f.getFile().lastModified();
-//
-//		// writes full-length + first subsample
-//		if( !flattenAvecCache( f, subFlatten, totalSpan, pt, progOff, progWeight )) return false;
-//
-//		// now close files, and re-open for reading
-//		f.close();
-//		f.getFile().setLastModified( lastMod );								// XXX bit tricky
-//		f = AudioFile.openAsRead( f.getFile() );
-//		ste[0].clear();
-//		ste[0].insert( f, 0, totalSpan, null );
-//		
-//		// register the cache file, and replace ste[1] with this new file
-//		subFlatten.close();
-//		subFlatten = AudioFile.openAsRead( subFlatten.getFile() );
-//		cm.addFile( subFlatten.getFile() );
-//		ste[1].clear();
-//		ste[1].insert( subFlatten, 0, totalSpan, null );
-//		
-//		if( pt != null ) {
-//			pt.setProgression( progOff + progWeight );
-//			return( !pt.shouldCancel() );
-//		} else {
-//			return true;
-//		}
-	}
-
-	private boolean saveWaveformCache( CacheManager cm, InterleavedStreamFile ref,
-									   ProcessingThread pt, float progOff, float progWeight )
-	throws IOException
-	{
-		final Span					totalSpan	= new Span( 0, ste[0].getFrameNum() );
-		final InterleavedStreamFile	f			= createCacheFile( cm, ref, totalSpan.getStop() );
-
-		if( ste[1].getSampledChunkList( totalSpan ).size() > 1 ) {
-			System.err.println( "WARNING : mte.saveWaveformCache called with fragmented track list!" );
-		}
-//		if( ste[1].flattenAndExchange( f, pt, progOff, progWeight )) {
-	if( ste[1].flattenAndExchange( new InterleavedStreamFile[] { f }, pt, progOff, progWeight )) {
-			cm.addFile( f.getFile() );
-//		for( int i = 2; i < SUBNUM; i++ ) {
-//			if( ste[i].getSampledChunkList( totalSpan ).size() > 1 ) {
-//				ste[i].flattenAndExchange( ste[i].createTempFile(), null, 0.0f, 1.0f );
-//			}
-//		}
-			if( pt != null ) {
-				pt.setProgression( progOff + progWeight );
-				return( !pt.shouldCancel() );
-			} else {
-				return true;
-			}
-		} else {
-			return false;
-		}
-	}
-	
-	private InterleavedStreamFile createCacheFile( CacheManager cm, InterleavedStreamFile ref, long numFrames )
-	throws IOException
-	{
-		final AudioFileDescr		afd			= new AudioFileDescr();
-		final File					cacheFile	= cm.createCacheFileName( ref.getFile() );
-
-		cm.removeFile( cacheFile );		// in case it existed
-		afd.type			= AudioFileDescr.TYPE_AIFF;
-		afd.channels		= ste[1].getChannelNum();
-		afd.rate			= ste[1].getRate();
-//		afd.bitsPerSample	= 16;	// XXX should check if reference is float so clipping is avoided
-//		afd.sampleFormat	= AudioFileDescr.FORMAT_INT;
-		afd.bitsPerSample	= 32;	// XXX should check if reference is float so clipping is avoided
-		afd.sampleFormat	= AudioFileDescr.FORMAT_FLOAT;
-		afd.file			= cacheFile;
-		afd.setProperty( AudioFileDescr.KEY_APPCODE, new CacheInfo( ref, this.model, numFrames ).encode() );
-		
-		return AudioFile.openAsWrite( afd );
-	}
-*/
-
-
-/*
-	private boolean cachedSubsampleInsert( Span tag, SyncCompoundEdit ce, ProcessingThread pt, float progOff, float progWeight )
-    throws IOException
-	{
-//debugDump();
-
-		Span			extendedSpan	= new Span( tag.getStart() & MAXMASK, (tag.getStop() + MAXCEILADD) & MAXMASK );
-		SampledChunk[]	ts				= new SampledChunk[ SUBNUM ];
-		int				len, i, ch;
-		float			f1;
-		Span			tag2;
-		long			pos				= extendedSpan.getStart();
-		long			framesWritten	= 0;
-		long			insertLen		= extendedSpan.getLength();
-		long			fullrateStop	= Math.min( extendedSpan.getStop(), ste[0].getFrameNum() );
-		long			fullrateLen		= fullrateStop - extendedSpan.getStart();
-		int				numFullBuf		= (int) ((fullrateLen + MAXCEILADD) >> MAXSHIFT);
-		
-		progWeight /= insertLen;
-		progOff	   -= pos * progWeight;
-		
-		for( i = 2; i < SUBNUM; i++ ) {
-			ts[i] = ste[i].beginInsert( extendedSpan, ce );
-		}
-
-		for( i = 0; i < numFullBuf; i++ ) {
-			tag2			 = new Span( pos, pos + MAXCOARSE );
-//System.err.println( "reading "+ tag2.getStart()+" ... "+tag2.getStop() );
-			ste[ 1 ].read( tag2, tmpBuf2, 0 );
-			subsampleWrite( null, tmpBuf2, ts, framesWritten, MAXCOARSE );
-			pos				+= MAXCOARSE;
-			framesWritten	+= MAXCOARSE;
-			if( pt != null ) {
-				pt.setProgression( pos * progWeight + progOff );
-				if( pt.shouldCancel() ) return false;
-			}
-		}
-
-		// we need to remove the obsolete material
-		// that was replaced by pre/postroll
- 		tag2 = new Span( pos, pos + insertLen - tag.getLength() );
-
-		for( i = 2; i < SUBNUM; i++ ) {
-			ste[i].finishWrite( ts[i] );
-			ste[i].remove( tag2, ce );		// XXX arbeitsweise ueberpruefen!
-		}
-		
-		return true;
-    }
-	
-	private boolean flattenAvecCache( InterleavedStreamFile fullFlatten, InterleavedStreamFile subFlatten, Span tag,
-									  ProcessingThread pt, float progOff, float progWeight )
-    throws IOException
-	{
-		Span		extendedSpan	= new Span( tag.getStart() & MAXMASK, (tag.getStop() + MAXCEILADD) & MAXMASK );
-		int			len, i, ch;
-		float		f1;
-		Span		tag2;
-		long		pos				= extendedSpan.getStart();
-		long		framesWritten	= 0;
-		long		insertLen		= extendedSpan.getLength();
-		long		fullrateStop	= Math.min( extendedSpan.getStop(), ste[0].getFrameNum() );
-		long		fullrateLen		= fullrateStop - extendedSpan.getStart();
-		int			numFullBuf		= (int) (fullrateLen >> MAXSHIFT);
-		
-		progWeight /= insertLen;
-		progOff	   -= pos * progWeight;
-		
-		for( i = 0; i < numFullBuf; i++ ) {
-			tag2			 = new Span( pos, pos + MAXCOARSE );
-			ste[0].read( tag2, tmpBuf, 0 );
-			fullFlatten.writeFrames( tmpBuf, 0, MAXCOARSE );
-			subFlattenWrite( subFlatten, tmpBuf, tmpBuf2, MAXCOARSE );
-			pos				+= MAXCOARSE;
-			framesWritten	+= MAXCOARSE;
-			if( pt != null ) {
-				pt.setProgression( pos * progWeight + progOff );
-				if( pt.shouldCancel() ) return false;
-			}
-		}
-
-		len = (int) (fullrateStop - pos);
-		if( len > 0 ) {
-			tag2 = new Span( pos, pos + len );
-			ste[0].read( tag2, tmpBuf, 0 );
-			fullFlatten.writeFrames( tmpBuf, 0, len );
-			for( ch = 0; ch < channels; ch++ ) {
-				f1 = tmpBuf[ch][len-1];
-				for( i = len; i < MAXCOARSE; i++ ) {
-					tmpBuf[ch][i] = f1;
-				}
-			}
-			subFlattenWrite( subFlatten, tmpBuf, tmpBuf2, MAXCOARSE );
-			pos				+= MAXCOARSE;
-			framesWritten	+= MAXCOARSE;
-			if( pt != null ) {
-				pt.setProgression( pos * progWeight + progOff );
-				if( pt.shouldCancel() ) return false;
-			}
-		}
-		
-		return true;
-    }
-
-	private void subFlattenWrite( InterleavedStreamFile subFlatten, float[][] inBuf, float[][] outBuf, int len )
-	throws IOException
-	{
-		switch( model ) {
-		case MODEL_HALFWAVE_PEAKRMS:
-			len	>>= decimations[1];
-			decimatePCMtoHalfPeakRMS( inBuf, outBuf, 0, len, 1 << decimations[1] );
-			subFlatten.writeFrames( outBuf, 0, len );
-			break;
-
-		case MODEL_MEDIAN:
-			len	>>= decimations[1];
-			decimateMedian( inBuf, outBuf, 0, len, 1 << decimations[1] );
-			subFlatten.writeFrames( outBuf, 0, len );
-			break;
-
-		default:
-			assert false : model;
-			break;
-		}
-	}
-*/	
 } // class AudioTrail

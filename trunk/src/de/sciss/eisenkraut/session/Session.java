@@ -73,7 +73,7 @@ import de.sciss.util.*;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 05-Nov-07
+ *  @version	0.70, 12-Nov-07
  *
  *	@todo		try get rid of the GUI stuff in here
  */
@@ -948,6 +948,7 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 		 *	- liefere ein array aller geschriebener files in client arg "afs"
 		 */
 		public int processRun( ProcessingThread context )
+		throws IOException
 		{
 			final AudioFileDescr[]			afds		= (AudioFileDescr[]) context.getClientArg( "afds" );
 			final int						numFiles	= afds.length;
@@ -963,34 +964,28 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 			
 			context.putClientArg( "afs", afs );
 
-			try {
-				if( afds[ 0 ].isPropertySupported( AudioFileDescr.KEY_MARKERS )) {
-					doc.markers.copyToAudioFile( afds[ 0 ], span );	// XXX
-				} else if( doc.markers.isEmpty() ) {
-					System.err.println( "WARNING: markers are not saved in this file format!!!" );
-				}
-				for( int i = 0; i < numFiles; i++ ) {
-					if( afds[ i ].file.exists() ) {
+			if( afds[ 0 ].isPropertySupported( AudioFileDescr.KEY_MARKERS )) {
+				doc.markers.copyToAudioFile( afds[ 0 ], span );	// XXX
+			} else if( doc.markers.isEmpty() ) {
+				System.err.println( "WARNING: markers are not saved in this file format!!!" );
+			}
+			for( int i = 0; i < numFiles; i++ ) {
+				if( afds[ i ].file.exists() ) {
 //						tempFs[ i ]			= File.createTempFile( "eis", null, afds[ i ].file.getParentFile() );
 //						tempFs[ i ].delete();
-						tempF				= File.createTempFile( "eis", null, afds[ i ].file.getParentFile() );
-						afdTemp				= new AudioFileDescr( afds[ i ]);
+					tempF				= File.createTempFile( "eis", null, afds[ i ].file.getParentFile() );
+					afdTemp				= new AudioFileDescr( afds[ i ]);
 //						afdTemp.file		= tempFs[ i ];
-						afdTemp.file		= tempF;
+					afdTemp.file		= tempF;
 //						renamed[ i ]		= true;
-						afs[ i ]			= AudioFile.openAsWrite( afdTemp );
-					} else {
-						afs[ i ]			= AudioFile.openAsWrite( afds[ i ]);
-					}
+					afs[ i ]			= AudioFile.openAsWrite( afdTemp );
+				} else {
+					afs[ i ]			= AudioFile.openAsWrite( afds[ i ]);
 				}
-				
-				if( !at.flatten( afs, span )) return CANCELLED;
-				return DONE;
 			}
-			catch( IOException e1 ) {
-				context.setException( e1 );
-				return FAILED;
-			}
+			
+			at.flatten( afs, span );
+			return DONE;
 		} // run
 
 		public void processFinished( ProcessingThread context )
@@ -1327,6 +1322,7 @@ tryRename:					  {
 		 *  This method is called by ProcessingThread
 		 */
 		public int processRun( ProcessingThread context )
+		throws IOException
 		{
 			final ClipboardTrackList		tl					= (ClipboardTrackList) context.getClientArg( "tl" );
 			final long						insertPos			= ((Long) context.getClientArg( "pos" )).longValue();
@@ -1346,70 +1342,64 @@ tryRename:					  {
 			boolean[]						trackMap;
 			boolean							isAudio, pasteAudio;
 
-			try {
-				for( int i = 0; i < tis.size(); i++ ) {
-					ti		= (Track.Info) tis.get( i );
-					if( ti.selected ) {	// ----------------- selected tracks -----------------
-						try {
-							ti.trail.editBegin( edit );
-							isAudio	= ti.trail instanceof AudioTrail;
-							srcTrail = tl.getSubTrail( ti.trail.getClass() );
+			for( int i = 0; i < tis.size(); i++ ) {
+				ti		= (Track.Info) tis.get( i );
+				if( ti.selected ) {	// ----------------- selected tracks -----------------
+					try {
+						ti.trail.editBegin( edit );
+						isAudio	= ti.trail instanceof AudioTrail;
+						srcTrail = tl.getSubTrail( ti.trail.getClass() );
+					
+						if( isAudio ) {
+							pasteAudio = (srcTrail != null) && (((AudioTrail) srcTrail).getChannelNum() > 0);
+						} else {
+							pasteAudio = false;
+						}
 						
-							if( isAudio ) {
-								pasteAudio = (srcTrail != null) && (((AudioTrail) srcTrail).getChannelNum() > 0);
-							} else {
-								pasteAudio = false;
-							}
-							
-							if( mode == EDIT_INSERT ) {
-								ti.trail.editInsert( this, insertSpan, edit );
-								if( cutTimeline ) ti.trail.editRemove( this, cutTimelineSpan, edit );
+						if( mode == EDIT_INSERT ) {
+							ti.trail.editInsert( this, insertSpan, edit );
+							if( cutTimeline ) ti.trail.editRemove( this, cutTimelineSpan, edit );
 //							} else if( (mode == EDIT_OVERWRITE) && (pasteAudio || !isAudio) ) { // Audio needs to be cleared even in Mix mode!
-							} else if( pasteAudio || !isAudio ) { // Audio needs to be cleared even in Mix mode!
-								ti.trail.editClear( this, insertSpan, edit );
-							}
+						} else if( pasteAudio || !isAudio ) { // Audio needs to be cleared even in Mix mode!
+							ti.trail.editClear( this, insertSpan, edit );
+						}
+						
+						if( pasteAudio ) {
+							at			= (AudioTrail) ti.trail;
+							trackMap	= tl.getTrackMap( ti.trail.getClass() );
 							
-							if( pasteAudio ) {
-								at			= (AudioTrail) ti.trail;
-								trackMap	= tl.getTrackMap( ti.trail.getClass() );
-								
 //System.err.println( "clipboard tm : " );
 //for( int x = 0; x < trackMap.length; x++ ) { System.err.println( "  " + trackMap[ x ]); }
-								int[] trackMap2 = new int[ at.getChannelNum() ];
-								for( int j = 0, k = 0; j < trackMap2.length; j++ ) {
-									if( ti.trackMap[ j ]) {	// target track selected
-										for( ; (k < trackMap.length) && !trackMap[ k ] ; k++ ) ;
-										if( k < trackMap.length ) {	// source track exiting
-											trackMap2[ j ] = k++;
-										} else if( tl.getTrackNum( ti.trail.getClass() ) > 0 ) {		// ran out of source tracks, fold over (simple mono -> stereo par exemple)
-											for( k = 0; !trackMap[ k ] ; k++ ) ;
-											trackMap2[ j ] = k++;
-										} else {
-											trackMap2[ j ] = -1;		// there aren't any clipboard tracks ....
-										}
-									} else {							// target track not selected
-										trackMap2[ j ] = -1;
+							int[] trackMap2 = new int[ at.getChannelNum() ];
+							for( int j = 0, k = 0; j < trackMap2.length; j++ ) {
+								if( ti.trackMap[ j ]) {	// target track selected
+									for( ; (k < trackMap.length) && !trackMap[ k ] ; k++ ) ;
+									if( k < trackMap.length ) {	// source track exiting
+										trackMap2[ j ] = k++;
+									} else if( tl.getTrackNum( ti.trail.getClass() ) > 0 ) {		// ran out of source tracks, fold over (simple mono -> stereo par exemple)
+										for( k = 0; !trackMap[ k ] ; k++ ) ;
+										trackMap2[ j ] = k++;
+									} else {
+										trackMap2[ j ] = -1;		// there aren't any clipboard tracks ....
 									}
+								} else {							// target track not selected
+									trackMap2[ j ] = -1;
 								}
-								if( !at.copyRangeFrom( (AudioTrail) srcTrail, copySpan, insertPos, mode, this, edit, trackMap2, bcPre, bcPost )) return CANCELLED;
-
-							} else if( (ti.numTracks == 1) && (tl.getTrackNum( ti.trail.getClass() ) == 1) ) {
-								ti.trail.editAddAll( this, srcTrail.getCuttedRange(
-									copySpan, true, srcTrail.getDefaultTouchMode(), delta ), edit );
 							}
-						}
-						finally {
-							ti.trail.editEnd( edit );
+							if( !at.copyRangeFrom( (AudioTrail) srcTrail, copySpan, insertPos, mode, this, edit, trackMap2, bcPre, bcPost )) return CANCELLED;
+
+						} else if( (ti.numTracks == 1) && (tl.getTrackNum( ti.trail.getClass() ) == 1) ) {
+							ti.trail.editAddAll( this, srcTrail.getCuttedRange(
+								copySpan, true, srcTrail.getDefaultTouchMode(), delta ), edit );
 						}
 					}
+					finally {
+						ti.trail.editEnd( edit );
+					}
 				}
+			}
 
-				return DONE;
-			}
-			catch( IOException e1 ) {
-				context.setException( e1 );
-				return FAILED;
-			}
+			return DONE;
 		}
 
 		public void processFinished( ProcessingThread context )
@@ -1581,6 +1571,7 @@ tryRename:					  {
 		 *  This method is called by ProcessingThread
 		 */
 		public int processRun( ProcessingThread context )
+		throws IOException
 		{
 			final Span						span				= (Span) context.getClientArg( "span" );
 			final int						mode				= ((Integer) context.getClientArg( "mode" )).intValue();
@@ -1595,48 +1586,41 @@ tryRename:					  {
 			Track.Info						ti;
 			boolean							isAudio;
 
-			try {
-				for( int i = 0; i < tis.size(); i++ ) {
-					ti		= (Track.Info) tis.get( i );
-					try {
-						ti.trail.editBegin( edit );
-						isAudio = ti.trail instanceof AudioTrail;
-						if( ti.selected ) {
-							if( mode == EDIT_INSERT ) {
-								if( isAudio ) {
-									if( bc == null ) {
-										ti.trail.editRemove( this, span, edit );
-									} else {
-										ti.trail.editRemove( this, new Span( span.start - left, span.stop + right ), edit );
-										ti.trail.editInsert( this, new Span( span.start - left, span.start + right ), edit );
-									}
-									at = (AudioTrail) ti.trail;
-									at.clearRange( span, EDIT_INSERT, this, edit, ti.trackMap, bc );
-								} else {
+			for( int i = 0; i < tis.size(); i++ ) {
+				ti		= (Track.Info) tis.get( i );
+				try {
+					ti.trail.editBegin( edit );
+					isAudio = ti.trail instanceof AudioTrail;
+					if( ti.selected ) {
+						if( mode == EDIT_INSERT ) {
+							if( isAudio ) {
+								if( bc == null ) {
 									ti.trail.editRemove( this, span, edit );
+								} else {
+									ti.trail.editRemove( this, new Span( span.start - left, span.stop + right ), edit );
+									ti.trail.editInsert( this, new Span( span.start - left, span.start + right ), edit );
 								}
+								at = (AudioTrail) ti.trail;
+								at.clearRange( span, EDIT_INSERT, this, edit, ti.trackMap, bc );
 							} else {
-								ti.trail.editClear( this, span, edit );
-								if( isAudio ) {
-									at = (AudioTrail) ti.trail;
-									at.clearRange( span, EDIT_OVERWRITE, this, edit, ti.trackMap, bc );
-								}
+								ti.trail.editRemove( this, span, edit );
 							}
-						} else if( cutTimeline ) {
-							ti.trail.editRemove( this, cutTimelineSpan, edit );
+						} else {
+							ti.trail.editClear( this, span, edit );
+							if( isAudio ) {
+								at = (AudioTrail) ti.trail;
+								at.clearRange( span, EDIT_OVERWRITE, this, edit, ti.trackMap, bc );
+							}
 						}
-					}
-					finally {
-						ti.trail.editEnd( edit );
+					} else if( cutTimeline ) {
+						ti.trail.editRemove( this, cutTimelineSpan, edit );
 					}
 				}
-
-				return DONE;
+				finally {
+					ti.trail.editEnd( edit );
+				}
 			}
-			catch( IOException e1 ) {
-				context.setException( e1 );
-				return FAILED;
-			}
+			return DONE;
 		} // run
 
 		public void processFinished( ProcessingThread context )
@@ -1805,6 +1789,7 @@ tryRename:					  {
 		 *  This method is called by ProcessingThread
 		 */
 		public int processRun( ProcessingThread context )
+		throws IOException
 		{
 			final List					tis			= (List) context.getClientArg( "tis" );
 			final AbstractCompoundEdit	edit		= (AbstractCompoundEdit) context.getClientArg( "edit" );
@@ -1812,27 +1797,21 @@ tryRename:					  {
 			Track.Info					ti;
 			AudioTrail					at;
 
-			try {
-				for( int i = 0; i < tis.size(); i++ ) {
-					ti = (Track.Info) tis.get( i );
-					ti.trail.editBegin( edit );
-					try {
-						ti.trail.editInsert( this, insertSpan, edit );
-						if( ti.trail instanceof AudioTrail ) {
-							at			= (AudioTrail) ti.trail;							
-							at.editAdd( this, at.allocSilent( insertSpan ), edit );
-						}
-					}
-					finally {
-						ti.trail.editEnd( edit );
+			for( int i = 0; i < tis.size(); i++ ) {
+				ti = (Track.Info) tis.get( i );
+				ti.trail.editBegin( edit );
+				try {
+					ti.trail.editInsert( this, insertSpan, edit );
+					if( ti.trail instanceof AudioTrail ) {
+						at			= (AudioTrail) ti.trail;							
+						at.editAdd( this, at.allocSilent( insertSpan ), edit );
 					}
 				}
-				return DONE;
+				finally {
+					ti.trail.editEnd( edit );
+				}
 			}
-			catch( IOException e1 ) {
-				context.setException( e1 );
-				return FAILED;
-			}
+			return DONE;
 		}
 
 		public void processFinished( ProcessingThread context )

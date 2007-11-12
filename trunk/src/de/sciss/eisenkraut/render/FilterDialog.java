@@ -80,7 +80,7 @@ import de.sciss.util.Flag;
  *	will deal with this issue.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 12-Oct-06
+ *  @version	0.70, 12-Nov-07
  *
  *	@todo		an option to render the transformed data
  *				into the clipboard.
@@ -403,6 +403,10 @@ consc.as = at.alloc( source.context.getTimeSpan() );
 //		if( (consc.bs != null) && (consc.edit != null) ) {
 //			mte.finishWrite( consc.bs, consc.edit, pt, 0.9f, 0.1f );
 		if( consc.edit != null ) {
+			
+			ProcessingThread.flushProgression();
+			ProcessingThread.setNextProgStop( 1.0f );
+			
 //			if( consc.as != null ) {
 			if( source.validAudio ) {
 				consc.as.flush();
@@ -576,7 +580,8 @@ consc.as.writeFrames( source.audioBlockBuf, source.audioBlockBufOff, source.bloc
 	
 	public void setProgression( float p )
 	{
-		doc.getFrame().setProgression( p * 0.9f );
+		try { ProcessingThread.update( p ); } catch( ProcessingThread.CancelledException e1 ) {}
+//		doc.getFrame().setProgression( p ); // p * 0.9f;
 		this.progress	= p;
 	}
 
@@ -668,6 +673,7 @@ consc.as.writeFrames( source.audioBlockBuf, source.audioBlockBufOff, source.bloc
  *	@see	#invokeProducerFinish( ProcessingThread, RenderContext, RenderSource, RenderPlugIn )
  */
 	public int processRun( ProcessingThread pt )
+	throws IOException
 	{
 		final RenderContext				context				= (RenderContext) pt.getClientArg( "context" );
 //		final List						tis					= (List) pt.getClientArg( "tis" );
@@ -790,6 +796,8 @@ return FAILED;
 //			}
 
 			// --- rendering loop ---
+			
+			if( source.validAudio ) ProcessingThread.setNextProgStop( 0.9f ); // XXX arbitrary
 
 prodLp:		while( !ProcessingThread.shouldCancel() ) {
 				if( randomAccess ) {
@@ -859,10 +867,6 @@ at.readFrames( inBuf, inOff, source.blockSpan );
 			} else {
 				return( invokeProducerFinish( pt, source, plugIn ) ? DONE : FAILED );
 			}
-		}
-		catch( IOException e1 ) {
-			pt.setException( e1 );
-			return FAILED;
 		}
 		finally {
 			if( consStarted && !consFinished ) {	// on failure cancel rendering and undo edits
