@@ -534,6 +534,12 @@ implements OSCRouter, de.sciss.jcollider.Constants, ServerListener, DocumentList
 //System.err.println( "new nw " + nw.hashCode() );
 //nw.VERBOSE	= true;
 //			nw.start();
+			
+//			final List cmdArray = server.getOptions().toOptionList( serverPort );
+//			for( int i = 0; i < cmdArray.size(); i++ ) {
+//				System.out.println( i + ": \"" + cmdArray.get( i ) + "\"" );
+//			}
+			
 			server.boot();
 			return true;
 		}
