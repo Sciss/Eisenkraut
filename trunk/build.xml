@@ -42,27 +42,22 @@
 			<fileset dir="${lib.dir}" excludes="*.jar" />
 		</delete> -->
 	</target>
-<!--	<target name="jar">
-		<jar jarfile="Eisenkraut.jar" basedir="bin">
-			<manifest>
-				<attribute name="Main-Class" value="de.sciss.eisenkraut.Main"/>
-				<attribute name="Class-Path" value="libraries/MRJAdapter.jar libraries/JCollider.jar libraries/NetUtil.jar libraries/SwingOSC.jar libraries/Normalizer.jar"/>
-			</manifest>
-		</jar>
-		<jar jarfile="Eisenkraut.jar" basedir="resources" update="true" />
-	</target> -->
 	<target name="main" depends="clean,compile" />
-	<target name="dist" depends="clean,jar">
-		<!-- sucky zip task don't create separate folder -->
-		<dirname property="parent.dir" file="${basedir}"/>
-		<basename property="folder.name" file="${basedir}"/>
-		<mkdir dir="${dist.dir}"/>
-		<zip destfile="${dist.dir}/${ant.project.name}-${version}.zip" basedir="${parent.dir}" includes="${folder.name}/**" excludes="${folder.name}/${classes.dir}/**, ${folder.name}/${dist.dir}, **/.DS_Store"/>
-	</target>
 	<target name="osx-app" depends="jar">
 		<copy file="${jar.dir}/${ant.project.name}.jar" todir="${ant.project.name}.app/Contents/Resources/Java" />
 		<touch>
 			<fileset dir="${ant.project.name}.app" />
 		</touch>
+	</target>
+	<target name="dist" depends="clean,osx-app">
+		<!-- sucky zip task don't create separate folder -->
+		<dirname property="parent.dir" file="${basedir}"/>
+		<basename property="folder.name" file="${basedir}"/>
+		<mkdir dir="${dist.dir}"/>
+		<!-- tricky shit to preserve executable attribute of bash script and mac os x executable -->
+		<zip destfile="${dist.dir}/${ant.project.name}-${version}.zip">
+			<zipfileset dir="${parent.dir}" includes="${folder.name}/**" excludes="${folder.name}/${classes.dir}/**, ${folder.name}/${dist.dir}, **/.DS_Store, ${folder.name}/${ant.project.name}.sh, ${folder.name}/${ant.project.name}.app/Contents/MacOS/${ant.project.name}"/>
+			<zipfileset dir="${parent.dir}" includes="${folder.name}/${ant.project.name}.sh, ${folder.name}/${ant.project.name}.app/Contents/MacOS/${ant.project.name}" filemode="775"/>
+		</zip>
 	</target>
 </project>
