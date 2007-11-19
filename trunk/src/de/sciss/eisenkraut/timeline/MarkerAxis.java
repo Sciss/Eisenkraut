@@ -31,16 +31,44 @@
 
 package de.sciss.eisenkraut.timeline;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.geom.*;
-import java.awt.image.*;
-import java.io.*;
-import javax.swing.*;
+import java.awt.BasicStroke;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Paint;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.Stroke;
+import java.awt.TexturePaint;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.geom.GeneralPath;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.List;
+import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.event.AncestorEvent;
 
-import de.sciss.eisenkraut.edit.*;
-import de.sciss.eisenkraut.session.*;
+import de.sciss.eisenkraut.edit.BasicCompoundEdit;
+import de.sciss.eisenkraut.session.Session;
 
 import de.sciss.app.AbstractApplication;
 import de.sciss.app.AncestorAdapter;
@@ -48,20 +76,28 @@ import de.sciss.app.DynamicListening;
 import de.sciss.app.AbstractCompoundEdit;
 import de.sciss.app.GraphicsHandler;
 import de.sciss.common.BasicWindowHandler;
-import de.sciss.gui.*;
+import de.sciss.gui.ComponentHost;
+import de.sciss.gui.DoClickAction;
+import de.sciss.gui.MenuAction;
+import de.sciss.gui.ParamField;
+import de.sciss.gui.SpringPanel;
 import de.sciss.io.Span;
-import de.sciss.timebased.*;
-import de.sciss.util.*;
+import de.sciss.timebased.MarkerStake;
+import de.sciss.timebased.Trail;
+import de.sciss.util.DefaultUnitTranslator;
+import de.sciss.util.Disposable;
+import de.sciss.util.Param;
+import de.sciss.util.ParamSpace;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 27-Sep-07
+ *  @version	0.70, 19-Nov-07
  *
  *	@todo		uses TimelineListener to
  *				not miss document changes. should use 
  *				a document change listener!
  *
- *	@todo		marker sortierung sollte zentral von sesion o.ae. vorgenommen
+ *	@todo		marker sortierung sollte zentral von session o.ae. vorgenommen
  *				werden sobald neues file geladen wird!
  *
  *	@todo		had to add 2 pixels to label y coordinate in java 1.5 ; have to check look back in 1.4
@@ -204,10 +240,12 @@ implements	TimelineListener, MouseListener, MouseMotionListener, KeyListener,
 	// sync: attempts shared on timeline
 	private void recalcDisplay( FontMetrics fm )
 	{
-		java.util.List	markers;
+		List			markers;
 		long			start, stop;
 		MarkerStake		mark;
 
+//long t1 = System.currentTimeMillis();
+		
 		shpFlags.reset();
 		numMarkers	= 0;
 //		numRegions	= 0;
@@ -220,6 +258,7 @@ implements	TimelineListener, MouseListener, MouseMotionListener, KeyListener,
 			scale		= (double) recentWidth / (stop - start);
 			
 			markers		= doc.markers.getRange( visibleSpan, true );	// XXX plus a bit before
+//long t3 = System.currentTimeMillis();
 			numMarkers	= markers.size();
 //System.err.println( "numMarkers = "+numMarkers );
 			if( (numMarkers > markLabels.length) || (numMarkers < (markLabels.length >> 1)) ) {
@@ -247,12 +286,16 @@ implements	TimelineListener, MouseListener, MouseMotionListener, KeyListener,
 //		finally {
 //			doc.bird.releaseShared( Session.DOOR_TIME );
 //		}
+//long t2 = System.currentTimeMillis();
+//System.out.println( "recalcDisplay " + (t3-t1) + " / " + (t2-t3) );
 	}
 
 	public void paintComponent( Graphics g )
 	{
 		super.paintComponent( g );
-	
+
+//long t1 = System.currentTimeMillis();
+		
 		final Graphics2D	g2	= (Graphics2D) g;
 		
 		g2.setFont( fntLabel );
@@ -288,7 +331,11 @@ implements	TimelineListener, MouseListener, MouseMotionListener, KeyListener,
 			g2.setColor( colrLabelDrag );
 			g2.drawString( dragLastMark.name, dragMarkFlagPos + 4, y );
 		}
-    }
+
+//long t2 = System.currentTimeMillis();
+//System.out.println( "paintComponent " + (t2 - t1) );
+//System.out.println( numMarkers );
+	}
 
 	public void paintFlagSticks( Graphics2D g2, Rectangle bounds )
 	{

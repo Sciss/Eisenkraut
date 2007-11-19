@@ -28,6 +28,7 @@
  *		25-Feb-06	implements TreeNode ; moved to double precision
  *		01-May-06	clearly distinugishes addPerform edits
  *		15-Oct-06	added getAll( int, int, boolean )
+ *		19-Nov-07	removed retainAll calls which are extremely slow
  */
 
 package de.sciss.timebased;
@@ -51,7 +52,7 @@ import de.sciss.io.Span;
 import de.sciss.util.ListEnum;
 
 /**
- *	@version	0.17, 06-Nov-07
+ *	@version	0.18, 19-Nov-07
  *	@author		Hanns Holger Rutz
  *
  *	@todo		addPerform( new Edit-Dispatch ) ueberpruefen (evtl. redundant)
@@ -265,6 +266,82 @@ implements Trail, EventManager.Processor
 	// returns stakes that intersect OR TOUCH the span
 	public List editGetRange( Span span, boolean byStart, AbstractCompoundEdit ce )
 	{
+		final List	collByStart, collByStop;
+		List		collResult;
+		int			idx;
+		
+		if( ce == null ) {
+			collByStart = collStakesByStart;
+			collByStop	= collStakesByStop;
+		} else {
+			checkEdit( ce );
+			collByStart	= collEditByStart == null ? collStakesByStart : collEditByStart;
+			collByStop	= collEditByStop == null ? collStakesByStop : collEditByStop;
+		}
+	
+//long t1 = System.currentTimeMillis();
+		if( byStart ) {
+			idx			= Collections.binarySearch( collByStop, new Long( span.start ), stopComparator );
+//long t2 = System.currentTimeMillis();
+			if( idx < 0 ) {
+				idx		= -(idx + 1);
+			} else {
+				// "If the list contains multiple elements equal to the specified object,
+				//  there is no guarantee which one will be found"
+				idx		= editGetLeftMostIndex( idx, false, ce );
+			}
+//	long t3 = System.currentTimeMillis();
+			collResult	= new ArrayList( collByStop.subList( idx, collByStop.size() ));
+			
+			Collections.sort( collResult, startComparator );
+			
+//	long t4 = System.currentTimeMillis();
+			idx			= Collections.binarySearch( collResult, new Long( span.stop ), startComparator );
+//	long t5 = System.currentTimeMillis();
+			if( idx < 0 ) {
+				idx		= -(idx + 1);
+			} else {
+				idx		= editGetRightMostIndex( idx, true, ce ) + 1;
+			}
+//	long t6 = System.currentTimeMillis();
+			collResult	= collResult.subList( 0, idx );
+//	long t7 = System.currentTimeMillis();
+//	System.out.println( "editGetRange " + (t2-t1) + " / " + (t3-t2) + " / " + (t4-t3) + " / " + (t5-t4) + " / " + (t6-t5) + " / " + (t7-t6) );
+	
+		} else {
+			idx			= Collections.binarySearch( collByStart, new Long( span.stop ), startComparator );
+//long t2 = System.currentTimeMillis();
+			if( idx < 0 ) {
+				idx		= -(idx + 1);
+			} else {
+				idx		= editGetRightMostIndex( idx, true, ce ) + 1;
+			}
+//long t3 = System.currentTimeMillis();
+			collResult	= new ArrayList( collByStart.subList( 0, idx ));
+		
+			Collections.sort( collResult, stopComparator );
+		
+//long t4 = System.currentTimeMillis();
+			idx		= Collections.binarySearch( collResult, new Long( span.start ), stopComparator );
+//long t5 = System.currentTimeMillis();
+			if( idx < 0 ) {
+				idx		= -(idx + 1);
+			} else {
+				idx		= editGetLeftMostIndex( idx, false, ce );
+			}
+//long t6 = System.currentTimeMillis();
+			collResult	= collResult.subList( idx, collResult.size() );
+//long t7 = System.currentTimeMillis();
+//System.out.println( "editGetRange " + (t2-t1) + " / " + (t3-t2) + " / " + (t4-t3) + " / " + (t5-t4) + " / " + (t6-t5) + " / " + (t7-t6) );
+		}
+
+		return collResult;
+	}
+
+/*
+	// returns stakes that intersect OR TOUCH the span
+	public List editGetRangeGAGA( Span span, boolean byStart, AbstractCompoundEdit ce )
+	{
 		final List	collByStart, collByStop, collUntil, collFrom, collResult;
 		int						idx;
 		
@@ -277,36 +354,46 @@ implements Trail, EventManager.Processor
 			collByStop	= collEditByStop == null ? collStakesByStop : collEditByStop;
 		}
 	
+long t1 = System.currentTimeMillis();
 		// "If the list contains multiple elements equal to the specified object,
 		//  there is no guarantee which one will be found"
 		idx			= Collections.binarySearch( collByStart, new Long( span.stop ), startComparator );
+long t2 = System.currentTimeMillis();
 		if( idx < 0 ) {
 			idx		= -(idx + 1);
 		} else {
 			idx		= editGetRightMostIndex( idx, true, ce ) + 1;
 		}
+long t3 = System.currentTimeMillis();
 		collUntil	= collByStart.subList( 0, idx );
+long t4 = System.currentTimeMillis();
 		idx			= Collections.binarySearch( collByStop, new Long( span.start ), stopComparator );
+long t5 = System.currentTimeMillis();
 		if( idx < 0 ) {
 			idx		= -(idx + 1);
 		} else {
 			idx		= editGetLeftMostIndex( idx, false, ce );
 		}
+long t6 = System.currentTimeMillis();
 		collFrom	= collByStop.subList( idx, collByStop.size() );
+long t7 = System.currentTimeMillis();
 
 		// XXX retainAll is slow? see de.sciss.inertia.session.Track for alternative
 		// algorithm (which doesn't ensure the result is sorted by start however!)
 		
 		if( byStart ) {
 			collResult	= new ArrayList( collUntil );
-			collResult.retainAll( collFrom );
+			collResult.retainAll( collFrom ); // XXX EXTREMELY SLOW!!!
 		} else {
 			collResult	= new ArrayList( collFrom );
-			collResult.retainAll( collUntil );
+			collResult.retainAll( collUntil ); // XXX EXTREMELY SLOW!!!
 		}
+long t8 = System.currentTimeMillis();
+System.out.println( "editGetRange " + (t2-t1) + " / " + (t3-t2) + " / " + (t4-t3) + " / " + (t5-t4) + " / " + (t6-t5) + " / " + (t7-t6) + " / " + (t8-t7) );
 		return collResult;
 	}
-
+*/
+	
 	public void insert( Object source, Span span )
 	{
 		editInsert( source, span, getDefaultTouchMode(), null );
