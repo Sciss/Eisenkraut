@@ -43,6 +43,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -367,16 +369,23 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 	
 	private void rebuildMeters()
 	{
-		final LevelMeter[]	meters;
+		final LevelMeter[]		meters;
+		final LevelMeterCaption	caption;
 		
 		oCfg	= superCollider.getOutputConfig();
 		pMeters.removeAll();
 		
 		if( oCfg != null ) {
-			meters = new LevelMeter[ oCfg.numChannels ];
+			meters	= new LevelMeter[ oCfg.numChannels ];
+			caption	= new LevelMeterCaption();
+//			caption.setForeground( Color.white ); // ( new Color( 0xFF, 0xFF, 0xFF, 0x7F ));
+			caption.setBorder( BorderFactory.createEmptyBorder( 5, 1, 4, 0 ));
+			pMeters.add( caption );
 			for( int ch = 0; ch < meters.length; ch++ ) {
 				meters[ ch ] = new LevelMeter();
 				meters[ ch ].setRefreshParent( true );
+				meters[ ch ].setBorder( BorderFactory.createEmptyBorder( 5, 1, 4, 1 ));
+				meters[ ch ].setTicks( 101 );
 				pMeters.add( meters[ ch ]);
 			}
 			masterMeters = meters;

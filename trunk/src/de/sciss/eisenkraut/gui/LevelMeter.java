@@ -28,13 +28,14 @@
  *		22-Apr-06	fixed minimum height
  *		13-Jul-06	added dispose()
  *		21-Sep-06	setPeakAndRMS() returns whether fallen peak value > 0; added getPeakDecibles() and getHoldDecibels()
+ *		22-Nov-07	ballistics and scaling close to DIN IEC 60268-10 / RTW DB1252DIG
  */
 
 package de.sciss.eisenkraut.gui;
 
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+//import java.awt.event.MouseAdapter;
+//import java.awt.event.MouseEvent;
 import java.awt.geom.*;
 import java.awt.image.*;
 import java.beans.*;
@@ -52,7 +53,7 @@ import de.sciss.util.Disposable;
  *	for a smooth look.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 17-Oct-06
+ *  @version	0.70, 22-Nov-07
  *
  *	@todo	allow linear display (now it's hard coded logarithmic)
  *	@todo	add optional horizontal orientation
@@ -64,7 +65,7 @@ public class LevelMeter
 extends JComponent
 implements Disposable
 {
-	public static final int		DEFAULT_HOLD_DUR = 1800;
+	public static final int		DEFAULT_HOLD_DUR = 2500;
 
 	private int					holdDuration	= DEFAULT_HOLD_DUR;	// milliseconds peak hold
 
@@ -74,9 +75,9 @@ implements Disposable
 	private float				peakToPaint		= -160f;
 	private float				rmsToPaint		= -160f;
 	private float				holdToPaint		= -160f;
-	private float				peakNorm		= 0.0f;
-	private float				rmsNorm			= 0.0f;
-	private float				holdNorm		= 0.0f;
+	private float				peakNorm		= -1.0f;
+	private float				rmsNorm			= -1.0f;
+	private float				holdNorm		= -1.0f;
 	
 	private int					recentHeight	= 0;
 	private int					calcedHeight	= -1;			// recentHeight snapshot in recalcPaint()
@@ -87,9 +88,9 @@ implements Disposable
 	private boolean				rmsPainted		= true;
 	
 //	private boolean				logarithmic		= true;			// XXX fixed for now
-	private float				fallSpeed		= 0.05f;		// decibels per millisec
-	private float				holdFallSpeed	= 0.015f;		// decibels per millisec
-	private float				floorWeight		= 1.0f / 40;	// -1 / minimumDecibels
+//	private float				fallSpeed		= 0.013333333333333f;		// decibels per millisec
+//	private float				holdFallSpeed	= 0.015f;		// decibels per millisec
+//	private float				floorWeight		= 1.0f / 40;	// -1 / minimumDecibels
 
 	private static final int[]	bgPixels		= { 0xFF000000, 0xFF343434, 0xFF484848, 0xFF5C5C5C, 0xFF5C5C5C,
 													0xFF5C5C5C, 0xFF5C5C5C, 0xFF5C5C5C, 0xFF484848, 0xFF343434,
@@ -118,9 +119,9 @@ implements Disposable
 	private int					yHold, yPeak, yRMS;
 	
 //	private boolean				ttEnabled		= false;
-	private float				ttPeak			= Float.NEGATIVE_INFINITY;
-	private boolean				ttUpdate		= false;
-	private MouseAdapter		ma				= null;
+//	private float				ttPeak			= Float.NEGATIVE_INFINITY;
+//	private boolean				ttUpdate		= false;
+//	private MouseAdapter		ma				= null;
 	
 	private Object				sync			= new Object();
 	
@@ -129,6 +130,8 @@ implements Disposable
 	private int					yHoldPainted	= 0;
 	
 	private boolean				refreshParent		= false;
+	
+	private int					ticks			= 0;
 
 	/**
 	 *	Creates a new level meter with default
@@ -140,7 +143,7 @@ implements Disposable
 
 		setOpaque( true );
 		
-		setBorder( BorderFactory.createEmptyBorder( 2, 1, 1, 1 ));
+		setBorder( BorderFactory.createEmptyBorder( 1, 1, 1, 1 ));
 		
 		updateInsets();
 		
@@ -150,6 +153,12 @@ implements Disposable
 				updateInsets();
 			}
 		});
+	}
+	
+	public void setTicks( int ticks )
+	{
+		this.ticks = ticks;
+		updateInsets();
 	}
 	
 	public void setRefreshParent( boolean onOff ) {
@@ -162,36 +171,36 @@ implements Disposable
 		}
 	}
 	
-	// doesn't work XXX
-	public void setToolTipEnabled( boolean onOff )
-	{
-		if( onOff ) {
-			if( ma == null ) {
-				ma = new MouseAdapter() {
-					public void mouseEntered( MouseEvent e )
-					{
-						ttPeak = Float.NEGATIVE_INFINITY;
-						ttUpdate = true;
-						setToolTipText( String.valueOf( ttPeak ));
-					}
-					
-					public void mouseExited( MouseEvent e )
-					{
-						ttUpdate = false;
-						setToolTipText( null );
-					}
-				};
-			}
-//			ttEnabled = true;
-		} else {
-			if( ma != null ) {
-				removeMouseListener( ma );
-				ma = null;
-			}
-//			ttEnabled = false;
-			ttUpdate = false;
-		}
-	}
+//	// doesn't work XXX
+//	public void setToolTipEnabled( boolean onOff )
+//	{
+//		if( onOff ) {
+//			if( ma == null ) {
+//				ma = new MouseAdapter() {
+//					public void mouseEntered( MouseEvent e )
+//					{
+//						ttPeak = Float.NEGATIVE_INFINITY;
+//						ttUpdate = true;
+//						setToolTipText( String.valueOf( ttPeak ));
+//					}
+//					
+//					public void mouseExited( MouseEvent e )
+//					{
+//						ttUpdate = false;
+//						setToolTipText( null );
+//					}
+//				};
+//			}
+////			ttEnabled = true;
+//		} else {
+//			if( ma != null ) {
+//				removeMouseListener( ma );
+//				ma = null;
+//			}
+////			ttEnabled = false;
+//			ttUpdate = false;
+//		}
+//	}
 	
 	/**
 	 *	Decides whether the peak indicator should be
@@ -253,58 +262,59 @@ implements Disposable
 		}
 	}
 	
-	/**
-	 *	Adjusts the speed of the peak and RMS bar falling down.
-	 *	Defaults to 50 decibels per second. At the moment,
-	 *	rise (attack) speed is infinite.
-	 *
-	 *	@param	decibelsPerSecond	the amount of decibels by which the bars
-	 *								falls in one second
-	 */
-	public void setFallSpeed( float decibelsPerSecond )
-	{
-		synchronized( sync ) {
-			fallSpeed = decibelsPerSecond / 1000;
-		}
-	}
+//	/**
+//	 *	Adjusts the speed of the peak and RMS bar falling down.
+//	 *	Defaults to 50 decibels per second. At the moment,
+//	 *	rise (attack) speed is infinite.
+//	 *
+//	 *	@param	decibelsPerSecond	the amount of decibels by which the bars
+//	 *								falls in one second
+//	 */
+//	public void setFallSpeed( float decibelsPerSecond )
+//	{
+//		synchronized( sync ) {
+//			fallSpeed = decibelsPerSecond / 1000;
+//		}
+//	}
 
-	/**
-	 *	Adjusts the speed of the peak hold indicator falling down.
-	 *	Defaults to 15 decibels per second.
-	 *
-	 *	@param	decibelsPerSecond	the amount of decibels by which the peak indicator
-	 *								falls in one second
-	 */
-	public void setHoldFallSpeed( float decibelsPerSecond )
-	{
-		synchronized( sync ) {
-			holdFallSpeed = decibelsPerSecond / 1000;
-		}
-	}
+//	/**
+//	 *	Adjusts the speed of the peak hold indicator falling down.
+//	 *	Defaults to 15 decibels per second.
+//	 *
+//	 *	@param	decibelsPerSecond	the amount of decibels by which the peak indicator
+//	 *								falls in one second
+//	 */
+//	public void setHoldFallSpeed( float decibelsPerSecond )
+//	{
+//		synchronized( sync ) {
+//			holdFallSpeed = decibelsPerSecond / 1000;
+//		}
+//	}
 
-	/**
-	 *	Adjusts the minimum displayed amplitude, that is the
-	 *	amplitude corresponding to the bottom of the bar.
-	 *	Defaults to -40 decibels. At the moment, the maximum
-	 *	amplitude is fixed to 0 decibels (1.0 linear).
-	 *
-	 *	@param	decibels	the amplitude corresponding to the
-	 *						minimum bar extent
-	 */
-	public void setMinAmplitude( float decibels )
-	{
-		synchronized( sync ) {
-			floorWeight = -1.0f / decibels;
-			setPeakAndRMS( this.peak, this.rms );
-		}
-	}
+//	/**
+//	 *	Adjusts the minimum displayed amplitude, that is the
+//	 *	amplitude corresponding to the bottom of the bar.
+//	 *	Defaults to -40 decibels. At the moment, the maximum
+//	 *	amplitude is fixed to 0 decibels (1.0 linear).
+//	 *
+//	 *	@param	decibels	the amplitude corresponding to the
+//	 *						minimum bar extent
+//	 */
+//	public void setMinAmplitude( float decibels )
+//	{
+//		synchronized( sync ) {
+//			floorWeight = -1.0f / decibels;
+//			setPeakAndRMS( this.peak, this.rms );
+//		}
+//	}
 
 	private void updateInsets()
 	{
 		insets = getInsets();
 		final int w = 10 + insets.left + insets.right;
 		setMinimumSize(   new Dimension( w, 2 + insets.top + insets.bottom ));
-		setPreferredSize( new Dimension( w, getPreferredSize().height ));
+//		setPreferredSize( new Dimension( w, ticks <= 0 ? getPreferredSize().height : (ticks * 2 + insets.top + insets.bottom) ));
+		setPreferredSize( new Dimension( w, ticks <= 0 ? getPreferredSize().height : (ticks * 2 - 1 + insets.top + insets.bottom) ));
 		setMaximumSize(   new Dimension( w, getMaximumSize().height ));
 	}
 	
@@ -357,45 +367,90 @@ implements Disposable
 	{
 		return setPeakAndRMS( peak, rms, System.currentTimeMillis() );
 	}
+	
+	private float paintToNorm( float paint )
+	{
+		if( paint >= -30f ) {
+			if( paint >= -20f ) {
+				return Math.min( 1f, paint * 0.025f + 1.0f ); // 50 ... 100 %
+			} else {
+				return paint * 0.02f + 0.9f;  // 30 ... 50 %
+			}
+		} else if( paint >= -50f ) {
+			if( paint >= -40f ) {
+//			if( paint >= -45f ) {
+//				return 0f;
+//			} else {
+				return paint * 0.015f + 0.75f;	// 15 ... 30 %
+//			}
+			} else {
+				return paint * 0.01f + 0.55f;	// 5 ... 15%
+			}
+		} else {
+			return Math.max( -1f, paint * 0.005f + 0.3f );	// 0 ... 5 %  
+//			return paint * 0.005f + 0.3f;	// 0 ... 5 %  
+		}
+	}
 
 //	public void setPeakAndRMS( float peak, float rms )
 	public boolean setPeakAndRMS( float peak, float rms, long now )
 	{
 		synchronized( sync ) {
-	//		final long		now			= System.currentTimeMillis();
-			final float		maxFall		= fallSpeed * (lastUpdate - now);	// a negative value
-//			final int		oldYHold	= yHold;
-//			final int		oldYPeak	= yPeak;
-//			final int		oldYRMS		= yRMS;
+//			final float		maxFall		= fallSpeed * (lastUpdate - now);	// a negative value
 			final boolean	result;
+			final int		h1;
 
 	//		if( logarithmic ) {
 				peak		= (float) (Math.log( peak ) * logPeakCorr);
-				this.peak  += Math.max( maxFall, peak - this.peak );
+				if( peak >= this.peak ) {
+					this.peak	= peak;
+				} else {
+					// 20 dB in 1500 ms bzw. 40 dB in 2500 ms
+					this.peak = Math.max( peak, this.peak - (now - lastUpdate) * (this.peak > -20f ? 0.013333333333333f : 0.016f ));
+				}
+//				this.peak  += Math.max( maxFall, peak - this.peak );
 				peakToPaint	= Math.max( peakToPaint, this.peak );
-				peakNorm	= Math.max( 0.0f, Math.min( 1.0f, this.peakToPaint * floorWeight + 1 ));
+//				peakNorm	= Math.max( 0.0f, Math.min( 1.0f, peakToPaint * floorWeight + 1 ));
+				peakNorm 	= paintToNorm( peakToPaint );
 
 				if( rmsPainted ) {
 					rms			= (float) (Math.log( rms ) * logRMSCorr);
-					this.rms   += Math.max( maxFall, rms  - this.rms );
+					if( rms > this.rms ) {
+						this.rms	= rms;
+					} else {
+						this.rms = Math.max( rms, this.rms - (now - lastUpdate) * (this.rms > -20f ? 0.013333333333333f : 0.016f ));
+					}
+//					this.rms   += Math.max( maxFall, rms  - this.rms );
 					rmsToPaint	= Math.max( rmsToPaint, this.rms );
-					rmsNorm		= Math.max( 0.0f, Math.min( 1.0f, this.rmsToPaint * floorWeight + 1 ));
+//					rmsNorm		= Math.max( 0.0f, Math.min( 1.0f, rmsToPaint * floorWeight + 1 ));
+					rmsNorm		= paintToNorm( rmsToPaint );
 				}
 				
 				if( holdPainted ) {
+//					if( this.peak >= hold ) {
 					if( this.peak >= hold ) {
 						hold	= this.peak;
 						holdEnd	= now + holdDuration;
-//						holdNorm= peakNorm;
+//						System.out.println( "hold=peak " + hold );
 					} else if( now > holdEnd ) {
-						hold   += Math.max( holdFallSpeed * (lastUpdate - now), this.peak - hold );
-//						holdNorm= Math.max( 0.0f, Math.min( 1.0f, hold * floorWeight + 1 ));
+						if( this.peak > hold ) {
+							hold	= this.peak;
+						} else {
+							hold   += (this.hold > -20f ? 0.013333333333333f : 0.016f ) * (lastUpdate - now);
+						}
 					}
 					holdToPaint	= Math.max( holdToPaint, hold );
-					holdNorm	= Math.max( 0.0f, Math.min( 1.0f, holdToPaint * floorWeight + 1 ));
-					result		= holdNorm > 0f;
+//					holdNorm	= Math.max( 0.0f, Math.min( 1.0f, holdToPaint * floorWeight + 1 ));
+					holdNorm	= paintToNorm( holdToPaint );
+					result		= holdNorm >= 0f;
+//					System.out.println( "holdNorm " + holdNorm );
 				} else {
-					result		= peakNorm > 0f;
+					result		= peakNorm >= 0f;
+				}
+				if( !result) {
+					holdNorm = -1f;
+					peakNorm = -1f;
+//					System.out.println( "dang" );
 				}
 				
 	//		} else {
@@ -405,11 +460,16 @@ implements Disposable
 	//		}
 
 			lastUpdate		= now;
-			recentHeight	= (getHeight() - insets.top - insets.bottom + 1) & ~1;
-
-			yHold	= ((int) ((1.0f - holdNorm) * recentHeight) + 1) & ~1;
-			yPeak	= ((int) ((1.0f - peakNorm) * recentHeight) + 1) & ~1;
-			yRMS	= ((int) ((1.0f - rmsNorm)  * recentHeight) + 1) & ~1;
+			h1				= getHeight() - insets.top - insets.bottom;
+			final int rh1	= (h1 - 1) & ~1;
+			recentHeight	= rh1 + 1;
+			
+//			yHold	= ((int) ((1.0f - holdNorm) * recentHeight) + 1) & ~1;
+//			yPeak	= ((int) ((1.0f - peakNorm) * recentHeight) + 1) & ~1;
+//			yRMS	= ((int) ((1.0f - rmsNorm)  * recentHeight) + 1) & ~1;
+			yHold	= (rh1 - (int) (holdNorm * rh1) + 1) & ~1;
+			yPeak	= (rh1 - (int) (peakNorm * rh1) + 1) & ~1;
+			yRMS	= Math.max( (rh1 - (int) (rmsNorm  * rh1) + 1) & ~1, yPeak + 4 );
 
 			if( (yPeak != yPeakPainted) || (yRMS != yRMSPainted) || (yHold != yHoldPainted) ) {
 				final int minY, maxY;
@@ -434,10 +494,10 @@ implements Disposable
 				}
 
 				if( refreshParent ) {
-					getParent().repaint( insets.left + getX(), insets.top + minY + getY(), getWidth() - insets.left - insets.right,
+					getParent().repaint( insets.left + getX(), insets.top + (recentHeight - h1) + minY + getY(), getWidth() - insets.left - insets.right,
 										 maxY - minY );
 				} else {
-					repaint( insets.left, insets.top + minY, getWidth() - insets.left - insets.right,
+					repaint( insets.left, insets.top + (recentHeight - h1) + minY, getWidth() - insets.left - insets.right,
 							 maxY - minY );
 				}
 			} else {
@@ -446,10 +506,10 @@ implements Disposable
 				rmsToPaint		= -160f;
 				holdToPaint		= -160f;
 			}
-			if( ttUpdate && (ttPeak != peak) ) {
-				ttPeak = peak;
-				setToolTipText( String.valueOf( ttPeak ));
-			}
+//			if( ttUpdate && (ttPeak != peak) ) {
+//				ttPeak = peak;
+//				setToolTipText( String.valueOf( ttPeak ));
+//			}
 			
 			return result;
 		}
@@ -480,7 +540,8 @@ implements Disposable
 		final float[]	hsbTop	= new float[ 3 ];
 		final float[]	hsbBot	= new float[ 3 ];
 		float			w1, w2;
-		final float		w3		= 1.0f / (recentHeight - 2);
+		final int		picH	= (recentHeight + 1) & ~1;
+		final float		w3		= 1.0f / (picH - 2);
 	
 		if( imgPeak != null ) {
 			imgPeak.flush();
@@ -496,13 +557,13 @@ implements Disposable
 			pntBg = new TexturePaint( imgBg, new Rectangle( 0, 0, 10, 2 ));
 		}
 		
-		pix = new int[ 10 * recentHeight ];
+		pix = new int[ 10 * picH ];
 		for( int x = 0; x < 10; x++ ) {
 			rgb = rmsTopColor[ x ];
 			Color.RGBtoHSB( (rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF, hsbTop );
 			rgb = rmsBotColor[ x ];
 			Color.RGBtoHSB( (rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF, hsbBot );
-			for( int y = 0, off = x; y < recentHeight; y += 2, off += 20 ) {
+			for( int y = 0, off = x; y < picH; y += 2, off += 20 ) {
 				w2				= y * w3;
 				w1				= 1.0f - w2;
 				rgb				= Color.HSBtoRGB( hsbTop[0] * w1 + hsbBot[0] * w2,
@@ -512,17 +573,17 @@ implements Disposable
 				pix[ off+10 ]	= 0xFF000000;
 			}
 		}
-		imgRMS = new BufferedImage( 10, recentHeight, BufferedImage.TYPE_INT_ARGB );
-		imgRMS.setRGB( 0, 0, 10, recentHeight, pix, 0, 10 );
+		imgRMS = new BufferedImage( 10, picH, BufferedImage.TYPE_INT_ARGB );
+		imgRMS.setRGB( 0, 0, 10, picH, pix, 0, 10 );
 //		pntRMS = new TexturePaint( imgRMS, new Rectangle( 0, 0, 10, recentHeight ));
 
-		pix = new int[ 10 * recentHeight ];
+		pix = new int[ 10 * picH ];
 		for( int x = 0; x < 10; x++ ) {
 			rgb = peakTopColor[ x ];
 			Color.RGBtoHSB( (rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF, hsbTop );
 			rgb = peakBotColor[ x ];
 			Color.RGBtoHSB( (rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF, hsbBot );
-			for( int y = 0, off = x; y < recentHeight; y += 2, off += 20 ) {
+			for( int y = 0, off = x; y < picH; y += 2, off += 20 ) {
 				w2				= y * w3;
 				w1				= 1.0f - w2;
 				rgb				= Color.HSBtoRGB( hsbTop[0] * w1 + hsbBot[0] * w2,
@@ -532,8 +593,8 @@ implements Disposable
 				pix[ off+10 ]	= 0xFF000000;
 			}
 		}
-		imgPeak = new BufferedImage( 10, recentHeight, BufferedImage.TYPE_INT_ARGB );
-		imgPeak.setRGB( 0, 0, 10, recentHeight, pix, 0, 10 );
+		imgPeak = new BufferedImage( 10, picH, BufferedImage.TYPE_INT_ARGB );
+		imgPeak.setRGB( 0, 0, 10, picH, pix, 0, 10 );
 //		pntRMS = new TexturePaint( imgRMS, new Rectangle( 0, 0, 10, recentHeight ));
 
 		calcedHeight = recentHeight;
@@ -548,7 +609,11 @@ implements Disposable
 		
 		final Graphics2D		g2;
 		final AffineTransform	atOrig;
-		final int				h		= (getHeight() - insets.top - insets.bottom + 1) & ~1;
+		final int				h1		= getHeight() - insets.top - insets.bottom;
+//		final int				h		= (getHeight() - insets.top - insets.bottom + 1) & ~1;
+//		final int				h		= (getHeight() - insets.top - insets.bottom) & ~1;
+		final int				rh1		= (h1 - 1) & ~1;
+		final int				h		= rh1 + 1;
 		
 		g.setColor( Color.black );
 		g.fillRect( 0, 0, getWidth(), getHeight() );
@@ -556,24 +621,30 @@ implements Disposable
 			synchronized( sync ) {	
 				if( (h != recentHeight) || (calcedHeight != recentHeight) ) {
 					recentHeight = h;
+//					System.out.println( "recalc h " + getHeight() + "; top " + insets.top + "; bottom " + insets.bottom + "; recentHeight " + recentHeight + "; h1 " + h1 );
 					recalcPaint();
-					yPeak		= ((int) ((1.0f - peakNorm) * h) + 1) & ~1;
-					yRMS		= ((int) ((1.0f - rmsNorm)  * h) + 1) & ~1;
-					yHold		= ((int) ((1.0f - holdNorm) * h) + 1) & ~1;
+//					yPeak		= ((int) ((1.0f - peakNorm) * h) + 1) & ~1;
+//					yRMS		= ((int) ((1.0f - rmsNorm)  * h) + 1) & ~1;
+//					yHold		= ((int) ((1.0f - holdNorm) * h) + 1) & ~1;
+					yHold		= (rh1 - (int) (holdNorm * rh1) + 1) & ~1;
+					yPeak		= (rh1 - (int) (peakNorm * rh1) + 1) & ~1;
+					yRMS		= Math.max( (rh1 - (int) (rmsNorm  * rh1) + 1) & ~1, yPeak + 4 );
 				}
 				
 				g2		= (Graphics2D) g;
 				atOrig	= g2.getTransform();
-				g2.translate( insets.left, insets.top );
+				g2.translate( insets.left, insets.top + (h1 - h) );
 	
 				g2.setPaint( pntBg );
 //g2.setPaint( gaga ? Color.black : Color.white ); gaga = !gaga;
 		//		g2.fillRect( 1, 0, 10, yPeak );
 				if( rmsPainted ) {
-					g2.fillRect( 0, 0, 10, yRMS + 1 );
+//					g2.fillRect( 0, 0, 10, yRMS + 1 );
+					g2.fillRect( 0, 0, 10, yRMS );
 					if( holdPainted ) g2.drawImage( imgPeak, 0, yHold, 10, yHold + 1, 0, yHold, 10, yHold + 1, this );
-					g2.drawImage( imgPeak, 0, yPeak,    10, yRMS, 0, yPeak,    10, yRMS, this );
-					g2.drawImage( imgRMS,  0, yRMS + 2, 10, h,    0, yRMS + 2, 10, h,    this );
+					g2.drawImage( imgPeak, 0, yPeak,    10, yRMS - 2, 0, yPeak,    10, yRMS - 2, this );
+//					g2.drawImage( imgRMS,  0, yRMS + 2, 10, h,    0, yRMS + 2, 10, h,    this );
+					g2.drawImage( imgRMS,  0, yRMS,     10, h,    0, yRMS,     10, h,    this );
 				} else {
 					g2.fillRect( 0, 0, 10, yPeak );
 					if( holdPainted ) g2.drawImage( imgPeak, 0, yHold, 10, yHold + 1, 0, yHold, 10, yHold + 1, this );

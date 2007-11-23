@@ -145,6 +145,8 @@ implements	de.sciss.jcollider.Constants,
 	private static final String		OSC_SUPERCOLLIDER	= "sc";
 	private final OSCRouterWrapper	osc;
 	
+	private static final float		TIMEOUT			= 2f;
+	
 	// 13-oct-06 by the way, here's why i'm using separate 'sync' objects nowadays:
 	// - more readible
 	// - cleaner because we are the only instance having access to that object
@@ -160,9 +162,9 @@ implements	de.sciss.jcollider.Constants,
 		this.doc			= doc;
 
 		final AudioTrail	at			= doc.getAudioTrail();
-		final OSCBundle		bndl		= new OSCBundle();
 		final Runnable		runTrigger;
 		final SynthDef[]	defs;
+		OSCBundle			bndl;
 		
 		transport			= doc.getTransport();
 		nw					= NodeWatcher.newFrom( server );
@@ -175,6 +177,7 @@ implements	de.sciss.jcollider.Constants,
 		DISKBUF_SIZE_H		= DISKBUF_SIZE >> 1;
 		DISKBUF_SIZE_HM		= DISKBUF_SIZE_H - DISKBUF_PAD;
 		
+		bndl				= new OSCBundle();
 		grpRoot				= Group.basicNew( server );
 		grpRoot.setName( "Root-" + doc.getName() );
 		nw.register( grpRoot );
@@ -238,9 +241,8 @@ if( DEBUG_FOLD ) {
 	}
 	System.out.println();
 }
-						server.sendBundle( bndl );
-						if( !server.sync( 1.0f )) {
-							printTimeOutMsg();
+						if( !server.sync( bndl, TIMEOUT )) {
+							printTimeOutMsg( "bufUpdate" );
 						}
 //					}
 				}
@@ -314,10 +316,14 @@ if( DEBUG_FOLD ) {
 
 		defs = createInputDefs( channelMaps );
 		if( defs != null ) {
+			bndl	= new OSCBundle();
 			for( int i = 0; i < defs.length; i++ ) {
-				defs[ i ].send( server );
+//				defs[ i ].send( server );
+				bndl.addPacket( defs[ i ].recvMsg() );
 			}
-			server.sync( 4f );
+			if( !server.sync( bndl, TIMEOUT )) {
+				printTimeOutMsg( "defs" );
+			}
 		}
 		
 		srcFactor	= sourceRate / serverRate;
@@ -392,6 +398,8 @@ numDefsLp:
 			graph = UGen.array( ctrlI, ctrlK );
 		}
 		def	= new SynthDef( "eisk-pan" + numOutputChannels, graph );
+
+//try { def.writeDefFile( new File( "/Users/rutz/Desktop/eisk-pan" + numOutputChannels + ".scsyndef" )); } catch( IOException e1 ) {}
 //		def.send( server );
 //		return true;
 		return new SynthDef[] { def };
@@ -509,6 +517,8 @@ numDefsLp:
 //				return;
 //			}
 //			try {
+//				System.out.println( "setOutputConfig : rebuildSynths" );
+
 				rebuildSynths();
 //			}
 //			finally {
@@ -642,9 +652,12 @@ numDefsLp:
 	private void rebuildSynths()
 	{
 		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
+
+//new Exception().printStackTrace();
 		
 //		synchronized( sync ) {
 			try {
+				server.sync( TIMEOUT ); // an n_free on a pausing node can crash scsynth otherwise (19-nov-07)
 				grpRoot.deepFree();
 				disposeServerStuff();
 				
@@ -653,17 +666,21 @@ numDefsLp:
 				ct = new Context( channelMaps, numInputChannels, oCfg.numChannels );
 
 				final float			orient	= -oCfg.startAngle/360 * oCfg.numChannels;
-				final OSCBundle		bndl	= new OSCBundle();
 				final SynthDef[]	defs;
+				OSCBundle			bndl;
 
 				defs = createOutputDefs( oCfg.numChannels );
 				if( defs != null ) {
+					bndl	= new OSCBundle();
 					for( int i = 0; i < defs.length; i++ ) {
-						defs[ i ].send( server );
+						bndl.addPacket( defs[ i ].recvMsg() );
 					}
-					server.sync( 4f );
+					if( !server.sync( bndl, TIMEOUT )) {
+						printTimeOutMsg( "defs" );
+					}
 				}
 				
+				bndl	= new OSCBundle();
 				for( int i = 0; i < ct.numFiles; i++ ) {
 					bndl.addPacket( ct.bufsDisk[ i ].allocMsg() );
 				}
@@ -689,10 +706,10 @@ numDefsLp:
 
 				addChannelPanMessages( bndl );
 				addChannelMuteMessages( bndl );
-				server.sendBundle( bndl );
-				if( !server.sync( 4.0f )) {
-					printTimeOutMsg();
+				if( !server.sync( bndl, TIMEOUT )) {
+					printTimeOutMsg( "alloc" );
 				}
+				ct.bufsAllocated = true;
 			}
 			catch( IOException e1 ) {
 				printError( "rebuildSynths", e1 );
@@ -797,9 +814,9 @@ numDefsLp:
 //		}
 	}
 
-	private void printTimeOutMsg()
+	private void printTimeOutMsg( String loc )
 	{
-		Server.getPrintStream().println( getResourceString( "errOSCTimeOut" ));
+		Server.getPrintStream().println( getResourceString( "errOSCTimeOut" ) + " : " + loc );
 	}
 
 	private static String getResourceString( String key )
@@ -1121,6 +1138,7 @@ numDefsLp:
 				if( !activeInput ) {
 					syncInput.deactivate( bndl );
 				}
+// server.sync( TIMEOUT );
 				server.sendBundle( bndl );
 			}
 			catch( IOException e1 ) {
@@ -1185,9 +1203,8 @@ if( DEBUG_FOLD ) {
 			if( bndl.getPacketCount() > 0 ) {
 //System.out.println();
 				try {
-					server.sendBundle( bndl );
-					if( !server.sync( 1.0f )) {
-						printTimeOutMsg();
+					if( !server.sync( bndl, TIMEOUT )) {
+						printTimeOutMsg( "readjust" );
 					}
 				}
 				catch( IOException e1 ) {
@@ -1217,6 +1234,7 @@ if( DEBUG_FOLD ) {
 //					return;
 //				}
 //				try {
+				System.out.println( "transportPlay : rebuildSynths" );
 					rebuildSynths();
 					if( ct == null ) return;
 //				}
@@ -1248,9 +1266,8 @@ if( DEBUG_FOLD ) {
 }
 				lastBufSpans[ 0 ] = emptySpans;
 				lastBufSpans[ 1 ] = emptySpans;
-				server.sendBundle( bndl );
-				if( !server.sync( 1.0f )) {
-					printTimeOutMsg();
+				if( !server.sync( bndl, TIMEOUT )) {
+					printTimeOutMsg( "play" );
 					return;
 				}
 			}
@@ -1353,6 +1370,9 @@ if( DEBUG_FOLD ) {
 		
 //		private final OSCBundle		meterBangBndl;	// /c_getn for the meter values, /n_set to re-trigger calc
 	
+		private boolean				bufsAllocated	= false;
+		private boolean				disposed		= false;
+		
 		/*
 		 *	@throws	IOException	if the server ran out of busses
 		 *						or buffers
@@ -1395,12 +1415,7 @@ if( DEBUG_FOLD ) {
 			for( int i = 0; i < numFiles; i++ ) {
 				bufsDisk[ i ]		= new Buffer( server, DISKBUF_SIZE, channelMaps[ i ].length );
 				if( bufsDisk[ i ] == null ) {
-					for( int j = 0; j < i; j++ ) {
-						try {
-							bufsDisk[ j ].free();
-						}
-						catch( IOException e1 ) {}
-					}
+					for( int j = 0; j < i; j++ ) bufsDisk[ j ].freeMsg(); // cleans up allocator!
 					throw new IOException( getResourceString( "scErrNoBuffers" ));
 				}
 			}
@@ -1425,22 +1440,21 @@ if( DEBUG_FOLD ) {
 		private void dispose()
 		throws IOException
 		{
+			if( disposed ) throw new IllegalStateException( "Double disposal" );
+			disposed = true;
+			
 			busInternal.free();
 			busPan.free();
 //			busMeter.free();
 			
-			IOException e1 = null;
-			
-			for( int i = 0; i < bufsDisk.length; i++ ) {
-				try {
-					bufsDisk[ i ].free();
-				}
-				catch( IOException e2 ) {
-					e1 = e2;
+			final OSCBundle bndl = new OSCBundle();
+			for( int i = 0; i < bufsDisk.length; i++ ) bndl.addPacket( bufsDisk[ i ].freeMsg() );
+			if( bufsAllocated ) {
+				bufsAllocated = false;
+				if( (bndl.getPacketCount() > 0) && !server.sync( bndl, TIMEOUT )) {
+					printTimeOutMsg( "dispose" );
 				}
 			}
-			
-			if( e1 != null ) throw e1;
 		}
 	}
 }
