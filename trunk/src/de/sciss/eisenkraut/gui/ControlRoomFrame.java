@@ -74,6 +74,8 @@ import de.sciss.app.GraphicsHandler;
 import de.sciss.common.AppWindow;
 import de.sciss.gui.AbstractWindowHandler;
 import de.sciss.gui.MultiStateButton;
+import de.sciss.gui.PeakMeter;
+import de.sciss.gui.PeakMeterCaption;
 import de.sciss.gui.PrefComboBox;
 import de.sciss.gui.SpringPanel;
 import de.sciss.gui.StringItem;
@@ -104,7 +106,7 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
 	private final Preferences			audioPrefs;
 
 //	private final java.util.List		collMeters	= new ArrayList();
-	private LevelMeter[]				masterMeters;
+	private PeakMeter[]				masterMeters;
 	private final SuperColliderClient	superCollider;
 	private Group						grpMeters;
 	private final Box					pMeters;
@@ -369,20 +371,20 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 	
 	private void rebuildMeters()
 	{
-		final LevelMeter[]		meters;
-		final LevelMeterCaption	caption;
+		final PeakMeter[]		meters;
+		final PeakMeterCaption	caption;
 		
 		oCfg	= superCollider.getOutputConfig();
 		pMeters.removeAll();
 		
 		if( oCfg != null ) {
-			meters	= new LevelMeter[ oCfg.numChannels ];
-			caption	= new LevelMeterCaption();
+			meters	= new PeakMeter[ oCfg.numChannels ];
+			caption	= new PeakMeterCaption();
 //			caption.setForeground( Color.white ); // ( new Color( 0xFF, 0xFF, 0xFF, 0x7F ));
 			caption.setBorder( BorderFactory.createEmptyBorder( 5, 1, 4, 0 ));
 			pMeters.add( caption );
 			for( int ch = 0; ch < meters.length; ch++ ) {
-				meters[ ch ] = new LevelMeter();
+				meters[ ch ] = new PeakMeter();
 				meters[ ch ].setRefreshParent( true );
 				meters[ ch ].setBorder( BorderFactory.createEmptyBorder( 5, 1, 4, 1 ));
 				meters[ ch ].setTicks( 101 );
@@ -390,7 +392,7 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 			}
 			masterMeters = meters;
 		} else {
-			masterMeters = new LevelMeter[ 0 ];
+			masterMeters = new PeakMeter[ 0 ];
 		}
 		
 		b1.makeCompactGrid();

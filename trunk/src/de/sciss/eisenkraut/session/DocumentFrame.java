@@ -161,7 +161,7 @@ implements	ProgressComponent, TimelineListener,	// SessionChangeListener
 	private final java.util.List			collChannelHeaders		= new ArrayList();
 	private final java.util.List			collChannelRulers		= new ArrayList();
 //	private final java.util.List			collChannelMeters		= new ArrayList();
-	private LevelMeter[]					channelMeters			= new LevelMeter[ 0 ];
+	private PeakMeter[]					channelMeters			= new PeakMeter[ 0 ];
 	
 	private final JLabel					lbSRC;
 
@@ -1021,7 +1021,7 @@ bbb.add( markAxisHeader );
 		if( onOff != forceMeters ) {
 			forceMeters = onOff;
 			showHideMeters();
-			final int holdDur = forceMeters ? -1 : LevelMeter.DEFAULT_HOLD_DUR;
+			final int holdDur = forceMeters ? -1 : PeakMeter.DEFAULT_HOLD_DUR;
 			for( int i = 0; i < channelMeters.length; i++ ) {
 				channelMeters[ i ].setHoldDuration( holdDur );
 			}
@@ -1155,12 +1155,12 @@ bbb.add( markAxisHeader );
 		boolean					revalidate	= false;
 
 		final java.util.List	collChannelMeters;
-		LevelMeter[]			meters;
+		PeakMeter[]			meters;
 		AudioTrackRowHeader		chanHead;
 		AudioTrack				t;
 		int						oldChannels, newChannels;
 		Axis					chanRuler;
-		LevelMeter				chanMeter;
+		PeakMeter				chanMeter;
 	
 //		try {
 //			doc.bird.waitShared( Session.DOOR_TRACKS );
@@ -1188,7 +1188,7 @@ bbb.add( markAxisHeader );
 				if( !doc.audioTracks.contains( t )) {
 					revalidate	= true;
 					chanHead	= (AudioTrackRowHeader) collChannelHeaders.remove( ch );
-					chanMeter	= (LevelMeter) collChannelMeters.remove( ch );
+					chanMeter	= (PeakMeter) collChannelMeters.remove( ch );
 					chanRuler	= (Axis) collChannelRulers.remove( ch );
 //					chanHead.removeComponentListener( rowHeightListener );
 					oldChannels--;
@@ -1221,7 +1221,7 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 //				waveHeaderView.gridAdd( chanHead, 0, ch + AUDIOTRACK_OFF );
 				flagsPanel.add( chanHead, ch );
 
-				chanMeter = new LevelMeter();
+				chanMeter = new PeakMeter();
 // THEY DON'T WORK FOR SOME REASON (ALL TTs DON'T WORK IN THIS FRAME ...)
 //				meter.setToolTipEnabled( true );
 				collChannelMeters.add( chanMeter );
@@ -1241,9 +1241,9 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 				initStrip( chanRuler, chanMeter );
 			}
 			
-			meters	= new LevelMeter[ collChannelMeters.size() ];
+			meters	= new PeakMeter[ collChannelMeters.size() ];
 			for( int ch = 0; ch < meters.length; ch++ ) {
-				meters[ ch ] = (LevelMeter) collChannelMeters.get( ch );
+				meters[ ch ] = (PeakMeter) collChannelMeters.get( ch );
 			}
 			channelMeters	= meters;
 			lmm.setMeters( meters );
@@ -1267,7 +1267,7 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 		updateOverviews( false, true );
 	}
 
-	private void initStrip( Axis chanRuler, LevelMeter chanMeter )
+	private void initStrip( Axis chanRuler, PeakMeter chanMeter )
 	{
 //		final Preferences prefs = app.getUserPrefs();
 //	
@@ -1332,7 +1332,7 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 		for( int ch = 0; ch < channelMeters.length; ch++ ) {
 			channelMeters[ ch ].dispose();
 		}
-		channelMeters = new LevelMeter[ 0 ];
+		channelMeters = new PeakMeter[ 0 ];
 		markAxis.stopListening();
 		markAxis.dispose();
 		timeAxis.dispose();

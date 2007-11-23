@@ -29,20 +29,35 @@
 
 package de.sciss.eisenkraut.net;
 
-import java.awt.event.*;
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.net.SocketAddress;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.swing.Timer;
 
-import de.sciss.jcollider.*;
-import de.sciss.net.*;
+import de.sciss.jcollider.Bus;
+import de.sciss.jcollider.Constants;
+import de.sciss.jcollider.Group;
+import de.sciss.jcollider.OSCResponderNode;
+import de.sciss.jcollider.NodeWatcher;
+import de.sciss.jcollider.Server;
+import de.sciss.jcollider.ServerEvent;
+import de.sciss.jcollider.ServerListener;
+import de.sciss.jcollider.Synth;
+import de.sciss.net.OSCBundle;
+import de.sciss.net.OSCListener;
+import de.sciss.net.OSCMessage;
 
 public class MeterManager
 implements OSCListener, Constants, ServerListener, ActionListener
 {
-	private java.util.List			collAllClients		= new ArrayList();
-	private java.util.List			collActiveClients	= new ArrayList();
-	private java.util.Map			mapClients			= new HashMap();	// key = MeterListener, value = MeterClient
+	private List					collAllClients		= new ArrayList();
+	private List					collActiveClients	= new ArrayList();
+	private Map						mapClients			= new HashMap();	// key = MeterListener, value = MeterClient
 //	private boolean					meterListening		= false;
 //	private boolean					keepMetering		= false;
 //	private long					lastMeterInfo		= 0;	// used to stop listening
@@ -61,7 +76,7 @@ implements OSCListener, Constants, ServerListener, ActionListener
 	private OSCBundle				meterBangBndl		= null;
 	private OSCResponderNode		resp				= null;
 
-	private final javax.swing.Timer	meterTimer;
+	private final Timer				meterTimer;
 	private final SuperColliderClient sc;
 	
 	private int						numTask				= 0;
