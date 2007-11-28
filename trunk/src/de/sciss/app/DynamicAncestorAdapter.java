@@ -56,7 +56,7 @@ import de.sciss.app.AncestorAdapter;
  *  <code>DynamicAncestorAdapter</code>.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.10, 20-May-05
+ *  @version	0.11, 26-Nov-07
  *
  *  @see		DynamicListening
  */
@@ -180,7 +180,7 @@ extends AncestorAdapter
 	public void ancestorAdded( AncestorEvent e )
 	{
 		if( EventManager.DEBUG_EVENTS ) {
-			System.err.println( "ancestorAdded.   cmp = "+(e.getComponent() != null ? e.getComponent().getClass().getName() + (e.getComponent() instanceof PreferenceEntrySync ? " / key " + ((PreferenceEntrySync) e.getComponent()).getPreferenceKey() : "")  : null)+
+			System.err.println( "ancestorAdded.   cmp = "+(e.getComponent() != null ? e.getComponent().getClass().getName() : null)+
 							  "\n                 anc = "+(e.getAncestor() != null ? e.getAncestor().getClass().getName() : null)+
 							  "\n                 par = "+(e.getAncestorParent() != null ? e.getAncestorParent().getClass().getName() : null) );
 		}
@@ -200,7 +200,7 @@ extends AncestorAdapter
 	public void ancestorRemoved( AncestorEvent e )
 	{
 		if( EventManager.DEBUG_EVENTS ) {
-			System.err.println( "ancestorRemoved. cmp = "+(e.getComponent() != null ? e.getComponent().getClass().getName() + (e.getComponent() instanceof PreferenceEntrySync ? " / key " + ((PreferenceEntrySync) e.getComponent()).getPreferenceKey() : "")  : null)+
+			System.err.println( "ancestorRemoved. cmp = "+(e.getComponent() != null ? e.getComponent().getClass().getName() : null) +
 							  "\n                 anc = "+(e.getAncestor() != null ? e.getAncestor().getClass().getName() : null)+
 							  "\n                 par = "+(e.getAncestorParent() != null ? e.getAncestorParent().getClass().getName() : null) );
 		}

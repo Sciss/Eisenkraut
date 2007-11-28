@@ -707,22 +707,20 @@ public class DecimatedTrail extends BasicTrail {
 	 * @see #getBestSubsample( Span, int )
 	 * @see DecimationInfo#sublength
 	 */
-	public boolean readFrame(int sub, long pos, int ch, float[] data)
-			throws IOException {
-		synchronized (bufSync) {
+	public boolean readFrame( int sub, long pos, int ch, float[] data )
+	throws IOException
+	{
+		synchronized( bufSync ) {
 			createBuffers();
 
-			final int idx = indexOf(pos, true);
-			final DecimatedStake ds = (DecimatedStake) editGetLeftMost(idx,
-					true, null);
-			if (ds == null)
-				return false;
+			final int				idx	= indexOf( pos, true );
+			final DecimatedStake	ds	= (DecimatedStake) editGetLeftMost( idx, true, null );
+			if( ds == null ) return false;
 
-			if (!ds.readFrame(sub, tmpBuf2, 0, pos))
-				return false;
+			if( !ds.readFrame( sub, tmpBuf2, 0, pos )) return false;
 
-			for (int i = ch, k = 0; i < decimChannels; i += fullChannels, k++) {
-				data[k] = tmpBuf2[i][0];
+			for( int i = ch, k = 0; i < decimChannels; i += fullChannels, k++ ) {
+				data[ k ] = tmpBuf2[ i ][ 0 ];
 			}
 
 			return true;
@@ -739,12 +737,12 @@ public class DecimatedTrail extends BasicTrail {
 	 * 
 	 * @see NondestructiveDecimatedSampledTrack#read( Span, float[][], int )
 	 */
-	private void readFrames(int sub, float[][] data, int dataOffset,
-			List busyList, Span readSpan, AbstractCompoundEdit ce)
-			throws IOException {
-		int idx = editIndexOf(readSpan.start, true, ce);
-		if (idx < 0)
-			idx = -(idx + 2);
+	private void readFrames( int sub, float[][] data, int dataOffset, List busyList,
+							 Span readSpan, AbstractCompoundEdit ce )
+	throws IOException
+	{
+		int idx = editIndexOf( readSpan.start, true, ce );
+		if( idx < 0 ) idx = -(idx + 2);
 
 		// if( idx < 0 ) {
 		// System.err.println( "DecimatedTrail.readFrames : off left boundary!
@@ -1262,14 +1260,23 @@ public class DecimatedTrail extends BasicTrail {
 		return f;
 	}
 
-	private int[][] createCacheChannelMaps() {
-		final int[][] fullChanMaps = fullScale.getChannelMaps();
-		final int[][] cacheChanMaps = new int[fullChanMaps.length][];
+	private int[][] createCacheChannelMaps()
+	{
+		final int[][] fullChanMaps	= fullScale.getChannelMaps();
+		final int[][] cacheChanMaps	= new int[ fullChanMaps.length ][];
 
-		for (int i = 0; i < fullChanMaps.length; i++) {
-			cacheChanMaps[i] = new int[fullChanMaps[i].length * modelChannels];
-			for (int j = 0; j < cacheChanMaps[i].length; j++) {
-				cacheChanMaps[i][j] = j;
+		for( int i = 0; i < fullChanMaps.length; i++ ) {
+			System.out.println( "fullChanMaps[ " + i + " ] = " );
+			for( int k = 0; k < fullChanMaps[ i ].length; k++ ) {
+				System.out.println( "  " + fullChanMaps[ i ][ k ]);
+			}
+			cacheChanMaps[ i ] = new int[ fullChanMaps[ i ].length * modelChannels ];
+			for( int j = 0; j < cacheChanMaps[ i ].length; j++ ) {
+				cacheChanMaps[ i ][ j ] = j;
+			}
+			System.out.println( "cacheChanMaps[ " + i + " ] = " );
+			for( int k = 0; k < cacheChanMaps[ i ].length; k++ ) {
+				System.out.println( "  " + cacheChanMaps[ i ][ k ]);
 			}
 		}
 
@@ -1279,46 +1286,46 @@ public class DecimatedTrail extends BasicTrail {
 	/*
 	 * @returns the cached stake or null if no cache file is available
 	 */
-	private AudioStake openCacheForRead(int model) throws IOException {
-		final File[] f = createCacheFileNames();
-		if (f == null)
-			return null;
+	private AudioStake openCacheForRead( int model )
+	throws IOException
+	{
+		final File[]		f			= createCacheFileNames();
+		if( f == null ) return null;
 
-		final AudioFile[] audioFiles = fullScale.getAudioFiles();
-		final Span[] fileSpans = new Span[audioFiles.length];
-		final AudioFile[] cacheAFs = new AudioFile[audioFiles.length];
-		final String ourCode = AbstractApplication.getApplication()
-				.getMacOSCreator();
-		final int[][] channelMaps = createCacheChannelMaps();
-		AudioStake result = null;
-		AudioFileDescr afd;
-		byte[] appCode;
-		AudioFileCacheInfo infoA, infoB;
+		final AudioFile[]	audioFiles	= fullScale.getAudioFiles();
+		final Span[]		fileSpans	= new Span[ audioFiles.length ];
+		final AudioFile[]	cacheAFs	= new AudioFile[ audioFiles.length ];
+		final String		ourCode		= AbstractApplication.getApplication().getMacOSCreator();
+		final int[][]		channelMaps	= createCacheChannelMaps();
+		AudioStake			result		= null;
+		AudioFileDescr		afd;
+		byte[]				appCode;
+		AudioFileCacheInfo	infoA, infoB;
 
 		try {
-			for (int i = 0; i < cacheAFs.length; i++) {
-				if (!f[i].isFile())
-					return null;
-				cacheAFs[i] = AudioFile.openAsRead(f[i]);
-				cacheAFs[i].readAppCode();
-				afd = cacheAFs[i].getDescr();
-				long expected = ((audioFiles[i].getFrameNum() + MAXCEILADD) & MAXMASK) >> decimHelps[0].shift;
+			for( int i = 0; i < cacheAFs.length; i++ ) {
+				System.out.println( "openCacheForRead checking '" + f[ i ].getAbsolutePath() + "'" );
+				
+				if( !f[ i ].isFile() ) return null;
+				cacheAFs[ i ] = AudioFile.openAsRead( f[ i ]);
+				cacheAFs[ i ].readAppCode();
+				afd = cacheAFs[ i ].getDescr();
+				final long expected = ((audioFiles[ i ].getFrameNum() + MAXCEILADD) & MAXMASK) >> decimHelps[ 0 ].shift;
 				// System.out.println( "expected " + expected+ "; cacheF " +
 				// cacheAFs[ i ].getFile().getAbsolutePath() );
-				if (expected != afd.length) {
+				if( expected != afd.length ) {
 					// System.err.println( "expected numFrames = "+ expected +
 					// ", but got " + afd.length );
 					return null;
 				}
-				appCode = (byte[]) afd.getProperty(AudioFileDescr.KEY_APPCODE);
+				appCode = (byte[]) afd.getProperty( AudioFileDescr.KEY_APPCODE );
 				// System.err.println( "ourCode = '" + ourCode + "'; afd.appCode
 				// = '" + afd.appCode + "'; appCode = '" + appCode + "'" );
-				if (ourCode.equals(afd.appCode) && (appCode != null)) {
-					infoA = AudioFileCacheInfo.decode(appCode);
-					if (infoA != null) {
-						infoB = new AudioFileCacheInfo(audioFiles[i], model,
-								audioFiles[i].getFrameNum());
-						if (!infoA.equals(infoB)) {
+				if( ourCode.equals( afd.appCode ) && (appCode != null) ) {
+					infoA = AudioFileCacheInfo.decode( appCode );
+					if( infoA != null ) {
+						infoB = new AudioFileCacheInfo( audioFiles[ i ], model, audioFiles[ i ].getFrameNum() );
+						if( !infoA.equals( infoB )) {
 							// System.err.println( "info mismatch!" );
 							return null;
 						}
@@ -1330,22 +1337,20 @@ public class DecimatedTrail extends BasicTrail {
 				} else {
 					return null;
 				}
-				fileSpans[i] = new Span(0, cacheAFs[i].getFrameNum());
+				fileSpans[ i ] = new Span( 0, cacheAFs[ i ].getFrameNum() );
 			}
 			// XXX WE NEED A WAY TO CLOSE THE FILES UPON STAKE DISPOSAL XXX
-			if (channelMaps.length == 1) {
-				result = new InterleavedAudioStake(fileSpans[0], cacheAFs[0],
-						fileSpans[0]);
+			if( channelMaps.length == 1 ) {
+				result = new InterleavedAudioStake( fileSpans[ 0 ], cacheAFs[ 0 ], fileSpans[ 0 ]);
 			} else {
-				result = new MultiMappedAudioStake(fileSpans[0], cacheAFs,
-						fileSpans, channelMaps);
+				result = new MultiMappedAudioStake( fileSpans[ 0 ], cacheAFs, fileSpans, channelMaps );
 			}
 			return result;
 		} finally {
-			if (result == null) {
-				for (int i = 0; i < cacheAFs.length; i++) {
-					if (cacheAFs[i] != null) {
-						cacheAFs[i].cleanUp();
+			if( result == null ) {
+				for( int i = 0; i < cacheAFs.length; i++ ) {
+					if( cacheAFs[ i ] != null ) {
+						cacheAFs[ i ].cleanUp();
 						// if( !cacheAFs[ i ].getFile().delete() ) {
 						// cacheAFs[ i ].getFile().deleteOnExit();
 						// }
@@ -1355,60 +1360,57 @@ public class DecimatedTrail extends BasicTrail {
 		}
 	}
 
-	private AudioStake openCacheForWrite(int model, long decimFrameNum)
-			throws IOException {
-		final File[] f = createCacheFileNames();
-		if (f == null)
-			return null;
+	private AudioStake openCacheForWrite( int model, long decimFrameNum )
+	throws IOException
+	{
+		final File[]			f			= createCacheFileNames();
+		if( f == null ) return null;
 
-		final AudioFile[] audioFiles = fullScale.getAudioFiles();
-		final AudioFileDescr afdProto = new AudioFileDescr();
-		final CacheManager cm = PrefCacheManager.getInstance();
-		final Span[] fileSpans = new Span[audioFiles.length];
-		final AudioFile[] cacheAFs = new AudioFile[audioFiles.length];
-		final String ourCode = AbstractApplication.getApplication()
-				.getMacOSCreator();
-		final int[][] channelMaps = createCacheChannelMaps();
-		AudioStake result = null;
-		AudioFileDescr afd;
-		AudioFileCacheInfo info;
+		final AudioFile[]		audioFiles	= fullScale.getAudioFiles();
+		final AudioFileDescr	afdProto	= new AudioFileDescr();
+		final CacheManager		cm			= PrefCacheManager.getInstance();
+		final Span[]			fileSpans	= new Span[ audioFiles.length ];
+		final AudioFile[]		cacheAFs	= new AudioFile[ audioFiles.length ];
+		final String			ourCode		= AbstractApplication.getApplication().getMacOSCreator();
+		final int[][]			channelMaps	= createCacheChannelMaps();
+		AudioStake				result		= null;
+		AudioFileDescr			afd;
+		AudioFileCacheInfo		info;
 
-		afdProto.type = AudioFileDescr.TYPE_AIFF;
-		afdProto.bitsPerSample = 32;
-		afdProto.sampleFormat = AudioFileDescr.FORMAT_FLOAT;
-		afdProto.rate = decimHelps[0].rate; // getRate();
-		afdProto.appCode = ourCode;
+		afdProto.type			= AudioFileDescr.TYPE_AIFF;
+		afdProto.bitsPerSample	= 32;
+		afdProto.sampleFormat	= AudioFileDescr.FORMAT_FLOAT;
+		afdProto.rate			= decimHelps[ 0 ].rate; // getRate();
+		afdProto.appCode		= ourCode;
 
 		try {
-			for (int i = 0; i < f.length; i++) {
-				cm.removeFile(f[i]); // in case it existed
-				afd = new AudioFileDescr(afdProto);
-				afd.channels = channelMaps[i].length;
+			for( int i = 0; i < f.length; i++ ) {
+				cm.removeFile( f[ i ]); // in case it existed
+				System.out.println( "openCacheForWrite doing '" + f[ i ].getAbsolutePath() + "'" );
+				afd				= new AudioFileDescr( afdProto );
+				afd.channels	= channelMaps[ i ].length;
 				// System.out.println( "channels = " + afd.channels );
-				afd.file = f[i];
-				info = new AudioFileCacheInfo(audioFiles[i], model,
-						audioFiles[i].getFrameNum());
-				afd.setProperty(AudioFileDescr.KEY_APPCODE, info.encode());
-				cacheAFs[i] = AudioFile.openAsWrite(afd);
-				fileSpans[i] = new Span(0, decimFrameNum);
+				afd.file		= f[ i ];
+				info			= new AudioFileCacheInfo( audioFiles[ i ], model, audioFiles[ i ].getFrameNum() );
+				afd.setProperty( AudioFileDescr.KEY_APPCODE, info.encode() );
+				cacheAFs[ i ]	= AudioFile.openAsWrite( afd );
+				fileSpans[ i ]	= new Span( 0, decimFrameNum );
 			}
 			// XXX WE NEED A WAY TO CLOSE THE FILES UPON STAKE DISPOSAL XXX
-			if (channelMaps.length == 1) {
-				result = new InterleavedAudioStake(fileSpans[0], cacheAFs[0],
-						fileSpans[0]);
+			if( channelMaps.length == 1 ) {
+				result = new InterleavedAudioStake( fileSpans[ 0 ], cacheAFs[ 0 ], fileSpans[ 0 ]);
 			} else {
-				result = new MultiMappedAudioStake(fileSpans[0], cacheAFs,
-						fileSpans, channelMaps);
+				result = new MultiMappedAudioStake( fileSpans[ 0 ], cacheAFs, fileSpans, channelMaps);
 			}
 			// System.err.println( "Cache was written" );
 			return result;
 		} finally {
-			if (result == null) {
-				for (int i = 0; i < cacheAFs.length; i++) {
-					if (cacheAFs[i] != null) {
-						cacheAFs[i].cleanUp();
-						if (!cacheAFs[i].getFile().delete()) {
-							cacheAFs[i].getFile().deleteOnExit();
+			if( result == null ) {
+				for( int i = 0; i < cacheAFs.length; i++ ) {
+					if( cacheAFs[ i ] != null ) {
+						cacheAFs[ i ].cleanUp();
+						if( !cacheAFs[ i ].getFile().delete() ) {
+							cacheAFs[ i ].getFile().deleteOnExit();
 						}
 					}
 				}
@@ -1621,21 +1623,21 @@ public class DecimatedTrail extends BasicTrail {
 
 	// ---------------------- decimation subclasses ----------------------
 
-	private abstract class Decimator {
-		protected abstract void decimate(float[][] inBuf, float[][] outBuf,
-				int outOff, int len, int decim);
-
-		protected abstract void decimatePCM(float[][] inBuf, float[][] outBuf,
-				int outOff, int len, int decim);
+	private abstract class Decimator
+	{
+		protected abstract void decimate( float[][] inBuf, float[][] outBuf, int outOff, int len, int decim );
+		protected abstract void decimatePCM( float[][] inBuf, float[][] outBuf, int outOff, int len, int decim );
 		// protected abstract void decimatePCMFast( float[][] inBuf, float[][]
 		// outBuf, int outOff, int len, int decim );
 	}
 
-	private class HalfPeakRMSDecimator extends Decimator {
-		protected void decimate(float[][] inBuf, float[][] outBuf, int outOff,
-				int len, int decim) {
-			int stop, j, k, m, ch, ch2;
-			float f1, f2, f3, f4, f5;
+	private class HalfPeakRMSDecimator
+	extends Decimator
+	{
+		protected void decimate( float[][] inBuf, float[][] outBuf, int outOff, int len, int decim )
+		{
+			int		stop, j, k, m, ch, ch2;
+			float	f1, f2, f3, f4, f5;
 			float[] inBufCh1, inBufCh2, inBufCh3, inBufCh4, outBufCh1, outBufCh2, outBufCh3, outBufCh4;
 
 			for (ch = 0; ch < fullChannels; ch++) {

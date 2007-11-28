@@ -437,7 +437,7 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 			} else {
 				final String			name	= proto.file.getName();
 				int						left	= name.length();
-				int						right	= 0;
+				int						right	= name.length();
 				String					name2;
 				int						trunc;
 
@@ -455,10 +455,11 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 						if( !(name2.charAt( trunc ) == name.charAt( trunc ))) break;
 					}
 					left	= trunc;
-					for( trunc = 0; trunc < Math.min( name2.length(), name.length() - right ); trunc++ ) {
+					for( trunc = 0; trunc < Math.min( name2.length(), right ); trunc++ ) {
 						if( !(name2.charAt( name2.length() - trunc - 1 ) == name.charAt( name.length() - trunc - 1 ))) break;
 					}
 					right	= trunc;
+//					System.out.println( "for '" + name2 + "' left = "+left+"; right = "+right );
 				}
 				
 				if( left >= name.length() - right ) {
