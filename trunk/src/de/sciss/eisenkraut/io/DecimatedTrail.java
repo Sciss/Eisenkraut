@@ -307,57 +307,6 @@ public class DecimatedTrail extends BasicTrail {
 	// }
 	// }
 
-	private int drawHalfWavePeakRMS( float[] sPeakP, float[] sPeakN,
-			float[] sRMSP, float[] sRMSN, int len, int[] peakPolyX,
-			int[] peakPolyY, int[] rmsPolyX, int[] rmsPolyY, int off,
-			float offX, float scaleX, float scaleY )
-	{
-		final float scaleYN = -scaleY;
-		int			x;
-
-		for( int i = 0, k = peakPolyX.length - 1 - off; i < len; i++, off++, k-- ) {
-			x					= (int) (i * scaleX + offX);
-			peakPolyX[ off ]	= x;
-			peakPolyX[ k ]		= x;
-			rmsPolyX[ off ]		= x;
-			rmsPolyX[ k ]		= x;
-			peakPolyY[ off ]	= (int) (sPeakP[i] * scaleY);
-			peakPolyY[ k ]		= (int) (sPeakN[i] * scaleY);
-			rmsPolyY[ off ]		= (int) ((float) Math.sqrt( sRMSP[ i ]) * scaleY );
-			rmsPolyY[ k ]		= (int) ((float) Math.sqrt( sRMSN[ i ]) * scaleYN );
-		}
-
-		return off;
-	}
-
-	private int drawFullWavePeakRMS( float[] sPeakP, float[] sPeakN,
-			float[] sRMS, int len, int[] peakPolyX, int[] peakPolyY,
-			int[] rmsPolyX, int[] rmsPolyY, int off, float offX, float scaleX,
-			float scaleY )
-	{
-		// final float scaleYN = -scaleY;
-		int		x;
-		float	peakP, peakN, rms;
-
-		for( int i = 0, k = peakPolyX.length - 1 - off; i < len; i++, off++, k-- ) {
-			x					= (int) (i * scaleX + offX);
-			peakPolyX[ off ]	= x;
-			peakPolyX[ k ]		= x;
-			rmsPolyX[ off ]		= x;
-			rmsPolyX[ k ]		= x;
-			peakP				= sPeakP[ i ];
-			peakN				= sPeakN[ i ];
-			peakPolyY[ off ]	= (int) (peakP * scaleY) + 2;
-			peakPolyY[ k ]		= (int) (peakN * scaleY) - 2;
-			// peakC = (peakP + peakN) / 2;
-			rms					= (float) Math.sqrt( sRMS[ i ]); // / 2;
-			rmsPolyY[ off ]		= (int) (Math.min( peakP, rms ) * scaleY);
-			rmsPolyY[ k ]		= (int) (Math.max( peakN, -rms ) * scaleY);
-		}
-
-		return off;
-	}
-
 	/*
 	 * TO-DO : should use Math.max( peakN, peakP ) should omit all zero points
 	 * should align drawing on bottom
@@ -409,7 +358,8 @@ public class DecimatedTrail extends BasicTrail {
 
 		return off;
 	}
-
+	
+	
 	/**
 	 * Speed measurements (feb 2006): for HalfwavePeakRMS, using g2.fillPolygon
 	 * is about twice as fast as using GeneralPath objects. The integer
@@ -439,7 +389,7 @@ public class DecimatedTrail extends BasicTrail {
 		final float				deltaYN			= 4f / (view.getMin() - view.getMax());
 		final int[]				off				= new int[ fullChannels ];
 
-		float[]					sPeakP, sPeakN, sRMSP, sRMSN;
+		float[]					sPeakP;
 		float					offX, scaleX, scaleY;
 		long					start			= info.span.start;
 		long					totalLength		= info.getTotalLength();
@@ -507,61 +457,8 @@ public class DecimatedTrail extends BasicTrail {
 									peakPolyY[ ch ], off[ ch ], offX, scaleX, scaleY, sampleAndHold[ ch ]);
 						}
 					} else {
-						switch (model) {
-						case MODEL_HALFWAVE_PEAKRMS:
-							for (int ch = 0, chPeakN = fullChannels, chRMSP = 2 * fullChannels, chRMSN = 3 * fullChannels; ch < fullChannels; ch++, chPeakN++, chRMSP++, chRMSN++) {
-
-								sPeakP = tmpBuf2[ch];
-								sPeakN = tmpBuf2[chPeakN];
-								sRMSP = tmpBuf2[chRMSP];
-								sRMSN = tmpBuf2[chRMSN];
-
-								r = view.rectForChannel(ch);
-								scaleX = 4 * r.width
-										/ (float) (info.sublength - 1);
-								scaleY = r.height * deltaYN;
-								offX = scaleX * off[ch];
-
-								off[ch] = drawHalfWavePeakRMS(sPeakP, sPeakN,
-										sRMSP, sRMSN, decimLen, peakPolyX[ch],
-										peakPolyY[ch], rmsPolyX[ch],
-										rmsPolyY[ch], off[ch], offX, scaleX,
-										scaleY);
-							}
-							break;
-
-						case MODEL_MEDIAN:
-							throw new IllegalStateException(
-									"Median drawing not yet working");
-
-						case MODEL_FULLWAVE_PEAKRMS:
-							for (int ch = 0, chPeakN = fullChannels, chRMS = 2 * fullChannels; ch < fullChannels; ch++, chPeakN++, chRMS++) {
-
-								sPeakP = tmpBuf2[ch];
-								sPeakN = tmpBuf2[chPeakN];
-								sRMSP = tmpBuf2[chRMS];
-								r = view.rectForChannel(ch);
-								scaleX = 4 * r.width
-										/ (float) (info.sublength - 1);
-								scaleY = r.height * deltaYN;
-								offX = scaleX * off[ch];
-
-								off[ch] = drawFullWavePeakRMS(sPeakP, sPeakN,
-										sRMSP, decimLen, peakPolyX[ch],
-										peakPolyY[ch], rmsPolyX[ch],
-										rmsPolyY[ch], off[ch], offX, scaleX,
-										scaleY);
-								// off[ ch ] = drawLogPeakRMS( sPeakP, sPeakN,
-								// sRMSP, decimLen,
-								// peakPolyX[ ch ], peakPolyY[ ch ], rmsPolyX[
-								// ch ], rmsPolyY[ ch ],
-								// off[ ch ], offX, scaleX, scaleY );
-							}
-							break;
-
-						default:
-							assert false : model;
-							break;
+						for( int ch = 0; ch < fullChannels; ch++ ) {
+							off[ ch ] = decimator.draw( info, ch, peakPolyX, peakPolyY, rmsPolyX, rmsPolyY, decimLen, view.rectForChannel( ch ), deltaYN, off[ ch ]);
 						}
 					}
 					start += fullLen;
@@ -626,8 +523,8 @@ public class DecimatedTrail extends BasicTrail {
 					g2.setClip(clipOrig);
 				}
 			}
-		} catch (IOException e1) {
-			System.err.println(e1);
+		} catch( IOException e1 ) {
+			System.err.println( e1 );
 		}
 	}
 
@@ -646,26 +543,26 @@ public class DecimatedTrail extends BasicTrail {
 	 *         tag.getLength() was smaller than minLen (in this case the
 	 *         fullrate version is used).
 	 */
-	public DecimationInfo getBestSubsample(Span tag, int minLen) {
-		final DecimationInfo info;
-		final boolean fromPCM, toPCM;
-		long subLength, n;
-		int idx, inlineDecim;
+	public DecimationInfo getBestSubsample( Span tag, int minLen )
+	{
+		final DecimationInfo	info;
+		final boolean			fromPCM, toPCM;
+		final long				fullLength	= tag.getLength();
+		long					subLength, n;
+		int						idx, inlineDecim;
 
 		subLength = tag.getLength();
-		for (idx = 0; idx < SUBNUM; idx++) {
-			n = decimHelps[idx].fullrateToSubsample(tag.getLength());
-			if (n < minLen)
-				break;
+		for( idx = 0; idx < SUBNUM; idx++ ) {
+			n = decimHelps[ idx ].fullrateToSubsample( fullLength );
+			if( n < minLen ) break;
 			subLength = n;
 		}
 		idx--;
 		// had to change '>= minLen' to '> minLen' because minLen could be zero!
-		switch (model) {
+		switch( model ) {
 		case MODEL_HALFWAVE_PEAKRMS:
 		case MODEL_FULLWAVE_PEAKRMS:
-			for (inlineDecim = 2; subLength / inlineDecim > minLen; inlineDecim++)
-				;
+			for( inlineDecim = 2; subLength / inlineDecim > minLen; inlineDecim++ ) ;
 			inlineDecim--;
 			break;
 
@@ -680,11 +577,11 @@ public class DecimatedTrail extends BasicTrail {
 		subLength /= inlineDecim;
 		// System.err.println( "minLen = "+minLen+"; subLength = "+subLength+";
 		// inlineDecim = "+inlineDecim+" ; idx = "+idx );
-		fromPCM = idx == -1;
-		toPCM = fromPCM && inlineDecim == 1;
-		info = new DecimationInfo(tag, subLength, toPCM ? fullChannels
-				: decimChannels, idx, fromPCM ? 0 : decimHelps[idx].shift,
-				inlineDecim, toPCM ? MODEL_PCM : model);
+		fromPCM	= idx == -1;
+		toPCM	= fromPCM && inlineDecim == 1;
+		info	= new DecimationInfo( tag, subLength, toPCM ? fullChannels : decimChannels, idx,
+						fromPCM ?				0 : decimHelps[ idx ].shift,
+						inlineDecim, toPCM ?	MODEL_PCM : model );
 		return info;
 	}
 
@@ -719,7 +616,7 @@ public class DecimatedTrail extends BasicTrail {
 
 			if( !ds.readFrame( sub, tmpBuf2, 0, pos )) return false;
 
-			for( int i = ch, k = 0; i < decimChannels; i += fullChannels, k++ ) {
+			for( int i = ch * modelChannels, k = 0; k < modelChannels; i++, k++ ) {
 				data[ k ] = tmpBuf2[ i ][ 0 ];
 			}
 
@@ -741,54 +638,44 @@ public class DecimatedTrail extends BasicTrail {
 							 Span readSpan, AbstractCompoundEdit ce )
 	throws IOException
 	{
-		int idx = editIndexOf( readSpan.start, true, ce );
+		int					idx			= editIndexOf( readSpan.start, true, ce );
 		if( idx < 0 ) idx = -(idx + 2);
+		final long			startR		= decimHelps[sub].roundAdd - readSpan.start;
+		final List			coll		= editGetCollByStart( ce );
+		final MutableInt	readyLen	= new MutableInt( 0 );
+		final MutableInt	busyLen		= new MutableInt( 0 );
+		DecimatedStake		stake;
+		int					chunkLen, discrepancy;
+		Span				subSpan;
+		int					readOffset, nextOffset = dataOffset;
+		int					len			= (int) (readSpan.getLength() >> decimHelps[ sub ].shift);
 
-		// if( idx < 0 ) {
-		// System.err.println( "DecimatedTrail.readFrames : off left boundary!
-		// readSpan "+readSpan.toString()+
-		// "; our span " + editGetSpan( ce ).toString() );
-		// return;
-		// }
-
-		final long startR = decimHelps[sub].roundAdd - readSpan.start;
-		final List coll = editGetCollByStart(ce);
-		final MutableInt readyLen = new MutableInt(0);
-		final MutableInt busyLen = new MutableInt(0);
-		DecimatedStake stake;
-		int chunkLen, discrepancy;
-		Span subSpan;
-		int readOffset, nextOffset = dataOffset;
-		int len = (int) (readSpan.getLength() >> decimHelps[sub].shift);
-
-		for (; (len > 0) && (idx < coll.size());) {
-			stake = (DecimatedStake) coll.get(idx);
-			subSpan = new Span(Math.max(stake.getSpan().start, readSpan.start),
-					Math.min(stake.getSpan().stop, readSpan.stop));
-			stake.readFrames(sub, data, nextOffset, subSpan, readyLen, busyLen);
-			chunkLen = readyLen.value() + busyLen.value();
-			readOffset = nextOffset + readyLen.value(); // chunkLen;
-			nextOffset = (int) ((subSpan.stop + startR) >> decimHelps[sub].shift)
-					+ dataOffset;
-			discrepancy = nextOffset - readOffset;
-			len -= readyLen.value() + discrepancy;
-			if (busyLen.value() == 0) {
-				if (discrepancy > 0) {
-					if (readOffset > 0) {
-						for (int i = readOffset, k = readOffset - 1; i < nextOffset; i++) {
-							for (int j = 0; j < data.length; j++) {
-								data[j][i] = data[j][k];
+		while( (len > 0) && (idx < coll.size()) ) {
+			stake		= (DecimatedStake) coll.get( idx );
+			subSpan		= new Span( Math.max( stake.getSpan().start, readSpan.start ),
+									Math.min( stake.getSpan().stop, readSpan.stop ));
+			stake.readFrames( sub, data, nextOffset, subSpan, readyLen, busyLen );
+			chunkLen	= readyLen.value() + busyLen.value();
+			readOffset	= nextOffset + readyLen.value(); // chunkLen;
+			nextOffset	= (int) ((subSpan.stop + startR) >> decimHelps[ sub ].shift) + dataOffset;
+			discrepancy	= nextOffset - readOffset;
+			len 	   -= readyLen.value() + discrepancy;
+			if( busyLen.value() == 0 ) {
+				if( discrepancy > 0 ) {
+					if( readOffset > 0 ) {
+						for( int i = readOffset, k = readOffset - 1; i < nextOffset; i++ ) {
+							for( int j = 0; j < data.length; j++ ) {
+								data[ j ][ i ] = data[ j ][ k ];
 							}
 						}
 					}
 				}
 			} else {
-				busyList.add(new Span(subSpan.stop
-						- (subSpan.getLength() * busyLen.value() / chunkLen),
-						subSpan.stop));
-				for (int i = Math.max(0, readOffset); i < nextOffset; i++) {
-					for (int j = 0; j < data.length; j++) {
-						data[j][i] = 0f;
+				busyList.add( new Span( subSpan.stop - (subSpan.getLength() * busyLen.value() / chunkLen),
+										subSpan.stop ));
+				for( int i = Math.max( 0, readOffset ); i < nextOffset; i++ ) {
+					for( int j = 0; j < data.length; j++ ) {
+						data[ j ][ i ] = 0f;
 					}
 				}
 			}
@@ -796,86 +683,88 @@ public class DecimatedTrail extends BasicTrail {
 		}
 	}
 
-	public void debugDump() {
-		DecimatedStake stake;
-
-		for (int i = 0; i < getNumStakes(); i++) {
-			stake = (DecimatedStake) get(i, true);
-			stake.debugDump();
+	public void debugDump()
+	{
+		for( int i = 0; i < getNumStakes(); i++ ) {
+			((DecimatedStake) get( i, true )).debugDump();
 		}
 	}
 
 	/*
 	 * @synchronization call within synchronoized( bufSync ) block
 	 */
-	private void createBuffers() {
-		if (!Thread.holdsLock(bufSync))
-			throw new IllegalMonitorStateException();
+	private void createBuffers()
+	{
+		if( !Thread.holdsLock( bufSync )) throw new IllegalMonitorStateException();
 
-		if (tmpBuf == null) {
-			tmpBuf = new float[fullChannels][tmpBufSize];
-			tmpBuf2 = new float[decimChannels][tmpBufSize2];
+		if( tmpBuf == null ) {
+			tmpBuf	= new float[ fullChannels  ][ tmpBufSize ];
+			tmpBuf2	= new float[ decimChannels ][ tmpBufSize2 ];
 		}
 	}
 
-	private void freeBuffers() {
-		synchronized (bufSync) {
-			tmpBuf = null;
-			tmpBuf2 = null;
+	private void freeBuffers()
+	{
+		synchronized( bufSync ) {
+			tmpBuf	= null;
+			tmpBuf2	= null;
 		}
 	}
 
-	private void freeTempFiles() {
-		synchronized (fileSync) {
-			if (tempF != null) {
-				deleteTempFiles(tempF);
+	private void freeTempFiles()
+	{
+		synchronized( fileSync ) {
+			if( tempF != null ) {
+				deleteTempFiles( tempF );
 			}
 			// XXX THIS IS THE PLACE TO KEEP WAVEFORM CACHE FILE
-			if (tempFAsync != null) {
-				deleteTempFiles(tempFAsync);
+			if( tempFAsync != null ) {
+				deleteTempFiles( tempFAsync );
 			}
 		}
 	}
 
-	private void killAsyncThread() {
-		if (threadAsync != null) {
-			synchronized (threadAsync) {
-				if (threadAsync.isAlive()) {
+	private void killAsyncThread()
+	{
+		if( threadAsync != null ) {
+			synchronized( threadAsync ) {
+				if( threadAsync.isAlive() ) {
 					keepAsyncRunning = false;
 					try {
 						threadAsync.wait();
-					} catch (InterruptedException e1) {
-						System.err.println(e1);
+					} catch( InterruptedException e1 ) {
+						System.err.println( e1 );
 					}
 				}
 			}
 		}
 	}
 
-	public boolean isBusy() {
-		return ((threadAsync != null) && threadAsync.isAlive());
+	public boolean isBusy()
+	{
+		return( (threadAsync != null) && threadAsync.isAlive() );
 	}
 
-	public void addAsyncListener(AsyncListener l) {
-		if (!isBusy()) {
-			l.asyncFinished(new AsyncEvent(this, AsyncEvent.FINISHED, System
-					.currentTimeMillis()));
+	public void addAsyncListener( AsyncListener l )
+	{
+		if( !isBusy() ) {
+			l.asyncFinished( new AsyncEvent( this, AsyncEvent.FINISHED, System.currentTimeMillis()) );
 			return;
 		}
-		if (asyncManager == null)
-			asyncManager = new EventManager(new EventManager.Processor() {
-				public void processEvent(BasicEvent e) {
-					AsyncListener l;
-					final AsyncEvent ae = (AsyncEvent) e;
+		if( asyncManager == null ) {
+			asyncManager = new EventManager( new EventManager.Processor() {
+				public void processEvent( BasicEvent e ) {
+					final AsyncEvent	ae = (AsyncEvent) e;
+					AsyncListener		l;
 
-					for (int i = 0; i < asyncManager.countListeners(); i++) {
-						l = (AsyncListener) asyncManager.getListener(i);
-						switch (e.getID()) {
+					for( int i = 0; i < asyncManager.countListeners(); i++ ) {
+						l = (AsyncListener) asyncManager.getListener( i );
+						switch( e.getID() ) {
 						case AsyncEvent.UPDATE:
-							l.asyncUpdate(ae);
+							l.asyncUpdate( ae );
 							break;
 						case AsyncEvent.FINISHED:
-							l.asyncFinished(ae);
+							l.asyncFinished( ae );
 							break;
 						default:
 							assert false : e.getID();
@@ -884,17 +773,19 @@ public class DecimatedTrail extends BasicTrail {
 					}
 				}
 			});
-		asyncManager.addListener(l);
+		}
+		asyncManager.addListener( l );
 	}
 
-	public void removeAsyncListener(AsyncListener l) {
-		if (asyncManager != null)
-			asyncManager.removeListener(l);
+	public void removeAsyncListener( AsyncListener l )
+	{
+		if( asyncManager != null ) asyncManager.removeListener( l );
 	}
 
 	// ----------- dependant implementation -----------
 
-	public void dispose() {
+	public void dispose()
+	{
 		// System.err.println( "DecimatedTrail.dispose()" );
 		killAsyncThread(); // this has to be the first step
 		fullScale.removeDependant( this );
@@ -944,79 +835,74 @@ public class DecimatedTrail extends BasicTrail {
 
 	// private void addAllDepAsync( Object source, List stakes, SyncCompoundEdit
 	// ce, Span union )
-	private void addAllDepAsync() throws IOException {
-		if (threadAsync != null)
-			throw new IllegalStateException();
+	private void addAllDepAsync()
+	throws IOException
+	{
+		if( threadAsync != null ) throw new IllegalStateException();
 
-		final List stakes = fullScale.getAll(true);
-		if (stakes.isEmpty())
-			return;
+		final List					stakes		= fullScale.getAll(true);
+		if( stakes.isEmpty() ) return;
 
-		final DecimatedStake das;
-		final Span union = fullScale.getSpan();
-		final Span extSpan;
-		final long fullrateStop, fullrateLen; // , insertLen;
-		final int numFullBuf;
-		final Object enc_this = this;
+		final DecimatedStake		das;
+		final Span					union		= fullScale.getSpan();
+		final Span					extSpan;
+		final long					fullrateStop, fullrateLen; // , insertLen;
+		final int					numFullBuf;
+		final Object				enc_this	= this;
 		// final CacheManager cm = CacheManager.getInstance();
-		final AbstractCompoundEdit ce = null; // XXX
-		final Object source = null; // XXX
-		final AudioStake cacheReadAS;
-		final AudioStake cacheWriteAS;
+		final AbstractCompoundEdit	ce			= null; // XXX
+		final Object				source		= null; // XXX
+		final AudioStake			cacheReadAS;
+		final AudioStake			cacheWriteAS;
 
-		synchronized (fileSync) {
-			das = allocAsync(union);
+		synchronized( fileSync ) {
+			das			= allocAsync( union );
 		}
-		extSpan = das.getSpan();
-		// insertLen = extSpan.getLength();
-		fullrateStop = Math.min(extSpan.getStop(),
-				fullScale.editGetSpan(ce).stop);
-		fullrateLen = fullrateStop - extSpan.getStart();
+		extSpan			= das.getSpan();
+		// insertLen	= extSpan.getLength();
+		fullrateStop	= Math.min( extSpan.getStop(), fullScale.editGetSpan( ce ).stop );
+		fullrateLen		= fullrateStop - extSpan.getStart();
 
-		cacheReadAS = openCacheForRead(model);
-		if (cacheReadAS == null) {
+		cacheReadAS		= openCacheForRead( model );
+		if( cacheReadAS == null ) {
 			// cacheWriteAS = fullScale.openCacheForWrite( model,
 			// decimHelps[ 0 ].fullrateToSubsample( union.getLength() ));
-			cacheWriteAS = openCacheForWrite(model, (fullrateLen + MAXCEILADD)
-					& MAXMASK);
-			numFullBuf = (int) (fullrateLen >> MAXSHIFT);
+			cacheWriteAS = openCacheForWrite( model, (fullrateLen + MAXCEILADD) & MAXMASK );
+			numFullBuf	= (int) (fullrateLen >> MAXSHIFT);
 		} else {
-			numFullBuf = (int) ((fullrateLen + MAXCEILADD) >> MAXSHIFT); // cached
-																			// files
-																			// always
-																			// have
-																			// integer
-																			// fullBufs!
+			// cached files always have integer fullBufs!
+			numFullBuf	= (int) ((fullrateLen + MAXCEILADD) >> MAXSHIFT);
 			cacheWriteAS = null;
 		}
 
-		synchronized (bufSync) {
+		synchronized( bufSync ) {
 			createBuffers();
 		}
 
-		editClear(source, das.getSpan(), ce);
-		editAdd(source, das, ce);
+		editClear( source, das.getSpan(), ce );
+		editAdd( source, das, ce );
 
-		threadAsync = new Thread(new Runnable() {
-			public void run() {
-				final int minCoarse;
-				final CacheManager cm = PrefCacheManager.getInstance();
-				long pos;
+		threadAsync = new Thread( new Runnable() {
+			public void run()
+			{
+				final int			minCoarse;
+				final CacheManager	cm					= PrefCacheManager.getInstance();
+				long				pos;
 				// long framesWritten = 0;
-				long framesWrittenCache = 0;
-				boolean cacheWriteComplete = false;
-				Span tag2;
-				float f1;
-				int len;
-				long time, nextTime = System.currentTimeMillis()
-						+ UPDATE_PERIOD;
+				long				framesWrittenCache	= 0;
+				boolean				cacheWriteComplete	= false;
+				Span				tag2;
+				float				f1;
+				int					len;
+				long				time;
+				long				nextTime			= System.currentTimeMillis() + UPDATE_PERIOD;
 
-				if (cacheReadAS != null) {
-					pos = decimHelps[0].fullrateToSubsample(extSpan.getStart());
+				if( cacheReadAS != null ) {
+					pos = decimHelps[ 0 ].fullrateToSubsample( extSpan.getStart() );
 				} else {
 					pos = extSpan.getStart();
 				}
-				minCoarse = MAXCOARSE >> decimHelps[0].shift;
+				minCoarse = MAXCOARSE >> decimHelps[ 0 ].shift;
 
 				try {
 					for (int i = 0; (i < numFullBuf) && keepAsyncRunning; i++) {
@@ -1266,18 +1152,18 @@ public class DecimatedTrail extends BasicTrail {
 		final int[][] cacheChanMaps	= new int[ fullChanMaps.length ][];
 
 		for( int i = 0; i < fullChanMaps.length; i++ ) {
-			System.out.println( "fullChanMaps[ " + i + " ] = " );
-			for( int k = 0; k < fullChanMaps[ i ].length; k++ ) {
-				System.out.println( "  " + fullChanMaps[ i ][ k ]);
-			}
+//			System.out.println( "fullChanMaps[ " + i + " ] = " );
+//			for( int k = 0; k < fullChanMaps[ i ].length; k++ ) {
+//				System.out.println( "  " + fullChanMaps[ i ][ k ]);
+//			}
 			cacheChanMaps[ i ] = new int[ fullChanMaps[ i ].length * modelChannels ];
 			for( int j = 0; j < cacheChanMaps[ i ].length; j++ ) {
 				cacheChanMaps[ i ][ j ] = j;
 			}
-			System.out.println( "cacheChanMaps[ " + i + " ] = " );
-			for( int k = 0; k < cacheChanMaps[ i ].length; k++ ) {
-				System.out.println( "  " + cacheChanMaps[ i ][ k ]);
-			}
+//			System.out.println( "cacheChanMaps[ " + i + " ] = " );
+//			for( int k = 0; k < cacheChanMaps[ i ].length; k++ ) {
+//				System.out.println( "  " + cacheChanMaps[ i ][ k ]);
+//			}
 		}
 
 		return cacheChanMaps;
@@ -1304,7 +1190,7 @@ public class DecimatedTrail extends BasicTrail {
 
 		try {
 			for( int i = 0; i < cacheAFs.length; i++ ) {
-				System.out.println( "openCacheForRead checking '" + f[ i ].getAbsolutePath() + "'" );
+// System.out.println( "openCacheForRead checking '" + f[ i ].getAbsolutePath() + "'" );
 				
 				if( !f[ i ].isFile() ) return null;
 				cacheAFs[ i ] = AudioFile.openAsRead( f[ i ]);
@@ -1386,7 +1272,7 @@ public class DecimatedTrail extends BasicTrail {
 		try {
 			for( int i = 0; i < f.length; i++ ) {
 				cm.removeFile( f[ i ]); // in case it existed
-				System.out.println( "openCacheForWrite doing '" + f[ i ].getAbsolutePath() + "'" );
+// System.out.println( "openCacheForWrite doing '" + f[ i ].getAbsolutePath() + "'" );
 				afd				= new AudioFileDescr( afdProto );
 				afd.channels	= channelMaps[ i ].length;
 				// System.out.println( "channels = " + afd.channels );
@@ -1629,6 +1515,9 @@ public class DecimatedTrail extends BasicTrail {
 		protected abstract void decimatePCM( float[][] inBuf, float[][] outBuf, int outOff, int len, int decim );
 		// protected abstract void decimatePCMFast( float[][] inBuf, float[][]
 		// outBuf, int outOff, int len, int decim );
+		protected abstract int draw( DecimationInfo info, int ch, int[][] peakPolyX, int[][] peakPolyY,
+						  			 int[][] rmsPolyX, int[][] rmsPolyY, int decimLen,
+						  			 Rectangle r, float deltaYN, int off );
 	}
 
 	private class HalfPeakRMSDecimator
@@ -1636,42 +1525,48 @@ public class DecimatedTrail extends BasicTrail {
 	{
 		protected void decimate( float[][] inBuf, float[][] outBuf, int outOff, int len, int decim )
 		{
+System.out.println( "warning: HalfPeakRMSDecimator : not checked" );
+
 			int		stop, j, k, m, ch, ch2;
 			float	f1, f2, f3, f4, f5;
-			float[] inBufCh1, inBufCh2, inBufCh3, inBufCh4, outBufCh1, outBufCh2, outBufCh3, outBufCh4;
+			float[] inBufCh1, outBufCh1;	// pos. peak
+			float[] inBufCh2, outBufCh2;	// neg. peak
+			float[]	inBufCh3, outBufCh3;	// pos. RMS
+			float[]	inBufCh4, outBufCh4;	// neg. RMS
 
 			for (ch = 0; ch < fullChannels; ch++) {
-				inBufCh1 = inBuf[ch];
-				outBufCh1 = outBuf[ch];
-				ch2 = ch + fullChannels;
-				inBufCh2 = inBuf[ch2];
-				outBufCh2 = outBuf[ch2];
-				ch2 += fullChannels;
-				inBufCh3 = inBuf[ch2];
-				outBufCh3 = outBuf[ch2];
-				ch2 += fullChannels;
-				inBufCh4 = inBuf[ch2];
-				outBufCh4 = outBuf[ch2];
+				ch2			= ch << 2;
+				inBufCh1	= inBuf[ ch2 ];	// [ch]
+				outBufCh1	= outBuf[ ch2 ];	// [ch]
+				ch2++;	// ch + fullChannels;
+				inBufCh2	= inBuf[ ch2 ];
+				outBufCh2	= outBuf[ ch2 ];
+				ch2++; // += fullChannels;
+				inBufCh3	= inBuf[ ch2 ];
+				outBufCh3	= outBuf[ ch2 ];
+				ch2++; // += fullChannels;
+				inBufCh4	= inBuf[ ch2 ];
+				outBufCh4	= outBuf[ ch2 ];
 
-				for (j = outOff, stop = outOff + len, k = 0; j < stop; j++) {
-					f1 = inBufCh1[k];
-					f2 = inBufCh2[k];
-					f3 = inBufCh3[k];
-					f4 = inBufCh4[k];
+				for( j = outOff, stop = outOff + len, k = 0; j < stop; j++ ) {
+					f1 = inBufCh1[ k ];
+					f2 = inBufCh2[ k ];
+					f3 = inBufCh3[ k ];
+					f4 = inBufCh4[ k ];
 					for (m = k + decim, k++; k < m; k++) {
-						f5 = inBufCh1[k];
+						f5 = inBufCh1[ k ];
 						if (f5 > f1)
 							f1 = f5;
-						f5 = inBufCh2[k];
+						f5 = inBufCh2[ k ];
 						if (f5 < f2)
 							f2 = f5;
-						f3 += inBufCh3[k];
-						f4 += inBufCh4[k];
+						f3 += inBufCh3[ k ];
+						f4 += inBufCh4[ k ];
 					}
-					outBufCh1[j] = f1; // positive halfwave peak
-					outBufCh2[j] = f2; // negative halfwave peak
-					outBufCh3[j] = f3 / decim; // positive halfwave mean square
-					outBufCh4[j] = f4 / decim; // negative halfwave mean square
+					outBufCh1[ j ] = f1; // positive halfwave peak
+					outBufCh2[ j ] = f2; // negative halfwave peak
+					outBufCh3[ j ] = f3 / decim; // positive halfwave mean square
+					outBufCh4[ j ] = f4 / decim; // negative halfwave mean square
 				}
 			} // for( ch )
 		}
@@ -1726,25 +1621,26 @@ public class DecimatedTrail extends BasicTrail {
 		// } // for( ch )
 		// }
 
-		protected void decimatePCM(float[][] inBuf, float[][] outBuf,
-				int outOff, int len, int decim) {
-			int stop, j, k, m, ch, ch2;
-			float f1, f2, f3, f4, f5;
+		protected void decimatePCM( float[][] inBuf, float[][] outBuf, int outOff, int len, int decim )
+		{
+			int		stop, j, k, m, ch, ch2;
+			float	f1, f2, f3, f4, f5;
 			float[] inBufCh1, outBufCh1, outBufCh2, outBufCh3, outBufCh4;
 
-			for (ch = 0; ch < fullChannels; ch++) {
-				inBufCh1 = inBuf[ch];
-				outBufCh1 = outBuf[ch];
-				ch2 = ch + fullChannels;
-				outBufCh2 = outBuf[ch2];
-				ch2 += fullChannels;
-				outBufCh3 = outBuf[ch2];
-				ch2 += fullChannels;
-				outBufCh4 = outBuf[ch2];
+			for( ch = 0; ch < fullChannels; ch++ ) {
+				ch2	= ch << 2;
+				inBufCh1 = inBuf[ ch2 ];	// [ch]
+				outBufCh1 = outBuf[ ch2 ];	// [ch]
+				ch2++;	// ch + fullChannels;
+				outBufCh2 = outBuf[ ch2 ];
+				ch2++;	// += fullChannels;
+				outBufCh3 = outBuf[ ch2 ];
+				ch2++;	// += fullChannels;
+				outBufCh4 = outBuf[ ch2 ];
 
-				for (j = outOff, stop = outOff + len, k = 0; j < stop; j++) {
-					f5 = inBufCh1[k++];
-					if (f5 >= 0.0f) {
+				for( j = outOff, stop = outOff + len, k = 0; j < stop; j++ ) {
+					f5 = inBufCh1[ k++ ];
+					if( f5 >= 0.0f ) {
 						f1 = f5;
 						f3 = f5 * f5;
 						f2 = 0.0f;
@@ -1755,54 +1651,103 @@ public class DecimatedTrail extends BasicTrail {
 						f1 = 0.0f;
 						f3 = 0.0f;
 					}
-					for (m = 1; m < decim; m++) {
-						f5 = inBufCh1[k++];
-						if (f5 >= 0.0f) {
-							if (f5 > f1)
-								f1 = f5;
+					for( m = 1; m < decim; m++ ) {
+						f5 = inBufCh1[ k++ ];
+						if( f5 >= 0.0f ) {
+							if( f5 > f1 ) f1 = f5;
 							f3 += f5 * f5;
 						} else {
-							if (f5 < f2)
-								f2 = f5;
+							if( f5 < f2 ) f2 = f5;
 							f4 += f5 * f5;
 						}
 					}
-					outBufCh1[j] = f1; // positive halfwave peak
-					outBufCh2[j] = f2; // negative halfwave peak
-					outBufCh3[j] = f3 / decim; // positive halfwave mean square
-					outBufCh4[j] = f4 / decim; // negative halfwave mean square
+					outBufCh1[ j ] = f1; // positive halfwave peak
+					outBufCh2[ j ] = f2; // negative halfwave peak
+					outBufCh3[ j ] = f3 / decim; // positive halfwave mean square
+					outBufCh4[ j ] = f4 / decim; // negative halfwave mean square
 				}
 			} // for( ch )
 		}
+		
+		protected int draw( DecimationInfo info, int ch,
+				  			int[][] peakPolyX, int[][] peakPolyY,
+				  			int[][] rmsPolyX, int[][] rmsPolyY, int decimLen,
+				  			Rectangle r, float deltaYN, int off )
+		{
+			float[]		sPeakP, sPeakN, sRMSP, sRMSN;
+			float		offX, scaleX, scaleY;
+			int			ch2;
+			
+			ch2		= ch <<= 2;
+			sPeakP	= tmpBuf2[ ch2++ ];
+			sPeakN	= tmpBuf2[ ch2++ ];
+			sRMSP	= tmpBuf2[ ch2++ ];
+			sRMSN	= tmpBuf2[ ch2 ];
+			
+			scaleX	= 4 * r.width / (float) (info.sublength - 1);
+			scaleY	= r.height * deltaYN;
+			offX	= scaleX * off;
+			
+			return( drawHalfWavePeakRMS( sPeakP, sPeakN,
+									 	 sRMSP, sRMSN, decimLen, peakPolyX[ ch ],
+									 	 peakPolyY[ ch ], rmsPolyX[ ch ],
+									 	 rmsPolyY[ ch ], off, offX, scaleX,
+									 	 scaleY ));
+		}
+
+		private int drawHalfWavePeakRMS( float[] sPeakP, float[] sPeakN,
+				float[] sRMSP, float[] sRMSN, int len, int[] peakPolyX,
+				int[] peakPolyY, int[] rmsPolyX, int[] rmsPolyY, int off,
+				float offX, float scaleX, float scaleY )
+		{
+			final float scaleYN = -scaleY;
+			int			x;
+
+			for( int i = 0, k = peakPolyX.length - 1 - off; i < len; i++, off++, k-- ) {
+				x					= (int) (i * scaleX + offX);
+				peakPolyX[ off ]	= x;
+				peakPolyX[ k ]		= x;
+				rmsPolyX[ off ]		= x;
+				rmsPolyX[ k ]		= x;
+				peakPolyY[ off ]	= (int) (sPeakP[i] * scaleY);
+				peakPolyY[ k ]		= (int) (sPeakN[i] * scaleY);
+				rmsPolyY[ off ]		= (int) ((float) Math.sqrt( sRMSP[ i ]) * scaleY );
+				rmsPolyY[ k ]		= (int) ((float) Math.sqrt( sRMSN[ i ]) * scaleYN );
+			}
+
+			return off;
+		}
 	} // class HalfPeakRMSDecimator
 
-	private class MedianDecimator extends Decimator {
-		protected void decimate(float[][] inBuf, float[][] outBuf, int outOff,
-				int len, int decim) {
-			int stop, j, k, ch;
-			float f1, f2, f3, f4, f5;
+	private class MedianDecimator
+	extends Decimator
+	{
+		protected void decimate( float[][] inBuf, float[][] outBuf, int outOff, int len, int decim )
+		{
+			int		stop, j, k, ch;
+			float	f1, f2, f3, f4, f5;
 			float[] inBufCh1, outBufCh1;
 
 			assert decim == 4 : decim;
 
-			for (ch = 0; ch < fullChannels; ch++) {
-				inBufCh1 = inBuf[ch];
-				outBufCh1 = outBuf[ch];
+			for( ch = 0; ch < fullChannels; ch++ ) {
+				inBufCh1	= inBuf[ ch ];
+				outBufCh1	= outBuf[ ch ];
 
-				for (j = outOff, stop = outOff + len, k = 0; j < stop; j++) {
-					f1 = inBufCh1[k++];
-					f2 = inBufCh1[k++];
-					f3 = inBufCh1[k++];
-					f4 = inBufCh1[k++];
+				for( j = outOff, stop = outOff + len, k = 0; j < stop; j++ ) {
+					f1 = inBufCh1[ k++ ];
+					f2 = inBufCh1[ k++ ];
+					f3 = inBufCh1[ k++ ];
+					f4 = inBufCh1[ k++ ];
 
 					// calculate the median of four successive frames
-					if (f1 > f2) {
+					if( f1 > f2 ) {
 						f5 = f1;
 						f1 = f2;
 						f2 = f5;
 					}
-					if (f2 > f3) {
-						if (f1 > f3) {
+					if( f2 > f3 ) {
+						if( f1 > f3 ) {
 							f5 = f1;
 							f1 = f3;
 							f3 = f2;
@@ -1813,26 +1758,26 @@ public class DecimatedTrail extends BasicTrail {
 							f3 = f5;
 						}
 					}
-					if (f3 > f4) {
-						if (f2 > f4) {
-							if (f1 > f4) {
-								outBufCh1[j] = (f1 + f2) / 2;
+					if( f3 > f4 ) {
+						if( f2 > f4 ) {
+							if( f1 > f4 ) {
+								outBufCh1[ j ] = (f1 + f2) / 2;
 							} else {
-								outBufCh1[j] = (f4 + f2) / 2;
+								outBufCh1[ j ] = (f4 + f2) / 2;
 							}
 						} else {
-							outBufCh1[j] = (f2 + f4) / 2;
+							outBufCh1[ j ] = (f2 + f4) / 2;
 						}
 					} else {
-						outBufCh1[j] = (f2 + f3) / 2;
+						outBufCh1[ j ] = (f2 + f3) / 2;
 					}
 				}
 			} // for( ch )
 		}
 
-		protected void decimatePCM(float[][] inBuf, float[][] outBuf,
-				int outOff, int len, int decim) {
-			decimate(inBuf, outBuf, outOff, len, decim);
+		protected void decimatePCM( float[][] inBuf, float[][] outBuf, int outOff, int len, int decim )
+		{
+			decimate( inBuf, outBuf, outOff, len, decim );  // same as subsample decimation
 		}
 
 		// protected void decimatePCMFast( float[][] inBuf, float[][] outBuf,
@@ -1840,77 +1785,132 @@ public class DecimatedTrail extends BasicTrail {
 		// {
 		// decimate( inBuf, outBuf, outOff, len, decim );
 		// }
+
+		protected int draw( DecimationInfo info, int ch, int[][] peakPolyX, int[][] peakPolyY,
+	  			 			int[][] rmsPolyX, int[][] rmsPolyY, int decimLen,
+	  			 			Rectangle r, float deltaYN, int off )
+		{
+			throw new IllegalStateException( "Median drawing not yet working" );
+		}
+
 	} // class MedianDecimator
 
-	private class FullPeakRMSDecimator extends Decimator {
-		protected void decimate(float[][] inBuf, float[][] outBuf, int outOff,
-				int len, int decim) {
-			int stop, j, k, m, ch, ch2;
-			float f1, f2, f3, f5;
-			float[] inBufCh1, inBufCh2, inBufCh3, outBufCh1, outBufCh2, outBufCh3;
+	private class FullPeakRMSDecimator
+	extends Decimator
+	{
+		protected void decimate( float[][] inBuf, float[][] outBuf, int outOff, int len, int decim )
+		{
+			int 	stop, j, k, m, ch;
+			float	f1, f2, f3, f5;
+			float[]	inBufCh1, outBufCh1;	// pos. peak
+			float[]	inBufCh2, outBufCh2;	// neg. peak
+			float[]	inBufCh3, outBufCh3;	// RMS
 
-			for (ch = 0; ch < fullChannels; ch++) {
-				inBufCh1 = inBuf[ch];
-				outBufCh1 = outBuf[ch];
-				ch2 = ch + fullChannels;
-				inBufCh2 = inBuf[ch2];
-				outBufCh2 = outBuf[ch2];
-				ch2 += fullChannels;
-				inBufCh3 = inBuf[ch2];
-				outBufCh3 = outBuf[ch2];
+			for( ch = 0; ch < decimChannels; ) {
+				inBufCh1	= inBuf[ ch ];
+				outBufCh1	= outBuf[ ch++ ];
+				inBufCh2	= inBuf[ ch ];
+				outBufCh2	= outBuf[ ch++ ];
+				inBufCh3	= inBuf[ ch ];
+				outBufCh3	= outBuf[ ch++ ];
 
-				for (j = outOff, stop = outOff + len, k = 0; j < stop; j++) {
-					f1 = inBufCh1[k];
-					f2 = inBufCh2[k];
-					f3 = inBufCh3[k];
-					for (m = k + decim, k++; k < m; k++) {
-						f5 = inBufCh1[k];
-						if (f5 > f1)
-							f1 = f5;
-						f5 = inBufCh2[k];
-						if (f5 < f2)
-							f2 = f5;
-						f3 += inBufCh3[k];
+				for( j = outOff, stop = outOff + len, k = 0; j < stop; j++ ) {
+					f1 = inBufCh1[ k ];
+					f2 = inBufCh2[ k ];
+					f3 = inBufCh3[ k ];
+					for( m = k + decim, k++; k < m; k++ ) {
+						f5 = inBufCh1[ k ];
+						if( f5 > f1 ) f1 = f5;
+						f5 = inBufCh2[ k ];
+						if( f5 < f2 ) f2 = f5;
+						f3 += inBufCh3[ k ];
 					}
-					outBufCh1[j] = f1; // positive halfwave peak
-					outBufCh2[j] = f2; // negative halfwave peak
-					outBufCh3[j] = f3 / decim; // fullwave mean square
+					outBufCh1[ j ] = f1; // positive halfwave peak
+					outBufCh2[ j ] = f2; // negative halfwave peak
+					outBufCh3[ j ] = f3 / decim; // fullwave mean square
 				}
 			} // for( ch )
 		}
 
-		protected void decimatePCM(float[][] inBuf, float[][] outBuf,
-				int outOff, int len, int decim) {
-			int stop, j, k, m, ch, ch2;
-			float f1, f2, f3, f4;
+		protected void decimatePCM( float[][] inBuf, float[][] outBuf, int outOff, int len, int decim ) {
+			int		stop, j, k, m, ch, ch2;
+			float	f1, f2, f3, f4;
 			float[] inBufCh1, outBufCh1, outBufCh2, outBufCh3;
 
-			for (ch = 0; ch < fullChannels; ch++) {
-				inBufCh1 = inBuf[ch];
-				outBufCh1 = outBuf[ch];
-				ch2 = ch + fullChannels;
-				outBufCh2 = outBuf[ch2];
-				ch2 += fullChannels;
-				outBufCh3 = outBuf[ch2];
+			for( ch = 0, ch2 = 0; ch < fullChannels; ) {
+				inBufCh1	= inBuf[ ch++ ];
+				outBufCh1	= outBuf[ ch2++ ];
+				outBufCh2	= outBuf[ ch2++ ];
+				outBufCh3	= outBuf[ ch2++ ];
 
-				for (j = outOff, stop = outOff + len, k = 0; j < stop; j++) {
-					f4 = inBufCh1[k++];
+				for( j = outOff, stop = outOff + len, k = 0; j < stop; j++ ) {
+					f4 = inBufCh1[ k++ ];
 					f1 = f4;
 					f2 = f4;
 					f3 = f4 * f4;
-					for (m = 1; m < decim; m++) {
-						f4 = inBufCh1[k++];
-						if (f4 > f1)
-							f1 = f4;
-						if (f4 < f2)
-							f2 = f4;
+					for( m = 1; m < decim; m++ ) {
+						f4 = inBufCh1[ k++ ];
+						if( f4 > f1 ) f1 = f4;
+						if( f4 < f2 ) f2 = f4;
 						f3 += f4 * f4;
 					}
-					outBufCh1[j] = f1; // positive halfwave peak
-					outBufCh2[j] = f2; // negative halfwave peak
-					outBufCh3[j] = f3 / decim; // fullwave mean square
+					outBufCh1[ j ] = f1; // positive halfwave peak
+					outBufCh2[ j ] = f2; // negative halfwave peak
+					outBufCh3[ j ] = f3 / decim; // fullwave mean square
 				}
 			} // for( ch )
+		}
+		
+		protected int draw( DecimationInfo info, int ch,
+				  			int[][] peakPolyX, int[][] peakPolyY,
+				  			int[][] rmsPolyX, int[][] rmsPolyY, int decimLen,
+				  			Rectangle r, float deltaYN, int off )
+		{
+			int			ch2;
+			float[]		sPeakP, sPeakN, sRMSP;
+			float		offX, scaleX, scaleY;
+			
+			ch2		= ch * 3;
+			sPeakP	= tmpBuf2[ ch2++ ];
+			sPeakN	= tmpBuf2[ ch2++ ];
+			sRMSP	= tmpBuf2[ ch2 ];
+			scaleX	= 4 * r.width / (float) (info.sublength - 1);
+			scaleY	= r.height * deltaYN;
+			offX	= scaleX * off;
+			
+			return drawFullWavePeakRMS( sPeakP, sPeakN,
+										sRMSP, decimLen, peakPolyX[ ch ],
+										peakPolyY[ ch ], rmsPolyX[ ch ],
+										rmsPolyY[ ch ], off, offX, scaleX,
+										scaleY );
+		}
+		
+		private int drawFullWavePeakRMS( float[] sPeakP, float[] sPeakN,
+				float[] sRMS, int len, int[] peakPolyX, int[] peakPolyY,
+				int[] rmsPolyX, int[] rmsPolyY, int off, float offX, float scaleX,
+				float scaleY )
+		{
+			// final float scaleYN = -scaleY;
+			int		x;
+			float	peakP, peakN, rms;
+
+			for( int i = 0, k = peakPolyX.length - 1 - off; i < len; i++, off++, k-- ) {
+				x					= (int) (i * scaleX + offX);
+				peakPolyX[ off ]	= x;
+				peakPolyX[ k ]		= x;
+				rmsPolyX[ off ]		= x;
+				rmsPolyX[ k ]		= x;
+				peakP				= sPeakP[ i ];
+				peakN				= sPeakN[ i ];
+				peakPolyY[ off ]	= (int) (peakP * scaleY) + 2;
+				peakPolyY[ k ]		= (int) (peakN * scaleY) - 2;
+				// peakC = (peakP + peakN) / 2;
+				rms					= (float) Math.sqrt( sRMS[ i ]); // / 2;
+				rmsPolyY[ off ]		= (int) (Math.min( peakP, rms ) * scaleY);
+				rmsPolyY[ k ]		= (int) (Math.max( peakN, -rms ) * scaleY);
+			}
+
+			return off;
 		}
 	} // class FullPeakRMSDecimator
 }
