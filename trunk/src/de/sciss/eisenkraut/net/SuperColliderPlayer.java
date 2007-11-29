@@ -1451,7 +1451,7 @@ if( DEBUG_FOLD ) {
 			for( int i = 0; i < bufsDisk.length; i++ ) bndl.addPacket( bufsDisk[ i ].freeMsg() );
 			if( bufsAllocated ) {
 				bufsAllocated = false;
-				if( (bndl.getPacketCount() > 0) && !server.sync( bndl, TIMEOUT )) {
+				if( (bndl.getPacketCount() > 0) && server.isRunning() && !server.sync( bndl, TIMEOUT )) {
 					printTimeOutMsg( "dispose" );
 				}
 			}
