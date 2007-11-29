@@ -51,7 +51,7 @@ import de.sciss.eisenkraut.session.*;
  *	carry insert effects and the like.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.65, 15-Jan-06
+ *  @version	0.70, 29-Nov-07
  */
 public class AudioTrackRowHeader
 extends TrackRowHeader
@@ -76,8 +76,8 @@ extends TrackRowHeader
 		lay.putConstraint( SpringLayout.SOUTH, flags, -8, SpringLayout.SOUTH, this );
 		lay.putConstraint( SpringLayout.EAST, pan, -3, SpringLayout.EAST, this );
 		lay.putConstraint( SpringLayout.SOUTH, pan, 0, SpringLayout.NORTH, flags );
-		setPreferredSize( new Dimension( 48, 16 )); // XXX
-		setMaximumSize( new Dimension( 48, getMaximumSize().height )); // XXX
+		setPreferredSize( new Dimension( 64, 16 )); // XXX
+		setMaximumSize( new Dimension( 64, getMaximumSize().height )); // XXX
 
 //		HelpGlassPane.setHelp( this, "ChannelTrack" );
     }

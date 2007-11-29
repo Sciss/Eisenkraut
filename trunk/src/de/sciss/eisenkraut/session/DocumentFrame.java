@@ -44,7 +44,6 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GradientPaint;
 import java.awt.Graphics2D;
-import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Stroke;
@@ -116,7 +115,21 @@ import de.sciss.common.BasicApplication;
 import de.sciss.common.BasicWindowHandler;
 import de.sciss.common.ProcessingThread;
 import de.sciss.common.ShowWindowAction;
-import de.sciss.gui.*;
+import de.sciss.gui.AbstractWindowHandler;
+import de.sciss.gui.ComponentHost;
+import de.sciss.gui.CoverGrowBox;
+import de.sciss.gui.GUIUtil;
+import de.sciss.gui.MenuAction;
+import de.sciss.gui.MenuRoot;
+import de.sciss.gui.ModificationButton;
+import de.sciss.gui.PathField;
+import de.sciss.gui.PeakMeter;
+import de.sciss.gui.ProgressComponent;
+import de.sciss.gui.SpringPanel;
+import de.sciss.gui.StretchedGridLayout;
+import de.sciss.gui.TopPainter;
+import de.sciss.gui.TreeExpanderButton;
+import de.sciss.gui.VectorSpace;
 import de.sciss.io.*;
 import de.sciss.timebased.*;
 import de.sciss.util.*;
@@ -125,13 +138,12 @@ import org.unicode.Normalizer;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 12-Nov-07
+ *  @version	0.70, 29-Nov-07
  */
 public class DocumentFrame
 extends AppWindow
-implements	ProgressComponent, TimelineListener,	// SessionChangeListener
-			ClipboardOwner, ToolActionListener,	// RealtimeConsumer
-			// ServerListener,	// SessionCollection.Listener, MeterListener
+implements	ProgressComponent, TimelineListener,
+			ClipboardOwner, ToolActionListener,
 			DecimatedTrail.AsyncListener,
 			TransportListener
 {
@@ -152,7 +164,6 @@ implements	ProgressComponent, TimelineListener,	// SessionChangeListener
 	private final JPanel					ggTrackPanel;
 	private final WaveformView				waveView;
 	private final ComponentHost				wavePanel;
-//	private final SpringPanel				waveHeaderView;
 	private final JPanel					waveHeaderPanel;
 	private final JPanel					channelHeaderPanel;
 	private final JPanel					flagsPanel;
@@ -161,13 +172,9 @@ implements	ProgressComponent, TimelineListener,	// SessionChangeListener
 	private final java.util.List			collChannelHeaders		= new ArrayList();
 	private final java.util.List			collChannelRulers		= new ArrayList();
 //	private final java.util.List			collChannelMeters		= new ArrayList();
-	private PeakMeter[]					channelMeters			= new PeakMeter[ 0 ];
+	private PeakMeter[]						channelMeters			= new PeakMeter[ 0 ];
 	
 	private final JLabel					lbSRC;
-
-//	private DecimationInfo					info					= null;
-//	private float[][]						frameBuf				= new float[2][0];
-//	private float[][]						emptyVector				= new float[1][0];
 
 	// --- tools ---
 	
@@ -186,14 +193,7 @@ implements	ProgressComponent, TimelineListener,	// SessionChangeListener
 	private final actionSaveAsClass			actionSaveAs;
 	private final actionSaveAsClass			actionSaveCopyAs;
 	private final actionSaveAsClass			actionSaveSelectionAs;
-//	private final actionImportMarkersClass	actionImportMarkers;
-//	private final actionCutClass			actionCut;
-//	private final actionCopyClass			actionCopy;
-//	private final actionPasteClass			actionPaste;
-//	private final actionDeleteClass			actionDelete;
 	private final actionSelectAllClass		actionSelectAll;
-//	private final actionTrimToSelectionClass actionTrimToSelection;
-//	private final actionInsertSilenceClass	actionInsertSilence;
 	private final MenuAction				actionProcess, actionFadeIn, actionFadeOut, actionGain,
 											actionInvert, actionMix,
 											actionReverse, actionRotateChannels, // actionSilence, 
@@ -206,15 +206,11 @@ implements	ProgressComponent, TimelineListener,	// SessionChangeListener
 	private final Action					actionIncVertical;
 	private final Action					actionDecVertical;
 
-//	private final LaterInvocationManager	lim;
-
-//	private final ComponentListener			rowHeightListener;
 	private final AbstractWindow.Adapter	winListener;
 
 	private	final DocumentFrame				enc_this				= this;
 
 	private final JLabel					lbWriteProtected;
-//	private final MutableIcon				icnWriteProtected;
 	private boolean							writeProtected			= false;
 	private boolean							wpHaveWarned			= false;
 	
@@ -236,12 +232,12 @@ implements	ProgressComponent, TimelineListener,	// SessionChangeListener
 	// --------- former viewport ---------
 	// --- painting ---
 	private final Color colrSelection			= GraphicsUtil.colrSelection;
-//		private final Color colrSelection2		= new Color( 0xB0, 0xB0, 0xB0, 0x3F );  // selected timeline span over unselected trns
+//	private final Color colrSelection2			= new Color( 0xB0, 0xB0, 0xB0, 0x3F );  // selected timeline span over unselected trns
 	private final Color colrSelection2			= new Color( 0x00, 0x00, 0x00, 0x20 );  // selected timeline span over unselected trns
 //	private final Color colrPosition			= new Color( 0xFF, 0x00, 0x00, 0x4F );
 	private final Color colrPosition			= new Color( 0xFF, 0x00, 0x00, 0x7F );
 	private final Color colrZoom				= new Color( 0xA0, 0xA0, 0xA0, 0x7F );
-//		private final Color colrPosition		= Color.red;
+//	private final Color colrPosition			= Color.red;
 	private Rectangle   vpRecentRect			= new Rectangle();
 	private int			vpPosition				= -1;
 	private Rectangle   vpPositionRect			= new Rectangle();
@@ -279,7 +275,7 @@ implements	ProgressComponent, TimelineListener,	// SessionChangeListener
 
 	private final BasicApplication			app;
 	private final SuperColliderClient		superCollider;
-	private final LevelMeterManager			lmm;
+	private final PeakMeterManager			lmm;
 
 	private boolean							disposed		= false;
 	
@@ -321,7 +317,7 @@ implements	ProgressComponent, TimelineListener,	// SessionChangeListener
 //			}
 //		});
 		
-		lmm					= new LevelMeterManager( superCollider.getMeterManager() );
+		lmm					= new PeakMeterManager( superCollider.getMeterManager() );
 
 		final Container					cp			= getContentPane();
 //		final JRootPane					rp			= getRootPane();
@@ -377,16 +373,11 @@ implements	ProgressComponent, TimelineListener,	// SessionChangeListener
 			markAxis.setVisible( false );
 			markAxisHeader.setVisible( false );
 		}
-//		waveHeaderView		= new SpringPanel( 0, 0, 1, 1 );
-		flagsPanel			= new JPanel( new GridLayout( 0, 1, 1, 1 ));
-		metersPanel			= new JPanel( new GridLayout( 0, 1, 1, 1 )); // SpringPanel( 0, 0, 1, 1 );
-		rulersPanel			= new JPanel( new GridLayout( 0, 1, 1, 1 ));
+		flagsPanel			= new JPanel( new StretchedGridLayout( 0, 1, 1, 1 ));
+		metersPanel			= new JPanel( new StretchedGridLayout( 0, 1, 1, 1 )); // SpringPanel( 0, 0, 1, 1 );
+		rulersPanel			= new JPanel( new StretchedGridLayout( 0, 1, 1, 1 ));
 		lmm.setDynamicComponent( metersPanel );
 		waveHeaderPanel		= new JPanel( new BorderLayout() );
-//		waveHeaderPanel.setLayout( new BoxLayout( waveHeaderPanel, BoxLayout.Y_AXIS ));
-//		waveHeaderPanel.add( Box.createVerticalStrut( timeAxis.getPreferredSize().height ));
-//		waveHeaderPanel.add( markAxisHeader );
-//		waveHeaderPanel.add( waveHeaderView );
 		channelHeaderPanel	= new JPanel();
 		channelHeaderPanel.setLayout( new BoxLayout( channelHeaderPanel, BoxLayout.X_AXIS ));
 final Box bbb = Box.createVerticalBox();
@@ -1214,11 +1205,7 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 				revalidate = true;
 
 				chanHead = new AudioTrackRowHeader( t, doc.tracks, doc.selectedTracks, doc.getUndoManager() );
-//				chanHead.addComponentListener( rowHeightListener );
 				collChannelHeaders.add( chanHead );
-//				ggTrackPanel.add( overview, ch );
-//				waveHeaderView.add( chanHead, ch * 3 );
-//				waveHeaderView.gridAdd( chanHead, 0, ch + AUDIOTRACK_OFF );
 				flagsPanel.add( chanHead, ch );
 
 				chanMeter = new PeakMeter();
@@ -1234,8 +1221,6 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 				chanRuler = new Axis( Axis.VERTICAL, Axis.FIXEDBOUNDS );
 				chanRuler.setSpace( VectorSpace.createLinSpace( 0.0, 1.0, -100.0, 100.0, null, null, null, null ));
 				collChannelRulers.add( chanRuler );
-//				waveHeaderView.add( chanRuler, (ch * 3) + 2 );
-//				waveHeaderView.gridAdd( chanRuler, 2, ch + AUDIOTRACK_OFF );
 				rulersPanel.add( chanRuler, ch );
 
 				initStrip( chanRuler, chanMeter );

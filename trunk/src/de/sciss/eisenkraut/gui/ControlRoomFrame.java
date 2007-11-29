@@ -120,7 +120,7 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
 //	private final Set					transportsRunning	= new HashSet();
 	private final Map					mapPlayers			= new HashMap();	// key = Session, value = SuperColliderPlayer
 //	private long						timeMetersPause;
-	private final LevelMeterManager		lmm;
+	private final PeakMeterManager		lmm;
 	
 	private final ActionListener		audioBoxListener;
 	private boolean						isListening			= false;
@@ -132,7 +132,7 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
 		final Application app = AbstractApplication.getApplication();
 	
 		superCollider		= SuperColliderClient.getInstance();
-		lmm					= new LevelMeterManager( superCollider.getMeterManager() );
+		lmm					= new PeakMeterManager( superCollider.getMeterManager() );
 	
 //		super( AbstractApplication.getApplication().getResourceString( "paletteCtrlRoom" ), HORIZONTAL, false );
 		setTitle( app.getResourceString( "paletteCtrlRoom" ));

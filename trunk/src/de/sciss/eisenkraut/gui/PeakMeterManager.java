@@ -28,11 +28,11 @@ import de.sciss.gui.PeakMeter;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 23-Nov-07
+ *  @version	0.70, 29-Nov-07
  *
  *	@synchronization	all methods are to be called in the event thread
  */
-public class LevelMeterManager
+public class PeakMeterManager
 implements MeterListener, Disposable, DynamicListening, GroupSync.Slave
 {
 	private final MeterManager				mm;
@@ -50,7 +50,7 @@ implements MeterListener, Disposable, DynamicListening, GroupSync.Slave
 	
 	private Object							sync			= new Object();
 
-	public LevelMeterManager( MeterManager mm )
+	public PeakMeterManager( MeterManager mm )
 	{
 		this.mm	= mm;
 		daa		= new DynamicAncestorAdapter( this );
@@ -131,9 +131,11 @@ implements MeterListener, Disposable, DynamicListening, GroupSync.Slave
 			if( (s == null) || !showing ) {
 				mm.removeListener( this );
 				added = false;
+				clear();
 			}
 		} else {
 			if( (s != null) && showing ) {
+//				clear();
 				mm.addListener( this, s, channels, g, task );
 				added = true;
 			}
@@ -146,6 +148,12 @@ implements MeterListener, Disposable, DynamicListening, GroupSync.Slave
 	
 		this.meters	= meters;
 		for( int i = 0; i < meters.length; i++ ) meters[ i ].setSync( sync );
+	}
+	
+	private void clear()
+	{
+//		System.out.println( "clear" );
+		for( int i = 0; i < meters.length; i++ ) meters[ i ].clear();
 	}
 		
 	public void addTaskSync( GroupSync n )

@@ -72,20 +72,20 @@ implements Disposable
 
 	private int					holdDuration	= DEFAULT_HOLD_DUR;	// milliseconds peak hold
 
-	private float				peak			= -160f;
-	private float				rms				= -160f;
-	private float				hold			= -160f;
-	private float				peakToPaint		= -160f;
-	private float				rmsToPaint		= -160f;
-	private float				holdToPaint		= -160f;
-	private float				peakNorm		= -1.0f;
-	private float				rmsNorm			= -1.0f;
-	private float				holdNorm		= -1.0f;
+	private float				peak;
+	private float				rms;
+	private float				hold;
+	private float				peakToPaint;
+	private float				rmsToPaint;
+	private float				holdToPaint;
+	private float				peakNorm;
+	private float				rmsNorm;
+	private float				holdNorm;
 	
 	private int					recentHeight	= 0;
 	private int					calcedHeight	= -1;			// recentHeight snapshot in recalcPaint()
 	private long				lastUpdate		= System.currentTimeMillis();
-	private long				holdEnd			= lastUpdate;
+	private long				holdEnd;
 	
 	private boolean				holdPainted		= true;
 	private boolean				rmsPainted		= true;
@@ -156,6 +156,8 @@ implements Disposable
 				updateInsets();
 			}
 		});
+		
+		clear();
 	}
 	
 	public void setTicks( int ticks )
@@ -262,6 +264,42 @@ implements Disposable
 		synchronized( sync ) {
 			hold		= -160f;
 			holdNorm	= 0.0f;
+		}
+	}
+	
+	/**
+	 *	Clears the peak, peak hold and rms values
+	 *	immediately (without ballistics). This
+	 *	way the component can be reset when the
+	 *	metering task is stopped without waiting
+	 *	for the bars to fall down.
+	 */
+	public void clear()
+	{
+		final int	w1		= getWidth() - (insets.left + insets.right);
+		final int	h1		= getHeight() - (insets.top + insets.bottom);
+		final int	rh1		= (h1 - 1) & ~1;
+
+//		System.out.println( "p clear " + hashCode() );
+		synchronized( sync ) {
+			peak		= -160f;
+			rms			= -160f;
+			hold		= -160f;
+			peakToPaint	= -160f;
+			rmsToPaint	= -160f;
+			holdToPaint	= -160f;
+			peakNorm	= -1.0f;
+			rmsNorm		= -1.0f;
+			holdNorm	= -1.0f;
+			holdEnd		= System.currentTimeMillis();
+			yHold		= (rh1 - (int) (holdNorm * rh1) + 1) & ~1;
+			yPeak		= (rh1 - (int) (peakNorm * rh1) + 1) & ~1;
+			yRMS		= Math.max( (rh1 - (int) (rmsNorm  * rh1) + 1) & ~1, yPeak + 4 );
+			if( refreshParent ) {
+				getParent().repaint( insets.left + getX(), insets.top + getY(), w1, h1 );
+			} else {
+				repaint( insets.left, insets.top, w1, h1 );
+			}
 		}
 	}
 	
@@ -609,7 +647,6 @@ implements Disposable
 	public void paintComponent( Graphics g )
 	{
 		super.paintComponent( g );
-		
 		final Graphics2D		g2;
 		final AffineTransform	atOrig;
 		final int				h1		= getHeight() - insets.top - insets.bottom;
