@@ -6,16 +6,18 @@
  *				padding overlapping boundary to remove clicks in
  *				SRC mode introduced by a BufRd bug
  *	- 21-Sep-06	multichannel defs dynamically created in JCollider now
+ *	- 04-Dec-07	removed OffsetOut uses
  *
  *	@author	Hanns Holger Rutz
- *	@version	29-Oct-06
+ *	@version	04-Dec-07
  *	@todo	
  */
 
 s = Server.local;
 
 (
-p = "/Applications/Eisenkraut/synthdefs/"; // folder in which to save the synth defs
+//p = "/Applications/Eisenkraut/synthdefs/"; // folder in which to save the synth defs
+p = "~/Documents/workspace/Eisenkraut/synthdefs/".standardizePath; // folder in which to save the synth defs
 //n = 32; // maximum number of channels for which to generate synth defs
 
 // ------------ realtime synthdefs ------------
@@ -113,7 +115,8 @@ SynthDef( "eisk-phasor", { arg i_aInBf, rate = 1.0, i_aPhBs;
 	clockTrig		= phasorTrig + TDelay.kr( phasorTrig, halfPeriod );
 
 	SendTrig.kr( clockTrig, 0, PulseCount.kr( clockTrig ));
-	OffsetOut.ar( i_aPhBs, phasor );
+//	OffsetOut.ar( i_aPhBs, phasor );	// OffsetOut is buggy!
+	Out.ar( i_aPhBs, phasor );
 }).writeDefFile( p );
 
 // reads input from sound file
@@ -121,7 +124,8 @@ SynthDef( "eisk-phasor", { arg i_aInBf, rate = 1.0, i_aPhBs;
 SynthDef( "eisk-route", {
 	arg i_aInBs, i_aOtBs;
 
-	OffsetOut.ar( i_aOtBs, In.ar( i_aInBs ));
+//	OffsetOut.ar( i_aOtBs, In.ar( i_aInBs ));	// OffsetOut is buggy!
+	Out.ar( i_aOtBs, In.ar( i_aInBs ));
 }).writeDefFile( p );
 
 //// reads input from sound file

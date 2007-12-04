@@ -365,7 +365,8 @@ numDefsLp:
 			if( numInputChannels[ i ] > 0 ) {
 				final GraphElem	phase	= UGen.ar( "In", ctrlI.getChannel( "i_aPhBs" ));
 				final GraphElem	bufRd	= UGen.ar( "BufRd", numInputChannels[ i ], ctrlI.getChannel( "i_aInBf" ), phase, UGen.ir( 0f ), ctrlI.getChannel( "i_intrp" ));
-				final GraphElem	out		= UGen.ar( "OffsetOut", ctrlI.getChannel( "i_aOtBs" ), bufRd );
+//				final GraphElem	out		= UGen.ar( "OffsetOut", ctrlI.getChannel( "i_aOtBs" ), bufRd );
+				final GraphElem	out		= UGen.ar( "Out", ctrlI.getChannel( "i_aOtBs" ), bufRd );
 				graph	= out;
 			} else {
 				graph	= ctrlI;
@@ -392,7 +393,8 @@ numDefsLp:
 			} else {
 				pan					= UGen.ar( "*", in, ctrlK.getChannel( "volume" ));
 			}
-			final GraphElem	out		= UGen.ar( "OffsetOut", ctrlI.getChannel( "i_aOtBs" ), pan );
+//			final GraphElem	out		= UGen.ar( "OffsetOut", ctrlI.getChannel( "i_aOtBs" ), pan );
+			final GraphElem	out		= UGen.ar( "Out", ctrlI.getChannel( "i_aOtBs" ), pan );
 			graph = out;
 		} else {
 			graph = UGen.array( ctrlI, ctrlK );
