@@ -29,13 +29,12 @@
 
 package de.sciss.eisenkraut.session;
 
-import de.sciss.eisenkraut.util.*;
-
+import de.sciss.eisenkraut.util.MapManager;
 import de.sciss.util.Disposable;
 
 /**
  *	@author		Hanns Holger Rutz
- *	@version	0.11, 24-Feb-06
+ *	@version	0.70, 07-Dec-07
  */
 public interface SessionObject
 extends Disposable
@@ -80,7 +79,7 @@ extends Disposable
 	 *  @param  newName		new object's name.
 	 *
 	 *  @see	SessionCollection#findByName( String )
-	 *  @see	SessionCollection#createUniqueName( MessageFormat, Object[], java.util.List )
+	 *  @see	SessionCollection#createUniqueName( MessageFormat, Object[], List )
 	 *
 	 *  @warning	callers should check that the session's
 	 *				collection doesn't contain objects

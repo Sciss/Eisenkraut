@@ -86,7 +86,7 @@ import de.sciss.util.Flag;
  *  class from the <code>de.sciss.app</code> package.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 08-Oct-07
+ *  @version	0.70, 07-Dec-07
  *
  *	@todo		OSC /main/quit doesn't work repeatedly
  *				; scheint an menuFactory.closeAll zu liegen!
@@ -195,7 +195,7 @@ implements OSCRouter // ProgressComponent // , PreferenceChangeListener
 	{
 		super( Main.class, APP_NAME );
 
-		final java.util.List		warnings;
+		final List					warnings;
 		final Preferences			prefs			= getUserPrefs();
 		final double				prefsVersion;
 //		final ObserverPalette		frameObserver;

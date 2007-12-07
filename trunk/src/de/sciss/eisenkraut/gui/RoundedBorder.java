@@ -29,15 +29,30 @@
 
 package de.sciss.eisenkraut.gui;
 
-import java.awt.*;
-import java.awt.geom.*;
-import javax.swing.border.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Insets;
+import java.awt.Paint;
+import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.Stroke;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Area;
+import java.awt.geom.Rectangle2D;
+import java.awt.geom.RectangularShape;
+import java.awt.geom.RoundRectangle2D;
+
+import javax.swing.border.AbstractBorder;
 
 /**
  *	A border looking like aqua's search-field border
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.63, 03-Dec-05
+ *  @version	0.70, 07-Dec-07
  */
 public class RoundedBorder
 extends AbstractBorder

@@ -29,11 +29,13 @@
  
 package de.sciss.eisenkraut.session;
 
-import de.sciss.eisenkraut.util.*;
-
 import de.sciss.app.DynamicAncestorAdapter;
 import de.sciss.app.DynamicListening;
+import de.sciss.eisenkraut.util.MapManager;
 
+/**
+ *	@version	0.70, 07-Dec-07
+ */
 public class FlagsPanel
 extends AbstractFlagsPanel
 implements DynamicListening, SessionCollection.Listener

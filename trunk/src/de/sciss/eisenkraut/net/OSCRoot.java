@@ -51,7 +51,7 @@ import de.sciss.util.ParamSpace;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 30-Sep-06
+ *  @version	0.70, 07-Dec-07
  */
 public class OSCRoot
 implements OSCRouter, OSCListener, Runnable, PreferenceChangeListener
@@ -509,7 +509,7 @@ implements OSCRouter, OSCListener, Runnable, PreferenceChangeListener
 	public void messageReceived( OSCMessage msg, SocketAddress addr, long when )
 	{
 		final String[]			path	= oscPathPtrn.split( msg.getName() );
-//		final java.util.List	r;
+//		final List	r;
 		
 		if( path.length < 2 ) {
 			failedUnknownPath( msg );

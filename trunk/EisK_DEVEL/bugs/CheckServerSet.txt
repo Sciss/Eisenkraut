@@ -1,0 +1,46 @@
+ Instance =
++- de.sciss.jcollider.Server@21bf53 	prev Ç 1 of 1 È next 	
+	
+Found 4 References
+
+Reference[0] =
++- de.sciss.eisenkraut.net.SuperColliderClient@e1f52a.server     ( Refers to instance )
++- java.util.ArrayList@6481d9a3.elementData[0]
++- de.sciss.app.EventManager@d63b5b.collListeners
++- de.sciss.eisenkraut.session.DocumentHandler(..)@4a7629.elm
++- de.sciss.eisenkraut.Main@21d23b.docHandler
++- net.roydesign.app.Application@d8e0f3.instance     ( Root )
+
+Reference[1] =
++- de.sciss.jcollider.Group(..)@21bcbb.server     ( Refers to instance )
++- de.sciss.eisenkraut.net.SuperColliderClient@e1f52a.grpLimiter
++- java.util.ArrayList@6481d9a3.elementData[0]
++- de.sciss.app.EventManager@d63b5b.collListeners
++- de.sciss.eisenkraut.session.DocumentHandler(..)@4a7629.elm
++- de.sciss.eisenkraut.Main@21d23b.docHandler
++- net.roydesign.app.Application@d8e0f3.instance     ( Root )
+
+Reference[2] =
++- java.util.HashMap$Entry@cb9419.key     ( Refers to instance )
++- java.util.HashMap@cb9419.table[4]
++- java.util.HashSet@21bf53.map
++- java.util.Collections$SynchronizedSet(..)@21bf53.c
++- de.sciss.jcollider.Server@9b88d2.setServers     ( Root )
+    toString() ......... "class de.sciss.jcollider.Server"
+    class name ......... de.sciss.jcollider.Server
+    hashcode ........... 9b88d2
+    field type.......... java.util.Set
+    field name.......... setServers   Test Release
+    static modifier..... static final
+
+Reference[3] =
++- java.util.HashMap$Entry@5345add1.value     ( Refers to instance )
++- java.util.HashMap@5345add1.table[15]
++- java.util.Collections$SynchronizedMap@5345add1.m
++- de.sciss.jcollider.Server@9b88d2.mapServerNames     ( Root )
+    toString() ......... "class de.sciss.jcollider.Server"
+    class name ......... de.sciss.jcollider.Server
+    hashcode ........... 9b88d2
+    field type.......... java.util.Map
+    field name.......... mapServerNames   Test Release
+    static modifier..... static final

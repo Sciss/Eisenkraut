@@ -33,18 +33,24 @@
 
 package de.sciss.eisenkraut.timeline;
 
-import java.awt.event.*;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.undo.*;
+import java.awt.event.ActionEvent;
+import java.util.Set;
 
-import de.sciss.eisenkraut.edit.*;
-import de.sciss.eisenkraut.net.*;
-import de.sciss.eisenkraut.session.*;
-import de.sciss.eisenkraut.util.*;
+import javax.swing.AbstractAction;
+import javax.swing.undo.CompoundEdit;
 
-import de.sciss.app.*;
-import de.sciss.io.*;
+import de.sciss.app.BasicEvent;
+import de.sciss.app.EventManager;
+import de.sciss.eisenkraut.edit.BasicCompoundEdit;
+import de.sciss.eisenkraut.edit.TimelineVisualEdit;
+import de.sciss.eisenkraut.net.OSCRoot;
+import de.sciss.eisenkraut.net.OSCRouter;
+import de.sciss.eisenkraut.net.OSCRouterWrapper;
+import de.sciss.eisenkraut.net.RoutedOSCMessage;
+import de.sciss.eisenkraut.session.AbstractSessionObject;
+import de.sciss.eisenkraut.session.Session;
+import de.sciss.eisenkraut.util.MapManager;
+import de.sciss.io.Span;
 
 /**
  *  This class describes the document's timeline
@@ -54,7 +60,7 @@ import de.sciss.io.*;
  *  called.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 02-Oct-07
+ *  @version	0.70, 07-Dec-07
  *
  *	@todo		view based stuff (visible span) should be removed
  */

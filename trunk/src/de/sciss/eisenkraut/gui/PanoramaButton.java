@@ -29,20 +29,31 @@
 
 package de.sciss.eisenkraut.gui;
 
-import java.awt.*;
-import java.awt.geom.*;
-import javax.swing.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Paint;
+import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.Stroke;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 
-import de.sciss.eisenkraut.session.*;
-import de.sciss.eisenkraut.timeline.*;
-import de.sciss.eisenkraut.util.*;
+import javax.swing.Icon;
 
+import de.sciss.eisenkraut.session.SessionCollection;
+import de.sciss.eisenkraut.timeline.AudioTrack;
+import de.sciss.eisenkraut.util.MapManager;
 import de.sciss.gui.ModificationButton;
 import de.sciss.util.Disposable;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.65, 15-Jan-06
+ *  @version	0.70, 07-Dec-07
  */
 public class PanoramaButton
 extends ModificationButton

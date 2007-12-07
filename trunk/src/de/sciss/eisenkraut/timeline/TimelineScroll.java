@@ -30,21 +30,32 @@
 
 package de.sciss.eisenkraut.timeline;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.geom.*;
-import java.util.prefs.*;
-import javax.swing.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Paint;
+import java.awt.Shape;
+import java.awt.Stroke;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
+import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
+import java.util.prefs.PreferenceChangeEvent;
 
-import de.sciss.eisenkraut.gui.*;
-import de.sciss.eisenkraut.session.*;
-import de.sciss.eisenkraut.util.*;
+import javax.swing.JScrollBar;
+import javax.swing.LookAndFeel;
+import javax.swing.UIManager;
 
 import de.sciss.app.AbstractApplication;
 import de.sciss.app.DynamicAncestorAdapter;
 import de.sciss.app.DynamicListening;
 import de.sciss.app.DynamicPrefChangeManager;
 import de.sciss.app.LaterInvocationManager;
+import de.sciss.eisenkraut.gui.GraphicsUtil;
+import de.sciss.eisenkraut.session.Session;
+import de.sciss.eisenkraut.util.PrefsUtil;
 
 import de.sciss.io.Span;
 
@@ -61,7 +72,7 @@ import de.sciss.io.Span;
  *	This class tracks the catch preferences
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 11-Nov-07
+ *  @version	0.70, 07-Dec-07
  *
  *  @todo		the display properties work well
  *				with the Aqua look+and+feel, however

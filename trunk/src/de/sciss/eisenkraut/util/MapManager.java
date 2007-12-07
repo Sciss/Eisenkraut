@@ -29,20 +29,28 @@
 
 package de.sciss.eisenkraut.util;
 
-import java.io.*;
-import java.util.*;
-import org.w3c.dom.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
-import de.sciss.eisenkraut.io.*;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import de.sciss.app.BasicEvent;
 import de.sciss.app.EventManager;
+import de.sciss.eisenkraut.io.XMLRepresentation;
 
 import de.sciss.io.IOUtil;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 05-May-06
+ *  @version	0.70, 07-Dec-07
  */
 public class MapManager
 implements EventManager.Processor, XMLRepresentation
@@ -181,10 +189,9 @@ implements EventManager.Processor, XMLRepresentation
 	public Object removeValue( Object source, String key )
 	{
 //System.err.println( "removeValue source = "+source.getClass().getName()+" ; key = "+key );
-		Object result = backingMap.remove( key );
+		final Object result = backingMap.remove( key );
 		if( (result != null) && (source != null) ) {
-
-			Set keySet = new HashSet( 1 );
+			final Set keySet = new HashSet( 1 );
 			keySet.add( key );
 
 			elm.dispatchEvent( new MapManager.Event( this, source, keySet ));
@@ -379,17 +386,17 @@ implements EventManager.Processor, XMLRepresentation
 	throws IOException
 	{
 //		Attr		xmlAttr;
-		NodeList	nl		= node.getChildNodes();
-		int			i, type;
-		Element		xmlChild;
-		String		key, value, typeStr;
-		Set			keySet	= new HashSet( backingMap.keySet() );
-		Context		c;
-		Object		o;
+		final NodeList	nl		= node.getChildNodes();
+		final Set		keySet	= new HashSet( backingMap.keySet() );
+		int				type;
+		Element			xmlChild;
+		String			key, value, typeStr;
+		Context			c;
+		Object			o;
 		
 		backingMap.clear();
 		
-loop:	for( i = 0; i < nl.getLength(); i++ ) {
+loop:	for( int i = 0; i < nl.getLength(); i++ ) {
 			if( !(nl.item( i ) instanceof Element )) continue;
 			xmlChild = (Element) nl.item( i );
 			if( xmlChild.getTagName().equals( XML_ELEM_ENTRY )) {

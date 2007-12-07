@@ -29,10 +29,16 @@
 
 package de.sciss.eisenkraut.gui;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import javax.swing.*;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import javax.swing.AbstractButton;
+import javax.swing.Action;
+import javax.swing.JToggleButton;
+import javax.swing.JToolBar;
 
 import de.sciss.app.BasicEvent;
 import de.sciss.app.EventManager;
@@ -45,7 +51,7 @@ import de.sciss.app.EventManager;
  *	be mutually exclusive grouped.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.56, 05-May-06
+ *  @version	0.70, 07-Dec-07
  */
 public class ToolBar
 extends JToolBar

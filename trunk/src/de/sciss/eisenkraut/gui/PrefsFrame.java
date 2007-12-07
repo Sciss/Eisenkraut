@@ -37,7 +37,8 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -50,25 +51,67 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.prefs.*;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
 
-import de.sciss.eisenkraut.*;
-import de.sciss.eisenkraut.io.*;
-import de.sciss.eisenkraut.net.*;
-import de.sciss.eisenkraut.util.*;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.WindowConstants;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.JTableHeader;
 
-import de.sciss.app.*;
+import de.sciss.app.AbstractApplication;
+import de.sciss.app.AbstractWindow;
+import de.sciss.app.Application;
+import de.sciss.app.PreferenceEntrySync;
 import de.sciss.common.AppWindow;
 import de.sciss.common.BasicWindowHandler;
-import de.sciss.gui.*;
-import de.sciss.io.*;
+import de.sciss.eisenkraut.Main;
+import de.sciss.eisenkraut.io.AudioBoxConfig;
+import de.sciss.eisenkraut.io.PrefCacheManager;
+import de.sciss.eisenkraut.net.OSCRoot;
+import de.sciss.eisenkraut.util.PrefsUtil;
+import de.sciss.gui.AbstractWindowHandler;
+import de.sciss.gui.ComboBoxEditorBorder;
+import de.sciss.gui.CoverGrowBox;
+import de.sciss.gui.GUIUtil;
+import de.sciss.gui.HelpButton;
+import de.sciss.gui.IndeterminateSpinner;
+import de.sciss.gui.ModificationButton;
+import de.sciss.gui.PathField;
+import de.sciss.gui.PrefCheckBox;
+import de.sciss.gui.PrefComboBox;
+import de.sciss.gui.PrefParamField;
+import de.sciss.gui.PrefPathField;
+import de.sciss.gui.SortedTableModel;
+import de.sciss.gui.SpringPanel;
+import de.sciss.gui.StringItem;
+import de.sciss.gui.TreeExpanderButton;
+import de.sciss.io.IOUtil;
 import de.sciss.net.OSCChannel;
-import de.sciss.util.*;
+import de.sciss.util.Flag;
+import de.sciss.util.Param;
+import de.sciss.util.ParamSpace;
 
 /**
  *  This is the frame that
@@ -76,7 +119,7 @@ import de.sciss.util.*;
  *  application and session preferences
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 25-Sep-07
+ *  @version	0.70, 07-Dec-07
  */
 public class PrefsFrame
 extends AppWindow

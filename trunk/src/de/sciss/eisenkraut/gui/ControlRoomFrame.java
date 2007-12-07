@@ -91,7 +91,7 @@ import de.sciss.net.OSCBundle;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 27-Mar-07
+ *  @version	0.70, 07-Dec-07
  *
  *	@todo		could use an explicit GroupAnySync for lmm, which would go into SuperColliderClient
  *				so sc-client whould be able to pause master synths according to the sync
@@ -105,8 +105,8 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
 	private final PrefComboBox			ggAudioBox;
 	private final Preferences			audioPrefs;
 
-//	private final java.util.List		collMeters	= new ArrayList();
-	private PeakMeter[]				masterMeters;
+//	private final List					collMeters	= new ArrayList();
+	private PeakMeter[]					masterMeters;
 	private final SuperColliderClient	superCollider;
 	private Group						grpMeters;
 	private final Box					pMeters;

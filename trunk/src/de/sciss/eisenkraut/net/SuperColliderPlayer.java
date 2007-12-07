@@ -71,7 +71,7 @@ import de.sciss.util.Disposable;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 06-Nov-07
+ *  @version	0.70, 07-Dec-07
  *
  *	@todo		why is there actually a Context class instead of using outer class fields directly?
  */
@@ -83,12 +83,6 @@ implements	de.sciss.jcollider.Constants,
 {
 	private static final boolean DEBUG_FOLD		= false;
 	
-//	private static final int DISKBUF_SIZE		= 32768;	// buffer size in frames
-//	private static final int DISKBUF_SIZE_H		= DISKBUF_SIZE >> 1;
-//	private static final int DISKBUF_PAD		= 4;
-//	private static final int DISKBUF_SIZE_HM	= DISKBUF_SIZE_HM - DISKBUF_PAD;
-//	private static final int GROUP_ROOT			= 0;
-
 	private static final int DISKBUF_PAD		= 4;	// be sure to match with phasor synth def!!
 	private final int DISKBUF_SIZE;
 	private final int DISKBUF_SIZE_H;
@@ -104,12 +98,6 @@ implements	de.sciss.jcollider.Constants,
 	private RoutingConfig			oCfg;
 	private volatile Context		ct	= null;
 
-//	private java.util.List			collMeterListeners	= new ArrayList();
-//	private boolean					meterListening		= false;
-//	private boolean					keepMetering		= false;
-//	private long					lastMeterInfo		= 0;	// used to stop listening
-	
-//	private float					volume;
 	private double					serverRate;
 	private double					sourceRate;
 	private double					srcFactor			= 1.0;
@@ -122,7 +110,6 @@ implements	de.sciss.jcollider.Constants,
 
 	private final Group				grpRoot;
 	private final Group				grpInput;
-//	private final Group				grpMeter;
 	private final Group				grpOutput;
 	private final Bus				busPhasor;
 	
@@ -130,9 +117,6 @@ implements	de.sciss.jcollider.Constants,
 	private final int[][]			channelMaps;
 	
 	private final OSCResponderNode	trigResp;
-//	private final OSCResponderNode	cSetNResp;
-	
-//	private final SuperColliderPlayer	enc_this	= this;
 	
 	private final GroupSync			syncInput;
 	private final GroupSync			syncOutput;
@@ -146,15 +130,7 @@ implements	de.sciss.jcollider.Constants,
 	private final OSCRouterWrapper	osc;
 	
 	private static final float		TIMEOUT			= 2f;
-	
-	// 13-oct-06 by the way, here's why i'm using separate 'sync' objects nowadays:
-	// - more readible
-	// - cleaner because we are the only instance having access to that object
-	//   (while for some reason other objects might be tempted with synchronized( this ) blocks)
-	// - more failsafe (because in anonymous subclass 'this' has to be changed for 'enc_this')
-//	private final Object			sync			= new Object();
 
-//	public SuperColliderPlayer( final Session doc, final Server server, RoutingConfig oCfg, float volume )
 	public SuperColliderPlayer( final Session doc, final Server server, RoutingConfig oCfg )
 	throws IOException
 	{
@@ -214,11 +190,9 @@ implements	de.sciss.jcollider.Constants,
 					nextClock	= clock + 1;
 					even		= nextClock & 1; // == 0;
 					bndl		= new OSCBundle();
-//					synchronized( sync ) {
 
-						// XXX THIS NEXT LINE OBVIOUSLY MUST BE SYNCED OR USE A COPY OF CT!!!
-						if( (ct == null) || (ct.synthPhasor == null) || (nodeID != ct.synthPhasor.getNodeID()) ) return;
-						if( trigNodeID == -1 ) return;	// transport not running anymore
+					if( (ct == null) || (ct.synthPhasor == null) || (nodeID != ct.synthPhasor.getNodeID()) ) return;
+					if( trigNodeID == -1 ) return;	// transport not running anymore
 						pos		= nextClock * DISKBUF_SIZE_HM - ((1 - even) * DISKBUF_PAD) + playOffset;
 						start	= Math.max( 0, pos );
 						fill	= (int) (start - pos);
@@ -235,16 +209,15 @@ implements	de.sciss.jcollider.Constants,
 						lastBufSpans[ even ] = bufSpans;
 if( DEBUG_FOLD ) {
 	System.out.println( "------C "+ nextClock + ", " + even + ", " + playOffset + ", " + pos );
-	for( int k = 0, m = bufOff + fill; k < bufSpans.length; k++ ) {
-		System.out.println( "i = " + k + "; " + bufSpans[ k ] + " -> " + m );
+for( int k = 0, m = bufOff + fill; k < bufSpans.length; k++ ) {
+	System.out.println( "i = " + k + "; " + bufSpans[ k ] + " -> " + m );
 		m += bufSpans[ k ].getLength();
 	}
 	System.out.println();
 }
 						if( !server.sync( bndl, TIMEOUT )) {
 							printTimeOutMsg( "bufUpdate" );
-						}
-//					}
+					}
 				}
 				catch( IOException e1 ) {
 					printError( "Receive /tr", e1 );
@@ -267,58 +240,10 @@ if( DEBUG_FOLD ) {
 			}
 		});
 		
-/*
-		trigResp			= new OSCResponderNode( server, "/tr", new OSCListener() {
-			// sync : exclusive on MTE
-			public void messageReceived( OSCMessage msg, SocketAddress sender, long time )
-			{
-				final int				nodeID	= ((Number) msg.getArg( 0 )).intValue();
-				final int				clock;
-				final long				pos;
-				final OSCBundle			bndl;
-				final boolean			even;
-				final Span[]			bufSpans;
-
-				try {
-					clock	= ((Number) msg.getArg( 2 )).intValue() + 1;
-					even	= (clock & 1) == 0;
-					bndl	= new OSCBundle();
-					synchronized( sync ) {
-						if( (ct == null) || (ct.synthPhasor == null) || (nodeID != ct.synthPhasor.getNodeID()) ) return;
-						if( playOffset < 0 ) return;	// transport not running anymore
-						if( even ) {
-							pos = clock * DISKBUF_SIZE_HM - DISKBUF_PAD + playOffset;
-						} else {
-							pos = clock * DISKBUF_SIZE_HM + playOffset;
-						}
-					
-						if( !doc.bird.attemptShared( Session.DOOR_MTE, 500 )) return;
-						try {
-							bufSpans = transport.foldSpans( new Span( pos, pos + DISKBUF_SIZE_H ), MIN_LOOP_LEN );
-							doc.getAudioTrail().addBufferReadMessages( bndl, bufSpans, ct.bufsDisk, even ? 0 : DISKBUF_SIZE_H );
-						}
-						finally {
-							doc.bird.releaseShared( Session.DOOR_MTE );
-						}
-
-						server.sendBundle( bndl );
-					}
-				}
-				catch( IOException e1 ) {
-					printError( "Receive /tr", e1 );
-				}
-				catch( ClassCastException e2 ) {
-					printError( "Receive /tr", e2 );
-				}
-			}
-		});
-*/
-
 		defs = createInputDefs( channelMaps );
 		if( defs != null ) {
 			bndl	= new OSCBundle();
 			for( int i = 0; i < defs.length; i++ ) {
-//				defs[ i ].send( server );
 				bndl.addPacket( defs[ i ].recvMsg() );
 			}
 			if( !server.sync( bndl, TIMEOUT )) {
@@ -328,7 +253,6 @@ if( DEBUG_FOLD ) {
 		
 		srcFactor	= sourceRate / serverRate;
 		updateSRC();
-//		setOutputConfig( oCfg, volume );
 		setOutputConfig( oCfg );
 
 		syncInput	= new GroupSync();
@@ -342,7 +266,6 @@ if( DEBUG_FOLD ) {
 	}
 	
 	private SynthDef[] createInputDefs( int[][] channelMaps )
-//	throws IOException
 	{
 		final int[]			numInputChannels	= new int[ channelMaps.length ];
 		final SynthDef[]	defs;
@@ -377,7 +300,6 @@ numDefsLp:
 	}
 	
 	private SynthDef[] createOutputDefs( int numOutputChannels )
-//	throws IOException
 	{
 		final Control		ctrlI	= Control.ir( new String[] { "i_aInBs", "i_aOtBs" }, new float[] { 0f, 0f });
 		final Control		ctrlK	= Control.kr( new String[] { "pos", "width", "orient", "volume" }, new float[] { 0f, 2f, 0f, 1f });

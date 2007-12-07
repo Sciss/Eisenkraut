@@ -29,18 +29,29 @@
 
 package de.sciss.eisenkraut.gui;
 
-import java.awt.*;
-import java.util.*;
-import javax.swing.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
+import java.awt.Image;
+import java.awt.RenderingHints;
+import java.util.Locale;
 
-import de.sciss.gui.*;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+
+import de.sciss.gui.TimeFormat;
 import de.sciss.util.Disposable;
 
 /**
  *	A GUI component showing a time position.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.63, 03-Dec-05
+ *  @version	0.70, 07-Dec-07
  */
 public class TimeLabel
 extends JPanel

@@ -108,7 +108,7 @@ implements  TimelineListener, TransportListener,	// RealtimeConsumer,
     
 	private final JButton			ggPlay, ggStop;
 	private final JToggleButton		ggLoop;
-	private final actionLoopClass	actionLoop;
+	private final ActionLoop	actionLoop;
 
 	private final ToolBar			toolBar;
 	private final TimeLabel			lbTime;
@@ -153,9 +153,9 @@ implements  TimelineListener, TransportListener,	// RealtimeConsumer,
 		GraphicsUtil.setToolIcons( ggRewind, GraphicsUtil.createToolIcons( GraphicsUtil.ICON_REWIND ));
 		ggRewind.addChangeListener( new CueListener( ggRewind, -100 ));
 		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_NUMPAD1, 0, false ), "startrwd" );
-		amap.put( "startrwd", new actionCueClass( ggRewind, true ));
+		amap.put( "startrwd", new ActionCue( ggRewind, true ));
 		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_NUMPAD1, 0, true ), "stoprwd" );
-		amap.put( "stoprwd", new actionCueClass( ggRewind, false ));
+		amap.put( "stoprwd", new ActionCue( ggRewind, false ));
 
 		actionStop		= transport.getStopAction();
         ggStop			= new JButton( actionStop );
@@ -169,19 +169,19 @@ implements  TimelineListener, TransportListener,	// RealtimeConsumer,
 		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_SPACE, KeyEvent.SHIFT_MASK ), "playstop" );
 		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_SPACE, KeyEvent.SHIFT_MASK | KeyEvent.ALT_MASK ), "playstop" );
 		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_NUMPAD0, 0 ), "playstop" );
-		amap.put( "playstop", new actionTogglePlayStopClass() );
+		amap.put( "playstop", new ActionTogglePlayStop() );
 		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_SPACE, KeyEvent.CTRL_MASK ), "playsel" );
-		amap.put( "playsel", new actionPlaySelectionClass() );
+		amap.put( "playsel", new ActionPlaySelection() );
 
         ggFFwd			= new JButton();
 		GraphicsUtil.setToolIcons( ggFFwd, GraphicsUtil.createToolIcons( GraphicsUtil.ICON_FASTFORWARD ));
 		ggFFwd.addChangeListener( new CueListener( ggFFwd, 100 ));
 		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_NUMPAD2, 0, false ), "startfwd" );
-		amap.put( "startfwd", new actionCueClass( ggFFwd, true ));
+		amap.put( "startfwd", new ActionCue( ggFFwd, true ));
 		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_NUMPAD2, 0, true ), "stopfwd" );
-		amap.put( "stopfwd", new actionCueClass( ggFFwd, false ));
+		amap.put( "stopfwd", new ActionCue( ggFFwd, false ));
 
-		actionLoop		= new actionLoopClass();
+		actionLoop		= new ActionLoop();
 		ggLoop			= new JToggleButton( actionLoop );
 		GraphicsUtil.setToolIcons( ggLoop, GraphicsUtil.createToolIcons( GraphicsUtil.ICON_LOOP ));
 		GUIUtil.createKeyAction( ggLoop, KeyStroke.getKeyStroke( KeyEvent.VK_DIVIDE, 0));
@@ -192,7 +192,7 @@ implements  TimelineListener, TransportListener,	// RealtimeConsumer,
 		toolBar.addToggleButton( ggLoop, 2 );
 //        HelpGlassPane.setHelp( toolBar, "TransportTools" );
         
-		actionGoToTime  = new actionGoToTimeClass();
+		actionGoToTime  = new ActionGoToTime();
 		lbTime			= new TimeLabel();
 //        HelpGlassPane.setHelp( lbTime, "TransportPosition" );
 		lbTime.setCursor( new Cursor( Cursor.HAND_CURSOR ));
@@ -390,7 +390,7 @@ this.add( Box.createHorizontalStrut( 4 ));
 
 // ---------------- actions ---------------- 
 
-	private class actionGoToTimeClass
+	private class ActionGoToTime
 //	extends KeyedAction
 	extends AbstractAction
 	{
@@ -440,7 +440,8 @@ ggCurrent.setFocusable( false );
 ggCurrent.addActionListener( new ActionListener() {
 	public void actionPerformed( ActionEvent e )
 	{
-		ggPosition.setValue( new Param( doc.timeline.getPosition(), ParamSpace.TIME | ParamSpace.SMPS ));	// XXX sync
+		final long pos = transport.isRunning() ? transport.getCurrentFrame() : doc.timeline.getPosition();
+		ggPosition.setValue( new Param( pos, ParamSpace.TIME | ParamSpace.SMPS ));	// XXX sync
 		ggPosition.requestFocusInWindow();
 	}
 });
@@ -470,7 +471,7 @@ msgPane.add( ggCurrent );
         }
 	} // class actionGoToTimeClass
 	
-	private class actionTogglePlayStopClass
+	private class ActionTogglePlayStop
 //	extends KeyedAction
 	extends AbstractAction
 	{
@@ -491,7 +492,7 @@ msgPane.add( ggCurrent );
 	} // class actionTogglePlayStopClass
 
 
-	private class actionPlaySelectionClass
+	private class ActionPlaySelection
 	extends AbstractAction
 	{
 		public void actionPerformed( ActionEvent e )
@@ -510,13 +511,13 @@ msgPane.add( ggCurrent );
 		}
 	} // class actionPlaySelectionClass
 
-	private static class actionCueClass
+	private static class ActionCue
 	extends AbstractAction
 	{
 		private final boolean			onOff;
 		private final AbstractButton	b;
 	
-		private actionCueClass( AbstractButton b, boolean onOff )
+		private ActionCue( AbstractButton b, boolean onOff )
 		{
 			this.onOff	= onOff;
 			this.b		= b;
@@ -530,10 +531,10 @@ msgPane.add( ggCurrent );
 		}
 	} // class actionCueClass
 		
-	private class actionLoopClass
+	private class ActionLoop
 	extends AbstractAction
 	{	
-		private actionLoopClass()
+		private ActionLoop()
 		{
 			super();
 		}

@@ -29,14 +29,14 @@
 
 package de.sciss.eisenkraut.net;
 
-import java.io.*;
-import java.net.*;
+import java.io.IOException;
+import java.net.SocketAddress;
 
-import de.sciss.net.*;
+import de.sciss.net.OSCMessage;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 05-May-06
+ *  @version	0.70, 07-Dec-07
  */
 public class RoutedOSCMessage
 {
@@ -47,10 +47,10 @@ public class RoutedOSCMessage
 	
 	private final String[]			path;
 	private final int				pathIdx;
-//	private final java.util.List	routers;
+//	private final List				routers;
 	
 //	public RoutedOSCMessage( OSCMessage msg, SocketAddress addr, long when, OSCRoot server,
-//							 String[] path, int pathIdx, java.util.List routers )
+//							 String[] path, int pathIdx, List routers )
 	public RoutedOSCMessage( OSCMessage msg, SocketAddress addr, long when, OSCRoot server, String[] path, int pathIdx )
 	{
 		this.msg		= msg;
@@ -109,7 +109,7 @@ public class RoutedOSCMessage
 		return( pathIdx + numComponents < path.length );
 	}
 	
-//	public RoutedOSCMessage next( java.util.List routers )
+//	public RoutedOSCMessage next( List routers )
 //	{
 //		return next( 1, routers );
 //	}
@@ -119,7 +119,7 @@ public class RoutedOSCMessage
 		return next( 1 );
 	}
 	
-//	public RoutedOSCMessage next( int skip, java.util.List routers )
+//	public RoutedOSCMessage next( int skip, List routers )
 //	{
 //		return new RoutedOSCMessage( msg, addr, when, server, path, pathIdx + skip, routers );
 //	}

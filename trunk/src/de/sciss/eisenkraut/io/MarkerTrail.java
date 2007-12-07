@@ -35,6 +35,7 @@ package de.sciss.eisenkraut.io;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import de.sciss.io.AudioFileDescr;
 import de.sciss.io.Marker;
@@ -47,7 +48,7 @@ import de.sciss.timebased.MarkerStake;
  *	unlike in practically all other classes.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 15-Oct-06
+ *  @version	0.70, 07-Dec-07
  */
 public class MarkerTrail
 extends BasicTrail
@@ -98,10 +99,10 @@ extends BasicTrail
 //	public void copyFromAudioFile( AudioFile af )
 	throws IOException
 	{
-		final java.util.List	markStakes;
-		final java.util.List	marks;
-		final int				removed;
-		Marker					mark;
+		final List	markStakes;
+		final List	marks;
+		final int	removed;
+		Marker		mark;
 
 //		final AudioFileDescr afd = af.getDescr();
 		

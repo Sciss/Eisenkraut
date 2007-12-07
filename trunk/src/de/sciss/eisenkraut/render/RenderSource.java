@@ -30,6 +30,8 @@
 
 package de.sciss.eisenkraut.render;
 
+import java.util.List;
+
 import de.sciss.io.Span;
 import de.sciss.timebased.Trail;
 
@@ -47,7 +49,7 @@ import de.sciss.eisenkraut.timeline.Track;
  *  and trajectory data of a transmitter.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 26-Sep-07
+ *  @version	0.70, 07-Dec-07
  *
  *	@todo		clipboard shit should be removed, use a separate RenderSource instead
  */
@@ -107,10 +109,10 @@ public class RenderSource
 	{
 		this.context		= context;
 		
-		final java.util.List	trackInfos	= context.getTrackInfos();
-		int						ch			= 0;
-		Track.Info				ti;
-		boolean[]				tm			= null;
+		final List		trackInfos	= context.getTrackInfos();
+		int				ch			= 0;
+		Track.Info		ti;
+		boolean[]		tm			= null;
 		
 		for( int i = 0; i < trackInfos.size(); i++ ) {
 			ti = (Track.Info) trackInfos.get( i );

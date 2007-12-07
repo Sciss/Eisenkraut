@@ -35,8 +35,14 @@
 
 package de.sciss.eisenkraut.gui;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GraphicsEnvironment;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.text.MessageFormat;
 import java.util.Locale;
 import javax.swing.AbstractAction;
@@ -49,7 +55,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.WindowConstants;
 
-import de.sciss.eisenkraut.*;
+import de.sciss.eisenkraut.Main;
 import de.sciss.eisenkraut.net.SuperColliderClient;
 
 import de.sciss.app.AbstractApplication;
@@ -62,12 +68,13 @@ import de.sciss.gui.CoverGrowBox;
 import de.sciss.gui.LogTextArea;
 import de.sciss.gui.MultiStateButton;
 import de.sciss.gui.TreeExpanderButton;
-
-import de.sciss.jcollider.*;
+import de.sciss.jcollider.Server;
+import de.sciss.jcollider.ServerEvent;
+import de.sciss.jcollider.ServerListener;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 19-Aug-06
+ *  @version	0.70, 07-Dec-07
  */
 public class MainFrame
 extends AppWindow

@@ -32,12 +32,15 @@
 
 package de.sciss.eisenkraut.timeline;
 
-import java.awt.*;
-import javax.swing.*;
-import javax.swing.undo.*;
+import java.awt.Dimension;
 
-import de.sciss.eisenkraut.gui.*;
-import de.sciss.eisenkraut.session.*;
+import javax.swing.JPanel;
+import javax.swing.SpringLayout;
+import javax.swing.undo.UndoManager;
+
+import de.sciss.eisenkraut.gui.PanoramaButton;
+import de.sciss.eisenkraut.session.FlagsPanel;
+import de.sciss.eisenkraut.session.SessionCollection;
 
 /**
  *	A row header in Swing's table 'ideology'
@@ -51,7 +54,7 @@ import de.sciss.eisenkraut.session.*;
  *	carry insert effects and the like.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 29-Nov-07
+ *  @version	0.70, 07-Dec-07
  */
 public class AudioTrackRowHeader
 extends TrackRowHeader

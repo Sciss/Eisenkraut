@@ -30,26 +30,30 @@
 
 package de.sciss.eisenkraut.session;
 
-import java.text.*;
-import java.util.*;
-
-import de.sciss.eisenkraut.util.*;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EventListener;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import de.sciss.app.BasicEvent;
 import de.sciss.app.EventManager;
+import de.sciss.eisenkraut.util.MapManager;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 10-Mar-06
+ *  @version	0.70, 07-Dec-07
  */
 public class SessionCollection
 extends AbstractSessionObject
 implements EventManager.Processor
 {
-	protected final ArrayList			collObjects			= new ArrayList();
+	protected final List			collObjects			= new ArrayList();
 	protected final MapManager.Listener	objectListener;
 
-	private static final Set EMPTY_SET						= new HashSet( 1 );
+	private static final Set EMPTY_SET					= new HashSet( 1 );
 	
 //	private final Set	dynamicSet	= new HashSet();
 
@@ -126,7 +130,7 @@ implements EventManager.Processor
 	 *  @param  index   index in the collection of all session objects
 	 *  @return the session object at the given index
 	 *
-	 *  @see	java.util.List#get( int )
+	 *  @see	List#get( int )
 	 */
 	public SessionObject get( int index )
 	{
@@ -142,7 +146,7 @@ implements EventManager.Processor
 	 *			the elements (session objects) reference of course
 	 *			the same objects.
 	 */
-	public java.util.List getAll()
+	public List getAll()
 	{
 		return new ArrayList( collObjects );
 	}
@@ -207,7 +211,7 @@ implements EventManager.Processor
 	 *  @see	SessionCollection.Event#ACTION_ADDED
 	 *  @see	java.util.Collection#addAll( Collection )
 	 */
-	public boolean addAll( Object source, java.util.List c )
+	public boolean addAll( Object source, List c )
 	{
 		final boolean result = collObjects.addAll( c );
 		if( result ) {
@@ -262,7 +266,7 @@ implements EventManager.Processor
 	 *  @see	SessionCollection.Event#ACTION_REMOVED
 	 *  @see	java.util.Collection#removeAll( Collection )
 	 */
-	public boolean removeAll( Object source, java.util.List c )
+	public boolean removeAll( Object source, List c )
 	{
 		boolean result = collObjects.removeAll( c );
 		if( result ) {
@@ -294,7 +298,7 @@ implements EventManager.Processor
 	 *  @return the index in the collection or -1 if the session object was not
 	 *			in the collection
 	 *
-	 *  @see	java.util.List#indexOf( Object )
+	 *  @see	List#indexOf( Object )
 	 */
 	public int indexOf( SessionObject so )
 	{
@@ -340,7 +344,7 @@ implements EventManager.Processor
 	public void clear( Object source )
 	{
 		if( !isEmpty() ) {
-			final java.util.List c = (source == null) ? null : getAll();
+			final List c = (source == null) ? null : getAll();
 			for( int i = 0; i < collObjects.size(); i++ ) {
 				((SessionObject) collObjects.get( i )).getMap().removeListener( objectListener );
 			}
@@ -377,7 +381,7 @@ implements EventManager.Processor
 	 *			<code>args[0]</code> contains the next index of
 	 *			iterative calling of this method.
 	 */
-	public static String createUniqueName( MessageFormat ptrn, Object[] args, java.util.List theseNot )
+	public static String createUniqueName( MessageFormat ptrn, Object[] args, List theseNot )
 	{
 		final StringBuffer	strBuf	= new StringBuffer();
 		int					i		= ((Number) args[ 0 ]).intValue();
@@ -410,7 +414,7 @@ implements EventManager.Processor
 		return findByName( collObjects, name );
 	}
 
-	public static SessionObject findByName( java.util.List coll, String name )
+	public static SessionObject findByName( List coll, String name )
 	{
 		SessionObject	so;
 	
@@ -483,7 +487,7 @@ implements EventManager.Processor
 	}
 
 	// utility function to create and dispatch a SessionObjectCollectionEvent
-	protected void dispatchCollectionChange( Object source, java.util.List affected, int type )
+	protected void dispatchCollectionChange( Object source, List affected, int type )
 	{
 		if( elm != null ) {
 			final Event e2 = new Event( source, System.currentTimeMillis(), affected, type );
@@ -548,7 +552,7 @@ implements EventManager.Processor
 		public static final int ACTION_REMOVED		= 1;
 		public static final int ACTION_CHANGED		= 2;
 
-		private final java.util.List	affectedColl;
+		private final List	affectedColl;
 		private final int				affectedType;
 		private final Set				affectedSet;
 		private final Object			affectedParam;
@@ -563,7 +567,7 @@ implements EventManager.Processor
 		 *  @param  actionID	unused, must be zero at the moment
 		 *  @param  actionObj	currently unused (provide null)
 		 */
-		private Event( Object source, long when, java.util.List affectedColl, int type )
+		private Event( Object source, long when, List affectedColl, int type )
 		{
 			super( source, COLLECTION_CHANGED, when );
 		
@@ -573,7 +577,7 @@ implements EventManager.Processor
 			this.affectedSet	= EMPTY_SET;
 		}
 		
-		protected Event( Event superEvent, java.util.List affectedColl )
+		protected Event( Event superEvent, List affectedColl )
 		{
 			super( superEvent.getSource(), superEvent.getID(), superEvent.getWhen() );
 			
@@ -601,7 +605,7 @@ implements EventManager.Processor
 			}
 		}
 
-		public java.util.List getCollection()
+		public List getCollection()
 		{
 			return new ArrayList( affectedColl );
 		}
@@ -611,7 +615,7 @@ implements EventManager.Processor
 			return affectedColl.contains( so );
 		}
 
-		public boolean collectionContainsAny( java.util.List coll )
+		public boolean collectionContainsAny( List coll )
 		{
 			for( int i = 0; i < coll.size(); i++ ) {
 				if( affectedColl.contains( coll.get( i ))) return true;
@@ -624,7 +628,7 @@ implements EventManager.Processor
 			return( affectedSet.contains( key ));
 		}
 
-		public boolean setContainsAny( java.util.List coll )
+		public boolean setContainsAny( List coll )
 		{
 			for( int i = 0; i < coll.size(); i++ ) {
 				if( affectedSet.contains( coll.get( i ))) return true;

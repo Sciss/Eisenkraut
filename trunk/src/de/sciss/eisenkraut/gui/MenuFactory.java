@@ -39,6 +39,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
@@ -93,7 +94,7 @@ import de.sciss.jcollider.Server;
  *  <code>Main</code> class.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 27-Sep-07
+ *  @version	0.70, 07-Dec-07
  *
  *  @see	de.sciss.eisenkraut.Main#menuFactory
  */
@@ -398,7 +399,7 @@ if( doc.getFrame() == null ) {
 		mg	= (MenuGroup) this.get( "window" );
 		mg.add( new MenuItem( "ioSetup", new actionIOSetupClass( getResourceString( "frameIOSetup" ), null )), 0 );
 		mg.add( new MenuSeparator(), 1 );
-		mg.add( new MenuItem( "main", new actionShowWindowClass( getResourceString( "frameMain" ), null, Main.COMP_MAIN )), 2 );
+		mg.add( new MenuItem( "main", new ActionShowWindow( getResourceString( "frameMain" ), null, Main.COMP_MAIN )), 2 );
 		mg.add( new MenuItem( "observer", new actionObserverClass( getResourceString( "paletteObserver" ), KeyStroke.getKeyStroke( KeyEvent.VK_NUMPAD3, MENU_SHORTCUT ))), 3 );
 		mg.add( new MenuItem( "ctrlRoom", new actionCtrlRoomClass( getResourceString( "paletteCtrlRoom" ), KeyStroke.getKeyStroke( KeyEvent.VK_NUMPAD2, MENU_SHORTCUT ))), 4 );
 //		mg.add( new MenuSeparator(), 5 );
@@ -449,6 +450,11 @@ if( doc.getFrame() == null ) {
 	protected Action getOpenAction()
 	{
 		return actionOpen;
+	}
+
+	protected ActionOpenRecent createOpenRecentAction( String name, File path )
+	{
+		return new ActionEisKOpenRecent( name, path );
 	}
 
 	public void openDocument( File f )
@@ -746,41 +752,72 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 		}
 	}
 
-//	// action for the Save-Session menu item
-//	private class actionCloseAllClass
-//	extends MenuAction
-//	implements ProcessingThread.Listener
-//	{
-//		private actionCloseAllClass( String text, KeyStroke shortcut )
-//		{
-//			super( text, shortcut );
-//			setEnabled( false );	// initially no docs open
-//		}
-//
-//		public void actionPerformed( ActionEvent e )
-//		{
-//			perform();
-//		}
-//		
-//		private void perform()
-//		{
-//			final ProcessingThread pt = closeAll( false, new Flag( false ));
-//			if( pt != null ) {
-//				pt.addListener( this );	// ok, let's save the shit and re-try to close all after that
-//				pt.start();
-//			}
-//		}
-//		
-//		public void processStarted( ProcessingThread.Event e ) {}
-//
-//		// if the saving was successfull, we will call closeAll again
-//		public void processStopped( ProcessingThread.Event e )
-//		{
-//			if( e.isDone() ) {
-//				perform();
-//			}
-//		}
-//	}
+	// action for the Open-Recent menu
+	private class ActionEisKOpenRecent
+	extends ActionOpenRecent
+	{
+		private File[]	paths;
+
+		// new action with path set to null
+		protected ActionEisKOpenRecent( String text, File path )
+		{
+			super( text, path );
+		}
+		
+		// set the path of the action. this
+		// is the file that will be loaded
+		// if the action is performed
+		protected void setPath( File path )
+		{
+			paths			= new File[] { path };
+			boolean enabled	= false;
+			try {
+				if( path == null ) return;
+				if( path.isFile() ) {
+					enabled	= true;
+					return;
+				}
+				
+				final String			name		= path.getName();
+				final int				idxOpenBr	= name.indexOf( '[' );
+				final int				idxCloseBr	= name.indexOf( ']', idxOpenBr + 1 );
+//				System.out.println( "for '" + name + "' idxOpenBr = " + idxOpenBr + "; idxCloseBr = " + idxCloseBr );
+				if( (idxOpenBr < 0) || ((idxOpenBr + 1) >= (idxCloseBr - 1)) ) return;
+				
+				final File				parent		= path.getParentFile();
+				final String			pre			= name.substring( 0, idxOpenBr );
+				final String			post		= name.substring( idxCloseBr + 1 );
+				final StringTokenizer	tok			= new StringTokenizer(
+					name.substring( idxOpenBr + 1, idxCloseBr ), "," );
+				paths	= new File[ tok.countTokens() ];
+				enabled	= true;
+				for( int i = 0; i < paths.length; i++ ) {
+					paths[ i ] = new File( parent, pre + tok.nextToken() + post );
+//					System.out.println( "testing path: '" + paths[ i ].getAbsolutePath() + "'" );
+					enabled   &= paths[ i ].isFile();
+				}
+			}
+			finally {
+				setEnabled( enabled );
+			}
+		}
+		
+		/**
+		 *  If a path was set for the
+		 *  action and the user confirms
+		 *  an intermitting confirm-unsaved-changes
+		 *  dialog, the new session will be loaded
+		 */
+		public void actionPerformed( ActionEvent e )
+		{
+			if( paths.length == 1 ) {
+				if( paths[ 0 ] == null ) return;
+				openDocument( paths[ 0 ]);
+			} else {
+				openDocument( paths );
+			}
+		}
+	} // class actionOpenRecentClass
 
 // ---------------- Action objects for window operations ---------------- 
 

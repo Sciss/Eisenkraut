@@ -1,0 +1,46 @@
+in AudioTrail
+	Method analogous to the paste method, but with audio not being copied (except for the blend span)
+
+Control room : Master Levels optionally Post/ Pre switchable
+
+Pencil tool
+
+Pins-Icon instead of "smps" (UnitLabel)
+
+Insert Silence : should not ignore blending
+
+View : document local ( use setReadPrefs( false ) on window specific action copies )
+	   same for catch + blend + loop
+
+DocumentFrame default size (esp. ignore collapsed!)
+
+Autom. Scrolling when making timeline selection beyond window bounds
+
+keyboard short cut for increasing/decreasing master volume
+
+solo + mute buttons without pressed state (instantaneously on/off)
+
+CAREFULLY CHECK DEFAULT PREFS AFTER PREFS ARE DELETED
+(i.e. SuperCollider OSC port might not be 0 etc.)
+
+Idea : addtional views, e.g. another view (with catch) in higher zoom level
+
+Visual Guides for Blendtime!!
+
+Snap to ...
+
+Channel Meters : display peak in cursor tab of the observer!
+
+
+Alternative Panner :  - none (write diretly on a channel = saves busses !)
+				- binaural
+				- amisonics
+				- panaz (as used currently)
+
+or : bus per sound file selectable ! i.e. mixer window
+
+overlay display (one chan row header for all channels, horiz. chain of meters, one single waveform display using multichannel overlay)
+
+- auto disable MenuGroup when all elements are disabled
+
+- doc frames : each new should be shifted to the bottom right

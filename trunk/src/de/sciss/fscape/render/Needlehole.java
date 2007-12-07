@@ -31,26 +31,35 @@
 
 package de.sciss.fscape.render;
 
-import java.awt.*;
-import java.beans.*;
-import java.io.*;
-import javax.swing.*;
+import java.awt.BorderLayout;
+import java.beans.XMLDecoder;
+import java.io.IOException;
 
-import de.sciss.eisenkraut.math.*;
-import de.sciss.eisenkraut.render.*;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 
+import de.sciss.eisenkraut.math.Fourier;
+import de.sciss.eisenkraut.math.MathUtil;
+import de.sciss.eisenkraut.render.AbstractRenderPlugIn;
+import de.sciss.eisenkraut.render.RandomAccessRequester;
+import de.sciss.eisenkraut.render.RenderConsumer;
+import de.sciss.eisenkraut.render.RenderContext;
+import de.sciss.eisenkraut.render.RenderHost;
+import de.sciss.eisenkraut.render.RenderSource;
 import de.sciss.fscape.util.Filter;
-
-import de.sciss.gui.*;
-import de.sciss.io.*;
-import de.sciss.util.*;
+import de.sciss.gui.GUIUtil;
+import de.sciss.io.InterleavedStreamFile;
+import de.sciss.io.Span;
+import de.sciss.util.DefaultUnitTranslator;
+import de.sciss.util.Param;
+import de.sciss.util.ParamSpace;
 
 /**
  *	Processing module for moving window
  *	based filtering of a sound.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 13-Aug-06
+ *  @version	0.70, 07-Dec-07
  */
 public class Needlehole
 extends AbstractRenderPlugIn
@@ -252,7 +261,6 @@ implements RandomAccessRequester
 			if( prFramesWritten >= prRenderLength ) {
 				assert prNextSpan.isEmpty();
 				if( prMaxAmp > 0f ) prGain /= prMaxAmp;
-//System.err.println( "prMaxAmp = "+prMaxAmp + "; -> prGain = "+prGain );
 				return prConsumer.consumerBegin( source );
 			} else {
 				return true;
@@ -286,22 +294,44 @@ implements RandomAccessRequester
 	private boolean normalize( RenderSource source )
 	throws IOException
 	{
+		long writeOffset = source.context.getTimeSpan().start;
 		int transLen;
 
 		prFramesWritten = 0; // reset
 		prTempFile.seekFrame( 0 );
+		
+//		System.out.println( "prRenderLength " + prRenderLength + "; prGain " + prGain );
 	
 		while( prFramesWritten < prRenderLength ) {
 			transLen			= (int) Math.min( prOutBufSize, prRenderLength - prFramesWritten );
 			source.audioBlockBufOff	= 0;
 			source.audioBlockBufLen	= transLen;
+			source.blockSpan	= new Span( writeOffset, writeOffset + transLen );
+
 			prTempFile.readFrames( source.audioBlockBuf, source.audioBlockBufOff, source.audioBlockBufLen );
+			
+//			float test = 0f;
+//			for( int i = 0; i < source.audioBlockBufLen; i++ ) {
+//				for( int j = 0; j < source.audioBlockBuf.length; j++ ) {
+//					test = Math.max( test, Math.abs( source.audioBlockBuf[ j ][ i ]));
+//				}
+//			}
+//			System.out.println( "after " + (prFramesWritten+transLen) + " maxAmp is " + test );
 
 			if( prGain != 1.0f ) {
 				multiply( source.audioBlockBuf, source.audioBlockBufOff, source.audioBlockBufLen, prGain );
 			}
 
+//			float test = 0f;
+//			for( int i = 0; i < source.audioBlockBufLen; i++ ) {
+//				for( int j = 0; j < source.audioBlockBuf.length; j++ ) {
+//					test = Math.max( test, Math.abs( source.audioBlockBuf[ j ][ i ]));
+//				}
+//			}
+//			System.out.println( "after " + (prFramesWritten+transLen) + " maxAmp is " + test );
+
 			prFramesWritten += transLen;
+			writeOffset += transLen;
 
 			if( !prConsumer.consumerRender( source )) return false;
 		}

@@ -30,11 +30,21 @@
 
 package de.sciss.gui;
 
-import java.awt.*;
-import java.awt.geom.*;
-import java.awt.image.*;
-import java.util.*;
-import javax.swing.*;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Paint;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.TexturePaint;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.JComponent;
 
 import de.sciss.util.Disposable;
 
@@ -49,9 +59,9 @@ implements Disposable
 	private boolean					imageUpdateC	= false;
 	private int						recentWidth, recentHeight;
 
-	private final java.util.List	collTopPainters	= new ArrayList();
-//	private final java.util.List	collLights		= new ArrayList();
-//	private final Map		mapLights		= new HashMap();
+	private final List				collTopPainters	= new ArrayList();
+//	private final List				collLights		= new ArrayList();
+//	private final Map				mapLights		= new HashMap();
 
 	private static Paint			pntBackground	= null;		// initialized with the first instance
 

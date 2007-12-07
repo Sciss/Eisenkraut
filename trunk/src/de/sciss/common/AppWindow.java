@@ -72,7 +72,7 @@ import de.sciss.gui.WindowListenerWrapper;
  *  will get a copy of the main menubar as well.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 02-Sep-06
+ *  @version	0.70, 07-Dec-07
  *
  *  @todo   the window bounds prefs storage sucks like hell
  *          ; there's a bug: if recall-window-bounds is deactivated
@@ -442,7 +442,7 @@ borrowMenuBar = wh.usesScreenMenuBar();
 		return true;
 	}
 
-//	protected boolean maintainPrefs()
+//	protected final boolean maintainPrefs()
 //	{
 //		return true;
 //	}
@@ -736,8 +736,14 @@ borrowMenuBar = wh.usesScreenMenuBar();
 	public void pack()
 	{
 		if( w != null ) {
+			// bug in swing??
+			// when using undecorated windows plus metal-lnf plus lnf-window-deco
+//			try { w.pack(); } catch( NullPointerException e ) {}
 			w.pack();
 		} else if( jif != null ) {
+			// bug in swing??
+			// when using undecorated windows plus metal-lnf plus lnf-window-deco
+//			try { jif.pack(); } catch( NullPointerException e ) {}
 			jif.pack();
 		} else {
 			throw new IllegalStateException();

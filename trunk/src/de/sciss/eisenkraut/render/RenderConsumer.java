@@ -29,7 +29,7 @@
 
 package de.sciss.eisenkraut.render;
 
-import java.io.*;
+import java.io.IOException;
 
 /**
  *	Classes implementing this interface
@@ -44,7 +44,7 @@ import java.io.*;
  *	source object and requests (push).
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 28-Jul-06
+ *  @version	0.70, 07-Dec-07
  */
 public interface RenderConsumer
 {

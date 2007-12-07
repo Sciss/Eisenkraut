@@ -29,7 +29,7 @@
 package de.sciss.fscape.util;
 
 /**
- *	@version	0.71, 05-Nov-06
+ *	@version	0.71, 07-Dec-07
  */
 public class Filter
 {

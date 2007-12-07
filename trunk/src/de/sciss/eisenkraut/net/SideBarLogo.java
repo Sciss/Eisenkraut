@@ -8,9 +8,15 @@
 
 package de.sciss.eisenkraut.net;
 
-import java.awt.*;
-import javax.swing.*;
+import java.awt.Dimension;
+import java.awt.Graphics;
 
+import javax.swing.ImageIcon;
+import javax.swing.JComponent;
+
+/**
+ *	@version	0.70, 07-Dec-07
+ */
 public class SideBarLogo
 extends JComponent
 {

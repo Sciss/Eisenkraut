@@ -35,11 +35,11 @@ import java.util.Map;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.15, 19-Aug-06
+ *  @version	0.16, 07-Dec-07
  */
 public interface WindowHandler
 {
-	public static final Object OPTION_EXCLUDE_FONT		= "excludefont";	// value : java.util.List of components
+	public static final Object OPTION_EXCLUDE_FONT		= "excludefont";	// value : (java.util.)List of components
 	public static final Object OPTION_GLOBAL_MENUBAR	= "globalmenu";		// value : null
 
 //	public void addWindow( Window w, Map options );

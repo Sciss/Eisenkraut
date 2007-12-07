@@ -29,18 +29,29 @@
  
 package de.sciss.eisenkraut.gui;
 
-import java.awt.*;
-import javax.swing.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Insets;
+import java.awt.Paint;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Stroke;
 
-import de.sciss.eisenkraut.io.*;
-import de.sciss.eisenkraut.session.*;
+import javax.swing.JComponent;
+
+import de.sciss.eisenkraut.io.AudioTrail;
+import de.sciss.eisenkraut.io.DecimatedTrail;
+import de.sciss.eisenkraut.io.DecimationInfo;
+import de.sciss.eisenkraut.session.Session;
 import de.sciss.gui.ComponentHost;
 import de.sciss.io.Span;
 import de.sciss.util.Disposable;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 01-Apr-07
+ *  @version	0.70, 07-Dec-07
  */
 public class WaveformView
 extends JComponent

@@ -29,9 +29,13 @@
 
 package de.sciss.eisenkraut.gui;
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
+import java.awt.Component;
+import java.awt.event.ActionListener;
+
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 import de.sciss.gui.GUIUtil;
 import de.sciss.gui.ModificationButton;
@@ -40,7 +44,7 @@ import de.sciss.gui.ProgressComponent;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 12-Oct-06
+ *  @version	0.70, 07-Dec-07
  */
 public class ProgressPanel
 extends JPanel

@@ -29,14 +29,14 @@
 
 package de.sciss.eisenkraut.io;
 
-import java.io.*;
+import java.io.IOException;
 
 import de.sciss.io.CacheManager;
 import de.sciss.io.InterleavedStreamFile;
 import de.sciss.io.Span;
 import de.sciss.jcollider.Buffer;
 import de.sciss.net.OSCBundle;
-import de.sciss.timebased.*;
+import de.sciss.timebased.Stake;
 
 /**
  *	A fake silent audio stake that occupies no disk space.
@@ -44,7 +44,7 @@ import de.sciss.timebased.*;
  *	with the supercollider player.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 01-May-06
+ *  @version	0.70, 07-Dec-07
  */
 public class SilentAudioStake
 extends AudioStake

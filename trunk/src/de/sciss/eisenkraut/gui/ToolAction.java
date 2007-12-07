@@ -29,9 +29,12 @@
 
 package de.sciss.eisenkraut.gui;
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
+import java.awt.Cursor;
+import java.awt.event.ActionEvent;
+
+import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
+import javax.swing.Icon;
 
 /**
  *  An extension of <code>AbstractAction</code>
@@ -43,7 +46,7 @@ import javax.swing.*;
  *  doesn't do anything at the moment.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.58, 05-May-06
+ *  @version	0.70, 07-Dec-07
  */
 public class ToolAction
 extends AbstractAction

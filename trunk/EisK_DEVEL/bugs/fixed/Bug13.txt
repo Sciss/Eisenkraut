@@ -1,2 +1,0 @@
-== FIXED ==
-prüfen : erster play buffer read korrekt re padding? (klicks zu hören manchmal)

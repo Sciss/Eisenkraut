@@ -51,7 +51,7 @@ import de.sciss.util.Disposable;
 
 /**
  *  @author				Hanns Holger Rutz
- *  @version			0.70, 12-Oct-06
+ *  @version			0.70, 07-Dec-07
  *
  *	@todo				disposeAll is not a safe decision because another
  *						document might be in the middle of pasting this track list!!
@@ -87,7 +87,7 @@ implements Transferable, ClipboardOwner, Disposable
 		this( doc, doc.timeline.getSelectionSpan(), doc.selectedTracks.getAll() );
 	}
 	
-	public ClipboardTrackList( Session doc, Span span, java.util.List tracks )
+	public ClipboardTrackList( Session doc, Span span, List tracks )
 	{
 		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
 	

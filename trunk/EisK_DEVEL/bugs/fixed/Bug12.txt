@@ -1,7 +1,0 @@
-== FIXED ==
-
-save -> cut : bad file descriptor
-
-i.e.  AudioTrail:327 tempF[ i ].setFrameNum( fileStop );
-	(temp file has been closed)
-

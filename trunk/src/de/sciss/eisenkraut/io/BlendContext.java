@@ -31,7 +31,8 @@
 
 package de.sciss.eisenkraut.io;
 
-import java.awt.geom.*;
+import java.awt.geom.CubicCurve2D;
+import java.awt.geom.Point2D;
 
 /**
  *  Object describing the
@@ -40,7 +41,7 @@ import java.awt.geom.*;
  *	for calculating the fades are provided.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 05-Nov-07
+ *  @version	0.70, 07-Dec-07
  */
 public class BlendContext
 {

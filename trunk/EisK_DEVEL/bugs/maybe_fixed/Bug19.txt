@@ -1,1 +1,0 @@
-Annoying request to reboot server from ControlRoom Frame when adding audio boxes

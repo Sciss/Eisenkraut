@@ -30,12 +30,14 @@
 
 package de.sciss.eisenkraut.timeline;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import de.sciss.eisenkraut.io.*;
-import de.sciss.eisenkraut.session.*;
-
-import de.sciss.timebased.*;
+import de.sciss.eisenkraut.io.AudioTrail;
+import de.sciss.eisenkraut.session.AbstractSessionObject;
+import de.sciss.timebased.Trail;
 
 /**
  *  A simple implementation of the <code>Transmitter</code>
@@ -47,7 +49,7 @@ import de.sciss.timebased.*;
  *  <code>getTrackEditor</code>.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 01-May-06
+ *  @version	0.70, 07-Dec-07
  */
 public abstract class Track
 extends AbstractSessionObject
@@ -70,14 +72,14 @@ extends AbstractSessionObject
 		getTrail().clear( source );
 	}
 
-	public static java.util.List getInfos( java.util.List selectedTracks, java.util.List allTracks )
+	public static List getInfos( List selectedTracks, List allTracks )
 	{
 		Track					track;
 		Trail					trail;
 		Track.Info				ti;
 		int						chan;
 		final Map				mapInfos	= new HashMap();
-		final java.util.List	collInfos	= new ArrayList();
+		final List				collInfos	= new ArrayList();
 		
 		for( int i = 0; i < allTracks.size(); i++ ) {
 			track	= (Track) allTracks.get( i );

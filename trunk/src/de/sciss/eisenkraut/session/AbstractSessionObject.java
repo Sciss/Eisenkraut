@@ -29,17 +29,21 @@
 
 package de.sciss.eisenkraut.session;
 
-import java.io.*;
-import java.util.*;
-import org.w3c.dom.*;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
-import de.sciss.eisenkraut.io.*;
-import de.sciss.eisenkraut.util.*;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
+import de.sciss.eisenkraut.io.XMLRepresentation;
+import de.sciss.eisenkraut.util.MapManager;
 import de.sciss.io.IOUtil;
 
 /**
- * @version	0.56, 15-Sep-05
+ *	@version	0.70, 07-Dec-07
  */
 public abstract class AbstractSessionObject
 implements SessionObject, XMLRepresentation, MapManager.Listener

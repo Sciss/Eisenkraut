@@ -29,15 +29,21 @@
 
 package de.sciss.eisenkraut.session;
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
+import java.awt.FlowLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
 
-import de.sciss.eisenkraut.gui.*;
+import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
+import javax.swing.Icon;
+import javax.swing.JPanel;
+import javax.swing.JToggleButton;
+
+import de.sciss.eisenkraut.gui.GraphicsUtil;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.56, 05-May-06
+ *  @version	0.70, 07-Dec-07
  */
 public abstract class AbstractFlagsPanel
 extends JPanel

@@ -66,7 +66,7 @@ import de.sciss.util.Disposable;
  *  timeline.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 14-Apr-06
+ *  @version	0.70, 06-Dec-07
  *
  *	@todo		FIXEDBOUNDS is ignored in logarithmic mode now
  *	@todo		new label width calculation not performed in logarithmic mode

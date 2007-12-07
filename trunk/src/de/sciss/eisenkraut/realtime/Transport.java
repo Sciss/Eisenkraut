@@ -106,8 +106,8 @@ implements TimelineListener, OSCRouter, Disposable
 				
 	// --- actions ---
 
-	private final actionPlayClass		actionPlay;
-	private final actionStopClass		actionStop;
+	private final ActionPlay		actionPlay;
+	private final ActionStop		actionStop;
 	
 	private static final String			OSC_TRANSPORT = "transport";
 	private final OSCRouter				osc;
@@ -128,8 +128,8 @@ implements TimelineListener, OSCRouter, Disposable
         
 		doc.timeline.addTimelineListener( this );
 
-		actionPlay		= new actionPlayClass();
-		actionStop		= new actionStopClass();
+		actionPlay		= new ActionPlay();
+		actionStop		= new ActionStop();
 		osc				= new OSCRouterWrapper( doc, this );
 		rate			= doc.timeline.getRate();
 		frameFactor		= rateScale * rate / 1000;
@@ -685,10 +685,10 @@ implements TimelineListener, OSCRouter, Disposable
 
 // --------------- internal actions ---------------
 
-	private class actionPlayClass
+	private class ActionPlay
 	extends AbstractAction
 	{
-		private actionPlayClass()
+		private ActionPlay()
 		{
 			super();
 		}
@@ -708,10 +708,10 @@ implements TimelineListener, OSCRouter, Disposable
         }
 	} // class actionPlayClass
 
-	private class actionStopClass
+	private class ActionStop
 	extends AbstractAction
 	{
-		private actionStopClass()
+		private ActionStop()
 		{
 			super();
 		}

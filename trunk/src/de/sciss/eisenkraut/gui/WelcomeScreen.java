@@ -29,15 +29,23 @@
 
 package de.sciss.eisenkraut.gui;
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.event.*;
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JButton;
+import javax.swing.JEditorPane;
+import javax.swing.JFrame;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 
 import net.roydesign.mac.MRJAdapter;
 
-import de.sciss.eisenkraut.*;
-
+import de.sciss.eisenkraut.Main;
 import de.sciss.gui.GUIUtil;
 
 /**
@@ -48,7 +56,7 @@ import de.sciss.gui.GUIUtil;
  *  upon application launch).
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 24-Jun-06
+ *  @version	0.70, 07-Dec-07
  */
 public class WelcomeScreen
 extends JFrame
@@ -97,12 +105,12 @@ implements HyperlinkListener
 	{
 		super( "Welcome to " + root.getName() );
 	
-		Container cp = getContentPane();
+		final Container cp = getContentPane();
 		ggContent = new JEditorPane( "text/html", htmlWelcome1 + root.getName() + htmlWelcome2 );
 		ggContent.setEditable( false );
 		ggContent.addHyperlinkListener( this );
 		cp.add( ggContent, BorderLayout.CENTER );
-		Action closeAction = new AbstractAction( "- Close -" ) {
+		final Action closeAction = new AbstractAction( "- Close -" ) {
 			public void actionPerformed( ActionEvent e )
 			{
 				welcome.setVisible( false );
@@ -120,7 +128,6 @@ implements HyperlinkListener
 		});
 		setSize( 640, 480 );
 		setLocationRelativeTo( null );
-	// 	GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint(); 
 		
 		setVisible( true );
 		toFront();

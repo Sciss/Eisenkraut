@@ -30,19 +30,37 @@
 
 package de.sciss.eisenkraut.gui;
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-import de.sciss.eisenkraut.*;
-import de.sciss.eisenkraut.session.*;
-import de.sciss.eisenkraut.timeline.*;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import javax.swing.WindowConstants;
 
-import de.sciss.app.*;
+import de.sciss.app.AbstractApplication;
+import de.sciss.app.AbstractWindow;
+import de.sciss.app.Application;
+import de.sciss.app.DocumentListener;
+import de.sciss.app.DynamicListening;
 import de.sciss.common.AppWindow;
-import de.sciss.gui.*;
-import de.sciss.io.*;
-import de.sciss.util.*;
+import de.sciss.eisenkraut.Main;
+import de.sciss.eisenkraut.session.Session;
+import de.sciss.eisenkraut.timeline.TimelineEvent;
+import de.sciss.eisenkraut.timeline.TimelineListener;
+import de.sciss.gui.AbstractWindowHandler;
+import de.sciss.gui.ParamField;
+import de.sciss.gui.SpringPanel;
+import de.sciss.io.Span;
+import de.sciss.util.DefaultUnitTranslator;
+import de.sciss.util.Param;
+import de.sciss.util.ParamSpace;
 
 /**
  *  The <code>ObserverPalette</code> is a
@@ -60,11 +78,11 @@ import de.sciss.util.*;
  *  resonsible for calling <code>showCursorInfo</code>.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 11-Jul-06
+ *  @version	0.70, 07-Dec-07
  */
 public class ObserverPalette
 extends AppWindow
-implements	ParamField.Listener, TimelineListener, DynamicListening, de.sciss.app.DocumentListener,
+implements	ParamField.Listener, TimelineListener, DynamicListening, DocumentListener,
 			ActionListener
 {
 	private Session						doc					= null;

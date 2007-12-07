@@ -32,24 +32,67 @@
 
 package de.sciss.eisenkraut.gui;
 
-import java.awt.*;
-import java.awt.datatransfer.*;
-import java.awt.event.*;
-import java.awt.image.*;
-import java.io.*;
-import java.util.*;
-import java.util.prefs.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.LayoutManager;
+import java.awt.Paint;
+import java.awt.Rectangle;
+import java.awt.TexturePaint;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
-import de.sciss.eisenkraut.*;
-import de.sciss.eisenkraut.io.*;
-import de.sciss.eisenkraut.util.*;
+import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.ListSelectionModel;
+import javax.swing.TransferHandler;
+import javax.swing.WindowConstants;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 
-import de.sciss.app.*;
+import de.sciss.app.AbstractApplication;
+import de.sciss.app.Application;
+import de.sciss.app.GraphicsHandler;
 import de.sciss.common.AppWindow;
-import de.sciss.gui.*;
+import de.sciss.eisenkraut.Main;
+import de.sciss.eisenkraut.io.AudioBoxConfig;
+import de.sciss.eisenkraut.io.RoutingConfig;
+import de.sciss.eisenkraut.util.PrefsUtil;
+import de.sciss.gui.AbstractWindowHandler;
+import de.sciss.gui.CoverGrowBox;
+import de.sciss.gui.GUIUtil;
+import de.sciss.gui.HelpButton;
+import de.sciss.gui.ModificationButton;
+import de.sciss.gui.SortedTableModel;
 
 /**
  *  This is the frame that
@@ -57,13 +100,13 @@ import de.sciss.gui.*;
  *  input/output configuration
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 12-May-06
+ *  @version	0.70, 07-Dec-07
  */
 public class IOSetupFrame
 extends AppWindow
 {
 	private static final int		NUM_TABS		= 2;
-	private final java.util.List[]	collConfigs		= new java.util.List[] { new ArrayList(), new ArrayList() };
+	private final List[]			collConfigs		= new List[] { new ArrayList(), new ArrayList() };
 	private final Set[]				setConfigIDs	= new Set[] { new HashSet(), new HashSet() };
 	private final Set[]				setConfigNames	= new Set[] { new HashSet(), new HashSet() };
 	private final Preferences		audioPrefs;

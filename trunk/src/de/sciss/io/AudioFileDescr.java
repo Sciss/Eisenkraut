@@ -64,7 +64,7 @@ import de.sciss.gui.StringItem;
  *  which presents the common fields to the user.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.28, 24-Jul-07
+ *  @version	0.28, 07-Dec-07
  *
  *  @see		AudioFile
  *  @see		AudioFileFormatPane
@@ -159,13 +159,13 @@ public class AudioFileDescr
 	 */
 	public static final String KEY_LOOP		=   "loop";
 	/**
-	 *  property key : marker list. value class = java.util.List whose elements are of class Marker
+	 *  property key : marker list. value class = (java.util.)List whose elements are of class Marker
 	 *
 	 *  @see	de.sciss.io.Marker
 	 */
 	public static final String KEY_MARKERS  =   "markers";
 	/**
-	 *  property key : region list. value class = java.util.List whose elements are of class Region
+	 *  property key : region list. value class = (java.util.)List whose elements are of class Region
 	 *
 	 *  @see	de.sciss.io.Region
 	 */

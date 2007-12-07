@@ -80,9 +80,11 @@ import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRootPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.LookAndFeel;
@@ -95,16 +97,6 @@ import javax.swing.event.MouseInputAdapter;
 import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoableEdit;
 
-import de.sciss.eisenkraut.*;
-import de.sciss.eisenkraut.edit.*;
-import de.sciss.eisenkraut.gui.*;
-import de.sciss.eisenkraut.io.*;
-import de.sciss.eisenkraut.net.*;
-import de.sciss.eisenkraut.realtime.*;
-import de.sciss.eisenkraut.render.*;
-import de.sciss.eisenkraut.timeline.*;
-import de.sciss.eisenkraut.util.*;
-
 import de.sciss.app.AbstractApplication;
 import de.sciss.app.AbstractWindow;
 import de.sciss.app.DynamicPrefChangeManager;
@@ -112,9 +104,49 @@ import de.sciss.app.GraphicsHandler;
 import de.sciss.app.LaterInvocationManager;
 import de.sciss.common.AppWindow;
 import de.sciss.common.BasicApplication;
+import de.sciss.common.BasicMenuFactory;
 import de.sciss.common.BasicWindowHandler;
 import de.sciss.common.ProcessingThread;
 import de.sciss.common.ShowWindowAction;
+import de.sciss.eisenkraut.Main;
+import de.sciss.eisenkraut.edit.BasicCompoundEdit;
+import de.sciss.eisenkraut.edit.TimelineVisualEdit;
+import de.sciss.eisenkraut.gui.AbstractTool;
+import de.sciss.eisenkraut.gui.AudioFileInfoPalette;
+import de.sciss.eisenkraut.gui.Axis;
+import de.sciss.eisenkraut.gui.CrossfadePanel;
+import de.sciss.eisenkraut.gui.GradientPanel;
+import de.sciss.eisenkraut.gui.GraphicsUtil;
+import de.sciss.eisenkraut.gui.MenuFactory;
+import de.sciss.eisenkraut.gui.ObserverPalette;
+import de.sciss.eisenkraut.gui.PeakMeterManager;
+import de.sciss.eisenkraut.gui.ProgressPanel;
+import de.sciss.eisenkraut.gui.RecorderDialog;
+import de.sciss.eisenkraut.gui.ToolAction;
+import de.sciss.eisenkraut.gui.ToolActionEvent;
+import de.sciss.eisenkraut.gui.ToolActionListener;
+import de.sciss.eisenkraut.gui.WaveformView;
+import de.sciss.eisenkraut.io.AudioTrail;
+import de.sciss.eisenkraut.io.DecimatedTrail;
+import de.sciss.eisenkraut.io.DecimationInfo;
+import de.sciss.eisenkraut.net.SuperColliderClient;
+import de.sciss.eisenkraut.net.SuperColliderPlayer;
+import de.sciss.eisenkraut.realtime.Transport;
+import de.sciss.eisenkraut.realtime.TransportListener;
+import de.sciss.eisenkraut.realtime.TransportToolBar;
+import de.sciss.eisenkraut.render.FilterDialog;
+import de.sciss.eisenkraut.render.RenderPlugIn;
+import de.sciss.eisenkraut.timeline.AudioTrack;
+import de.sciss.eisenkraut.timeline.AudioTrackRowHeader;
+import de.sciss.eisenkraut.timeline.MarkerAxis;
+import de.sciss.eisenkraut.timeline.TimelineAxis;
+import de.sciss.eisenkraut.timeline.TimelineEvent;
+import de.sciss.eisenkraut.timeline.TimelineListener;
+import de.sciss.eisenkraut.timeline.TimelineScroll;
+import de.sciss.eisenkraut.timeline.TimelineToolBar;
+import de.sciss.eisenkraut.timeline.Track;
+import de.sciss.eisenkraut.timeline.TrackRowHeader;
+import de.sciss.eisenkraut.util.PrefsUtil;
 import de.sciss.gui.AbstractWindowHandler;
 import de.sciss.gui.ComponentHost;
 import de.sciss.gui.CoverGrowBox;
@@ -130,15 +162,19 @@ import de.sciss.gui.StretchedGridLayout;
 import de.sciss.gui.TopPainter;
 import de.sciss.gui.TreeExpanderButton;
 import de.sciss.gui.VectorSpace;
-import de.sciss.io.*;
-import de.sciss.timebased.*;
-import de.sciss.util.*;
+import de.sciss.io.AudioFileDescr;
+import de.sciss.io.AudioFileFormatPane;
+import de.sciss.io.IOUtil;
+import de.sciss.io.Marker;
+import de.sciss.io.Span;
+import de.sciss.timebased.Trail;
+import de.sciss.util.Flag;
 
 import org.unicode.Normalizer;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 29-Nov-07
+ *  @version	0.70, 07-Dec-07
  */
 public class DocumentFrame
 extends AppWindow
@@ -169,9 +205,9 @@ implements	ProgressComponent, TimelineListener,
 	private final JPanel					flagsPanel;
 	private final JPanel					rulersPanel;
 	private final JPanel					metersPanel;
-	private final java.util.List			collChannelHeaders		= new ArrayList();
-	private final java.util.List			collChannelRulers		= new ArrayList();
-//	private final java.util.List			collChannelMeters		= new ArrayList();
+	private final List						collChannelHeaders		= new ArrayList();
+	private final List						collChannelRulers		= new ArrayList();
+//	private final List						collChannelMeters		= new ArrayList();
 	private PeakMeter[]						channelMeters			= new PeakMeter[ 0 ];
 	
 	private final JLabel					lbSRC;
@@ -186,23 +222,23 @@ implements	ProgressComponent, TimelineListener,
 	private final static String				plugInPackage			= "de.sciss.eisenkraut.render.";
 	private final static String				fscapePackage			= "de.sciss.fscape.render.";
 
-	private final actionRevealFileClass		actionRevealFile;
-	private final actionNewFromSelClass		actionNewFromSel;
-	private final actionCloseClass			actionClose;
-	private final actionSaveClass			actionSave;
-	private final actionSaveAsClass			actionSaveAs;
-	private final actionSaveAsClass			actionSaveCopyAs;
-	private final actionSaveAsClass			actionSaveSelectionAs;
-	private final actionSelectAllClass		actionSelectAll;
+	private final ActionRevealFile		actionRevealFile;
+	private final ActionNewFromSel		actionNewFromSel;
+	private final ActionClose			actionClose;
+	private final ActionSave			actionSave;
+	private final ActionSaveAs			actionSaveAs;
+	private final ActionSaveAs			actionSaveCopyAs;
+	private final ActionSaveAs			actionSaveSelectionAs;
+	private final ActionSelectAll		actionSelectAll;
 	private final MenuAction				actionProcess, actionFadeIn, actionFadeOut, actionGain,
 											actionInvert, actionMix,
 											actionReverse, actionRotateChannels, // actionSilence, 
 											actionFScNeedlehole,
 											actionDebugDump, actionDebugVerify, actionInsertRec;
-	private final actionProcessAgainClass	actionProcessAgain;
+	private final ActionProcessAgain	actionProcessAgain;
 
-	private final actionSpanWidthClass		actionIncWidth, actionDecWidth;
-	private final actionScrollClass			actionZoomAllOut;
+	private final ActionSpanWidth		actionIncWidth, actionDecWidth;
+	private final ActionScroll			actionZoomAllOut;
 	private final Action					actionIncVertical;
 	private final Action					actionDecVertical;
 
@@ -279,9 +315,6 @@ implements	ProgressComponent, TimelineListener,
 
 	private boolean							disposed		= false;
 	
-//	private boolean							metersStarted	= false;
-//	private long							timeMetersPause;
-	
 	private final Timer						playTimer;
 	private double							playRate		= 1.0;
 
@@ -309,21 +342,11 @@ implements	ProgressComponent, TimelineListener,
 		
 		superCollider		= SuperColliderClient.getInstance();
 
-//		lim					= new LaterInvocationManager( new LaterInvocationManager.Listener() {
-//			// o egal
-//			public void laterInvocation( Object o )
-//			{
-//				updatePositionAndRepaint();
-//			}
-//		});
-		
 		lmm					= new PeakMeterManager( superCollider.getMeterManager() );
 
 		final Container					cp			= getContentPane();
-//		final JRootPane					rp			= getRootPane();
 		final InputMap					imap		= getInputMap( JComponent.WHEN_IN_FOCUSED_WINDOW );
 		final ActionMap					amap		= getActionMap();
-//		final Box						topPane		= Box.createHorizontalBox();
 		final AbstractButton			ggAudioInfo, ggRevealFile;
 		final int						myMeta		= MenuFactory.MENU_SHORTCUT == KeyEvent.CTRL_MASK ?
 			KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK : MenuFactory.MENU_SHORTCUT;	// META on Mac, CTRL+SHIFT on PC
@@ -335,7 +358,6 @@ implements	ProgressComponent, TimelineListener,
 		final boolean					isAqua		= laf == null ? false : laf.getID().equals( "Aqua" );
 		final GradientPaint				grad		= isAqua ? new GradientPaint( 0f, 0f, new Color( 0xF3, 0xF3, 0xF3 ), 0f, 69f, new Color( 0xC4, 0xC4, 0xC4 )) : null;
 		Box								box;
-//		Dimension						d;
 
 		internalFrames		= app.getWindowHandler().usesInternalFrames();
 
@@ -345,21 +367,6 @@ implements	ProgressComponent, TimelineListener,
 		topPane.setLayout( new BoxLayout( topPane, BoxLayout.X_AXIS ));
 		topPane.setGradient( grad );
 		
-// !! not used at the moment !!
-//		rowHeightListener	= new ComponentAdapter() {
-//			public void componentResized( ComponentEvent e ) {
-////				vpTrackPanel.updateSelectionAndRepaint();
-//			}
-//
-//			public void componentShown( ComponentEvent e ) {
-//				updateSelectionAndRepaint();
-//			}
-//
-//			public void componentHidden( ComponentEvent e ) {
-//				updateSelectionAndRepaint();
-//			}
-//		};
-
 		wavePanel			= new ComponentHost();
         timeAxis			= new TimelineAxis( doc, wavePanel );
 		markAxis			= new MarkerAxis( doc, wavePanel );
@@ -409,9 +416,9 @@ bbb.add( markAxisHeader );
         
 		lbWriteProtected	= new JLabel();
 		ggAudioInfo			= new ModificationButton( ModificationButton.SHAPE_INFO );
-		ggAudioInfo.setAction( new actionAudioInfoClass() );
+		ggAudioInfo.setAction( new ActionAudioInfo() );
 		ggRevealFile		= new ModificationButton( ModificationButton.SHAPE_REVEAL );
-		actionRevealFile	= new actionRevealFileClass();
+		actionRevealFile	= new ActionRevealFile();
 		ggRevealFile.setAction( actionRevealFile );
 //        HelpGlassPane.setHelp( ggAudioInfo, "AudioHeaderInfo" );
 		ggAudioFileDescr	= new JTextField( 32 );
@@ -758,42 +765,42 @@ bbb.add( markAxisHeader );
 //final InputMap					imap		= ggTrackPanel.getInputMap( JComponent.WHEN_IN_FOCUSED_WINDOW );
 //final ActionMap					amap		= ggTrackPanel.getActionMap();
 
-		actionNewFromSel	= new actionNewFromSelClass();
-		actionClose			= new actionCloseClass();
-		actionSave			= new actionSaveClass();
-		actionSaveAs		= new actionSaveAsClass( false, false );
-		actionSaveCopyAs	= new actionSaveAsClass( true, false );
-		actionSaveSelectionAs = new actionSaveAsClass( true, true );
+		actionNewFromSel	= new ActionNewFromSel();
+		actionClose			= new ActionClose();
+		actionSave			= new ActionSave();
+		actionSaveAs		= new ActionSaveAs( false, false );
+		actionSaveCopyAs	= new ActionSaveAs( true, false );
+		actionSaveSelectionAs = new ActionSaveAs( true, true );
 //		actionImportMarkers	= new actionImportMarkersClass();
 //		actionCut			= new actionCutClass();
 //		actionCopy			= new actionCopyClass();
 //		actionPaste			= new actionPasteClass();
 //		actionDelete		= new actionDeleteClass();
-		actionSelectAll		= new actionSelectAllClass();
+		actionSelectAll		= new ActionSelectAll();
 //		actionTrimToSelection=new actionTrimToSelectionClass();
 //		actionInsertSilence	= new actionInsertSilenceClass();
-		actionInsertRec		= new actionInsertRecClass();
+		actionInsertRec		= new ActionInsertRec();
 
-		actionProcess		= new actionProcessClass();
-		actionProcessAgain	= new actionProcessAgainClass();
-		actionFadeIn		= new actionPlugInClass( plugInPackage + "FadeIn" );
-		actionFadeOut		= new actionPlugInClass( plugInPackage + "FadeOut" );
-		actionGain			= new actionPlugInClass( plugInPackage + "Gain" );
-		actionInvert		= new actionPlugInClass( plugInPackage + "Invert" );
-		actionMix			= new actionPlugInClass( plugInPackage + "Mix" );
-		actionReverse		= new actionPlugInClass( plugInPackage + "Reverse" );
-		actionRotateChannels = new actionPlugInClass( plugInPackage + "RotateChannels" );
+		actionProcess		= new ActionProcess();
+		actionProcessAgain	= new ActionProcessAgain();
+		actionFadeIn		= new ActionPlugIn( plugInPackage + "FadeIn" );
+		actionFadeOut		= new ActionPlugIn( plugInPackage + "FadeOut" );
+		actionGain			= new ActionPlugIn( plugInPackage + "Gain" );
+		actionInvert		= new ActionPlugIn( plugInPackage + "Invert" );
+		actionMix			= new ActionPlugIn( plugInPackage + "Mix" );
+		actionReverse		= new ActionPlugIn( plugInPackage + "Reverse" );
+		actionRotateChannels = new ActionPlugIn( plugInPackage + "RotateChannels" );
 //		actionSilence		= new actionPlugInClass( plugInPackage + "Silence" );
-		actionFScNeedlehole	= new actionPlugInClass( fscapePackage + "Needlehole" );
+		actionFScNeedlehole	= new ActionPlugIn( fscapePackage + "Needlehole" );
 
-		actionDebugDump		= new actionDebugDumpClass();
-		actionDebugVerify	= new actionDebugVerifyClass();
+		actionDebugDump		= new ActionDebugDump();
+		actionDebugVerify	= new ActionDebugVerify();
 
-		actionIncVertical	= new actionVerticalZoomClass( 2.0f );
-		actionDecVertical	= new actionVerticalZoomClass( 0.5f );
-		actionIncWidth		= new actionSpanWidthClass( 2.0f );
-		actionDecWidth		= new actionSpanWidthClass( 0.5f );
-		actionZoomAllOut	= new actionScrollClass( SCROLL_ENTIRE_SESSION );
+		actionIncVertical	= new ActionVerticalZoom( 2.0f );
+		actionDecVertical	= new ActionVerticalZoom( 0.5f );
+		actionIncWidth		= new ActionSpanWidth( 2.0f );
+		actionDecWidth		= new ActionSpanWidth( 0.5f );
+		actionZoomAllOut	= new ActionScroll( SCROLL_ENTIRE_SESSION );
 
 		actionShowWindow	= new ShowWindowAction( this );
 
@@ -808,22 +815,22 @@ bbb.add( markAxisHeader );
 		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_CLOSE_BRACKET, MenuFactory.MENU_SHORTCUT ), "decw" );
 		amap.put( "decw", actionDecWidth );
 		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_RIGHT, myMeta ), "samplvl" );
-		amap.put( "samplvl", new actionSpanWidthClass( 0.0f ));
+		amap.put( "samplvl", new ActionSpanWidth( 0.0f ));
 		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_ENTER, 0 ), "retn" );
-		amap.put( "retn", new actionScrollClass( SCROLL_SESSION_START ));
+		amap.put( "retn", new ActionScroll( SCROLL_SESSION_START ));
 		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LEFT, 0 ), "left" );
-		amap.put( "left", new actionScrollClass( SCROLL_SELECTION_START ));
+		amap.put( "left", new ActionScroll( SCROLL_SELECTION_START ));
 		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_RIGHT, 0 ), "right" );
-		amap.put( "right", new actionScrollClass( SCROLL_SELECTION_STOP ));
+		amap.put( "right", new ActionScroll( SCROLL_SELECTION_STOP ));
 		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_F, KeyEvent.ALT_MASK ), "fit" );
-		amap.put( "fit", new actionScrollClass( SCROLL_FIT_TO_SELECTION ));
+		amap.put( "fit", new ActionScroll( SCROLL_FIT_TO_SELECTION ));
 		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_A, KeyEvent.ALT_MASK ), "entire" );
 		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LEFT, myMeta ), "entire" );
 		amap.put( "entire", actionZoomAllOut );
 		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_ENTER, KeyEvent.SHIFT_MASK ), "seltobeg" );
-		amap.put( "seltobeg", new actionSelectClass( SELECT_TO_SESSION_START ));
+		amap.put( "seltobeg", new ActionSelect( SELECT_TO_SESSION_START ));
 		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_ENTER, KeyEvent.SHIFT_MASK + KeyEvent.ALT_MASK ), "seltoend" );
-		amap.put( "seltoend", new actionSelectClass( SELECT_TO_SESSION_END ));
+		amap.put( "seltoend", new ActionSelect( SELECT_TO_SESSION_END ));
 		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_UP, 0 ), "postoselbegc" );
 		amap.put( "postoselbegc", doc.timeline.getPosToSelAction( true, true ));
 		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_DOWN, 0 ), "postoselendc" );
@@ -833,15 +840,15 @@ bbb.add( markAxisHeader );
 		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_DOWN, KeyEvent.ALT_MASK ), "postoselend" );
 		amap.put( "postoselend", doc.timeline.getPosToSelAction( false, false ));
 		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_M, 0 ), "dropmark" );
-		amap.put( "dropmark", new actionDropMarkerClass() );
+		amap.put( "dropmark", new ActionDropMarker() );
 		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_TAB, 0 ), "selnextreg" );
-		amap.put( "selnextreg", new actionSelectRegionClass( SELECT_NEXT_REGION ));
+		amap.put( "selnextreg", new ActionSelectRegion( SELECT_NEXT_REGION ));
 		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_TAB, KeyEvent.ALT_MASK ), "selprevreg" );
-		amap.put( "selprevreg", new actionSelectRegionClass( SELECT_PREV_REGION ));
+		amap.put( "selprevreg", new ActionSelectRegion( SELECT_PREV_REGION ));
 		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_TAB, KeyEvent.SHIFT_MASK ), "extnextreg" );
-		amap.put( "extnextreg", new actionSelectRegionClass( EXTEND_NEXT_REGION ));
+		amap.put( "extnextreg", new ActionSelectRegion( EXTEND_NEXT_REGION ));
 		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_TAB, KeyEvent.ALT_MASK + KeyEvent.SHIFT_MASK ), "extprevreg" );
-		amap.put( "extprevreg", new actionSelectRegionClass( EXTEND_PREV_REGION ));
+		amap.put( "extprevreg", new ActionSelectRegion( EXTEND_PREV_REGION ));
 
 		setFocusTraversalKeysEnabled( false ); // we want the tab! we gotta have that tab! ouwe!
 
@@ -893,7 +900,11 @@ bbb.add( markAxisHeader );
 		GUIUtil.setDeepFont( timeTB, app.getGraphicsHandler().getFont( GraphicsHandler.FONT_SYSTEM | GraphicsHandler.FONT_MINI ));
 //		pack();
 		app.getMenuFactory().addToWindowMenu( actionShowWindow );	// MUST BE BEFORE INIT()!!
+
 		init();
+		final Rectangle r = getBounds();
+		r.translate( 21, 23 );
+		setBounds( r );
 
 		updateTitle();
 		documentUpdate();
@@ -937,70 +948,6 @@ bbb.add( markAxisHeader );
 	{
 		return false;
 	}
-
-//	protected Action replaceDummyAction( int ID, Action dummyAction )
-//	{
-//		case MenuFactory.M_PROCESS:
-//			actionProcess.mimic( dummyAction );
-//			return actionProcess;
-//
-//		case MenuFactory.MI_PROCESS_AGAIN:
-//			actionProcessAgain.mimic( dummyAction );
-//			return actionProcessAgain;
-//
-//		case MenuFactory.MI_PROCESS_FADEIN:
-//			actionFadeIn.mimic( dummyAction );
-//			actionFadeIn.setEnabled( true );
-//			return actionFadeIn;
-//
-//		case MenuFactory.MI_PROCESS_FADEOUT:
-//			actionFadeOut.mimic( dummyAction );
-//			actionFadeOut.setEnabled( true );
-//			return actionFadeOut;
-//
-//		case MenuFactory.MI_PROCESS_GAIN:
-//			actionGain.mimic( dummyAction );
-//			actionGain.setEnabled( true );
-//			return actionGain;
-//
-//		case MenuFactory.MI_PROCESS_INVERT:
-//			actionInvert.mimic( dummyAction );
-//			actionInvert.setEnabled( true );
-//			return actionInvert;
-//
-//		case MenuFactory.MI_PROCESS_MIX:
-//			actionMix.mimic( dummyAction );
-//			actionMix.setEnabled( true );
-//			return actionMix;
-//
-//		case MenuFactory.MI_PROCESS_REVERSE:
-//			actionReverse.mimic( dummyAction );
-//			actionReverse.setEnabled( true );
-//			return actionReverse;
-//
-//		case MenuFactory.MI_PROCESS_ROTATECHANNELS:
-//			actionRotateChannels.mimic( dummyAction );
-//			actionRotateChannels.setEnabled( true );
-//			return actionRotateChannels;
-//
-////		case MenuFactory.MI_PROCESS_SILENCE:
-////			actionSilence.mimic( dummyAction );
-////			actionSilence.setEnabled( true );
-////			return actionSilence;
-////
-//		case MenuFactory.MI_PROCESS_FSC_NEEDLEHOLE:
-//			actionFScNeedlehole.mimic( dummyAction );
-//			actionFScNeedlehole.setEnabled( true );
-//			return actionFScNeedlehole;
-//
-//		case MenuFactory.MI_DEBUG_DUMPTRACK:
-//			actionDebugDump.mimic( dummyAction );
-//			actionDebugDump.setEnabled( true );
-//			return actionDebugDump;
-//		}
-//
-//		return dummyAction;
-//	}
 
 	public void setSRCEnabled( boolean onOff )
 	{
@@ -1112,6 +1059,9 @@ bbb.add( markAxisHeader );
 		actionSave.setEnabled( !writeProtected && doc.isDirty() );
 		setDirty( doc.isDirty() );
 		
+		final AudioFileInfoPalette infoBox = (AudioFileInfoPalette) app.getComponent( Main.COMP_AUDIOINFO );
+		if( infoBox != null ) infoBox.updateDocumentName( doc );
+		
 		if( writeProtected && !wpHaveWarned && doc.isDirty() ) {
 //			MutableIcon warnIcon = new MutableIcon( 128 );
 //			warnIcon.setID( MutableIcon.WRITE_PROTECTED );
@@ -1143,10 +1093,10 @@ bbb.add( markAxisHeader );
 
 	private void documentUpdate()
 	{
-		boolean					revalidate	= false;
+//		boolean					revalidate	= false;
 
-		final java.util.List	collChannelMeters;
-		PeakMeter[]			meters;
+		final List				collChannelMeters;
+		PeakMeter[]				meters;
 		AudioTrackRowHeader		chanHead;
 		AudioTrack				t;
 		int						oldChannels, newChannels;
@@ -1177,7 +1127,7 @@ bbb.add( markAxisHeader );
 				chanHead	= (AudioTrackRowHeader) collChannelHeaders.get( ch );
 				t			= (AudioTrack) chanHead.getTrack();
 				if( !doc.audioTracks.contains( t )) {
-					revalidate	= true;
+//					revalidate	= true;
 					chanHead	= (AudioTrackRowHeader) collChannelHeaders.remove( ch );
 					chanMeter	= (PeakMeter) collChannelMeters.remove( ch );
 					chanRuler	= (Axis) collChannelRulers.remove( ch );
@@ -1202,7 +1152,7 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 					if( chanHead.getTrack() == t ) continue newLp;
 				}
 				
-				revalidate = true;
+//				revalidate = true;
 
 				chanHead = new AudioTrackRowHeader( t, doc.tracks, doc.selectedTracks, doc.getUndoManager() );
 				collChannelHeaders.add( chanHead );
@@ -1223,7 +1173,7 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 				collChannelRulers.add( chanRuler );
 				rulersPanel.add( chanRuler, ch );
 
-				initStrip( chanRuler, chanMeter );
+//				initStrip( chanRuler, chanMeter );
 			}
 			
 			meters	= new PeakMeter[ collChannelMeters.size() ];
@@ -1239,7 +1189,7 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 //			doc.bird.releaseShared( Session.DOOR_TRACKS );
 //		}
 
-		if( revalidate ) {
+//		if( revalidate ) {
 //			metersPanel.makeCompactGrid();
 //metersPanel.revalidate();
 //			waveHeaderView.makeCompactGrid();
@@ -1247,24 +1197,29 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 //			GUIUtil.makeCompactSpringGrid( ggTrackPanel, newChannels, 1, 0, 0, 0, 1 ); // initX, initY, padX, padY
 //			waveHeaderView.revalidate();
 //			ggTrackPanel.revalidate();
-		}
+//		}
 
 		updateOverviews( false, true );
 	}
 
-	private void initStrip( Axis chanRuler, PeakMeter chanMeter )
-	{
+//	private void initStrip( Axis chanRuler, PeakMeter chanMeter )
+//	{
 //		final Preferences prefs = app.getUserPrefs();
 //	
 //		chanMeter.setVisible( prefs.getBoolean( PrefsUtil.KEY_VIEWCHANMETERS, false ));
 //		chanRuler.setVisible( prefs.getBoolean( PrefsUtil.KEY_VIEWVERTICALRULERS, false ));
-	}
+//	}
 	
 	public ProcessingThread closeDocument( boolean force, Flag wasClosed )
 	{
 		doc.getTransport().stop();
 		if( !force ) {
-			final ProcessingThread pt = confirmUnsaved( getResourceString( "menuClose" ), wasClosed );
+			final String name = getResourceString( "menuClose" );
+			if( !confirmCancel( name )) {
+				wasClosed.set( false );
+				return null;
+			}
+			final ProcessingThread pt = confirmUnsaved( name, wasClosed );
 			if( pt != null ) {
 				pt.addListener( new ProcessingThread.Listener() {
 					public void processStarted( ProcessingThread.Event e ) {}
@@ -1384,15 +1339,17 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 			return null;
 		}
 		
-//		final de.sciss.app.Application	app		= AbstractApplication.getApplication();
-		final String[]					options	= { getResourceString( "buttonSave" ),
-													getResourceString( "buttonCancel" ),
-													getResourceString( "buttonDontSave" ) };
-		int								choice;
-//		ProcessingThread				proc;
-		AudioFileDescr					displayAFD	= doc.getDisplayDescr();
-		AudioFileDescr[]				afds		= doc.getDescr();
-		String							name;
+		final Object[]			options	= { getResourceString( "buttonSave" ),
+											getResourceString( "buttonCancel" ),
+											getResourceString( "buttonDontSave" )};
+		final int				choice;
+		final AudioFileDescr	displayAFD	= doc.getDisplayDescr();
+		final String			name;
+		final JOptionPane		op;
+		final JDialog 			d;
+		final JRootPane			rp;
+		final Flag				dont		= new Flag( false );
+		AudioFileDescr[]		afds		= doc.getDescr();
 		
 		if( displayAFD.file == null ) {
 			name = getResourceString( "frameUntitled" );
@@ -1400,9 +1357,41 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 			name = displayAFD.file.getName();
 		}
 		
-		choice = JOptionPane.showOptionDialog( getWindow(), name + " :\n" + getResourceString( "optionDlgUnsaved" ),
-											   actionName, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null,
-											   options, options[1] );
+//		choice = JOptionPane.showOptionDialog( getWindow(), name + " :\n" + getResourceString( "optionDlgUnsaved" ),
+//											   actionName, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null,
+//											   options, options[1] );
+		op = new JOptionPane( name + " :\n" + getResourceString( "optionDlgUnsaved" ),
+		                      JOptionPane.WARNING_MESSAGE, JOptionPane.YES_NO_CANCEL_OPTION, null,
+		                      options, options[ 1 ]);
+		d = op.createDialog( getWindow(), actionName );
+		rp = d.getRootPane();
+		if( rp != null ) {
+			rp.getInputMap( JComponent.WHEN_IN_FOCUSED_WINDOW ).put(
+			  KeyStroke.getKeyStroke( KeyEvent.VK_D, BasicMenuFactory.MENU_SHORTCUT ), "dont" );
+			rp.getActionMap().put( "dont", new AbstractAction() {
+				public void actionPerformed( ActionEvent e )
+				{
+					dont.set(  true );
+					d.dispose();
+				}
+			});
+		}
+		d.setVisible( true );
+		if( dont.isSet() ) {
+			choice = 2;
+		} else {
+			final Object value = op.getValue();
+			if( (value == null) || (value == options[ 1 ])) {
+				choice = 1;
+			} else if( value == options[ 0 ]) {
+				choice = 0;
+			} else if( value == options[ 2 ]) {
+				choice = 2;
+			} else {
+				choice = -1;	// throws assertion error in switch block
+			}
+		}
+
 		switch( choice ) {
 		case JOptionPane.CLOSED_OPTION:
 		case 1:	// cancel
@@ -1426,6 +1415,40 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 		default:
 			assert false : choice;
 			return null;
+		}
+	}
+
+	private boolean confirmCancel( String actionName )
+	{
+		if( doc.checkProcess( 50 )) {
+			return true;
+		}
+		
+		final int				choice;
+		final AudioFileDescr	displayAFD	= doc.getDisplayDescr();
+		final String			name;
+		
+		if( displayAFD.file == null ) {
+			name = getResourceString( "frameUntitled" );
+		} else {
+			name = displayAFD.file.getName();
+		}
+		
+		choice = JOptionPane.showConfirmDialog( getWindow(), name + " :\n" + getResourceString( "optionDlgProcessing" ) +
+		                                        "\n(" + doc.getProcessName() + ")?",
+											    actionName, JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE );
+		switch( choice ) {
+		case JOptionPane.CLOSED_OPTION:
+		case JOptionPane.NO_OPTION:
+			return false;
+			
+		case JOptionPane.YES_OPTION:	// abort
+			doc.cancelProcess( true );
+			return true;
+			
+		default:
+			assert false : choice;
+			return false;
 		}
 	}
 
@@ -1951,7 +1974,7 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 	
 // ---------------- internal action classes ---------------- 
 
-	private class actionDebugDumpClass
+	private class ActionDebugDump
 	extends MenuAction
 	{
 		public void actionPerformed( ActionEvent e )
@@ -1969,7 +1992,7 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 		}
 	}
 
-	private class actionDebugVerifyClass
+	private class ActionDebugVerify
 	extends MenuAction
 	{
 		public void actionPerformed( ActionEvent e )
@@ -1981,7 +2004,7 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 		}
 	}
 
-	private class actionNewFromSelClass
+	private class ActionNewFromSel
 	extends MenuAction
 	{
 		public void actionPerformed( ActionEvent e )
@@ -2028,7 +2051,7 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 	} // actionNewFromSelClass
 
 	// action for the Save-Session menu item
-	private class actionCloseClass
+	private class ActionClose
 	extends MenuAction
 	{
 		public void actionPerformed( ActionEvent e )
@@ -2044,7 +2067,7 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 	}
 
 	// action for the Save-Session menu item
-	private class actionSaveClass
+	private class ActionSave
 	extends MenuAction
 	{
 		/**
@@ -2112,14 +2135,14 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 	}
 	
 	// action for the Save-Session-As menu item
-	private class actionSaveAsClass
+	private class ActionSaveAs
 	extends MenuAction
 	{
 		private final boolean	asCopy;
 		private final boolean	selection;
 		private final Flag		openAfterSave;
 	
-		private actionSaveAsClass( boolean asCopy, boolean selection )
+		private ActionSaveAs( boolean asCopy, boolean selection )
 		{
 			if( selection && !asCopy ) throw new IllegalArgumentException();
 
@@ -2261,7 +2284,7 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 //		}
 //	}
 
-	private class actionSelectAllClass
+	private class ActionSelectAll
 	extends MenuAction
 	{
 		public void actionPerformed( ActionEvent e )
@@ -2270,7 +2293,7 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 		}
 	}
 
-	private class actionInsertRecClass
+	private class ActionInsertRec
 	extends MenuAction
 	{
 		public void actionPerformed( ActionEvent e )
@@ -2361,18 +2384,18 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 		}
 	} // class actionInsertRecClass
 	
-	private class actionProcessClass
+	private class ActionProcess
 	extends MenuAction
 	{
 		public void actionPerformed( ActionEvent e ) {}
 	}
 
-	private class actionPlugInClass
+	private class ActionPlugIn
 	extends MenuAction
 	{
 		private final String plugInClassName;
 		
-		private actionPlugInClass( String plugInClassName )
+		private ActionPlugIn( String plugInClassName )
 		{
 			this.plugInClassName	= plugInClassName;
 		}
@@ -2389,17 +2412,27 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 		}
 	}
 
-	private class actionProcessAgainClass
+	private class ActionProcessAgain
 	extends MenuAction
 	{
 		private String plugInClassName = null;
 	
+		private ActionProcessAgain()
+		{
+			super();
+			setEnabled( false );
+		}
+
 		public void actionPerformed( ActionEvent e )
 		{
-			final FilterDialog filterDlg = (FilterDialog) app.getComponent( Main.COMP_FILTER );
-			if( (filterDlg != null) && (plugInClassName != null) ) {
-				filterDlg.process( plugInClassName, doc, false, true );
+			if( plugInClassName == null ) return;
+			
+			FilterDialog filterDlg = (FilterDialog) app.getComponent( Main.COMP_FILTER );
+			
+			if( filterDlg == null ) {
+				filterDlg = new FilterDialog();
 			}
+			filterDlg.process( plugInClassName, doc, false, true );
 		}
 		
 		private void setPlugIn( RenderPlugIn plugIn )
@@ -2420,25 +2453,7 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 		}
 	}
 
-//	private class actionShowWindowClass
-//	extends MenuAction	// SyncedMenuAction
-//	{
-//		private actionShowWindowClass()
-//		{
-//			super( null, null );
-//		}
-//
-//		public void actionPerformed( ActionEvent e )
-//		{
-////			boolean state   = ((AbstractButton) e.getSource()).isSelected();
-////
-////			setSelected( true );
-//			enc_this.setVisible( true );
-//			enc_this.toFront();
-//		}
-//	}
-
-	private class actionAudioInfoClass
+	private class ActionAudioInfo
 	extends MenuAction
 	{
 		/**
@@ -2456,12 +2471,12 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 		}
 	}
 
-	private class actionRevealFileClass
+	private class ActionRevealFile
 	extends MenuAction
 	{
 		private File f;
 	
-		private actionRevealFileClass()
+		private ActionRevealFile()
 		{
 			super( "Reveal File in Finder" );
 			setFile( null );
@@ -2540,7 +2555,7 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 	 *  Increase or decrease the height
 	 *  of the rows of the selected transmitters
 	 */
-	private class actionVerticalZoomClass
+	private class ActionVerticalZoom
 	extends AbstractAction
 	{
 		private final float factor;
@@ -2549,7 +2564,7 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 		 *  @param  factor  factors > 1 increase the row height,
 		 *					factors < 1 decrease.
 		 */
-		private actionVerticalZoomClass( float factor )
+		private ActionVerticalZoom( float factor )
 		{
 			super();
 			this.factor = factor;
@@ -2582,7 +2597,7 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 	 *  Increase or decrease the width
 	 *  of the visible time span
 	 */
-	private class actionSpanWidthClass
+	private class ActionSpanWidth
 	extends AbstractAction
 	{
 		private final float factor;
@@ -2592,7 +2607,7 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 		 *					factors < 1 decrease (zoom in).
 		 *					special value 0.0 means zoom to sample level
 		 */
-		private actionSpanWidthClass( float factor )
+		private ActionSpanWidth( float factor )
 		{
 			super();
 			this.factor = factor;
@@ -2647,12 +2662,12 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 	private static final int SCROLL_FIT_TO_SELECTION= 3;
 	private static final int SCROLL_ENTIRE_SESSION	= 4;
 
-	private class actionScrollClass
+	private class ActionScroll
 	extends AbstractAction
 	{
 		private final int mode;
 	
-		private actionScrollClass( int mode )
+		private ActionScroll( int mode )
 		{
 			super();
 			
@@ -2743,12 +2758,12 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 	private static final int SELECT_TO_SESSION_START	= 0;
 	private static final int SELECT_TO_SESSION_END		= 1;
 
-	private class actionSelectClass
+	private class ActionSelect
 	extends AbstractAction
 	{
 		private final int mode;
 	
-		private actionSelectClass( int mode )
+		private ActionSelect( int mode )
 		{
 			super();
 			
@@ -2793,12 +2808,12 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 	private static final int EXTEND_NEXT_REGION	= 2;
 	private static final int EXTEND_PREV_REGION	= 3;
 
-	private class actionSelectRegionClass
+	private class ActionSelectRegion
 	extends AbstractAction
 	{
 		private final int mode;
 	
-		private actionSelectRegionClass( int mode )
+		private ActionSelectRegion( int mode )
 		{
 			super();
 			
@@ -2912,7 +2927,7 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 		}
 	} // class actionSelectRegionClass
 		
-	private class actionDropMarkerClass
+	private class ActionDropMarker
 	extends AbstractAction
 	{
 		public void actionPerformed( ActionEvent e )

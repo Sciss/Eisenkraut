@@ -29,47 +29,64 @@
 
 package de.sciss.eisenkraut.gui;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.geom.*;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.event.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Insets;
+import java.awt.Paint;
+import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Arc2D;
+import java.awt.geom.Area;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
+import javax.swing.event.MouseInputAdapter;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.56, 05-May-06
+ *  @version	0.70, 07-Dec-07
  */
  public class PanoramaPanel
 extends JComponent
 {
-	private final AffineTransform	at			= new AffineTransform();
-	private static final Insets		insets		= new Insets( 1, 1, 1, 1 );
-	private static final Shape		shpCtrlIn	= new Ellipse2D.Double( -2, -2, 5, 5 );
+	private final AffineTransform	at				= new AffineTransform();
+	private static final Insets		insets			= new Insets( 1, 1, 1, 1 );
+	private static final Shape		shpCtrlIn		= new Ellipse2D.Double( -2, -2, 5, 5 );
 	private static final Area		shpCtrlOut;
-	private static final Paint		pntCtrlIn	= new Color( 0x00, 0x00, 0x00, 0x7F );
-	private static final Paint		pntCtrlOut	= new Color( 0x00, 0x00, 0x00, 0x3F );
-	private static final Paint		pntCtrlOutS	= new Color( 0x00, 0x00, 0xFF, 0x7F );
+	private static final Paint		pntCtrlIn		= new Color( 0x00, 0x00, 0x00, 0x7F );
+	private static final Paint		pntCtrlOut		= new Color( 0x00, 0x00, 0x00, 0x3F );
+	private static final Paint		pntCtrlOutS		= new Color( 0x00, 0x00, 0xFF, 0x7F );
 
-	private final java.util.List	outlines		= new ArrayList();
-	private final java.util.List	tOutlines		= new ArrayList();
-	private final java.util.List	outlinePaints	= new ArrayList();
+	private final List				outlines		= new ArrayList();
+	private final List				tOutlines		= new ArrayList();
+	private final List				outlinePaints	= new ArrayList();
 
-	private final java.util.List	areas			= new ArrayList();
-	private final java.util.List	tAreas			= new ArrayList();
-	private final java.util.List	areaPaints		= new ArrayList();
+	private final List				areas			= new ArrayList();
+	private final List				tAreas			= new ArrayList();
+	private final List				areaPaints		= new ArrayList();
 
-	private final Point2D	ctrlPt	= new Point2D.Double( 0.0, 0.75 );
+	private final Point2D			ctrlPt			= new Point2D.Double( 0.0, 0.75 );
 
-	private double recentRadius	= -1;
-	private boolean recalc		= true;
-	private boolean isDragging	= false;
+	private double					recentRadius	= -1;
+	private boolean					recalc			= true;
+	private boolean					isDragging		= false;
 	
-	private final double startAngle, deltaAngle;
-	private final int numSpots;
-	private double azi, spread;
+	private final double			startAngle, deltaAngle;
+	private final int				numSpots;
+	private double					azi, spread;
 	
-	private static final java.util.List	collListeners	= new ArrayList();
+	private static final List		collListeners	= new ArrayList();
 	
 	static {
 		shpCtrlOut		   = new Area( new Ellipse2D.Double( -7, -7, 15, 15 ));

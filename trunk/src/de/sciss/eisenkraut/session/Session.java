@@ -61,19 +61,27 @@ import de.sciss.eisenkraut.timeline.AudioTracks;
 import de.sciss.eisenkraut.timeline.MarkerTrack;
 import de.sciss.eisenkraut.timeline.Timeline;
 import de.sciss.eisenkraut.timeline.Track;
+import de.sciss.gui.GUIUtil;
+import de.sciss.gui.MenuAction;
+import de.sciss.gui.ParamField;
+import de.sciss.gui.SpringPanel;
+import de.sciss.io.AudioFile;
+import de.sciss.io.AudioFileDescr;
+import de.sciss.io.Span;
+import de.sciss.timebased.Trail;
+import de.sciss.util.DefaultUnitTranslator;
+import de.sciss.util.Flag;
+import de.sciss.util.Param;
+import de.sciss.util.ParamSpace;
 
 import de.sciss.app.AbstractApplication;
 import de.sciss.app.AbstractCompoundEdit;
 import de.sciss.common.BasicDocument;
 import de.sciss.common.ProcessingThread;
-import de.sciss.gui.*;
-import de.sciss.io.*;
-import de.sciss.timebased.*;
-import de.sciss.util.*;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 12-Nov-07
+ *  @version	0.70, 07-Dec-07
  *
  *	@todo		try get rid of the GUI stuff in here
  */
@@ -126,13 +134,13 @@ implements OSCRouter
 	
 	// --- actions ---
 
-	private final actionSaveClass			actionSave;
-	private final actionCutClass			actionCut;
-	private final actionCopyClass			actionCopy;
-	private final actionPasteClass			actionPaste;
-	private final actionDeleteClass			actionDelete;
-	private final actionSilenceClass		actionSilence;
-	private final actionTrimClass			actionTrim;
+	private final ActionSave			actionSave;
+	private final ActionCut			actionCut;
+	private final ActionCopy			actionCopy;
+	private final ActionPaste			actionPaste;
+	private final ActionDelete			actionDelete;
+	private final ActionSilence		actionSilence;
+	private final ActionTrim			actionTrim;
 
 	// ---  ---
 	private final UndoManager				undo			= new UndoManager( this );
@@ -198,13 +206,13 @@ implements OSCRouter
 		
 		audioTracks			= new AudioTracks( this );
 
-		actionSave			= new actionSaveClass();
-		actionCut			= new actionCutClass();
-		actionCopy			= new actionCopyClass();
-		actionPaste			= new actionPasteClass();
-		actionDelete		= new actionDeleteClass();
-		actionSilence		= new actionSilenceClass();
-		actionTrim			= new actionTrimClass();
+		actionSave			= new ActionSave();
+		actionCut			= new ActionCut();
+		actionCopy			= new ActionCopy();
+		actionPaste			= new ActionPaste();
+		actionDelete		= new ActionDelete();
+		actionSilence		= new ActionSilence();
+		actionTrim			= new ActionTrim();
 
 		timeline.setRate( this, this.displayAFD.rate );
 		timeline.setLength( this, this.displayAFD.length );
@@ -253,6 +261,20 @@ implements OSCRouter
 		pt.sync( timeout );
 //System.out.println( "sync done" );
 		return( (pt == null) || !pt.isRunning() );
+	}
+	
+	public void cancelProcess( boolean sync )
+	{
+		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
+		if( pt == null ) return;
+		pt.cancel(  sync );
+	}
+	
+	public String getProcessName()
+	{
+		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
+		if( pt == null ) return null;
+		return pt.getName();
 	}
 	
 	/**
@@ -908,7 +930,7 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 	
 // ------------------ internal classes ------------------
 	
-	private class actionSaveClass
+	private class ActionSave
 	implements ProcessingThread.Client
 	{
 		/**
@@ -1108,7 +1130,7 @@ tryRename:					  {
 		public void processCancel( ProcessingThread context ) {}
 	}
 	
-	private class actionCutClass
+	private class ActionCut
 	extends MenuAction
 	{
 		public void actionPerformed( ActionEvent e )
@@ -1133,7 +1155,7 @@ tryRename:					  {
 		}
 	}
 
-	private class actionCopyClass
+	private class ActionCopy
 	extends MenuAction
 	{
 		public void actionPerformed( ActionEvent e )
@@ -1176,7 +1198,7 @@ tryRename:					  {
 		}
 	}
 	
-	private class actionPasteClass
+	private class ActionPaste
 	extends MenuAction
 	implements ProcessingThread.Client
 	{
@@ -1442,7 +1464,7 @@ tryRename:					  {
 	 *	@todo	when a cutted region spans entire view,
 	 *			selecting undo results in empty visible span
 	 */
-	private class actionDeleteClass
+	private class ActionDelete
 	extends MenuAction
 	implements ProcessingThread.Client
 	{
@@ -1641,7 +1663,7 @@ tryRename:					  {
 		public void processCancel( ProcessingThread context ) {}
 	} // class actionDeleteClass
 
-	private class actionTrimClass
+	private class ActionTrim
 	extends MenuAction
 	{
 		// performs inplace (no runnable processing) coz it's always fast
@@ -1703,7 +1725,7 @@ tryRename:					  {
 	 *	@todo	when edit mode != EDIT_INSERT, audio tracks are cleared which should be bypassed and vice versa
 	 *	@todo	waveform display not automatically updated when edit mode != EDIT_INSERT
 	 */
-	private class actionSilenceClass
+	private class ActionSilence
 	extends MenuAction
 	implements ProcessingThread.Client
 	{

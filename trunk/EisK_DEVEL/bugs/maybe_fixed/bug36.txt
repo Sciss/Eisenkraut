@@ -1,3 +1,0 @@
-(FIXED?)
-
-Clicking just 1 pixel left to a marker will open editor with _previous_ marker

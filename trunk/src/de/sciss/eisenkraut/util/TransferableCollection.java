@@ -29,9 +29,12 @@
 
 package de.sciss.eisenkraut.util;
 
-import java.awt.datatransfer.*;
-import java.io.*;
-import java.util.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
+import java.util.List;
+import java.util.Vector;
 
 /**
  *  A special transferable object which
@@ -51,7 +54,7 @@ import java.util.*;
  *  provide a requested data format.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.61, 09-Aug-04
+ *  @version	0.70, 07-Dec-07
  */
 public class TransferableCollection
 implements Transferable
@@ -60,7 +63,7 @@ implements Transferable
 	 *  The flavor used to
 	 *  identify a <code>TransferableCollection</code>
 	 */
-	public static final DataFlavor collectionFlavor = new DataFlavor( java.util.List.class, null );
+	public static final DataFlavor collectionFlavor = new DataFlavor( List.class, null );
 
 	private final Vector		collTransferables;
 	private final DataFlavor[]	collFlavors;
@@ -80,7 +83,7 @@ implements Transferable
 	 *										which does not implement the Transferable
 	 *										interface
 	 */
-	public TransferableCollection( java.util.List coll )
+	public TransferableCollection( List coll )
 	{
 		collTransferables = new Vector();
 		
@@ -160,9 +163,8 @@ collFlavLp:	for( j = 0; j < flavorArray.length; j++ ) {
 		if( flavor.equals( collectionFlavor )) return new Vector( collTransferables );
 	
 		Object o;
-		int i;
 	
-		for( i = 0; i < collTransferables.size(); i++ ) {
+		for( int i = 0; i < collTransferables.size(); i++ ) {
 			o = collTransferables.get( i );
 			if( o instanceof Transferable ) {
 				if( ((Transferable) o).isDataFlavorSupported( flavor )) {

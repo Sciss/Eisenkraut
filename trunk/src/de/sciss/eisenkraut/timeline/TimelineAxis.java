@@ -32,14 +32,18 @@
 
 package de.sciss.eisenkraut.timeline;
 
-import java.awt.event.*;
-import java.util.prefs.*;
-import javax.swing.undo.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.util.prefs.PreferenceChangeEvent;
 
-import de.sciss.eisenkraut.edit.*;
-import de.sciss.eisenkraut.gui.*;
-import de.sciss.eisenkraut.session.*;
-import de.sciss.eisenkraut.util.*;
+import javax.swing.undo.CompoundEdit;
+import javax.swing.undo.UndoableEdit;
+
+import de.sciss.eisenkraut.edit.TimelineVisualEdit;
+import de.sciss.eisenkraut.gui.Axis;
+import de.sciss.eisenkraut.session.Session;
+import de.sciss.eisenkraut.util.PrefsUtil;
 import de.sciss.gui.ComponentHost;
 import de.sciss.gui.VectorSpace;
 
@@ -60,7 +64,7 @@ import de.sciss.io.Span;
  *  timeline.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 18-Feb-06
+ *  @version	0.70, 07-Dec-07
  */
 public class TimelineAxis
 extends Axis

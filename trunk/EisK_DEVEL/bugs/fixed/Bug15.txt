@@ -1,2 +1,0 @@
-== FIXED ==
-Resizing doc frame: selection rectangles not updated

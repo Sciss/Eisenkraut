@@ -1,3 +1,0 @@
-Paste w/ blending : fadein funzt nit
-	problem scheint "this trail" zu sein, der paste inhalt wird gefaded
-

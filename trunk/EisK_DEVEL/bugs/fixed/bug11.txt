@@ -1,2 +1,0 @@
-== FIXED ==
-insert recording --> routing config is listed by logical name not human readable name!!

@@ -107,7 +107,7 @@ import de.sciss.eisenkraut.session.Session;
 import de.sciss.eisenkraut.util.PrefsUtil;
 
 /**
- *	@version	0.70, 09-Jun-07
+ *	@version	0.70, 07-Dec-07
  *	@author		Hanns Holger Rutz
  */
 public class RecorderDialog
@@ -129,7 +129,7 @@ implements Constants, ServerListener, NodeListener, OSCRouter // , MeterListener
 	private final Server					server;
 	private final SuperColliderPlayer		player;
 	
-//	private final java.util.List			collMeters			= new ArrayList();
+//	private final List						collMeters			= new ArrayList();
 //	private float[]							meterValues			= new float[ 0 ];
 	private final actionRecordClass			actionRecord;
 	private final actionStopClass			actionStop;

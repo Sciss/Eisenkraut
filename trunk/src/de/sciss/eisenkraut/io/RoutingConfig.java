@@ -30,11 +30,11 @@
 
 package de.sciss.eisenkraut.io;
 
-import java.util.*;
-import java.util.prefs.*;
+import java.util.StringTokenizer;
+import java.util.prefs.Preferences;
 
 /**
- *	@version	0.70, 29-Oct-06
+ *	@version	0.70, 07-Dec-07
  *	@author		Hanns Holger Rutz
  */
 public class RoutingConfig

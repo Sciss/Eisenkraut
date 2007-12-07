@@ -30,7 +30,7 @@
 
 package de.sciss.gui;
 
-import java.awt.geom.*;
+import java.awt.geom.Point2D;
 
 public class VectorSpace
 {

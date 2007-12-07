@@ -29,15 +29,22 @@
 
 package de.sciss.eisenkraut.gui;
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
+import java.awt.AWTEventMulticaster;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+
+import javax.swing.Icon;
+import javax.swing.JComponent;
 
 import de.sciss.gui.TiledImage;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 04-May-06
+ *  @version	0.70, 07-Dec-07
  */
 public class LockButton
 extends JComponent

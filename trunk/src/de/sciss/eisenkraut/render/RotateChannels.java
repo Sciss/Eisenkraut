@@ -29,17 +29,22 @@
 
 package de.sciss.eisenkraut.render;
 
-import java.awt.*;
+import java.awt.BorderLayout;
 import java.io.IOException;
-import javax.swing.*;
 
-import de.sciss.app.*;
-import de.sciss.gui.*;
-import de.sciss.util.*;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+import de.sciss.app.AbstractApplication;
+import de.sciss.app.Application;
+import de.sciss.gui.PrefParamField;
+import de.sciss.util.Param;
+import de.sciss.util.ParamSpace;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 26-Sep-07
+ *  @version	0.70, 07-Dec-07
  */
 public class RotateChannels
 extends AbstractRenderPlugIn

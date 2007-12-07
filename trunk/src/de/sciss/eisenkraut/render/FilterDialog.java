@@ -47,18 +47,20 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 
-import de.sciss.eisenkraut.*;
-import de.sciss.eisenkraut.edit.*;
-import de.sciss.eisenkraut.io.*;
-import de.sciss.eisenkraut.session.*;
-import de.sciss.eisenkraut.timeline.*;
-import de.sciss.eisenkraut.util.*;
-
 import de.sciss.app.AbstractApplication;
 import de.sciss.app.Application;
 import de.sciss.app.AbstractCompoundEdit;
 import de.sciss.common.AppWindow;
 import de.sciss.common.ProcessingThread;
+import de.sciss.eisenkraut.Main;
+import de.sciss.eisenkraut.edit.BasicCompoundEdit;
+import de.sciss.eisenkraut.io.AudioStake;
+import de.sciss.eisenkraut.io.AudioTrail;
+import de.sciss.eisenkraut.io.MarkerTrail;
+import de.sciss.eisenkraut.session.Session;
+import de.sciss.eisenkraut.timeline.AudioTracks;
+import de.sciss.eisenkraut.timeline.Track;
+import de.sciss.eisenkraut.util.PrefsUtil;
 import de.sciss.gui.AbstractWindowHandler;
 import de.sciss.gui.CoverGrowBox;
 import de.sciss.gui.GUIUtil;
@@ -67,32 +69,17 @@ import de.sciss.io.Span;
 import de.sciss.util.Flag;
 
 /**
- *  The dialog for filtering trajectory data.
- *	The GUI is presented through
- *	the superclass. This class handles
- *	creation and validation of the render context
- *	and provides simple forwarding
- *	for the <code>invokeProducer...</code> methods.
- *	<p>
- *	Since transformed trajectory data needs to
- *	re-inserted in the session, this class also
- *	implements the <code>RenderConsumer/code> which
- *	will deal with this issue.
- *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 12-Nov-07
+ *  @version	0.70, 07-Dec-07
  *
  *	@todo		an option to render the transformed data
  *				into the clipboard.
  *	@todo		support of variable output time span
- *	@todo		change in selected transmitters is not
- *				recognized unless the dialog is closed and re-opened
  */
 public class FilterDialog
 extends AppWindow
-//extends JDialog
 implements	RenderConsumer, RenderHost,
-			ProcessingThread.Client // , TimelineListener // , DynamicListening
+			ProcessingThread.Client
 {
 	/*
 	 *  Session document reference
@@ -122,14 +109,6 @@ implements	RenderConsumer, RenderHost,
 
 	private float	progress;
 
-//	private final SessionCollectionListener receiversListener			= new SessionCollectionListener( false );
-//	private final SessionCollectionListener selectedReceiversListener	= new SessionCollectionListener( true );
-//	private final SessionCollectionListener transmittersListener		= receiversListener;
-//	private final SessionCollectionListener selectedTransmittersListener= selectedReceiversListener;
-
-//	private static final Vector collProducerTypes   = new Vector();
-//	private static final Vector collEmpty			= new Vector();
-
 	// context options map
 	private static final String	KEY_CONSC	= "consc";
 
@@ -138,18 +117,17 @@ implements	RenderConsumer, RenderHost,
 	 */
 	public FilterDialog()
 	{
-//		super( (JFrame) null, true );	// modal
-//		super( (JFrame) null, false );	// non-modal
 		super( SUPPORT );
 		
-//      HelpGlassPane.setHelp( this.getRootPane(), "FilterDialog" );
-
 		setLocationRelativeTo( null );
-
-//		new DynamicAncestorAdapter( this ).addTo( getRootPane() );
 
 		init();
 		AbstractApplication.getApplication().addComponent( Main.COMP_FILTER, this );
+	}
+	
+	protected boolean restoreVisibility()
+	{
+		return false;
 	}
 	
 	public void dispose()
@@ -169,7 +147,7 @@ implements	RenderConsumer, RenderHost,
 			if( context == null ) return;
 			if( (!blockDisplay && plugIn.shouldDisplayParameters()) ||
 				(forceDisplay && plugIn.hasUserParameters()) ) {
-				
+
 				// display settings
 				if( !guiCreated ) createGUI();
 				ggHelp.setHelpFile( plugInClassName.substring( plugInClassName.lastIndexOf( '.' ) + 1 ));
@@ -230,9 +208,9 @@ implements	RenderConsumer, RenderHost,
 	{
 		JPanel		bottomPanel;
 
-		actionClose		= new actionCloseClass(  getResourceString( "buttonClose" ));
+		actionClose		= new ActionClose(  getResourceString( "buttonClose" ));
 //		actionCancel	= new actionCancelClass( getResourceString( "buttonCancel" ));
-		actionRender	= new actionRenderClass( getResourceString( "buttonRender" ));
+		actionRender	= new ActionRender( getResourceString( "buttonRender" ));
 		
 		bottomPanel		= new JPanel( new FlowLayout( FlowLayout.TRAILING, 4, 2 ));
 //		bottomPanel.setLayout( new BorderLayout() );
@@ -250,7 +228,7 @@ implements	RenderConsumer, RenderHost,
 		return bottomPanel;
 	}
 
-//	protected java.util.List getProducerTypes()
+//	protected List getProducerTypes()
 //	{
 //		if( collProducerTypes.isEmpty() ) {
 //			Hashtable h;
@@ -451,6 +429,13 @@ consc.as = at.alloc( source.context.getTimeSpan() );
 		}
 //		mte.continueWrite( consc.bs, source.blockBuf, source.blockBufOff, source.blockBufLen );
 consc.as.writeFrames( source.audioBlockBuf, source.audioBlockBufOff, source.blockSpan );
+//float test = 0f;
+//for( int i = source.audioBlockBufOff, k = source.audioBlockBufOff + (int) source.blockSpan.getLength(); i < k; i++ ) {
+//	for( int j = 0; j < source.audioBlockBuf.length; j++ ) {
+//		test = Math.max( test, Math.abs( source.audioBlockBuf[ j ][ i ]));
+//	}
+//}
+//System.out.println( "in " + source.blockSpan + " maxAmp is " + test );
 
 		consc.framesWritten += source.audioBlockBufLen;
 
@@ -906,10 +891,10 @@ at.readFrames( inBuf, inOff, source.blockSpan );
 
 // ---------------- Action objects ---------------- 
 
-	private class actionCloseClass
+	private class ActionClose
 	extends AbstractAction
 	{
-		private actionCloseClass( String text )
+		private ActionClose( String text )
 		{
 			super( text );
 		}
@@ -920,9 +905,9 @@ at.readFrames( inBuf, inOff, source.blockSpan );
 		}
 	}
 
-	private class actionRenderClass extends AbstractAction
+	private class ActionRender extends AbstractAction
 	{
-		private actionRenderClass( String text )
+		private ActionRender( String text )
 		{
 			super( text );
 		}
@@ -952,7 +937,7 @@ at.readFrames( inBuf, inOff, source.blockSpan );
 	{
 		private Session						doc;
 		private RenderPlugIn				plugIn;
-		private AbstractCompoundEdit			edit;
+		private AbstractCompoundEdit		edit;
 //		private BlendContext				bc;
 		private float						progOff, progWeight;
 		private long						framesWritten;

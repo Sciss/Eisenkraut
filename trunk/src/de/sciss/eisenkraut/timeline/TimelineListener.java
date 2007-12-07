@@ -29,14 +29,14 @@
 
 package de.sciss.eisenkraut.timeline;
 
-import java.util.*;
+import java.util.EventListener;
 
 /**
  *  Interface for listening
  *  to changes of the session's timeline
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.56, 15-Sep-05
+ *  @version	0.70, 07-Dec-07
  *
  *  @see		Timeline#addTimelineListener( TimelineListener )
  *  @see		TimelineEvent

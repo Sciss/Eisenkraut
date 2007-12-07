@@ -30,34 +30,24 @@
 
 package de.sciss.eisenkraut.timeline;
 
-//import java.awt.Component;
-//import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-//import java.util.prefs.BackingStoreException;
-//import java.util.prefs.NodeChangeEvent;
-//import java.util.prefs.NodeChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
-//import javax.swing.ComboBoxEditor;
-//import javax.swing.ComboBoxModel;
-//import javax.swing.JComboBox;
-//import javax.swing.JList;
 import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
-//import javax.swing.ListCellRenderer;
-//import javax.swing.plaf.basic.BasicComboBoxRenderer;
-//import javax.swing.event.ListDataEvent;
-//import javax.swing.event.ListDataListener;
-
-import de.sciss.eisenkraut.gui.*;
-import de.sciss.eisenkraut.session.*;
 
 import de.sciss.app.AbstractApplication;
 
+import de.sciss.eisenkraut.gui.BlendingAction;
+import de.sciss.eisenkraut.gui.CatchAction;
+import de.sciss.eisenkraut.gui.EditModeAction;
+import de.sciss.eisenkraut.gui.ToolAction;
+import de.sciss.eisenkraut.gui.ToolBar;
+import de.sciss.eisenkraut.session.Session;
 import de.sciss.gui.GUIUtil;
 
 import de.sciss.util.Disposable;
@@ -70,7 +60,7 @@ import de.sciss.util.Disposable;
  *	the blending option.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 13-Jul-06
+ *  @version	0.70, 07-Dec-07
  */
 public class TimelineToolBar
 extends ToolBar
@@ -93,7 +83,6 @@ implements Disposable
 		final EditModeAction	actionEditMode;
 		final AbstractButton	button;
 		ToolAction				toolAction;
-//		Icon[]					icons;
 		JToggleButton			toggle;
 		ButtonGroup				bg;
 		Enumeration				en;
@@ -124,23 +113,23 @@ GUIUtil.createKeyAction( toggle, KeyStroke.getKeyStroke( KeyEvent.VK_F1 + i, 0 )
   		addToggleButton( toggle, 0 );
 		mapToolButtons.put( new Integer( toolAction.getID() ), toggle );
         
-		toolAction		= new ToolAction( ToolAction.LINE );
-        toggle			= new JToggleButton( toolAction );
-		toolAction.setIcons( toggle );
-		GUIUtil.createKeyAction( toggle, KeyStroke.getKeyStroke( KeyEvent.VK_F6, 0 ));
-//        HelpGlassPane.setHelp( toggle, "TimelineToolLine" );
-toolAction.setEnabled( false );	// XXX not yet implemented
-  		addToggleButton( toggle, 0 );
-		mapToolButtons.put( new Integer( toolAction.getID() ), toggle );
-
-		toolAction		= new ToolAction( ToolAction.PENCIL );
-        toggle			= new JToggleButton( toolAction );
-		toolAction.setIcons( toggle );
-		GUIUtil.createKeyAction( toggle, KeyStroke.getKeyStroke( KeyEvent.VK_F7, 0 ));
-//        HelpGlassPane.setHelp( toggle, "TimelineToolPencil" );
-toolAction.setEnabled( false );	// XXX not yet implemented
-  		addToggleButton( toggle, 0 );
-		mapToolButtons.put( new Integer( toolAction.getID() ), toggle );
+//		toolAction		= new ToolAction( ToolAction.LINE );
+//        toggle			= new JToggleButton( toolAction );
+//		toolAction.setIcons( toggle );
+//		GUIUtil.createKeyAction( toggle, KeyStroke.getKeyStroke( KeyEvent.VK_F6, 0 ));
+////        HelpGlassPane.setHelp( toggle, "TimelineToolLine" );
+//toolAction.setEnabled( false );	// XXX not yet implemented
+//  		addToggleButton( toggle, 0 );
+//		mapToolButtons.put( new Integer( toolAction.getID() ), toggle );
+//
+//		toolAction		= new ToolAction( ToolAction.PENCIL );
+//        toggle			= new JToggleButton( toolAction );
+//		toolAction.setIcons( toggle );
+//		GUIUtil.createKeyAction( toggle, KeyStroke.getKeyStroke( KeyEvent.VK_F7, 0 ));
+////        HelpGlassPane.setHelp( toggle, "TimelineToolPencil" );
+//toolAction.setEnabled( false );	// XXX not yet implemented
+//  		addToggleButton( toggle, 0 );
+//		mapToolButtons.put( new Integer( toolAction.getID() ), toggle );
       
 		toolAction		= new ToolAction( ToolAction.ZOOM );
         toggle			= new JToggleButton( toolAction );

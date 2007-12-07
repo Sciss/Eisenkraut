@@ -66,7 +66,7 @@ import de.sciss.util.ParamSpace;
  *  Allows header editing (only sample rate for now).
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 03-Oct-07
+ *  @version	0.70, 07-Dec-07
  */
 public class AudioFileInfoPalette
 extends AppWindow
@@ -99,7 +99,7 @@ implements	DynamicListening, de.sciss.app.DocumentListener, ParamField.Listener,
 		JLabel				lb;
 
 		p			= new SpringPanel( 4, 2, 4, 2 );
-
+		
 		p3.gridAdd( new JLabel( getResourceString( "labelName" )), 0, 0 );
 		lbName		= new JLabel();
 		p3.gridAdd( lbName, 1, 0 );
@@ -170,6 +170,18 @@ implements	DynamicListening, de.sciss.app.DocumentListener, ParamField.Listener,
 		AbstractApplication.getApplication().removeComponent( Main.COMP_AUDIOINFO );
 		super.dispose();
 	}
+	
+	public void updateDocumentName( Session doc )
+	{
+		if( isVisible() && (this.doc == doc) ) {
+			setDocumentName();
+		}
+	}
+	
+	private void setDocumentName()
+	{
+		lbName.setText( afd.file == null ? getResourceString( "frameUntitled" ) : afd.file.getName() );
+	}
 
 	private void updateSchnucki( Session newDoc )
 	{
@@ -196,7 +208,7 @@ implements	DynamicListening, de.sciss.app.DocumentListener, ParamField.Listener,
 			ggRate.setEnabled( true );
 			ggRate.setValue( new Param( doc.timeline.getRate(), ParamSpace.FREQ | ParamSpace.HERTZ ));
 //			ggRate.setNumber( new Double( doc.timeline.getRate() ));	// XXX sync?
-			lbName.setText( afd.file == null ? getResourceString( "frameUntitled" ) : afd.file.getName() );
+			setDocumentName();
 			ggComment.setEnabled( true );
 			ggComment.setText( comment );	// null allowed
 			p.makeCompactGrid();

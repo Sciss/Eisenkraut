@@ -29,13 +29,26 @@
 
 package de.sciss.eisenkraut.gui;
 
-import java.awt.*;
-import java.awt.geom.*;
-import javax.swing.border.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Insets;
+import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.Stroke;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Area;
+import java.awt.geom.Rectangle2D;
+import java.awt.geom.RectangularShape;
+import java.awt.geom.RoundRectangle2D;
+
+import javax.swing.border.AbstractBorder;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 15-Apr-06
+ *  @version	0.70, 07-Dec-07
  */
 public class RecessedBorder
 extends AbstractBorder

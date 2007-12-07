@@ -30,11 +30,15 @@
 package de.sciss.eisenkraut.render;
 
 import java.io.IOException;
-import java.util.prefs.*;
+import java.util.prefs.Preferences;
+
 import javax.swing.JComponent;
 
 import de.sciss.util.Disposable;
 
+/**
+ *	@version	0.1, 07-Dec-07
+ */
 public interface RenderPlugIn
 extends Disposable
 {

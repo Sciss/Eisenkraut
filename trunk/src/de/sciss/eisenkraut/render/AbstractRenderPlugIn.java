@@ -29,22 +29,27 @@
 
 package de.sciss.eisenkraut.render;
 
-import java.io.*;
-import java.util.*;
-import java.util.prefs.*;
-import javax.swing.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.prefs.Preferences;
 
-import de.sciss.app.*;
-import de.sciss.io.*;
+import javax.swing.JComponent;
+
+import de.sciss.app.AbstractApplication;
+import de.sciss.io.AudioFile;
+import de.sciss.io.AudioFileDescr;
+import de.sciss.io.IOUtil;
+import de.sciss.io.InterleavedStreamFile;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 12-Oct-06
+ *  @version	0.70, 07-Dec-07
  */
 public abstract class AbstractRenderPlugIn
 implements RenderPlugIn
 {
-	private java.util.List	collTempFiles	= null;	// lazy creation
+	private List	collTempFiles	= null;	// lazy creation
 
 	protected Preferences	prefs = null;
 

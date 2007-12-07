@@ -29,9 +29,11 @@
 
 package de.sciss.eisenkraut.io;
 
-import java.io.*;
-import java.util.*;
-import org.w3c.dom.*;
+import java.io.IOException;
+import java.util.Map;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  *  Classes implementing this interface
@@ -39,7 +41,7 @@ import org.w3c.dom.*;
  *  structure from/to XML
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.56, 15-Sep-05
+ *  @version	0.70, 07-Dec-07
  *
  *  @todo   this could be much more elaborate
  */

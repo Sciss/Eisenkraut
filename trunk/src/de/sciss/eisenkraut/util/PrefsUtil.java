@@ -33,23 +33,40 @@
  
 package de.sciss.eisenkraut.util;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.util.*;
-import java.util.prefs.*;
-import javax.swing.*;
-import org.w3c.dom.*;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.StringTokenizer;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
+
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.KeyStroke;
+import javax.swing.UIManager;
+
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import net.roydesign.mac.MRJAdapter;
 
-import de.sciss.eisenkraut.io.*;
-
-import de.sciss.app.*;
-import de.sciss.gui.*;
-import de.sciss.io.*;
+import de.sciss.app.AbstractApplication;
+import de.sciss.eisenkraut.io.AudioBoxConfig;
+import de.sciss.eisenkraut.io.RoutingConfig;
+import de.sciss.gui.CoverGrowBox;
+import de.sciss.io.IOUtil;
 import de.sciss.net.OSCChannel;
-import de.sciss.util.*;
+import de.sciss.util.Param;
+import de.sciss.util.ParamSpace;
 
 /**
  *	A helper class for programme preferences. It
@@ -60,7 +77,7 @@ import de.sciss.util.*;
  *	and importing and exporting from/to XML.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 23-Jun-06
+ *  @version	0.70, 07-Dec-07
  */
 public class PrefsUtil
 {
@@ -329,15 +346,15 @@ public class PrefsUtil
 	 */
 	public static final String NODE_PLUGINS	= "plugins";
 
-	public static java.util.List createDefaults( Preferences mainPrefs, double lastVersion )
+	public static List createDefaults( Preferences mainPrefs, double lastVersion )
 	{
-		File					f;
-		String					value;
-		Preferences				childPrefs, childPrefs2;
-		final String			fs			= File.separator;
-		final boolean			isMacOS		= System.getProperty( "os.name" ).indexOf( "Mac OS" ) >= 0;
-        final boolean			isWindows	= System.getProperty( "os.name" ).indexOf( "Windows" ) >= 0;
-		final java.util.List	warnings	= new ArrayList();
+		File			f;
+		String			value;
+		Preferences		childPrefs, childPrefs2;
+		final String	fs			= File.separator;
+		final boolean	isMacOS		= System.getProperty( "os.name" ).indexOf( "Mac OS" ) >= 0;
+        final boolean	isWindows	= System.getProperty( "os.name" ).indexOf( "Windows" ) >= 0;
+		final List		warnings	= new ArrayList();
 	
 		putDontOverwrite( IOUtil.getUserPrefs(), IOUtil.KEY_TEMPDIR, System.getProperty( "java.io.tmpdir" ));
 
@@ -436,7 +453,7 @@ public class PrefsUtil
 //		}
 //		putDontOverwrite( childPrefs, KEY_SUPERCOLLIDEROSC, value );
 		putDontOverwrite( childPrefs, KEY_SCPROTOCOL, OSCChannel.TCP );
-		putDontOverwrite( childPrefs, KEY_SCPORT, new Param( 57109, ParamSpace.NONE | ParamSpace.ABS ).toString() );
+		putDontOverwrite( childPrefs, KEY_SCPORT, new Param( 0, ParamSpace.NONE | ParamSpace.ABS ).toString() );
 		
 		// sc app
 		if( childPrefs.get( KEY_SUPERCOLLIDERAPP, null ) == null ) {

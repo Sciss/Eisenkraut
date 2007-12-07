@@ -31,9 +31,13 @@
 
 package de.sciss.eisenkraut.render;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import de.sciss.io.*;
+import de.sciss.io.Span;
 
 /**
  *	This class contains static information
@@ -45,7 +49,7 @@ import de.sciss.io.*;
  *	entries.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 28-Jul-06
+ *  @version	0.70, 07-Dec-07
  */
 public class RenderContext
 {
@@ -104,7 +108,7 @@ public class RenderContext
 
 	private final RenderHost		host;
 	private final RenderConsumer	consumer;
-	private final java.util.List	trackInfos;
+	private final List				trackInfos;
 	private final Span				time;
 	private final double			sourceRate;
 	private int						sourceBlockSize;
@@ -123,7 +127,7 @@ public class RenderContext
 	 *				the caller is responsible for ensuring their
 	 *				constancy.
 	 */
-	public RenderContext( RenderHost host, RenderConsumer consumer, java.util.List trackInfos,
+	public RenderContext( RenderHost host, RenderConsumer consumer, List trackInfos,
 						  Span time, double sourceRate )
 	{
 		this.host			= host;
@@ -154,7 +158,7 @@ public class RenderContext
 
 	/**
 	 */
-	public java.util.List getTrackInfos()
+	public List getTrackInfos()
 	{
 		return trackInfos;
 	}

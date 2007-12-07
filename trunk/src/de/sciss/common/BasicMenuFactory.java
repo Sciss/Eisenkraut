@@ -36,6 +36,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+
 import javax.swing.Action;
 import javax.swing.JFrame;
 import javax.swing.KeyStroke;
@@ -80,7 +81,7 @@ import de.sciss.util.Flag;
  *  <code>Main</code> class.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 02-Sep-06
+ *  @version	0.70, 07-Dec-07
  *
  *  @see	de.sciss.eisenkraut.Main#menuFactory
  */
@@ -118,7 +119,7 @@ implements DocumentListener
 	private final PathList				openRecentPaths;
 
 	// ---- misc actions ----
-	private actionOpenRecentClass		actionOpenRecent;
+	private ActionOpenRecent			actionOpenRecent;
 	private Action						actionClearRecent;
 	private Action						actionCloseAll;
 
@@ -183,9 +184,14 @@ implements DocumentListener
 	private void createActions()
 	{
 		// --- file menu ---
-		actionOpenRecent = new actionOpenRecentClass( getResourceString( "menuOpenRecent" ));
-		actionClearRecent = new actionClearRecentClass( getResourceString( "menuClearRecent" ), null );
-		actionCloseAll	= new actionCloseAllClass( getResourceString( "menuCloseAll" ), null );
+		actionOpenRecent  = createOpenRecentAction( getResourceString( "menuOpenRecent" ), null );
+		actionClearRecent = new ActionClearRecent( getResourceString( "menuClearRecent" ), null );
+		actionCloseAll	  = new ActionCloseAll( getResourceString( "menuCloseAll" ), null );
+	}
+	
+	protected ActionOpenRecent createOpenRecentAction( String name, File path )
+	{
+		return new ActionOpenRecent( name, path );
 	}
 	
 	// @todo	this should eventually read the tree from an xml file
@@ -214,7 +220,7 @@ implements DocumentListener
 		mgRecent = new MenuGroup( "openRecent", actionOpenRecent );
 		if( openRecentPaths.getPathCount() > 0 ) {
 			for( int i = 0; i < openRecentPaths.getPathCount(); i++ ) {
-				mgRecent.add( new MenuItem( String.valueOf( uniqueNumber++ ), new actionOpenRecentClass( openRecentPaths.getPath( i ))));
+				mgRecent.add( new MenuItem( String.valueOf( uniqueNumber++ ), createOpenRecentAction( null, openRecentPaths.getPath( i ))));
 			}
 			actionOpenRecent.setPath( openRecentPaths.getPath( 0 ));
 			actionOpenRecent.setEnabled( true );
@@ -253,7 +259,7 @@ implements DocumentListener
 		mg.add( new MenuItem( "clear", getResourceString( "menuClear" ), KeyStroke.getKeyStroke( KeyEvent.VK_BACK_SPACE, 0 )));
 		mg.addSeparator();
 		mg.add( new MenuItem( "selectAll", getResourceString( "menuSelectAll" ), KeyStroke.getKeyStroke( KeyEvent.VK_A, MENU_SHORTCUT )));
-		a	= new actionPreferencesClass( getResourceString( "menuPreferences" ), KeyStroke.getKeyStroke( KeyEvent.VK_COMMA, MENU_SHORTCUT ));
+		a	= new ActionPreferences( getResourceString( "menuPreferences" ), KeyStroke.getKeyStroke( KeyEvent.VK_COMMA, MENU_SHORTCUT ));
 		if( PreferencesJMenuItem.isAutomaticallyPresent() ) {
 			root.getPreferencesJMenuItem().setAction( a );
 		} else {
@@ -280,10 +286,10 @@ implements DocumentListener
 		// this is pretty weird, but it works at least on german keyboards: command+questionmark is defaut help shortcut
 		// on mac os x. KeyEvent.VK_QUESTION_MARK doesn't exist, plus apple's vm ignore german keyboard layout, therefore the
 		// the question mark becomes a minus. however it's wrongly displayed in the menu...
-		mg.add( new MenuItem( "manual", new actionURLViewerClass( getResourceString( "menuHelpManual" ), KeyStroke.getKeyStroke( KeyEvent.VK_MINUS, MENU_SHORTCUT + KeyEvent.SHIFT_MASK ), "index", false )));
-		mg.add( new MenuItem( "shortcuts", new actionURLViewerClass( getResourceString( "menuHelpShortcuts" ), null, "Shortcuts", false )));
+		mg.add( new MenuItem( "manual", new ActionURLViewer( getResourceString( "menuHelpManual" ), KeyStroke.getKeyStroke( KeyEvent.VK_MINUS, MENU_SHORTCUT + KeyEvent.SHIFT_MASK ), "index", false )));
+		mg.add( new MenuItem( "shortcuts", new ActionURLViewer( getResourceString( "menuHelpShortcuts" ), null, "Shortcuts", false )));
 		mg.addSeparator();
-		mg.add( new MenuItem( "website", new actionURLViewerClass( getResourceString( "menuHelpWebsite" ), null, getResourceString( "appURL" ), true )));
+		mg.add( new MenuItem( "website", new ActionURLViewer( getResourceString( "menuHelpWebsite" ), null, getResourceString( "appURL" ), true )));
 		a = new actionAboutClass( getResourceString( "menuAbout" ), null );
 		if( AboutJMenuItem.isAutomaticallyPresent() ) {
 			root.getAboutJMenuItem().setAction( a );
@@ -327,7 +333,7 @@ implements DocumentListener
 		openRecentPaths.addPathToHead( path );
 		actionOpenRecent.setPath( path );
 		actionClearRecent.setEnabled( true );
-		mgRecent.add( new MenuItem( String.valueOf( uniqueNumber++ ), new actionOpenRecentClass( path )), 0 );
+		mgRecent.add( new MenuItem( String.valueOf( uniqueNumber++ ), createOpenRecentAction( null, path )), 0 );
 	}
 	
 	protected String getResourceString( String key )
@@ -376,32 +382,24 @@ implements DocumentListener
 // ---------------- Action objects for file (session) operations ---------------- 
 
 	// action for the Open-Recent menu
-	private class actionOpenRecentClass
+	protected class ActionOpenRecent
 	extends MenuAction
 	{
-		private File path;
+		private File	path;
 
 		// new action with path set to null
-		private actionOpenRecentClass( String text )
+		protected ActionOpenRecent( String text, File path )
 		{
-			super( text );
-			setPath( null );
-		}
-
-		// new action with given path
-		private actionOpenRecentClass( File path )
-		{
-//			super( IOUtil.abbreviate( path.getParent(), 40 ));
-			super( IOUtil.abbreviate( path.getAbsolutePath(), 40 ));
+			super( text == null ? IOUtil.abbreviate( path.getAbsolutePath(), 40 ) : text );
 			setPath( path );
 		}
 		
 		// set the path of the action. this
 		// is the file that will be loaded
 		// if the action is performed
-		private void setPath( File path )
+		protected void setPath( File path )
 		{
-			this.path = path;
+			this.path	= path;
 			setEnabled( (path != null) && path.isFile() );
 		}
 		
@@ -413,17 +411,15 @@ implements DocumentListener
 		 */
 		public void actionPerformed( ActionEvent e )
 		{
-			if( path == null ) return;
-//			actionOpen.perform( path );
 			openDocument( path );
 		}
 	} // class actionOpenRecentClass
 
 	// action for clearing the Open-Recent menu
-	private class actionClearRecentClass
+	private class ActionClearRecent
 	extends MenuAction
 	{
-		private actionClearRecentClass( String text, KeyStroke shortcut )
+		private ActionClearRecent( String text, KeyStroke shortcut )
 		{
 			super( text, shortcut );
 			setEnabled( false );
@@ -441,11 +437,11 @@ implements DocumentListener
 	} // class actionClearRecentClass
 	
 	// action for the Save-Session menu item
-	private class actionCloseAllClass
+	private class ActionCloseAll
 	extends MenuAction
 	implements ProcessingThread.Listener
 	{
-		private actionCloseAllClass( String text, KeyStroke shortcut )
+		private ActionCloseAll( String text, KeyStroke shortcut )
 		{
 			super( text, shortcut );
 			setEnabled( false );	// initially no docs open
@@ -482,10 +478,10 @@ implements DocumentListener
 	 *  Will bring up the Preferences frame
 	 *  when the action is performed.
 	 */
-	public class actionPreferencesClass
+	public class ActionPreferences
 	extends MenuAction
 	{
-		private actionPreferencesClass( String text, KeyStroke shortcut )
+		private ActionPreferences( String text, KeyStroke shortcut )
 		{
 			super( text, shortcut );
 		}
@@ -535,13 +531,13 @@ implements DocumentListener
 	// a component object. the frame is
 	// looked up using the Main's getComponent()
 	// method.
-	public class actionShowWindowClass extends MenuAction
+	public class ActionShowWindow extends MenuAction
 	{
 		private final Object component;
 	
 		// @param   component   the key for getting the
 		//						component using Main.getComponent()
-		public actionShowWindowClass( String text, KeyStroke shortcut, Object component )
+		public ActionShowWindow( String text, KeyStroke shortcut, Object component )
 		{
 			super( text, shortcut );
 			
@@ -569,7 +565,7 @@ implements DocumentListener
 	// generic action for bringing up
 	// a html document either in the
 	// help viewer or the default web browser
-	private class actionURLViewerClass extends MenuAction
+	private class ActionURLViewer extends MenuAction
 	{
 		private final String	theURL;
 		private final boolean	openWebBrowser;
@@ -580,7 +576,7 @@ implements DocumentListener
 		//							that's the complete URL!
 		// @param   openWebBrowser	if true, use the default web browser,
 		//							if false use internal help viewer
-		private actionURLViewerClass( String text, KeyStroke shortcut, String theURL, boolean openWebBrowser )
+		private ActionURLViewer( String text, KeyStroke shortcut, String theURL, boolean openWebBrowser )
 		{
 			super( text, shortcut );
 			

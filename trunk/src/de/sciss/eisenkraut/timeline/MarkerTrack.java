@@ -35,9 +35,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import javax.swing.tree.TreeNode;
-//import javax.xml.parsers.*;
-//import org.w3c.dom.*;
-//import org.xml.sax.*;
 
 import de.sciss.eisenkraut.edit.BasicCompoundEdit;
 import de.sciss.eisenkraut.io.MarkerTrail;
@@ -56,7 +53,7 @@ import de.sciss.timebased.Trail;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 15-Oct-06
+ *  @version	0.70, 07-Dec-07
  */
 public class MarkerTrack
 extends Track

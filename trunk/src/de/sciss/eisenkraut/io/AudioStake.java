@@ -44,11 +44,11 @@ import de.sciss.io.InterleavedStreamFile;
 import de.sciss.io.Span;
 import de.sciss.jcollider.Buffer;
 import de.sciss.net.OSCBundle;
-import de.sciss.timebased.*;
+import de.sciss.timebased.BasicStake;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 27-Sep-07
+ *  @version	0.70, 07-Dec-07
  *
  *  @see		de.sciss.io.Span
  */

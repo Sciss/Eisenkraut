@@ -1,1 +1,0 @@
-(FIXED) paste in overwrite mode : unselected audio tracks are cleared instead of bypassed

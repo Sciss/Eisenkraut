@@ -80,7 +80,7 @@ import de.sciss.util.Param;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 26-Sep-07
+ *  @version	0.70, 07-Dec-07
  *
  *	@todo		volume should be managed in separate synths pre limiters
  *				so that pre-fader metering becomes possible

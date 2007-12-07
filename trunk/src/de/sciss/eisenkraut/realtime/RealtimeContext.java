@@ -30,7 +30,11 @@
 
 package de.sciss.eisenkraut.realtime;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import de.sciss.io.Span;
 
@@ -39,7 +43,7 @@ import de.sciss.io.Span;
  *  for the realtime engine
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 10-Mar-06
+ *  @version	0.70, 07-Dec-07
  *
  *  @todo	users should make use of
  *			set/getSourceBlockSize() !
@@ -49,7 +53,7 @@ public class RealtimeContext
 {
 	private final Span				time;
 	private final double			sourceRate;
-	private final java.util.List	tracks;
+	private final List				tracks;
 	private final Transport			transport;
 	
 	private final HashMap			options			= new HashMap();
@@ -60,7 +64,7 @@ public class RealtimeContext
 	 *
 	 *  @param  sourceRate			the source sense data rate
 	 */
-	public RealtimeContext( Transport transport, java.util.List tracks, Span time, double sourceRate )
+	public RealtimeContext( Transport transport, List tracks, Span time, double sourceRate )
 	{
 		this.transport		= transport;
 		this.time			= time;
@@ -77,7 +81,7 @@ public class RealtimeContext
 
 	/**
 	 */
-	public java.util.List getTracks()
+	public List getTracks()
 	{
 		return tracks;
 	}
