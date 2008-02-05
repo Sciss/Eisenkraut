@@ -53,6 +53,7 @@ import de.sciss.app.AbstractApplication;
 import de.sciss.app.AbstractWindow;
 import de.sciss.app.Application;
 import de.sciss.app.DynamicListening;
+import de.sciss.app.GraphicsHandler;
 import de.sciss.common.AppWindow;
 import de.sciss.gui.LooseFocusAction;
 import de.sciss.gui.GUIUtil;
@@ -145,7 +146,7 @@ implements	DynamicListening, de.sciss.app.DocumentListener, ParamField.Listener,
 //        if( AbstractApplication.getApplication().getUserPrefs().getBoolean( PrefsUtil.KEY_INTRUDINGSIZE, false )) {
 //			cp.add( Box.createVerticalStrut( 16 ), BorderLayout.SOUTH );
 //        }
-		GUIUtil.setDeepFont( p2, null );
+		GUIUtil.setDeepFont( p2, app.getGraphicsHandler().getFont( GraphicsHandler.FONT_SYSTEM | GraphicsHandler.FONT_SMALL ));
 		
 		// --- Listener ---
 //		new DynamicAncestorAdapter( this ).addTo( rp );

@@ -2,7 +2,7 @@
  *  BlendingAction.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2007 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2008 Hanns Holger Rutz. All rights reserved.
  *
  *	This software is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -35,6 +35,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Point2D;
 import java.awt.event.ActionEvent;
@@ -76,6 +77,7 @@ import de.sciss.app.AbstractWindow;
 import de.sciss.app.Application;
 import de.sciss.app.DynamicAncestorAdapter;
 import de.sciss.app.DynamicListening;
+import de.sciss.app.GraphicsHandler;
 import de.sciss.common.AppWindow;
 import de.sciss.gui.CoverGrowBox;
 import de.sciss.gui.DefaultUnitViewFactory;
@@ -223,8 +225,10 @@ extends AbstractAction
 
 //		if( guiCreated ) return;
 		createGadgets( 0 );
-		GUIUtil.setDeepFont( ggSettingsPane, null );
-		GUIUtil.setDeepFont( bottomPanel, null );
+		final Font fnt = AbstractApplication.getApplication().getGraphicsHandler()
+			.getFont( GraphicsHandler.FONT_SYSTEM | GraphicsHandler.FONT_SMALL );
+		GUIUtil.setDeepFont( ggSettingsPane, fnt );
+		GUIUtil.setDeepFont( bottomPanel, fnt );
 		ggBlendTime.setCycling( popped ); // cannot open popup menu in another popup menu!
 		if( palette != null ) {
 			palette.getContentPane().add( ggSettingsPane, BorderLayout.CENTER );

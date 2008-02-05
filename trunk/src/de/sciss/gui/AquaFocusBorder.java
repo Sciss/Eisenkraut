@@ -2,7 +2,7 @@
  *  AquaFocusBorder.java
  *  de.sciss.gui package
  *
- *  Copyright (c) 2004-2007 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2006 Hanns Holger Rutz. All rights reserved.
  *
  *	This software is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -25,6 +25,7 @@
  *
  *  Changelog:
  *		16-Apr-06	created
+ *		31-Jan-07	added visibility flag
  */
 
 package de.sciss.gui;
@@ -41,7 +42,7 @@ import javax.swing.border.AbstractBorder;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 14-Oct-06
+ *  @version	0.71, 31-Jan-07
  */
 public class AquaFocusBorder
 extends AbstractBorder
@@ -63,6 +64,8 @@ extends AbstractBorder
 	};
 	
 	private final Color[] colrFocus;
+	
+	private boolean visible = true;
 
 	public AquaFocusBorder()
 	{
@@ -75,6 +78,11 @@ extends AbstractBorder
 			colrFocus	= colrFocusGraphite;
 			break;
 		}
+	}
+	
+	public void setVisible( boolean b )
+	{
+		visible = b;
 	}
 	
 	public Insets getBorderInsets( Component c )
@@ -93,7 +101,7 @@ extends AbstractBorder
 	
 	public void paintBorder( Component c, Graphics g, int x, int y, int width, int height )
 	{
-		if( !c.hasFocus() ) return;
+		if( !c.hasFocus() || !visible ) return;
 
 		final Graphics2D g2	= (Graphics2D) g;
 							

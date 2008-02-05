@@ -2,7 +2,7 @@
  *  DocumentFrame.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2007 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2008 Hanns Holger Rutz. All rights reserved.
  *
  *	This software is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -148,6 +148,7 @@ import de.sciss.eisenkraut.timeline.Track;
 import de.sciss.eisenkraut.timeline.TrackRowHeader;
 import de.sciss.eisenkraut.util.PrefsUtil;
 import de.sciss.gui.AbstractWindowHandler;
+import de.sciss.gui.ComponentBoundsRestrictor;
 import de.sciss.gui.ComponentHost;
 import de.sciss.gui.CoverGrowBox;
 import de.sciss.gui.GUIUtil;
@@ -174,7 +175,7 @@ import org.unicode.Normalizer;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
+ *  @version	0.70, 05-Feb-08
  */
 public class DocumentFrame
 extends AppWindow
@@ -317,6 +318,8 @@ implements	ProgressComponent, TimelineListener,
 	
 	private final Timer						playTimer;
 	private double							playRate		= 1.0;
+	
+	private final ComponentBoundsRestrictor	cbr;
 
 	/**
 	 *  Constructs a new timeline window with
@@ -505,6 +508,7 @@ bbb.add( markAxisHeader );
 //		topPane.add( lbProgress );
 //		topPane.add( pb );
 //		topPane.add( new ModificationButton( ModificationButton.SHAPE_ABORT ));
+		cbr			= new ComponentBoundsRestrictor();
 		ggTreeExp	= new TreeExpanderButton();
 		ggTreeExp.setExpandedToolTip( getResourceString( "buttonExpWaveTT" ));
 		ggTreeExp.setCollapsedToolTip( getResourceString( "buttonCollWaveTT" ));
@@ -517,6 +521,7 @@ bbb.add( markAxisHeader );
 				waveExpanded = ggTreeExp.isExpanded();
 				
 				if( waveExpanded ) {
+					cbr.remove( getComponent() );
 					waveView.setVisible( true );
 					channelHeaderPanel.setVisible( true );
 					if( markVisible ) {
@@ -559,8 +564,12 @@ bbb.add( markAxisHeader );
 //System.err.println( "getRootPane().getPreferredSize() : " +getRootPane().getPreferredSize() );
 //if( gp != null ) getRootPane().setGlassPane( gp );
 
-					setSize( new Dimension( d.width - timeTB.getWidth(), d.height - (waveView.getHeight() + scroll.getHeight() +
-							 (markVisible ? markAxis.getHeight() : 0)) ));
+					final int h = d.height - (waveView.getHeight() + scroll.getHeight() +
+					 	(markVisible ? markAxis.getHeight() : 0));
+					setSize( new Dimension( d.width - timeTB.getWidth(), h ));
+					cbr.setMinimumHeight( h );
+					cbr.setMaximumHeight( h );
+					cbr.add( getComponent() );
 				}
 //				getRootPane().revalidate();
 			}

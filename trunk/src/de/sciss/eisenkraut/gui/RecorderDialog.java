@@ -84,6 +84,7 @@ import de.sciss.app.AbstractApplication;
 import de.sciss.app.Application;
 import de.sciss.app.DynamicAncestorAdapter;
 import de.sciss.app.DynamicPrefChangeManager;
+import de.sciss.app.GraphicsHandler;
 import de.sciss.app.LaterInvocationManager;
 import de.sciss.gui.CoverGrowBox;
 import de.sciss.gui.DoClickAction;
@@ -269,7 +270,7 @@ implements Constants, ServerListener, NodeListener, OSCRouter // , MeterListener
 		cp.add( recPane, BorderLayout.NORTH );
 		cp.add( butPane, BorderLayout.SOUTH );
 
-		GUIUtil.setDeepFont( cp, null );
+		GUIUtil.setDeepFont( cp, app.getGraphicsHandler().getFont( GraphicsHandler.FONT_SYSTEM | GraphicsHandler.FONT_SMALL ));
 
 //		runPeakUpdate = new Runnable() {
 //			public void run()

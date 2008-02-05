@@ -2,7 +2,7 @@
  *  GUIUtil.java
  *  de.sciss.gui package
  *
- *  Copyright (c) 2004-2007 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2008 Hanns Holger Rutz. All rights reserved.
  *
  *	This software is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -33,10 +33,15 @@
 
 package de.sciss.gui;
 
+import java.applet.Applet;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.IllegalComponentStateException;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Window;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
@@ -46,15 +51,17 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
+import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.Spring;
 import javax.swing.SpringLayout;
+import javax.swing.SwingUtilities;
 import javax.swing.event.AncestorEvent;
 
-import de.sciss.app.AbstractApplication;
+//import de.sciss.app.AbstractApplication;
 import de.sciss.app.AncestorAdapter;
-import de.sciss.app.Application;
-import de.sciss.app.GraphicsHandler;
+//import de.sciss.app.Application;
+//import de.sciss.app.GraphicsHandler;
 import de.sciss.app.PreferenceEntrySync;
 
 /**
@@ -62,11 +69,11 @@ import de.sciss.app.PreferenceEntrySync;
  *  for common Swing / GUI operations
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.35, 14-Oct-06
+ *  @version	0.36, 10-Dec-07
  */
 public class GUIUtil
 {
-	private static final double VERSION	= 0.35;
+	private static final double VERSION	= 0.36;
 	private static final ResourceBundle resBundle = ResourceBundle.getBundle( "GUIUtilStrings" );
 	private static final Preferences prefs = Preferences.userNodeForPackage( GUIUtil.class );
 
@@ -187,11 +194,11 @@ public class GUIUtil
 	{
 		final Component[] comp = c.getComponents();
 		
-		if( fnt == null ) {
-			final Application app = AbstractApplication.getApplication();
-			if( app == null ) return;
-			fnt = app.getGraphicsHandler().getFont( GraphicsHandler.FONT_SYSTEM | GraphicsHandler.FONT_SMALL );
-		}
+//		if( fnt == null ) {
+//			final Application app = AbstractApplication.getApplication();
+//			if( app == null ) return;
+//			fnt = app.getGraphicsHandler().getFont( GraphicsHandler.FONT_SYSTEM | GraphicsHandler.FONT_SMALL );
+//		}
 		
 		c.setFont( fnt );
 		for( int i = 0; i < comp.length; i++ ) {
@@ -501,4 +508,111 @@ public class GUIUtil
 			}
 		});
 	}
+
+	/**
+	 *	Same as SwingUtilities.convertPoint, but handles JViewports properly
+	 */
+    public static Point convertPoint( Component source, Point aPoint, Component destination )
+    {
+    	final Point p;
+
+        if( (source == null) && (destination == null) ) return aPoint;
+        if( source == null ) {
+            source = SwingUtilities.getWindowAncestor( destination );
+            if( source == null ) {
+                throw new Error( "Source component not connected to component tree hierarchy" );
+            }
+        }
+        p = new Point( aPoint );
+        convertPointToScreen( p, source );
+        if( destination == null ) {
+            destination = SwingUtilities.getWindowAncestor( source );
+            if( destination == null ) {
+                throw new Error( "Destination component not connected to component tree hierarchy" );
+            }
+        }
+        convertPointFromScreen( p, destination );
+        return p;
+    }
+
+	/**
+	 *	Same as SwingUtilities.convertPointToScreen, but handles JViewports properly
+	 */
+    public static void convertPointToScreen( Point p, Component c )
+    {
+        int			x, y;
+        Container	parent;
+        boolean		isWindowOrApplet;
+
+        do {
+            parent				= c.getParent();
+            isWindowOrApplet	= (c instanceof Applet) || (c instanceof Window);
+            if( (parent == null) || !(parent instanceof JViewport) ) {
+	            if( c instanceof JComponent ) {
+	                x = ((JComponent) c).getX();
+	                y = ((JComponent) c).getY();
+	            } else if( isWindowOrApplet ) {
+	                try {
+	                    final Point pp = c.getLocationOnScreen();
+	                    x = pp.x;
+	                    y = pp.y;
+	                } catch( IllegalComponentStateException icse ) {
+	                	x = c.getX();
+	                	y = c.getY();
+	                }
+	            } else {
+	                x = c.getX();
+	                y = c.getY();
+	            }
+	
+// System.out.println( "toScreen. c = " + c + "; dx " + x + "; dy " + y );
+	            p.x += x;
+	            p.y += y;
+            }
+            c = parent;
+        } while( !isWindowOrApplet && (c != null) );
+    }
+
+	/**
+	 *	Same as SwingUtilities.convertPointFromScreen, but handles JViewports properly
+	 */
+    public static void convertPointFromScreen( Point p,Component c )
+    {
+        int			x, y;
+        Container	parent;
+        boolean		isWindowOrApplet;
+
+        do {
+            parent				= c.getParent();
+            isWindowOrApplet	= (c instanceof Applet) || (c instanceof Window);
+            if( (parent == null) || !(parent instanceof JViewport) ) {
+	            if( c instanceof JComponent ) {
+	                x = ((JComponent) c).getX();
+	                y = ((JComponent) c).getY();
+	            }  else if( isWindowOrApplet ) {
+	                try {
+	                	final Point pp = c.getLocationOnScreen();
+	                    x = pp.x;
+	                    y = pp.y;
+	                } catch( IllegalComponentStateException icse ) {
+	                	x = c.getX();
+	                	y = c.getY();
+	                }
+	            } else {
+	            	x = c.getX();
+	            	y = c.getY();
+	            }
+// System.out.println( "fromScreen. c = " + c + "; dx " + -x + "; dy " + -y );
+	            p.x -= x;
+	            p.y -= y;
+            }            
+            c = parent;
+        } while( !isWindowOrApplet && (c != null) );
+    }
+
+    public static Rectangle convertRectangle( Component source, Rectangle r, Component destination )
+    {
+    	final Point p = convertPoint( source, new Point( r.x, r.y ), destination );
+        return new Rectangle( p.x, p.y, r.width, r.height );
+    }
 }

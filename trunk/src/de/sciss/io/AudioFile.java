@@ -2,7 +2,7 @@
  *  AudioFile.java
  *  de.sciss.io package
  *
- *  Copyright (c) 2004-2007 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2008 Hanns Holger Rutz. All rights reserved.
  *
  *	This software is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -39,6 +39,7 @@
  *		31-Jan-07	added supported for AIFC little endian ; fixed sucky 8-bit WAV
  *		27-Mar-07	separate APPCODE reader, not requiring Application class; separate markers reading;
  *					fixed AIFF output file endian bug
+ *		06-Jan-07	added static retrieveType method
  */
 
 package de.sciss.io;
@@ -97,7 +98,7 @@ import java.util.Map;
  *	of streaming files, not just audio files.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.34, 22-Jun-07
+ *  @version	0.35, 06-Jan-07
  *
  *  @see		AudioFileDescr
  *
@@ -156,11 +157,11 @@ implements InterleavedStreamFile
 	public static AudioFile openAsRead( File f )
 	throws IOException
 	{
-		AudioFile af	= new AudioFile( f, MODE_READONLY );
-		af.afd			= new AudioFileDescr();
-		af.afd.file		= f;
-		af.afd.type		= af.retrieveType();
-		af.afh			= af.createHeader();
+		final AudioFile af	= new AudioFile( f, MODE_READONLY );
+		af.afd				= new AudioFileDescr();
+		af.afd.file			= f;
+		af.afd.type			= af.retrieveType();
+		af.afh				= af.createHeader();
 		af.afh.readHeader( af.afd );
 		af.init();
 		af.seekFrame( 0 );
@@ -189,17 +190,36 @@ implements InterleavedStreamFile
 	throws IOException
 	{
 		if( afd.file.exists() ) afd.file.delete();
-		AudioFile af	= new AudioFile( afd.file, MODE_READWRITE );
-		af.afd			= afd;
-		afd.length		= 0;
-		af.afh			= af.createHeader();
+		final AudioFile af	= new AudioFile( afd.file, MODE_READWRITE );
+		af.afd				= afd;
+		afd.length			= 0;
+		af.afh				= af.createHeader();
 		af.afh.writeHeader( af.afd );
 		af.init();
 		af.seekFrame( 0 );
-		af.updateStep	= (long) afd.rate * 20;
-		af.updateLen	= af.updateStep;
-		af.updateTime	= System.currentTimeMillis() + 10000;
+		af.updateStep		= (long) afd.rate * 20;
+		af.updateLen		= af.updateStep;
+		af.updateTime		= System.currentTimeMillis() + 10000;
 		return af;
+	}
+	
+	/**
+	 *  Determines the type of audio file.
+	 *
+	 *  @param		f   the path name of the file
+	 *  @return		the type code as defined in <code>AudioFileDescr</code>,
+	 *				e.g. <code>TYPE_AIFF</code>. Returns <code>TYPE_UNKNOWN</code>
+	 *				if the file could not be identified.
+	 *
+	 *  @throws IOException if the file could not be read
+	 */
+	public static int retrieveType( File f )
+	throws IOException
+	{
+		final AudioFile af		= new AudioFile( f, MODE_READONLY );
+		final int		type	= af.retrieveType();
+		af.cleanUp();
+		return type;
 	}
 	
 	private AudioFile( File f, int mode )

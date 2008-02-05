@@ -2,7 +2,7 @@
  *  MultiStateButton.java
  *  de.sciss.gui package
  *
- *  Copyright (c) 2004-2007 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2008 Hanns Holger Rutz. All rights reserved.
  *
  *	This software is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -83,7 +83,7 @@ import javax.swing.SwingConstants;
  *	New version paints focus WITHOUT requiring <code>focus.png</code> resource.
  *
  *	@author		Hanns Holger Rutz
- *	@version	0.70, 04-May-06
+ *	@version	0.71, 24-Dec-07
  *
  *	@todo		preferred size : maxH calculation is stupid ; we should try to
  *				get a LineBreakMeasure instance and reveal ascent / descent / leading
@@ -103,7 +103,7 @@ implements	MouseListener, MouseMotionListener, FocusListener,
 	private String				lastTxt;
 	private int					txtAscent, txtWidth, txtHeight;
 
-	private int	state			= 0;
+	private int	state			= -1;
 	private int	numStates		= 0;
 	private int lastModifiers	= 0;
 	
@@ -522,6 +522,7 @@ maxH = Math.max( maxH, (int) r.getHeight() );
 
 	public void setSelectedIndex( int state )
 	{
+//System.out.println( "setSelectedIndex( " + state + " ), old = " + this.state );
 		if( this.state != state ) {
 			this.state = state;
 			repaint();

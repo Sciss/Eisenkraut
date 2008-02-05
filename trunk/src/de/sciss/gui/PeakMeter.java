@@ -2,7 +2,7 @@
  *  PeakMeter.java
  *  (de.sciss.gui package)
  *
- *  Copyright (c) 2004-2007 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2008 Hanns Holger Rutz. All rights reserved.
  *
  *	This software is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -83,7 +83,9 @@ implements Disposable
 	private float				holdNorm;
 	
 	private int					recentHeight	= 0;
+	private int					recentWidth		= 0;
 	private int					calcedHeight	= -1;			// recentHeight snapshot in recalcPaint()
+	private int					calcedWidth		= -1;			// recentWidth snapshot in recalcPaint()
 	private long				lastUpdate		= System.currentTimeMillis();
 	private long				holdEnd;
 	
@@ -148,12 +150,12 @@ implements Disposable
 		
 		setBorder( BorderFactory.createEmptyBorder( 1, 1, 1, 1 ));
 		
-		updateInsets();
+		recalcPrefSize();
 		
 		addPropertyChangeListener( "border", new PropertyChangeListener() {
 			public void propertyChange( PropertyChangeEvent e )
 			{
-				updateInsets();
+				recalcPrefSize();
 			}
 		});
 		
@@ -163,7 +165,7 @@ implements Disposable
 	public void setTicks( int ticks )
 	{
 		this.ticks = ticks;
-		updateInsets();
+		recalcPrefSize();
 	}
 	
 	public void setRefreshParent( boolean onOff ) {
@@ -349,14 +351,14 @@ implements Disposable
 //		}
 //	}
 
-	private void updateInsets()
+	private void recalcPrefSize()
 	{
 		insets = getInsets();
 		final int w = 10 + insets.left + insets.right;
-		setMinimumSize(   new Dimension( w, 2 + insets.top + insets.bottom ));
+		setMinimumSize(   new Dimension( 4, 2 + insets.top + insets.bottom ));
 //		setPreferredSize( new Dimension( w, ticks <= 0 ? getPreferredSize().height : (ticks * 2 + insets.top + insets.bottom) ));
 		setPreferredSize( new Dimension( w, ticks <= 0 ? getPreferredSize().height : (ticks * 2 - 1 + insets.top + insets.bottom) ));
-		setMaximumSize(   new Dimension( w, getMaximumSize().height ));
+//		setMaximumSize(   new Dimension( w, getMaximumSize().height ));
 	}
 	
 	public float getPeakDecibels()
@@ -577,13 +579,9 @@ implements Disposable
 	
 	private void recalcPaint()
 	{
+		final int		picH		= (recentHeight + 1) & ~1;
+		final int		picW		= recentWidth;
 		int[]			pix;
-		int				rgb;
-		final float[]	hsbTop	= new float[ 3 ];
-		final float[]	hsbBot	= new float[ 3 ];
-		float			w1, w2;
-		final int		picH	= (recentHeight + 1) & ~1;
-		final float		w3		= 1.0f / (picH - 2);
 	
 		if( imgPeak != null ) {
 			imgPeak.flush();
@@ -593,83 +591,131 @@ implements Disposable
 			imgRMS.flush();
 			imgRMS = null;
 		}
-		if( imgBg == null ) {
-			imgBg = new BufferedImage( 10, 2, BufferedImage.TYPE_INT_ARGB );
-			imgBg.setRGB( 0, 0, 10, 2, bgPixels, 0, 10 );
-			pntBg = new TexturePaint( imgBg, new Rectangle( 0, 0, 10, 2 ));
+		if( (imgBg == null) || (imgBg.getWidth() != picW) ) {
+			if( imgBg != null ) {
+				imgBg.flush();
+				imgBg = null;
+			}
+			if( picW == 10 ) {
+				pix	= bgPixels;
+			} else {
+				pix	= widenPix( bgPixels, 10, picW, 2 );
+			}
+			imgBg = new BufferedImage( picW, 2, BufferedImage.TYPE_INT_ARGB );
+			imgBg.setRGB( 0, 0, picW, 2, pix, 0, picW );
+			pntBg = new TexturePaint( imgBg, new Rectangle( 0, 0, picW, 2 ));
 		}
 		
-		pix = new int[ 10 * picH ];
-		for( int x = 0; x < 10; x++ ) {
-			rgb = rmsTopColor[ x ];
-			Color.RGBtoHSB( (rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF, hsbTop );
-			rgb = rmsBotColor[ x ];
-			Color.RGBtoHSB( (rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF, hsbBot );
-			for( int y = 0, off = x; y < picH; y += 2, off += 20 ) {
-				w2				= y * w3;
-				w1				= 1.0f - w2;
-				rgb				= Color.HSBtoRGB( hsbTop[0] * w1 + hsbBot[0] * w2,
-												  hsbTop[1] * w1 + hsbBot[1] * w2,
-												  hsbTop[2] * w1 + hsbBot[2] * w2 );
-				pix[ off ]		= rgb | 0xFF000000;
-				pix[ off+10 ]	= 0xFF000000;
-			}
-		}
-		imgRMS = new BufferedImage( 10, picH, BufferedImage.TYPE_INT_ARGB );
-		imgRMS.setRGB( 0, 0, 10, picH, pix, 0, 10 );
+		pix	= hsbFade( picW, picH, rmsTopColor, rmsBotColor );
+		imgRMS = new BufferedImage( picW, picH, BufferedImage.TYPE_INT_ARGB );
+		imgRMS.setRGB( 0, 0, picW, picH, pix, 0, picW );
 //		pntRMS = new TexturePaint( imgRMS, new Rectangle( 0, 0, 10, recentHeight ));
 
-		pix = new int[ 10 * picH ];
-		for( int x = 0; x < 10; x++ ) {
-			rgb = peakTopColor[ x ];
-			Color.RGBtoHSB( (rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF, hsbTop );
-			rgb = peakBotColor[ x ];
-			Color.RGBtoHSB( (rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF, hsbBot );
-			for( int y = 0, off = x; y < picH; y += 2, off += 20 ) {
-				w2				= y * w3;
-				w1				= 1.0f - w2;
-				rgb				= Color.HSBtoRGB( hsbTop[0] * w1 + hsbBot[0] * w2,
-												  hsbTop[1] * w1 + hsbBot[1] * w2,
-												  hsbTop[2] * w1 + hsbBot[2] * w2 );
-				pix[ off ]		= rgb | 0xFF000000;
-				pix[ off+10 ]	= 0xFF000000;
-			}
-		}
-		imgPeak = new BufferedImage( 10, picH, BufferedImage.TYPE_INT_ARGB );
-		imgPeak.setRGB( 0, 0, 10, picH, pix, 0, 10 );
+		pix	= hsbFade( picW, picH, peakTopColor, peakBotColor );
+		imgPeak = new BufferedImage( picW, picH, BufferedImage.TYPE_INT_ARGB );
+		imgPeak.setRGB( 0, 0, picW, picH, pix, 0, picW );
 //		pntRMS = new TexturePaint( imgRMS, new Rectangle( 0, 0, 10, recentHeight ));
 
-		calcedHeight = recentHeight;
+		calcedHeight	= recentHeight;
+		calcedWidth		= recentWidth;
 	}
 	
+	private int[] widenPix( int[] src, int srcW, int dstW, int h )
+	{
+		final int	minW		= Math.min( srcW, dstW );
+		final int	minWH		= minW >> 1;
+		final int	minWH1		= minW - minWH;
+		final int 	numWiden	= dstW - srcW;
+		final int[]	dst			= new int[ dstW * h ];
+		
+//System.out.println( "srcW " + srcW + "; dstW " + dstW + "; minW " + minW + "; numWiden " + numWiden );
+		
+		for( int y = 0, srcOffL = 0, srcOffR = srcW - minWH1, dstOffL = 0, dstOffR = dstW - minWH1;
+			 y < h;
+			 y++, srcOffL += srcW, srcOffR += srcW, dstOffL += dstW, dstOffR += dstW ) {
+
+			System.arraycopy( src, srcOffL, dst, dstOffL, minWH );
+			System.arraycopy( src, srcOffR, dst, dstOffR, minWH1 );
+		}
+		if( numWiden > 0 ) {
+			int p;
+			for( int y = 0, srcOff = minWH, dstOff = minWH; y < h; y++, srcOff += srcW, dstOff += srcW ) {
+				p = src[ srcOff ];
+				for( int stop = dstOff + numWiden; dstOff < stop; dstOff++ ) {
+					dst[ dstOff ] = p;
+				}
+			}
+		}
+		return dst;
+	}
 	
-//boolean gaga;
+	private int[] hsbFade( int picW, int picH, int[] topColr, int[] botColr )
+	{
+		final int[] 	pix 		= new int[ picW * picH ];
+		final int[] 	sTopColr, sBotColr;
+		final float[]	hsbTop		= new float[ 3 ];
+		final float[]	hsbBot		= new float[ 3 ];
+		final float		w3			= 1.0f / (picH - 2);
+		int				rgb;
+		float			w1, w2;
+		
+		if( picW == 10 ) {
+			sTopColr	= topColr;
+			sBotColr	= botColr;
+		} else {
+			sTopColr	= widenPix( topColr, 10, picW, 1 );
+			sBotColr	= widenPix( botColr, 10, picW, 1 );
+		}
+		
+		for( int x = 0; x < picW; x++ ) {
+			rgb = sTopColr[ x ];
+			Color.RGBtoHSB( (rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF, hsbTop );
+			rgb = sBotColr[ x ];
+			Color.RGBtoHSB( (rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF, hsbBot );
+			for( int y = 0, off = x; y < picH; y += 2, off += (picW << 1) ) {
+				w2				= y * w3;
+				w1				= 1.0f - w2;
+				rgb				= Color.HSBtoRGB( hsbTop[0] * w1 + hsbBot[0] * w2,
+												  hsbTop[1] * w1 + hsbBot[1] * w2,
+												  hsbTop[2] * w1 + hsbBot[2] * w2 );
+				pix[ off ]		= rgb | 0xFF000000;
+				pix[ off+picW ]	= 0xFF000000;
+			}
+		}
+		
+		return pix;
+	}
 
 	public void paintComponent( Graphics g )
 	{
 		super.paintComponent( g );
 		final Graphics2D		g2;
 		final AffineTransform	atOrig;
-		final int				h1		= getHeight() - insets.top - insets.bottom;
+		final int				h1		= getHeight() - (insets.top + insets.bottom);
 //		final int				h		= (getHeight() - insets.top - insets.bottom + 1) & ~1;
 //		final int				h		= (getHeight() - insets.top - insets.bottom) & ~1;
 		final int				rh1		= (h1 - 1) & ~1;
 		final int				h		= rh1 + 1;
 		
+		recentWidth = getWidth() - (insets.left + insets.right);
+		
 		g.setColor( Color.black );
 		g.fillRect( 0, 0, getWidth(), getHeight() );
 		if( h > 0 ) {
 			synchronized( sync ) {	
-				if( (h != recentHeight) || (calcedHeight != recentHeight) ) {
-					recentHeight = h;
-//					System.out.println( "recalc h " + getHeight() + "; top " + insets.top + "; bottom " + insets.bottom + "; recentHeight " + recentHeight + "; h1 " + h1 );
-					recalcPaint();
+				if( h != recentHeight ) {
 //					yPeak		= ((int) ((1.0f - peakNorm) * h) + 1) & ~1;
 //					yRMS		= ((int) ((1.0f - rmsNorm)  * h) + 1) & ~1;
 //					yHold		= ((int) ((1.0f - holdNorm) * h) + 1) & ~1;
 					yHold		= (rh1 - (int) (holdNorm * rh1) + 1) & ~1;
 					yPeak		= (rh1 - (int) (peakNorm * rh1) + 1) & ~1;
 					yRMS		= Math.max( (rh1 - (int) (rmsNorm  * rh1) + 1) & ~1, yPeak + 4 );
+					recentHeight= h;
+				}
+				if( (calcedHeight != recentHeight) || (calcedWidth != recentWidth) ) {
+					recentHeight = h;
+//					System.out.println( "recalc h " + getHeight() + "; top " + insets.top + "; bottom " + insets.bottom + "; recentHeight " + recentHeight + "; h1 " + h1 );
+					recalcPaint();
 				}
 				
 				g2		= (Graphics2D) g;
@@ -681,15 +727,15 @@ implements Disposable
 		//		g2.fillRect( 1, 0, 10, yPeak );
 				if( rmsPainted ) {
 //					g2.fillRect( 0, 0, 10, yRMS + 1 );
-					g2.fillRect( 0, 0, 10, yRMS + 1 );
-					if( holdPainted ) g2.drawImage( imgPeak, 0, yHold, 10, yHold + 1, 0, yHold, 10, yHold + 1, this );
+					g2.fillRect( 0, 0, recentWidth, yRMS + 1 );
+					if( holdPainted ) g2.drawImage( imgPeak, 0, yHold, recentWidth, yHold + 1, 0, yHold, recentWidth, yHold + 1, this );
 					final int yClipped = Math.min( h, yRMS );
-					g2.drawImage( imgPeak, 0, yPeak,    10, yClipped, 0, yPeak,    10, yClipped, this );
-					g2.drawImage( imgRMS,  0, yRMS + 2, 10, h,    0, yRMS + 2, 10, h,    this );
+					g2.drawImage( imgPeak, 0, yPeak, recentWidth, yClipped, 0, yPeak, recentWidth, yClipped, this );
+					g2.drawImage( imgRMS, 0, yRMS + 2, recentWidth, h, 0, yRMS + 2, recentWidth, h, this );
 				} else {
-					g2.fillRect( 0, 0, 10, yPeak );
-					if( holdPainted ) g2.drawImage( imgPeak, 0, yHold, 10, yHold + 1, 0, yHold, 10, yHold + 1, this );
-					g2.drawImage( imgPeak, 0, yPeak, 10, h, 0, yPeak, 10, h, this );
+					g2.fillRect( 0, 0, recentWidth, yPeak );
+					if( holdPainted ) g2.drawImage( imgPeak, 0, yHold, recentWidth, yHold + 1, 0, yHold, recentWidth, yHold + 1, this );
+					g2.drawImage( imgPeak, 0, yPeak, recentWidth, h, 0, yPeak, recentWidth, h, this );
 				}
 				
 //System.err.println( "__ " + this.hashCode() + " : " + yPeak + ", " + yRMS + ", " + yHold + " ;; " + lastUpdate );

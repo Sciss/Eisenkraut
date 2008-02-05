@@ -2,7 +2,7 @@
  *  DynamicURLClassLoader.java
  *  de.sciss.util package
  *
- *  Copyright (c) 2005-2007 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2005-2008 Hanns Holger Rutz. All rights reserved.
  *
  *	This software is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License

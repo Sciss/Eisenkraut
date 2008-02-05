@@ -155,7 +155,7 @@ extends AppWindow
     public PrefsFrame()
     {
 		super( SUPPORT );
-		
+				
 		setTitle( getResourceString( "framePrefs" ));
 
 		final Container					cp					= getContentPane();

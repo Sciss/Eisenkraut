@@ -2,7 +2,7 @@
  *  ControlRoomFrame.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2007 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2008 Hanns Holger Rutz. All rights reserved.
  *
  *	This software is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -44,13 +44,14 @@ import java.util.Map;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
+//import javax.swing.BorderFactory;
+//import javax.swing.Box;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.WindowConstants;
+//import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -75,7 +76,7 @@ import de.sciss.common.AppWindow;
 import de.sciss.gui.AbstractWindowHandler;
 import de.sciss.gui.MultiStateButton;
 import de.sciss.gui.PeakMeter;
-import de.sciss.gui.PeakMeterCaption;
+//import de.sciss.gui.PeakMeterCaption;
 import de.sciss.gui.PrefComboBox;
 import de.sciss.gui.SpringPanel;
 import de.sciss.gui.StringItem;
@@ -105,11 +106,11 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
 	private final PrefComboBox			ggAudioBox;
 	private final Preferences			audioPrefs;
 
-//	private final List					collMeters	= new ArrayList();
 	private PeakMeter[]					masterMeters;
 	private final SuperColliderClient	superCollider;
 	private Group						grpMeters;
-	private final Box					pMeters;
+//	private final Box					pMeters;
+	private final PeakMeterGroup		pmg;
 
 	private RoutingConfig				oCfg;
 	
@@ -221,14 +222,17 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 		});
 		if( superCollider.getLimiter() ) ggLimiter.setSelectedIndex( 1 );
 		
-		pMeters	= Box.createHorizontalBox();
-//		pMeters.add( Box.createHorizontalGlue() );
-		pMeters.setBackground( Color.black );
-		pMeters.setBorder( new RecessedBorder() );
+//		pMeters	= Box.createHorizontalBox();
+//		pMeters.setBackground( Color.black );
+//		pMeters.setBorder( new RecessedBorder() );
+		pmg	= new PeakMeterGroup();
+		pmg.setBorder( true );
+		pmg.setCaption( true );
 		oCfg = superCollider.getOutputConfig();
 		rebuildMeters();
 		
-		b2.add( pMeters, BorderLayout.WEST );
+//		b2.add( pMeters, BorderLayout.WEST );
+		b2.add( pmg, BorderLayout.WEST );
 		b2.add( ggVolume, BorderLayout.EAST );
 		
 //		b1.add( ggLimiter, BorderLayout.NORTH );
@@ -371,27 +375,31 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 	
 	private void rebuildMeters()
 	{
-		final PeakMeter[]		meters;
-		final PeakMeterCaption	caption;
+//		final PeakMeter[]		meters;
+//		final PeakMeterCaption	caption;
+//		final Border			b1		= BorderFactory.createEmptyBorder( caption.getAscent(), 1, caption.getDescent(), 1 );
+//		final Border			b2		= BorderFactory.createEmptyBorder( 1, 1, 1, 0 ) : BorderFactory.createEmptyBorder( caption.getAscent(), 1, caption.getDescent(), 0 );
 		
 		oCfg	= superCollider.getOutputConfig();
-		pMeters.removeAll();
+//		pMeters.removeAll();
 		
 		if( oCfg != null ) {
-			meters	= new PeakMeter[ oCfg.numChannels ];
-			caption	= new PeakMeterCaption();
-//			caption.setForeground( Color.white ); // ( new Color( 0xFF, 0xFF, 0xFF, 0x7F ));
-			caption.setBorder( BorderFactory.createEmptyBorder( 5, 1, 4, 0 ));
-			pMeters.add( caption );
-			for( int ch = 0; ch < meters.length; ch++ ) {
-				meters[ ch ] = new PeakMeter();
-				meters[ ch ].setRefreshParent( true );
-				meters[ ch ].setBorder( BorderFactory.createEmptyBorder( 5, 1, 4, 1 ));
-				meters[ ch ].setTicks( 101 );
-				pMeters.add( meters[ ch ]);
-			}
-			masterMeters = meters;
+			pmg.setNumChannels( oCfg.numChannels );
+//			meters	= new PeakMeter[ oCfg.numChannels ];
+//			caption	= new PeakMeterCaption();
+//			caption.setBorder( BorderFactory.createEmptyBorder( 5, 1, 4, 0 ));
+//			pMeters.add( caption );
+//			for( int ch = 0; ch < meters.length; ch++ ) {
+//				meters[ ch ] = new PeakMeter();
+//				meters[ ch ].setRefreshParent( true );
+//				meters[ ch ].setBorder( BorderFactory.createEmptyBorder( 5, 1, 4, 1 ));
+//				meters[ ch ].setTicks( 101 );
+//				pMeters.add( meters[ ch ]);
+//			}
+//			masterMeters = meters;
+			masterMeters = pmg.getMeters();
 		} else {
+			pmg.setNumChannels( 0 );
 			masterMeters = new PeakMeter[ 0 ];
 		}
 		
