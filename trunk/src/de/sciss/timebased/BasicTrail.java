@@ -29,6 +29,7 @@
  *		01-May-06	clearly distinugishes addPerform edits
  *		15-Oct-06	added getAll( int, int, boolean )
  *		19-Nov-07	removed retainAll calls which are extremely slow
+ *		11-Feb-08	fixed editGetRange (calls getRightMostIndex instead of editGetRightMostIndex)
  */
 
 package de.sciss.timebased;
@@ -52,7 +53,7 @@ import de.sciss.io.Span;
 import de.sciss.util.ListEnum;
 
 /**
- *	@version	0.18, 19-Nov-07
+ *	@version	0.19, 11-Feb-08
  *	@author		Hanns Holger Rutz
  *
  *	@todo		addPerform( new Edit-Dispatch ) ueberpruefen (evtl. redundant)
@@ -288,7 +289,7 @@ implements Trail, EventManager.Processor
 			} else {
 				// "If the list contains multiple elements equal to the specified object,
 				//  there is no guarantee which one will be found"
-				idx		= editGetLeftMostIndex( idx, false, ce );
+				idx		= getLeftMostIndex( collByStop, idx, false );
 			}
 //	long t3 = System.currentTimeMillis();
 			collResult	= new ArrayList( collByStop.subList( idx, collByStop.size() ));
@@ -301,7 +302,7 @@ implements Trail, EventManager.Processor
 			if( idx < 0 ) {
 				idx		= -(idx + 1);
 			} else {
-				idx		= editGetRightMostIndex( idx, true, ce ) + 1;
+				idx		= getRightMostIndex( collResult, idx, true ) + 1;
 			}
 //	long t6 = System.currentTimeMillis();
 			collResult	= collResult.subList( 0, idx );
@@ -314,7 +315,7 @@ implements Trail, EventManager.Processor
 			if( idx < 0 ) {
 				idx		= -(idx + 1);
 			} else {
-				idx		= editGetRightMostIndex( idx, true, ce ) + 1;
+				idx		= getRightMostIndex( collByStart, idx, true ) + 1;
 			}
 //long t3 = System.currentTimeMillis();
 			collResult	= new ArrayList( collByStart.subList( 0, idx ));
@@ -327,7 +328,7 @@ implements Trail, EventManager.Processor
 			if( idx < 0 ) {
 				idx		= -(idx + 1);
 			} else {
-				idx		= editGetLeftMostIndex( idx, false, ce );
+				idx		= getLeftMostIndex( collResult, idx, false );
 			}
 //long t6 = System.currentTimeMillis();
 			collResult	= collResult.subList( idx, collResult.size() );
@@ -1010,12 +1011,17 @@ if( DEBUG ) {
 
 	public int editGetLeftMostIndex( int idx, boolean byStart, AbstractCompoundEdit ce )
 	{
+		final List coll = byStart ? editGetCollByStart( ce ) : editGetCollByStop( ce );
+		return getLeftMostIndex( coll, idx, byStart );
+	}
+
+	private int getLeftMostIndex( List coll, int idx, boolean byStart )
+	{
 		if( idx < 0 ) {
 			idx = -(idx + 2);
 			if( idx < 0 ) return -1;
 		}
 		
-		final List	coll		= byStart ? editGetCollByStart( ce ) : editGetCollByStop( ce );
 		Stake		stake		= (Stake) coll.get( idx );
 		final long	pos			= byStart ? stake.getSpan().start : stake.getSpan().stop;
 		
@@ -1028,10 +1034,15 @@ if( DEBUG ) {
 		return idx;
 	}
 
-	public int editGetRightMostIndex( int idx, boolean byStart, AbstractCompoundEdit ce )
+	public int editGetRightMostIndex_( int idx, boolean byStart, AbstractCompoundEdit ce )
 	{
-		final List	coll		= byStart ? editGetCollByStart( ce ) : editGetCollByStop( ce );
-		final int	sizeM1		= coll.size() - 1;
+		final List coll = byStart ? editGetCollByStart( ce ) : editGetCollByStop( ce );
+		return getRightMostIndex( coll, idx, byStart );
+	}
+	
+	private int getRightMostIndex( List coll, int idx, boolean byStart )
+	{
+		final int sizeM1 = coll.size() - 1;
 		
 		if( idx < 0 ) {
 			idx = -(idx + 1);
