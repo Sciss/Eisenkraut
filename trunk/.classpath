@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="libraries/SwingOSC.jar"/>
 	<classpathentry kind="lib" path="libraries/Normalizer.jar"/>
 	<classpathentry kind="lib" path="libraries/NetUtil.jar"/>
 	<classpathentry kind="lib" path="libraries/MRJAdapter.jar"/>
 	<classpathentry kind="lib" path="libraries/JCollider.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.launching.macosx.MacOSXType/JVM 1.4.2"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
