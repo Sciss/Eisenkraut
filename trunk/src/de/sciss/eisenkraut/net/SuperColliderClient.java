@@ -181,7 +181,8 @@ implements OSCRouter, de.sciss.jcollider.Constants, ServerListener, DocumentList
 	throws IOException
 	{
 		AbstractApplication.getApplication().getDocumentHandler().addDocumentListener( this );
-		UGenInfo.readDefinitions();
+//		UGenInfo.readDefinitions();
+		UGenInfo.readBinaryDefinitions();
 	}
 	
 	public static SuperColliderClient getInstance()
