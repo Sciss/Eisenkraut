@@ -136,8 +136,8 @@ Eisenkraut {
 //"Now we are there.".postln;
 //swing.dumpOSC( 1, 1 );
 					win = plug.makeWindow;
-("WIN = "++win).postln;
-~win = win;
+//("WIN = "++win).postln;
+//~win = win;
 //					func = win.onClose;
 //					win.onClose = {
 //						
@@ -431,19 +431,19 @@ EisKPlugIn {
 	makeWindow {
 		var wb, sb;
 		
-"Now we are KKKK.".postln;
+//"Now we are KKKK.".postln;
 		if( win.notNil and: { win.isClosed.not }, {
 			^win;
 		});
-"Now we are GAGA.".postln;
+//"Now we are GAGA.".postln;
 		win = EisKPlugInWindow( this.name, resizable: false, server: eisk.swing );
-"Now we are JJJJ.".postln;
+//"Now we are JJJJ.".postln;
 		GUI.useID( \swing, { populateWindowFunc.value( this, win )});
 		wb	= win.bounds;
 		sb	= win.class.screenBounds;		
 		win.bounds_( Rect( ((sb.width - wb.width) * 0.5).asInt, ((sb.height - wb.height) * (1 - 0.5)).asInt,
 				    wb.width, wb.height ));
-		^win;
+		^win; // .front;
 	}
 	
 	makePreviewButton { arg parent;

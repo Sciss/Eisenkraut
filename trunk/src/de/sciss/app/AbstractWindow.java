@@ -33,6 +33,8 @@ package de.sciss.app;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.WindowEvent;
@@ -45,7 +47,7 @@ import javax.swing.event.InternalFrameEvent;
  *	Interface that unites functionality
  *	from inhomogeneous classes such as JFrame, JDialog, JInternalFrame
  *
- *	@version	0.11, 11-Feb-08
+ *	@version	0.12, 13-Feb-08
  *	@author		Hanns Holger Rutz
  */
 public interface AbstractWindow
@@ -69,6 +71,7 @@ public interface AbstractWindow
 
 	public void init();
 	public Container getContentPane();
+	public void setContentPane( Container c );
 	public void setTitle( String title );
 	public String getTitle();
 	public Component getWindow();
@@ -84,9 +87,12 @@ public interface AbstractWindow
 	public boolean isActive();
 	public Dimension getSize();
 	public Rectangle getBounds();
+	public Point getLocation();
 	public void setBounds( Rectangle r );
 	public void setSize( Dimension d );
+	public void setLocation( Point p );
 //	public void setPreferredSize( Dimension d );
+	public Insets getInsets();
 	public void setJMenuBar( JMenuBar m );
 	public JMenuBar getJMenuBar();
 	public InputMap getInputMap( int condition );

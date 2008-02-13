@@ -36,6 +36,7 @@ import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.GraphicsEnvironment;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Window;
@@ -72,7 +73,7 @@ import de.sciss.gui.WindowListenerWrapper;
  *  will get a copy of the main menubar as well.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
+ *  @version	0.70, 13-Feb-08
  *
  *  @todo   the window bounds prefs storage sucks like hell
  *          ; there's a bug: if recall-window-bounds is deactivated
@@ -541,6 +542,17 @@ borrowMenuBar = wh.usesScreenMenuBar();
 	{
 		return c;
 	}
+	
+	public Insets getInsets()
+	{
+		if( w != null ) {
+			return w.getInsets();
+		} else if( jif != null ) {
+			return jif.getInsets();
+		} else {
+			throw new IllegalStateException();
+		}
+	}
     
 	/**
 	 *  Frees resources, clears references
@@ -586,16 +598,6 @@ borrowMenuBar = wh.usesScreenMenuBar();
 		c.setSize( d );
 	}
 	
-//	public int getWidth()
-//	{
-//		return c.getWidth();
-//	}
-//	
-//	public int getHeight()
-//	{
-//		return c.getHeight();
-//	}
-
 	public Dimension getSize()
 	{
 		return c.getSize();
@@ -609,6 +611,16 @@ borrowMenuBar = wh.usesScreenMenuBar();
 	public void setBounds( Rectangle r )
 	{
 		c.setBounds( r );
+	}
+
+	public void setLocation( Point p )
+	{
+		c.setLocation( p );
+	}
+	
+	public Point getLocation()
+	{
+		return c.getLocation();
 	}
 
 	public void setPreferredSize( Dimension d )
@@ -784,6 +796,15 @@ borrowMenuBar = wh.usesScreenMenuBar();
 			return ((RootPaneContainer) c).getContentPane();
 		} else {
 			return w;
+		}
+	}
+	
+	public void setContentPane( Container c2 )
+	{
+		if( c instanceof RootPaneContainer ) {
+			((RootPaneContainer) c).setContentPane( c2);
+		} else {
+			throw new IllegalStateException();
 		}
 	}
 	

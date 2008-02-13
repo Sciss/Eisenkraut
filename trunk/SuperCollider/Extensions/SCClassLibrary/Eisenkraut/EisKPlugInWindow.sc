@@ -2,18 +2,18 @@
  *	EisKPlugInWindow
  *
  *	@author		Hanns Holger Rutz
- *	@version		0.70, 05-Aug-07
+ *	@version		0.70, 13-Feb-08
  *
  *	@todo		WindowResponder doesn't work obviously, have to create an AppWindowResponder in EisK i guess
  */
 EisKPlugInWindow : JSCWindow
 {
-	*new { arg name = "Plug In", bounds, resizable = true, server;
-		^super.new.initSCWindow( name, bounds, resizable, true, server );
+	*new { arg name = "Plug In", bounds, resizable = true, border = true, server, scroll = false;
+		^super.new( name, bounds, resizable, border, server, scroll );
 	}
 
-	prInit { arg argName, argBounds, resizable, border; // , view;
-		var viewID;
+	prInit { arg argName, argBounds, resizable, border, scroll; // , view;
+		var viewID, bndl;
 
 		bounds 	= argBounds;
 		// tricky, we have to allocate the TopView's id here
@@ -21,45 +21,50 @@ EisKPlugInWindow : JSCWindow
 		// that JSCView can add key and dnd listeners
 		viewID	= server.nextNodeID;
 
-		acResp = OSCresponderNode( server.addr, "/window", { arg time, resp, msg;
+		acResp = OSCpathResponder( server.addr, [ '/window', this.id ], { arg time, resp, msg;
 			var state;
 		
-			case { msg[1] == this.id }
+			state = msg[2].asSymbol;
+			case
+			{ state === \resized }
 			{
-				state = msg[2].asSymbol;
-				case { (state === \resized) || (state === \moved) }
-				{
-					// XXX
-				}
-				{ state === \closing }
-				{
-					if( userCanClose, {
-						{ this.prClose; }.defer;
-					});
-				}
-			};
+//				bounds = this.prBoundsFromJava( Rect( msg[3], msg[4], msg[5], msg[6] ));
+				bounds = Rect( msg[3], msg[4], msg[5], msg[6] );
+//				if( drawHook.notNil, { this.refresh });
+			}
+			{ state === \moved }
+			{
+//				bounds = this.prBoundsFromJava( Rect( msg[3], msg[4], msg[5], msg[6] ));
+				bounds = Rect( msg[3], msg[4], msg[5], msg[6] );
+			}
+			{ state === \closing }
+			{
+				if( userCanClose, {
+					{ this.prClose; }.defer;
+				});
+			}
 		}).add;
 
 //		server.sendBundle( nil,
-//			[ '/set', '[', "/local", this.id, '[', "/new", "de.sciss.swingosc.Frame", argName, ']', ']',
-//				\bounds ] ++ this.prBoundsToJava( argBounds ).asSwingArg ++ [ \resizable, resizable,
-//				\undecorated, border.not ],
-//			[ '/set', '[', "/local", viewID, '[', '/method', this.id, "getContentPane", ']', ']',
-//				\layout, '[', '/ref', \null, ']' ],
-//			[ "/local", "ac" ++ this.id,
-//				'[', "/new", "de.sciss.swingosc.WindowResponder", this.id, ']' ]
+//			[ '/set', '[', '/local', this.id, '[', '/new', "de.sciss.swingosc.Frame" ] ++ argName.asSwingArg ++ [ scroll, ']', ']',
+//				\bounds ] ++ this.prBoundsToJava( argBounds ).asSwingArg ++ if( resizable.not, [ \resizable, 0 ]) ++
+//				if( border.not, [ \undecorated, 1 ]),
+//			[ '/local', "ac" ++ this.id,
+//				'[', '/new', "de.sciss.swingosc.WindowResponder", this.id, ']',
+//				viewID, '[', '/method', this.id, "getContentPane", ']' ]
 //		);
+		bndl = Array( 3 );
+		bndl.add([ '/local', this.id, '[', '/new', "de.sciss.eisenkraut.net.PlugInWindow" ] ++ argName.asSwingArg ++ argBounds.asSwingArg ++ [ border.not.binaryValue | (scroll.binaryValue << 1) |Ê(resizable.not.binaryValue << 2), ']', ]);
+//		if( resizable.not, { bndl.add([ '/set', this.id, \resizable, 0 ])});
+		bndl.add([ '/local', "ac" ++ this.id,
+				'[', '/new', "de.sciss.swingosc.WindowResponder", this.id, ']',
+				viewID, '[', '/method', this.id, "getContentPane", ']' ]);
+		server.listSendBundle( nil, bndl );
 
-		server.sendBundle( nil,
-			[ '/set', '[', '/local', this.id, '[', "/new", "de.sciss.eisenkraut.net.PlugInWindow", ']', ']',
-				\bounds ] ++ this.prBoundsToJava( argBounds ).asSwingArg ++ [ \resizable, resizable,
-				\title, argName ],
-			[ '/set', '[', '/local', viewID, '[', '/method', this.id, \getContentPane, ']', ']',
-				\layout, '[', '/ref', \null, ']' ],
-			[ '/local', "ac" ++ this.id,
-				'[', '/new', 'de.sciss.swingosc.WindowResponder', this.id, ']' ]
-		);
-
-		view = JSCTopView( this, argBounds.moveTo( 0, 0 ), id: viewID );
+		view = if( scroll, {
+			JSCScrollTopView( this, argBounds.moveTo( 0, 0 ), viewID );
+		}, {
+			JSCTopView( this, argBounds.moveTo( 0, 0 ), viewID );
+		});
 	}
 }
