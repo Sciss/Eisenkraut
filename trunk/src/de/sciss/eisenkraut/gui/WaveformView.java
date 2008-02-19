@@ -42,7 +42,8 @@ import java.awt.Stroke;
 import javax.swing.JComponent;
 
 import de.sciss.eisenkraut.io.AudioTrail;
-import de.sciss.eisenkraut.io.DecimatedTrail;
+import de.sciss.eisenkraut.io.DecimatedSonaTrail;
+import de.sciss.eisenkraut.io.DecimatedWaveTrail;
 import de.sciss.eisenkraut.io.DecimationInfo;
 import de.sciss.eisenkraut.session.Session;
 import de.sciss.gui.ComponentHost;
@@ -221,7 +222,7 @@ implements Disposable
 	
 	public DecimationInfo getDecimationInfo() { return info; }
 
-	public void paintComponent( Graphics g )
+	public void paintComponentGAGA( Graphics g )
 	{
 		super.paintComponent( g );
 
@@ -229,8 +230,8 @@ implements Disposable
 	
 		if( viewSpan.isEmpty() ) return;
 
-		final Graphics2D		g2		= (Graphics2D) g;
-		final DecimatedTrail	dt		= doc.getDecimatedTrail();
+		final Graphics2D			g2		= (Graphics2D) g;
+		final DecimatedSonaTrail	dt		= doc.getDecimatedSonaTrail();
 		if( dt == null ) return;
 		
 		final int				w		= getWidth();
@@ -239,20 +240,39 @@ implements Disposable
 		int						y;
 		
 		info	= dt.getBestSubsample( new Span( viewSpan.start, viewSpan.stop + 1 ), w );
-//		g2.setPaint( pntBackground );
-//		g2.fillRect( 0, 0, recentWidth, recentHeight );
-//		host.clear( g2, 0, 0, w, h );
 		dt.drawWaveform( info, this, g2 );
 
-//		if( label != null ) {
-//			g2.setPaint( pntLabel );
-//			if( txtLay == null ) {
-//				txtLay		= new TextLayout( label, getFont(), g2.getFontRenderContext() );
-//				txtBounds   = txtLay.getBounds();
-//			}
-//			txtLay.draw( g2, recentWidth - (float) txtBounds.getWidth() - 4,
-//							 recentHeight - (float) txtBounds.getHeight() );
-//		}
+		if( nullLinie ) {
+			g2.setPaint( pntNull );
+			g2.setStroke( strkNull );
+			for( int ch = 0; ch < fullChannels; ch++ ) {
+				r = rectForChannel( ch );
+				y = r.y + (r.height >> 1);
+				g2.drawLine( r.x, y, r.x + r.width, y );
+			}
+		}
+	}
+
+	public void paintComponent( Graphics g )
+	{
+		super.paintComponent( g );
+
+//		doRecalc = false;	// not used now
+	
+		if( viewSpan.isEmpty() ) return;
+
+		final Graphics2D			g2		= (Graphics2D) g;
+		final DecimatedWaveTrail	dt		= doc.getDecimatedWaveTrail();
+		if( dt == null ) return;
+		
+		final int				w		= getWidth();
+//		final int				h		= getHeight();
+		Rectangle				r;
+		int						y;
+		
+		info	= dt.getBestSubsample( new Span( viewSpan.start, viewSpan.stop + 1 ), w );
+		dt.drawWaveform( info, this, g2 );
+
 		if( nullLinie ) {
 			g2.setPaint( pntNull );
 			g2.setStroke( strkNull );

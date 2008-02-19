@@ -49,7 +49,8 @@ import de.sciss.eisenkraut.edit.UndoManager;
 import de.sciss.eisenkraut.gui.BlendingAction;
 import de.sciss.eisenkraut.io.AudioTrail;
 import de.sciss.eisenkraut.io.BlendContext;
-import de.sciss.eisenkraut.io.DecimatedTrail;
+import de.sciss.eisenkraut.io.DecimatedSonaTrail;
+import de.sciss.eisenkraut.io.DecimatedWaveTrail;
 import de.sciss.eisenkraut.io.MarkerTrail;
 import de.sciss.eisenkraut.net.OSCRoot;
 import de.sciss.eisenkraut.net.OSCRouter;
@@ -95,12 +96,14 @@ implements OSCRouter
 	public final Timeline					timeline;
 
 	private AudioTrail						at				= null;
-	private DecimatedTrail					dt				= null;
+	private DecimatedWaveTrail				dwt				= null;
+	private DecimatedSonaTrail				dst				= null;
 
 	public final MarkerTrail				markers;
 	public final MarkerTrack				markerTrack;
 
-	private static final int[]				decimations		= { 8, 12, 16 };
+	private static final int[]				waveDecims		= { 8, 12, 16 };
+	private static final int[]				sonaDecims		= { 0, 8, 16 };
 
 //	/**
 //	 *  Use this <code>LockManager</code> to gain access to
@@ -135,11 +138,11 @@ implements OSCRouter
 	// --- actions ---
 
 	private final ActionSave			actionSave;
-	private final ActionCut			actionCut;
+	private final ActionCut				actionCut;
 	private final ActionCopy			actionCopy;
 	private final ActionPaste			actionPaste;
 	private final ActionDelete			actionDelete;
-	private final ActionSilence		actionSilence;
+	private final ActionSilence			actionSilence;
 	private final ActionTrim			actionTrim;
 
 	// ---  ---
@@ -429,11 +432,15 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 //		this.dt = dt;
 //	}
 	
-	public DecimatedTrail getDecimatedTrail()
+	public DecimatedWaveTrail getDecimatedWaveTrail()
 	{
-		return dt;
+		return dwt;
 	}
 	
+	public DecimatedSonaTrail getDecimatedSonaTrail()
+	{
+		return dst;
+	}
 	public void setDescr( AudioFileDescr[] afds )
 	{
 		this.afds = afds;
@@ -502,13 +509,20 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 		}
 	}
 
-	private void createDecimatedTrail()
+	private void createDecimatedWaveTrail()
 	throws IOException
 	{
-		if( dt != null ) throw new IllegalStateException();
-		dt	= new DecimatedTrail( at, DecimatedTrail.MODEL_FULLWAVE_PEAKRMS, decimations );
+		if( dwt != null ) throw new IllegalStateException();
+		dwt	= new DecimatedWaveTrail( at, DecimatedWaveTrail.MODEL_FULLWAVE_PEAKRMS, waveDecims );
 	}
 	
+	private void createDecimatedSonaTrail()
+	throws IOException
+	{
+//		if( dst != null ) throw new IllegalStateException();
+//		dst	= new DecimatedSonaTrail( at, DecimatedSonaTrail.MODEL_SONA, sonaDecims );
+	}
+
 	public AudioFileDescr getDisplayDescr()
 	{
 		return displayAFD;
@@ -606,7 +620,10 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 			doc.setAudioTrail( null, at );
 //			if( createOSC ) doc.createOSC();
 			if( createTransport ) doc.createTransport();
-			if( createDecimated ) doc.createDecimatedTrail();
+			if( createDecimated ) {
+				doc.createDecimatedWaveTrail();
+				doc.createDecimatedSonaTrail();
+			}
 		}
 		catch( IOException e1 ) {
 			doc.dispose();
@@ -638,7 +655,10 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 			doc.setAudioTrail( null, at );
 //			if( createOSC ) doc.createOSC();
 			if( createTransport ) doc.createTransport();
-			if( createDecimated ) doc.createDecimatedTrail();
+			if( createDecimated ) {
+				doc.createDecimatedWaveTrail();
+				doc.createDecimatedSonaTrail();
+			}
 			return doc;
 		}
 		catch( IOException e1 ) {
@@ -686,7 +706,10 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 			doc.setAudioTrail( null, at );
 //			if( createOSC ) doc.createOSC();
 			if( createTransport ) doc.createTransport();
-			if( createDecimated ) doc.createDecimatedTrail();
+			if( createDecimated ) {
+				doc.createDecimatedWaveTrail();
+				doc.createDecimatedSonaTrail();
+			}
 			return doc;
 		}
 		catch( IOException e1 ) {

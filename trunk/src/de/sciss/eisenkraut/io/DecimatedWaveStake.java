@@ -1,5 +1,5 @@
 /*
- *  DecimatedStake.java
+ *  DecimatedWaveStake.java
  *  Eisenkraut
  *
  *  Copyright (c) 2004-2008 Hanns Holger Rutz. All rights reserved.
@@ -43,7 +43,7 @@ import de.sciss.util.MutableLong;
  *  @author		Hanns Holger Rutz
  *  @version	0.70, 01-Apr-07
  */
-public class DecimatedStake
+public class DecimatedWaveStake
 extends BasicStake
 {
 	private final InterleavedStreamFile[]	fs;
@@ -54,15 +54,15 @@ extends BasicStake
 	private final DecimationHelp[]			decimations;
 	private final int						SUBNUM;
 
-	public DecimatedStake( Span span, InterleavedStreamFile[] fs, Span[] fileSpans, Span[] biasedSpans,
-						   DecimationHelp[] decimations )
+	public DecimatedWaveStake( Span span, InterleavedStreamFile[] fs, Span[] fileSpans, Span[] biasedSpans,
+						   	   DecimationHelp[] decimations )
 	{
 		this( span, fs, fileSpans, fileSpans, null, biasedSpans, decimations );
 	}
 	
-	private DecimatedStake( Span span, InterleavedStreamFile[] fs, Span[] fileSpans,
-							Span[] maxFileSpans, MutableLong[] framesWritten, Span[] biasedSpans,
-							DecimationHelp[] decimations )
+	private DecimatedWaveStake( Span span, InterleavedStreamFile[] fs, Span[] fileSpans,
+								Span[] maxFileSpans, MutableLong[] framesWritten, Span[] biasedSpans,
+								DecimationHelp[] decimations )
 	{
 		super( span );
 
@@ -95,12 +95,12 @@ extends BasicStake
 //			throw new IllegalArgumentException( String.valueOf( newStart ));
 //		}
 //	
-//		return new DecimatedStake( newSpan, f, newFileSpan, maxFileSpan );
+//		return new DecimatedWaveStake( newSpan, f, newFileSpan, maxFileSpan );
 //	}
 
 	public Stake duplicate()
 	{
-		return new DecimatedStake( span, fs, fileSpans, maxFileSpans, framesWritten, biasedSpans, decimations );
+		return new DecimatedWaveStake( span, fs, fileSpans, maxFileSpans, framesWritten, biasedSpans, decimations );
 	}
 
 	public Stake replaceStart( long newStart )
@@ -120,7 +120,7 @@ extends BasicStake
 			newFileSpans[ i ]	= fileSpans[ i ].replaceStart( fileSpans[ i ].start + delta );
 			// XXX modify framesWritten ?
 		}
-		return new DecimatedStake( span.replaceStart( newStart ), fs, newFileSpans, maxFileSpans, framesWritten, newBiasedSpans, decimations );
+		return new DecimatedWaveStake( span.replaceStart( newStart ), fs, newFileSpans, maxFileSpans, framesWritten, newBiasedSpans, decimations );
 	}
 	
 //	public Stake replaceStop( long newStop )
@@ -131,7 +131,7 @@ extends BasicStake
 //			throw new IllegalArgumentException( String.valueOf( newStop ));
 //		}
 //	
-//		return new DecimatedStake( newSpan, f, newFileSpan, maxFileSpan );
+//		return new DecimatedWaveStake( newSpan, f, newFileSpan, maxFileSpan );
 //	}
 	
 	public Stake replaceStop( long newStop )
@@ -151,7 +151,7 @@ extends BasicStake
 			newBiasedSpans[ i ]	= biasedSpans[ i ].replaceStop( newBiasedStop );
 			newFileSpans[ i ]	= fileSpans[ i ].replaceStop( fileSpans[ i ].start + newBiasedSpans[ i ].getLength() ); // XXX richtig?
 		}
-		return new DecimatedStake( span.replaceStop( newStop ), fs, newFileSpans, maxFileSpans, framesWritten, newBiasedSpans, decimations );
+		return new DecimatedWaveStake( span.replaceStop( newStop ), fs, newFileSpans, maxFileSpans, framesWritten, newBiasedSpans, decimations );
 	}
 
 	public Stake shiftVirtual( long delta )
@@ -161,7 +161,7 @@ extends BasicStake
 		for( int i = 0; i < SUBNUM; i++ ) {
 			newBiasedSpans[ i ]	= biasedSpans[ i ].shift( delta );
 		}
-		return new DecimatedStake( span.shift( delta ), fs, fileSpans, maxFileSpans, framesWritten, newBiasedSpans, decimations );
+		return new DecimatedWaveStake( span.shift( delta ), fs, fileSpans, maxFileSpans, framesWritten, newBiasedSpans, decimations );
 	}
 	
 //	public int readFrames( int sub, float[][] data, int dataOffset, Span readSpan )

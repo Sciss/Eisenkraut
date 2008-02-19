@@ -1320,7 +1320,7 @@ extends BasicTrail
 	public void addDependant( Trail sub )
 	{
 		super.addDependant( sub );
-		if( sub instanceof DecimatedTrail ) {
+		if( sub instanceof DecimatedWaveTrail ) {
 			numDepDec++;
 		}
 	}
@@ -1328,7 +1328,7 @@ extends BasicTrail
 	public void removeDependant( Trail sub )
 	{
 		super.removeDependant( sub );
-		if( sub instanceof DecimatedTrail ) {
+		if( sub instanceof DecimatedWaveTrail ) {
 			numDepDec--;
 		}
 	}

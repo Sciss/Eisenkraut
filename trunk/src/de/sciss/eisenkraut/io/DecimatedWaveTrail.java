@@ -1,5 +1,5 @@
 /*
- *  DecimatedTrail.java
+ *  DecimatedWaveTrail.java
  *  Eisenkraut
  *
  *  Copyright (c) 2004-2008 Hanns Holger Rutz. All rights reserved.
@@ -27,6 +27,7 @@
  *      11-Jan-06	created
  *		12-Jul-06	added fullwave peak/rms support
  *		27-Mar-07	fixed cache support
+ *		18-Feb-08	renamed from DecimatedTrail to DecimatedWaveTrail
  */
 
 package de.sciss.eisenkraut.io;
@@ -71,7 +72,9 @@ import de.sciss.util.MutableInt;
  *       biased x position. also for coherency, drawPCM should use a Polygon not
  *       GeneralPath
  */
-public class DecimatedTrail extends BasicTrail {
+public class DecimatedWaveTrail
+extends BasicTrail
+{
 	private static final int		UPDATE_PERIOD			= 2000; // millisecs in async overview calculation
 
 	private static final boolean	DEBUG					= false;
@@ -164,7 +167,7 @@ public class DecimatedTrail extends BasicTrail {
 		throw new IllegalStateException( "Not allowed" );
 	}
 
-	public DecimatedTrail( AudioTrail fullScale, int model, int[] decimations )
+	public DecimatedWaveTrail( AudioTrail fullScale, int model, int[] decimations )
 	throws IOException
 	{
 		super();
@@ -428,17 +431,7 @@ public class DecimatedTrail extends BasicTrail {
 								}
 							}
 						}
-						// try {
-						if( !toPCM )
-							decimator.decimatePCM( tmpBuf, tmpBuf2, 0, decimLen, info.inlineDecim );
-						// }
-						// catch( ArrayIndexOutOfBoundsException e99 ) {
-						// System.err.println( "tmpBuf size
-						// "+tmpBuf[0].length+"; tmpBuf2 size
-						// "+tmpBuf2[0].length+"; decimLen "+decimLen+";
-						// inlineDecim "+info.inlineDecim + "; maxLen
-						// "+maxLen+"; fromPCM "+fromPCM );
-						// }
+						if( !toPCM ) decimator.decimatePCM( tmpBuf, tmpBuf2, 0, decimLen, info.inlineDecim );
 					} else {
 						chunkSpan = new Span( start, start + fullLen );
 						readFrames( info.idx, tmpBuf2, 0, busyList, chunkSpan, null);
@@ -611,7 +604,7 @@ public class DecimatedTrail extends BasicTrail {
 			createBuffers();
 
 			final int				idx	= indexOf( pos, true );
-			final DecimatedStake	ds	= (DecimatedStake) editGetLeftMost( idx, true, null );
+			final DecimatedWaveStake	ds	= (DecimatedWaveStake) editGetLeftMost( idx, true, null );
 			if( ds == null ) return false;
 
 			if( !ds.readFrame( sub, tmpBuf2, 0, pos )) return false;
@@ -644,14 +637,14 @@ public class DecimatedTrail extends BasicTrail {
 		final List			coll		= editGetCollByStart( ce );
 		final MutableInt	readyLen	= new MutableInt( 0 );
 		final MutableInt	busyLen		= new MutableInt( 0 );
-		DecimatedStake		stake;
+		DecimatedWaveStake		stake;
 		int					chunkLen, discrepancy;
 		Span				subSpan;
 		int					readOffset, nextOffset = dataOffset;
 		int					len			= (int) (readSpan.getLength() >> decimHelps[ sub ].shift);
 
 		while( (len > 0) && (idx < coll.size()) ) {
-			stake		= (DecimatedStake) coll.get( idx );
+			stake		= (DecimatedWaveStake) coll.get( idx );
 			subSpan		= new Span( Math.max( stake.getSpan().start, readSpan.start ),
 									Math.min( stake.getSpan().stop, readSpan.stop ));
 			stake.readFrames( sub, data, nextOffset, subSpan, readyLen, busyLen );
@@ -686,7 +679,7 @@ public class DecimatedTrail extends BasicTrail {
 	public void debugDump()
 	{
 		for( int i = 0; i < getNumStakes(); i++ ) {
-			((DecimatedStake) get( i, true )).debugDump();
+			((DecimatedWaveStake) get( i, true )).debugDump();
 		}
 	}
 
@@ -843,7 +836,7 @@ public class DecimatedTrail extends BasicTrail {
 		final List					stakes		= fullScale.getAll(true);
 		if( stakes.isEmpty() ) return;
 
-		final DecimatedStake		das;
+		final DecimatedWaveStake		das;
 		final Span					union		= fullScale.getSpan();
 		final Span					extSpan;
 		final long					fullrateStop, fullrateLen; // , insertLen;
@@ -905,17 +898,14 @@ public class DecimatedTrail extends BasicTrail {
 				minCoarse = MAXCOARSE >> decimHelps[ 0 ].shift;
 
 				try {
-					for (int i = 0; (i < numFullBuf) && keepAsyncRunning; i++) {
-						synchronized (bufSync) {
-							if (cacheReadAS != null) {
-								// System.out.println( "tmpBuf2.length =
-								// "+tmpBuf2.length+"; fullChannels =
-								// "+fullChannels + "; decimChannels =
-								// "+decimChannels );
-								tag2 = new Span(pos, pos + minCoarse);
-								cacheReadAS.readFrames(tmpBuf2, 0, tag2);
-								das.continueWrite(0, tmpBuf2, 0, minCoarse);
-								subsampleWrite2(tmpBuf2, das, minCoarse);
+					for( int i = 0; (i < numFullBuf) && keepAsyncRunning; i++ ) {
+						synchronized( bufSync ) {
+							if( cacheReadAS != null ) {
+								// System.out.println( "tmpBuf2.length = "+tmpBuf2.length+"; fullChannels = "+fullChannels + "; decimChannels = "+decimChannels );
+								tag2 = new Span( pos, pos + minCoarse );
+								cacheReadAS.readFrames( tmpBuf2, 0, tag2 );
+								das.continueWrite( 0, tmpBuf2, 0, minCoarse );
+								subsampleWrite2( tmpBuf2, das, minCoarse );
 								pos += minCoarse;
 							} else {
 								tag2 = new Span(pos, pos + MAXCOARSE);
@@ -924,84 +914,76 @@ public class DecimatedTrail extends BasicTrail {
 								// for( int k = 0; k < tmpBuf.length; k++ ) {
 								// for( int j = 0; j < MAXCOARSE; j++ ) {
 								// tmpBuf[ k ][ j ] = 0.125f; }}
-								subsampleWrite(tmpBuf, tmpBuf2, das, MAXCOARSE,
-										cacheWriteAS, framesWrittenCache);
+								subsampleWrite( tmpBuf, tmpBuf2, das, MAXCOARSE,
+								                cacheWriteAS, framesWrittenCache );
 								pos += MAXCOARSE;
 								framesWrittenCache += minCoarse;
 							}
 							// framesWritten += MAXCOARSE;
 						}
 						time = System.currentTimeMillis();
-						if (time >= nextTime) {
+						if( time >= nextTime ) {
 							nextTime = time + 2000;
-							if (asyncManager != null)
-								asyncManager.dispatchEvent(new AsyncEvent(
-										enc_this, AsyncEvent.UPDATE, time));
+							if( asyncManager != null ) {
+								asyncManager.dispatchEvent( new AsyncEvent(
+										enc_this, AsyncEvent.UPDATE, time ));
+							}
 						}
 					}
 
-					if ((cacheReadAS == null) && keepAsyncRunning) { // cached
-																		// files
-																		// always
-																		// have
-																		// integer
-																		// fullBufs!
+					 // cached files always have integer fullBufs!
+					if( (cacheReadAS == null) && keepAsyncRunning ) {
 						len = (int) (fullrateStop - pos);
-						if ((len > 0)) {
-							synchronized (bufSync) {
-								tag2 = new Span(pos, pos + len);
+						if( len > 0 ) {
+							synchronized( bufSync ) {
+								tag2 = new Span( pos, pos + len );
 								// fullScale.readFrames( tmpBuf, 0, tag2, ce );
-								fullScale.readFrames(tmpBuf, 0, tag2, null);
-								for (int ch = 0; ch < fullChannels; ch++) {
+								fullScale.readFrames( tmpBuf, 0, tag2, null );
+								for( int ch = 0; ch < fullChannels; ch++ ) {
 									f1 = tmpBuf[ch][len - 1];
-									for (int i = len; i < MAXCOARSE; i++) {
+									for( int i = len; i < MAXCOARSE; i++ ) {
 										tmpBuf[ch][i] = f1;
 									}
 								}
-								subsampleWrite(tmpBuf, tmpBuf2, das, MAXCOARSE,
-										cacheWriteAS, framesWrittenCache);
+								subsampleWrite( tmpBuf, tmpBuf2, das, MAXCOARSE,
+								                cacheWriteAS, framesWrittenCache );
 								pos += MAXCOARSE;
 								// framesWritten += MAXCOARSE;
 								framesWrittenCache += minCoarse;
 							}
 						}
 					}
-					if (keepAsyncRunning) {
+					if( keepAsyncRunning ) {
 						cacheWriteComplete = true;
-						if (cacheWriteAS != null)
-							cacheWriteAS.addToCache(cm);
+						if( cacheWriteAS != null ) cacheWriteAS.addToCache( cm );
 					}
-				} catch (IOException e1) {
-					System.err.println(e1);
+				} catch( IOException e1 ) {
+					e1.printStackTrace();
 				} finally {
-					if (cacheReadAS != null) {
+					if( cacheReadAS != null ) {
 						cacheReadAS.cleanUp();
 						cacheReadAS.dispose(); // !!!
 					}
-					if (cacheWriteAS != null) {
+					if( cacheWriteAS != null ) {
 						cacheWriteAS.cleanUp();
 						cacheWriteAS.dispose(); // !!!
-						if (!cacheWriteComplete) { // indicates process was
-													// aborted ...
+						if( !cacheWriteComplete ) { // indicates process was aborted ...
 							final File[] f = createCacheFileNames();
-							if (f != null) { // ... therefore delete
-												// incomplete cache files!
-								for (int i = 0; i < f.length; i++) {
-									if (!f[i].delete())
-										f[i].deleteOnExit();
+							 // ... therefore delete incomplete cache files!
+							if( f != null ) {
+								for( int i = 0; i < f.length; i++ ) {
+									if( !f[i].delete() ) f[i].deleteOnExit();
 									// cm.removeFile( f[ i ]);
 								}
 							}
 						}
 					}
 
-					if (asyncManager != null)
-						asyncManager
-								.dispatchEvent(new AsyncEvent(enc_this,
-										AsyncEvent.FINISHED, System
-												.currentTimeMillis()));
-
-					synchronized (threadAsync) {
+					if( asyncManager != null ) {
+						asyncManager.dispatchEvent( new AsyncEvent( enc_this,
+							AsyncEvent.FINISHED, System.currentTimeMillis() ));
+					}
+					synchronized( threadAsync ) {
 						threadAsync.notifyAll();
 						// threadAsync = null;
 					}
@@ -1030,7 +1012,7 @@ public class DecimatedTrail extends BasicTrail {
 		if (DEBUG)
 			System.err.println("addAllDep " + union.toString());
 
-		final DecimatedStake	das;
+		final DecimatedWaveStake	das;
 		final Span				extSpan;
 		final long				fullrateStop, fullrateLen; // , insertLen;
 		final int				numFullBuf;
@@ -1127,21 +1109,17 @@ public class DecimatedTrail extends BasicTrail {
 
 	// ----------- private schnucki -----------
 
-	private File[] createCacheFileNames() {
+	private File[] createCacheFileNames()
+	{
 		final AudioFile[] audioFiles = fullScale.getAudioFiles();
-
-		if ((audioFiles.length == 0) || (audioFiles[0] == null))
-			return null;
+		if( (audioFiles.length == 0) || (audioFiles[0] == null) ) return null;
 
 		final CacheManager cm = PrefCacheManager.getInstance();
+		if( !cm.isActive() ) return null;
 
-		if (!cm.isActive())
-			return null;
-
-		final File[] f = new File[audioFiles.length];
-
-		for (int i = 0; i < f.length; i++) {
-			f[i] = cm.createCacheFileName(audioFiles[i].getFile());
+		final File[] f = new File[ audioFiles.length ];
+		for( int i = 0; i < f.length; i++ ) {
+			f[i] = cm.createCacheFileName( audioFiles[i].getFile() );
 		}
 		return f;
 	}
@@ -1305,7 +1283,7 @@ public class DecimatedTrail extends BasicTrail {
 	}
 
 	// @synchronization caller must have sync on fileSync !!!
-	private DecimatedStake allocAsync(Span span) throws IOException {
+	private DecimatedWaveStake allocAsync(Span span) throws IOException {
 		if (!Thread.holdsLock(fileSync))
 			throw new IllegalMonitorStateException();
 
@@ -1333,12 +1311,12 @@ public class DecimatedTrail extends BasicTrail {
 				biasedSpans[i] = extSpan;
 			}
 		}
-		return new DecimatedStake(extSpan, tempFAsync, fileSpans, biasedSpans,
+		return new DecimatedWaveStake(extSpan, tempFAsync, fileSpans, biasedSpans,
 				decimHelps);
 	}
 
 	// @synchronization caller must have sync on fileSync !!!
-	private DecimatedStake alloc(Span span) throws IOException {
+	private DecimatedWaveStake alloc(Span span) throws IOException {
 		if (!Thread.holdsLock(fileSync))
 			throw new IllegalMonitorStateException();
 
@@ -1365,7 +1343,7 @@ public class DecimatedTrail extends BasicTrail {
 				biasedSpans[i] = extSpan;
 			}
 		}
-		return new DecimatedStake(extSpan, tempF, fileSpans, biasedSpans,
+		return new DecimatedWaveStake(extSpan, tempF, fileSpans, biasedSpans,
 				decimHelps);
 	}
 
@@ -1427,81 +1405,69 @@ public class DecimatedTrail extends BasicTrail {
 	 */
 	// private void subsampleWrite( float[][] inBuf, float[][] outBuf,
 	// DecimatedStake das, int len )
-	private void subsampleWrite(float[][] inBuf, float[][] outBuf,
-			DecimatedStake das, int len, AudioStake cacheAS, long cacheOff)
-			throws IOException {
+	private void subsampleWrite( float[][] inBuf, float[][] outBuf, DecimatedWaveStake das,
+								 int len, AudioStake cacheAS, long cacheOff )
+	throws IOException
+	{
 		int decim;
 
-		if (SUBNUM < 1)
-			return;
+		if( SUBNUM < 1 ) return;
 
-		decim = decimHelps[0].shift;
+		decim = decimHelps[ 0 ].shift;
 		// calculate first decimation from fullrate PCM
 		len >>= decim;
-		if (inBuf != null) {
-			decimator.decimatePCM(inBuf, outBuf, 0, len, 1 << decim);
-			das.continueWrite(0, outBuf, 0, len);
-			if (cacheAS != null) {
-				cacheAS.writeFrames(outBuf, 0, new Span(cacheOff, cacheOff
-						+ len));
-				// cacheOff += len;
+		if( inBuf != null ) {
+			decimator.decimatePCM( inBuf, outBuf, 0, len, 1 << decim );
+			das.continueWrite( 0, outBuf, 0, len );
+			if( cacheAS != null ) {
+				cacheAS.writeFrames( outBuf, 0, new Span( cacheOff, cacheOff + len ));
 			}
 		}
 
-		subsampleWrite2(outBuf, das, len);
-
-		// // calculate remaining decimations from preceding ones
-		// for( int i = 1; i < SUBNUM; i++ ) {
-		// decim = decimHelps[ i ].shift - decimHelps[ i - 1 ].shift;
-		// len >>= decim;
-		// // framesWritten >>= decim;
-		// decimator.decimate( outBuf, outBuf, 0, len, 1 << decim );
-		// // ste[i].continueWrite( ts[i], framesWritten, outBuf, 0, len );
-		// das.continueWrite( i, outBuf, 0, len );
-		// } // for( SUBNUM )
+		subsampleWrite2( outBuf, das, len );
 	}
 
 	// same as subsampleWrite but input is already at first decim stage
-	private void subsampleWrite2(float[][] buf, DecimatedStake das, int len)
-			throws IOException {
+	private void subsampleWrite2( float[][] buf, DecimatedWaveStake das, int len )
+	throws IOException
+	{
 		int decim;
 
 		// calculate remaining decimations from preceding ones
-		for (int i = 1; i < SUBNUM; i++) {
-			decim = decimHelps[i].shift - decimHelps[i - 1].shift;
+		for( int i = 1; i < SUBNUM; i++ ) {
+			decim = decimHelps[ i ].shift - decimHelps[ i - 1 ].shift;
 			len >>= decim;
 			// framesWritten >>= decim;
-			decimator.decimate(buf, buf, 0, len, 1 << decim);
+			decimator.decimate( buf, buf, 0, len, 1 << decim );
 			// ste[i].continueWrite( ts[i], framesWritten, outBuf, 0, len );
-			das.continueWrite(i, buf, 0, len);
+			das.continueWrite( i, buf, 0, len );
 		} // for( SUBNUM )
 	}
 
-	// ---------------------- internal classes and interfaces
-	// ----------------------
+	// ---------------------- internal classes and interfaces ----------------------
 
 	public static interface AsyncListener {
-		public void asyncFinished(AsyncEvent e);
-
-		public void asyncUpdate(AsyncEvent e);
+		public void asyncFinished( AsyncEvent e );
+		public void asyncUpdate( AsyncEvent e );
 	}
 
-	public static class AsyncEvent extends BasicEvent {
+	public static class AsyncEvent
+	extends BasicEvent
+	{
 		private static final int UPDATE = 0;
-
 		private static final int FINISHED = 1;
 
-		private AsyncEvent(Object source, int id, long when) {
-			super(source, id, when);
+		private AsyncEvent( Object source, int id, long when ) {
+			super( source, id, when );
 		}
 
-		public boolean incorporate(BasicEvent oldEvent) {
-			if (oldEvent instanceof AsyncEvent
-					&& this.getSource() == oldEvent.getSource()
-					&& this.getID() == oldEvent.getID()) {
+		public boolean incorporate( BasicEvent oldEvent )
+		{
+			if( (oldEvent instanceof AsyncEvent) &&
+				(this.getSource() == oldEvent.getSource()) &&
+				(this.getID() == oldEvent.getID()) ) {
 
 				return true;
-
 			} else
 				return false;
 		}
