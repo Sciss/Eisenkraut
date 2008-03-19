@@ -30,10 +30,10 @@
 package de.sciss.eisenkraut.io;
 
 import java.awt.Graphics2D;
-import java.awt.Paint;
+//import java.awt.Paint;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.awt.TexturePaint;
+//import java.awt.TexturePaint;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.io.File;
@@ -108,12 +108,12 @@ extends BasicTrail
 	// private static final Stroke strkNull = new BasicStroke( 1.0f,
 	// BasicStroke.CAP_SQUARE, BasicStroke.JOIN_BEVEL,
 	// 1.0f, new float[] { 4.0f, 4.0f }, 0.0f );
-	private static final Paint		pntBusy;
-
-	private static final int[]		busyPixels = {
-			0xFFCBCBCB, 0xFFC0C0C0, 0xFFA8A8A8,
-			0xFFE6E6E6, 0xFFB2B2B2, 0xFFCACACA,
-			0xFFB1B1B1, 0xFFD5D5D5, 0xFFC0C0C0 };
+//	private static final Paint		pntBusy;
+//
+//	private static final int[]		busyPixels = {
+//			0xFFCBCBCB, 0xFFC0C0C0, 0xFFA8A8A8,
+//			0xFFE6E6E6, 0xFFB2B2B2, 0xFFCACACA,
+//			0xFFB1B1B1, 0xFFD5D5D5, 0xFFC0C0C0 };
 
 	private final Object			bufSync					= new Object();
 	private final Object			fileSync				= new Object();
@@ -273,11 +273,11 @@ extends BasicTrail
 	private final double LNKORR_MUL = 10 / Math.log( 10.0 );
 	private final double LNKORR_ADD = -2 * Math.log( fftSize );
 
-	static {
-		final BufferedImage img = new BufferedImage( 3, 3, BufferedImage.TYPE_INT_ARGB );
-		img.setRGB( 0, 0, 3, 3, busyPixels, 0, 3 );
-		pntBusy = new TexturePaint( img, new Rectangle( 0, 0, 3, 3 ));
-	}
+//	static {
+//		final BufferedImage img = new BufferedImage( 3, 3, BufferedImage.TYPE_INT_ARGB );
+//		img.setRGB( 0, 0, 3, 3, busyPixels, 0, 3 );
+//		pntBusy = new TexturePaint( img, new Rectangle( 0, 0, 3, 3 ));
+//	}
 
 	protected BasicTrail createEmptyCopy()
 	{

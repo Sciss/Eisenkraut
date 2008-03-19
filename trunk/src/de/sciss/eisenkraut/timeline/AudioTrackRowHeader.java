@@ -60,6 +60,7 @@ public class AudioTrackRowHeader
 extends TrackRowHeader
 {
 	private final PanoramaButton	pan;
+	public static final int	WIDTH	= 64;
 	
 	/**
 	 */
@@ -79,8 +80,8 @@ extends TrackRowHeader
 		lay.putConstraint( SpringLayout.SOUTH, flags, -8, SpringLayout.SOUTH, this );
 		lay.putConstraint( SpringLayout.EAST, pan, -3, SpringLayout.EAST, this );
 		lay.putConstraint( SpringLayout.SOUTH, pan, 0, SpringLayout.NORTH, flags );
-		setPreferredSize( new Dimension( 64, 16 )); // XXX
-		setMaximumSize( new Dimension( 64, getMaximumSize().height )); // XXX
+		setPreferredSize( new Dimension( WIDTH, 16 )); // XXX
+		setMaximumSize( new Dimension( WIDTH, getMaximumSize().height )); // XXX
 
 //		HelpGlassPane.setHelp( this, "ChannelTrack" );
     }

@@ -73,7 +73,7 @@ import de.sciss.gui.WindowListenerWrapper;
  *  will get a copy of the main menubar as well.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 13-Feb-08
+ *  @version	0.70, 18-Mar-08
  *
  *  @todo   the window bounds prefs storage sucks like hell
  *          ; there's a bug: if recall-window-bounds is deactivated
@@ -106,8 +106,8 @@ implements AbstractWindow
 	 */
 	private static final String KEY_VISIBLE		= "visible";	// boolean
 
-	private final ComponentListener			cmpListener;
-	private final Listener					winListener;
+	private ComponentListener	cmpListener		= null;
+	private final Listener		winListener;
 
 	// windows bounds get saved to a sub node inside the shared node
 	// the node's name is the class name's last part (omitting the package)
@@ -224,29 +224,6 @@ borrowMenuBar = wh.usesScreenMenuBar();
 			throw new IllegalArgumentException( "Unsupported window type : " + (flags & TYPES_MASK) );
 		}
 
-		cmpListener = new ComponentAdapter() {
-			public void componentResized( ComponentEvent e )
-			{
-				if( classPrefs != null ) classPrefs.put( KEY_SIZE, dimensionToString( e.getComponent().getSize() ));
-			}
-
-			public void componentMoved( ComponentEvent e )
-			{
-				if( classPrefs != null ) classPrefs.put( KEY_LOCATION, pointToString( e.getComponent().getLocation() ));
-			}
-
-			public void componentShown( ComponentEvent e )
-			{
-				if( classPrefs != null ) classPrefs.putBoolean( KEY_VISIBLE, true );
-//System.err.println( "shown" );
-			}
-
-			public void componentHidden( ComponentEvent e )
-			{
-				if( classPrefs != null ) classPrefs.putBoolean( KEY_VISIBLE, false );
-//System.err.println( "hidden" );
-			}
-		};
 		winListener = new AbstractWindow.Adapter() {
 			public void windowOpened( AbstractWindow.Event e )
 			{
@@ -310,7 +287,7 @@ borrowMenuBar = wh.usesScreenMenuBar();
 		};
    	}
 
-	private static Dimension stringToDimension( String value )
+	protected static Dimension stringToDimension( String value )
 	{
 		Dimension		dim	= null;
 		StringTokenizer tok;
@@ -326,7 +303,7 @@ borrowMenuBar = wh.usesScreenMenuBar();
 		return dim;
 	}
 
-	private static Point stringToPoint( String value )
+	protected static Point stringToPoint( String value )
 	{
 		Point			pt	= null;
 		StringTokenizer tok;
@@ -342,12 +319,12 @@ borrowMenuBar = wh.usesScreenMenuBar();
 		return pt;
 	}
 	
-	private static String pointToString( Point value )
+	protected static String pointToString( Point value )
 	{
 		return( value != null ? (value.x + " " + value.y) : null );
 	}
 	
-	private static String dimensionToString( Dimension value )
+	protected static String dimensionToString( Dimension value )
 	{
 		return( value != null ? (value.width + " " + value.height) : null );
 	}
@@ -443,10 +420,10 @@ borrowMenuBar = wh.usesScreenMenuBar();
 		return true;
 	}
 
-//	protected final boolean maintainPrefs()
-//	{
-//		return true;
-//	}
+	protected boolean autoUpdatePrefs()
+	{
+		return true;
+	}
 
 //	/**
 //	 *  Queries whether this frame should
@@ -505,6 +482,8 @@ borrowMenuBar = wh.usesScreenMenuBar();
 	 */
 	public void init()
 	{
+		if( initialized ) throw new IllegalStateException( "Window was already initialized." );
+		
 		if( borrowMenuBar ) {
 			borrowMenuBar( wh.getMenuBarBorrower() );
 			wh.addBorrowListener( this );
@@ -518,13 +497,43 @@ borrowMenuBar = wh.usesScreenMenuBar();
 
 		initialized = true;
 		
-//		if( maintainPrefs() ) {
-			final String  className	= getClass().getName();
-			classPrefs				= AbstractApplication.getApplication().getUserPrefs().node(
-										className.substring( className.lastIndexOf( '.' ) + 1 ));
+		if( autoUpdatePrefs() ) {
+			getClassPrefs();	// this creates the prefs
 			restoreFromPrefs();
+			cmpListener = new ComponentAdapter() {
+				public void componentResized( ComponentEvent e )
+				{
+					classPrefs.put( KEY_SIZE, dimensionToString( e.getComponent().getSize() ));
+				}
+
+				public void componentMoved( ComponentEvent e )
+				{
+					classPrefs.put( KEY_LOCATION, pointToString( e.getComponent().getLocation() ));
+				}
+
+				public void componentShown( ComponentEvent e )
+				{
+					classPrefs.putBoolean( KEY_VISIBLE, true );
+				}
+
+				public void componentHidden( ComponentEvent e )
+				{
+					classPrefs.putBoolean( KEY_VISIBLE, false );
+	//System.err.println( "hidden" );
+				}
+			};
 			c.addComponentListener( cmpListener );
-//		}
+		}
+	}
+	
+	protected Preferences getClassPrefs()
+	{
+		if( classPrefs == null ) {
+			final String className = getClass().getName();
+			classPrefs = AbstractApplication.getApplication().getUserPrefs().node(
+					className.substring( className.lastIndexOf( '.' ) + 1 ));
+		}
+		return classPrefs;
 	}
 
 	protected void addDynamicListening( DynamicListening l )
@@ -561,7 +570,7 @@ borrowMenuBar = wh.usesScreenMenuBar();
 	{
 		if( initialized ) {
 			removeListener( winListener );
-			c.removeComponentListener( cmpListener );
+			if( cmpListener != null ) c.removeComponentListener( cmpListener );
 			
 			wh.removeWindow( this, null );
 //			AbstractApplication.getApplication().addComponent( getClass().getName(), null );
@@ -586,6 +595,7 @@ borrowMenuBar = wh.usesScreenMenuBar();
 		if( ggTitle != null ) ggTitle.dispose();
 		
 		classPrefs	= null;
+		cmpListener	= null;
 	}
 	
 //	public void setSize( int width, int height )

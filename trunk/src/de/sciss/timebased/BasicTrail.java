@@ -30,6 +30,7 @@
  *		15-Oct-06	added getAll( int, int, boolean )
  *		19-Nov-07	removed retainAll calls which are extremely slow
  *		11-Feb-08	fixed editGetRange (calls getRightMostIndex instead of editGetRightMostIndex)
+ *		18-Mar-08	editRemove dispatches even when modSpan is empty
  */
 
 package de.sciss.timebased;
@@ -53,7 +54,7 @@ import de.sciss.io.Span;
 import de.sciss.util.ListEnum;
 
 /**
- *	@version	0.19, 11-Feb-08
+ *	@version	0.20, 18-Mar-08
  *	@author		Hanns Holger Rutz
  *
  *	@todo		addPerform( new Edit-Dispatch ) ueberpruefen (evtl. redundant)
@@ -663,7 +664,7 @@ if( DEBUG ) {
 			}
 		}
 
-		if( (source != null) && !modSpan.isEmpty() ) {
+		if( (source != null) && !(collToRemove.isEmpty() && collToAdd.isEmpty()) ) {
 			if( ce != null ) {
 				ce.addPerform( new Edit( modSpan ));
 			} else {

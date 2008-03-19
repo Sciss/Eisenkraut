@@ -44,6 +44,8 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GradientPaint;
 import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Stroke;
@@ -66,6 +68,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.Preferences;
 import java.text.MessageFormat;
 
 import javax.swing.AbstractAction;
@@ -176,7 +179,7 @@ import org.unicode.Normalizer;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 05-Feb-08
+ *  @version	0.70, 18-Mar-08
  */
 public class DocumentFrame
 extends AppWindow
@@ -321,6 +324,9 @@ implements	ProgressComponent, TimelineListener,
 	private double							playRate		= 1.0;
 	
 	private final ComponentBoundsRestrictor	cbr;
+	
+	private static Point					lastLeftTop		= new Point();
+	private static final String				KEY_TRACKSIZE	= "tracksize";
 
 	/**
 	 *  Constructs a new timeline window with
@@ -866,8 +872,6 @@ bbb.add( markAxisHeader );
 		setFocusTraversalKeysEnabled( false ); // we want the tab! we gotta have that tab! ouwe!
 
 		setDefaultCloseOperation( WindowConstants.DO_NOTHING_ON_CLOSE );
-
-		setPreferredSize( new Dimension( 576, 288 )); // XXX
 				
 		// ---- menus and actions ----
 		mr = app.getMenuBarRoot();
@@ -915,15 +919,47 @@ bbb.add( markAxisHeader );
 		app.getMenuFactory().addToWindowMenu( actionShowWindow );	// MUST BE BEFORE INIT()!!
 
 		init();
-		final Rectangle r = getBounds();
-		r.translate( 21, 23 );
-		setBounds( r );
-
+		initBounds();
 		updateTitle();
 		documentUpdate();
 
 		setVisible( true );
 		toFront();
+	}
+	
+	private void initBounds()
+	{
+		final Preferences classPrefs = getClassPrefs();
+		final GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+		final Rectangle sr = gc.getBounds();
+		final Dimension d = stringToDimension( classPrefs.get( KEY_TRACKSIZE, null ));
+		final float hFact = (float) Math.sqrt( waveView.getNumChannels() );
+		int w = d == null ? 0 : d.width;
+		int h = d == null ? 0 : d.height;
+		if( w <= 0 ) {
+			w = sr.width*2/3 - AudioTrackRowHeader.WIDTH;
+		}
+		if( h <= 0 ) {
+			h = (sr.height - 106) / 4; // 106 = approx. extra space for title bar, tool bar etc. 
+		}
+		waveView.setPreferredSize( new Dimension( w, (int) (h * hFact + 0.5f) ));
+		pack();
+		final Dimension winSize = getSize();
+		final Rectangle r = new Rectangle( lastLeftTop.x + 21, lastLeftTop.y + 23,
+				winSize.width, winSize.height );
+		GUIUtil.wrapWindowBounds( r, gc, null );
+		lastLeftTop.setLocation( r.getLocation() );
+		setBounds( r );
+		waveView.addComponentListener( new ComponentAdapter() {
+			public void componentResized( ComponentEvent e )
+			{
+				if( waveExpanded ) {
+					final Dimension d = e.getComponent().getSize();
+					d.height = (int) (d.height / hFact + 0.5f); 
+					classPrefs.put( KEY_TRACKSIZE, dimensionToString( d ));
+				}
+			}
+		});
 	}
 	
 	public void addCatchBypass() { scroll.addCatchBypass(); }
@@ -957,11 +993,16 @@ bbb.add( markAxisHeader );
 		lmm.clearInputs();
 	}
 
-	protected boolean alwaysPackSize()
+//	protected boolean alwaysPackSize()
+//	{
+//		return false;
+//	}
+
+	protected boolean autoUpdatePrefs()
 	{
 		return false;
 	}
-
+	
 	public void setSRCEnabled( boolean onOff )
 	{
 		lbSRC.setForeground( onOff ? Color.red : colrClear );

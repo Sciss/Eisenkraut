@@ -1,0 +1,334 @@
+{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf440
+{\fonttbl\f0\fnil\fcharset77 Monaco;}
+{\colortbl;\red255\green255\blue255;\red191\green0\blue0;\red0\green0\blue0;\red0\green0\blue191;
+\red96\green96\blue96;\red0\green115\blue0;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\f0\fs18 \cf2 // 01-mar-08\cf3 \
+\
+e = \cf4 Eisenkraut\cf3 .default;\
+e.connect;\
+\
+\cf2 //fork \{ e.initTree \};\cf3 \
+\cf2 //fork \{\'cae.initSwing \};\cf3 \
+\cf2 //e.swing.addr\cf3 \
+\
+\cf2 // WARNING : fails if scsynth wasn't yet booted!\cf3 \
+\
+(\
+\cf4 var\cf3  desktopFolder;\
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\tx31200\tx31680\tx32160\tx32640\tx33120\tx33600\tx34080\tx34560\tx35040\tx35520\tx36000\tx36480\tx36960\tx37440\tx37920\tx38400\tx38880\tx39360\tx39840\tx40320\tx40800\tx41280\tx41760\tx42240\tx42720\tx43200\tx43680\tx44160\tx44640\tx45120\tx45600\tx46080\tx46560\tx47040\tx47520\tx48000\ql\qnatural\pardirnatural
+\cf3 desktopFolder = \cf5 "~/Desktop"\cf3 .standardizePath ++ "/";\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf3 x = \cf4 EisKPlugIn\cf3 .new.name_( \cf5 "GVerb Filter"\cf3  );\
+e.addProcessPlugIn( x );\
+fork \{ e.initTree; \};\
+\
+x.populateWindowFunc = \{ \cf4 arg\cf3  plug, win;\
+	\cf4 var\cf3  flow, gui, synth, ggBypass, ggRender, ggProgress, roomSize = 30, revTime = 3, outDamping = 0.5, inDamping = 0.5, dryLevel = 0.dbamp, earlyLevel = -6.dbamp, tailLevel = -12.dbamp, revTimeSpec, inDampingSpec, outDampingSpec, roomSizeSpec, levelSpec, threshSpec, lbDryLevel, lbEarlyLevel, lbTailLevel, lbOutDamping, lbRevTime, lbRoomSize, lbInDamping, lbThreshold, fStop, fCreateDef, maxRoomSize = 1000, spread = 15 \cf2 /* XXX fixed for now */\cf3 ;\
+\
+try \{\
+	gui = \cf4 GUI\cf3 .current;\
+	win.bounds_( win.bounds.resizeTo( 400, 240 ));\
+	\
+	flow = \cf4 FlowLayout\cf3 ( win.view.bounds );\
+	win.view.decorator = flow;\
+	\
+	roomSizeSpec = \cf4 ControlSpec\cf3 ( 1, maxRoomSize, \cf6 'exp'\cf3  );\
+	gui.staticText.new( win, \cf4 Rect\cf3 ( 0, 0, 80, 24 ))\
+		.align_( \cf6 \\right\cf3  )\
+		.string_( \cf5 "Room Size"\cf3  );\
+\pard\pardeftab560\ql\qnatural
+\cf3 	gui.slider.new( win, \cf4 Rect\cf3 ( 0, 0, 240, 20 ))\
+		.value_( roomSizeSpec.unmap( roomSize ))\
+		.action_(\{ \cf4 arg\cf3  b;\
+			roomSize = roomSizeSpec.map( b.value );\
+			lbRoomSize.string = roomSizeSpec.map( b.value ).round( 0.1 ).asString ++ \cf5 " m\uc0\u178 "\cf3 ;\
+\cf2 //			synth.set( \\roomSize, roomSize );\cf3 \
+			\cf5 "WARNING: roomSize cannot be modified in realtime.\\nPress bypass twice to make the change effective"\cf3 .postln;\
+		\});\
+	lbRoomSize = gui.staticText.new( win, \cf4 Rect\cf3 ( 0, 0, 48, 24 ))\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab560\ql\qnatural\pardirnatural
+\cf3 		.string_( \cf5 "30 m\uc0\u178 "\cf3  );\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf3 	flow.nextLine;\
+\pard\pardeftab560\ql\qnatural
+\cf3 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf3 	revTimeSpec = \cf4 ControlSpec\cf3 ( 0.1, 100, \cf6 'exp'\cf3  );\
+	gui.staticText.new( win, \cf4 Rect\cf3 ( 0, 0, 80, 24 ))\
+		.align_( \cf6 \\right\cf3  )\
+		.string_( \cf5 "Reverb Time"\cf3  );\
+\pard\pardeftab560\ql\qnatural
+\cf3 	gui.slider.new( win, \cf4 Rect\cf3 ( 0, 0, 240, 20 ))\
+		.value_( revTimeSpec.unmap( revTime ))\
+		.action_(\{ \cf4 arg\cf3  b;\
+			revTime = revTimeSpec.map( b.value );\
+			lbRevTime.string = revTimeSpec.map( b.value ).round( 0.1 ).asString ++ \cf5 " s"\cf3 ;\
+			synth.set( \cf6 \\revTime\cf3 , revTime );\
+		\});\
+	lbRevTime = gui.staticText.new( win, \cf4 Rect\cf3 ( 0, 0, 48, 24 ))\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab560\ql\qnatural\pardirnatural
+\cf3 		.string_( \cf5 "3 s"\cf3  );\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf3 	flow.nextLine;\
+\pard\pardeftab560\ql\qnatural
+\cf3 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf3 	inDampingSpec = \cf4 ControlSpec\cf3 ( 0.0, 1.0, \cf6 'lin'\cf3  );\
+	gui.staticText.new( win, \cf4 Rect\cf3 ( 0, 0, 80, 24 ))\
+		.align_( \cf6 \\right\cf3  )\
+		.string_( \cf5 "Input Damping"\cf3  );\
+\pard\pardeftab560\ql\qnatural
+\cf3 	gui.slider.new( win, \cf4 Rect\cf3 ( 0, 0, 240, 20 ))\
+		.value_( inDampingSpec.unmap( inDamping ))\
+		.action_(\{ \cf4 arg\cf3  b;\
+			inDamping = inDampingSpec.map( b.value );\
+			lbInDamping.string = (inDampingSpec.map( b.value ).round( 0.01 ) * 100).asString ++ \cf5 "%"\cf3 ;\
+			synth.set( \cf6 \\inDamping\cf3 , inDamping );\
+		\});\
+	lbInDamping = gui.staticText.new( win, \cf4 Rect\cf3 ( 0, 0, 48, 24 ))\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab560\ql\qnatural\pardirnatural
+\cf3 		.string_( \cf5 "50%"\cf3  );\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf3 	flow.nextLine;\
+\
+	outDampingSpec = \cf4 ControlSpec\cf3 ( 0.0, 1.0, \cf6 'lin'\cf3  );\
+	gui.staticText.new( win, \cf4 Rect\cf3 ( 0, 0, 80, 24 ))\
+		.align_( \cf6 \\right\cf3  )\
+		.string_( \cf5 "Output Damp."\cf3  );\
+\pard\pardeftab560\ql\qnatural
+\cf3 	gui.slider.new( win, \cf4 Rect\cf3 ( 0, 0, 240, 20 ))\
+		.value_( outDampingSpec.unmap( outDamping ))\
+		.action_(\{ \cf4 arg\cf3  b;\
+			outDamping = outDampingSpec.map( b.value );\
+			lbOutDamping.string = (outDampingSpec.map( b.value ).round( 0.01 ) * 100).asString ++ \cf5 "%"\cf3 ;\
+			synth.set( \cf6 \\outDamping\cf3 , outDamping );\
+		\});\
+	lbOutDamping = gui.staticText.new( win, \cf4 Rect\cf3 ( 0, 0, 48, 24 ))\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab560\ql\qnatural\pardirnatural
+\cf3 		.string_( \cf5 "50%"\cf3  );\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf3 	flow.nextLine;\
+	\
+	levelSpec = \cf4 ControlSpec\cf3 ( -\cf4 inf\cf3 , 0, \cf6 'db'\cf3  );\
+	gui.staticText.new( win, \cf4 Rect\cf3 ( 0, 0, 80, 24 ))\
+		.align_( \cf6 \\right\cf3  )\
+		.string_( \cf5 "Dry Level"\cf3  );\
+\pard\pardeftab560\ql\qnatural
+\cf3 	gui.slider.new( win, \cf4 Rect\cf3 ( 0, 0, 240, 20 ))\
+		.value_( levelSpec.unmap( dryLevel.ampdb ))\
+		.action_(\{ \cf4 arg\cf3  b;\
+			dryLevel = levelSpec.map( b.value ).dbamp;\
+			lbDryLevel.string = levelSpec.map( b.value ).round( 0.1 ).asString ++ \cf5 " dB"\cf3 ;\
+			synth.set( \cf6 \\dryLevel\cf3 , dryLevel );\
+		\});\
+	lbDryLevel = gui.staticText.new( win, \cf4 Rect\cf3 ( 0, 0, 48, 24 ))\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab560\ql\qnatural\pardirnatural
+\cf3 		.string_( \cf5 "0 dB"\cf3  );\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf3 	flow.nextLine;\
+\
+	gui.staticText.new( win, \cf4 Rect\cf3 ( 0, 0, 80, 24 ))\
+		.align_( \cf6 \\right\cf3  )\
+		.string_( \cf5 "Early Ref. Lvl"\cf3  );\
+\pard\pardeftab560\ql\qnatural
+\cf3 	gui.slider.new( win, \cf4 Rect\cf3 ( 0, 0, 240, 20 ))\
+		.value_( levelSpec.unmap( earlyLevel.ampdb ))\
+		.action_(\{ \cf4 arg\cf3  b;\
+			earlyLevel = levelSpec.map( b.value ).dbamp;\
+			lbEarlyLevel.string = levelSpec.map( b.value ).round( 0.1 ).asString ++ \cf5 " dB"\cf3 ;\
+			synth.set( \cf6 \\earlyLevel\cf3 , earlyLevel );\
+		\});\
+	lbEarlyLevel = gui.staticText.new( win, \cf4 Rect\cf3 ( 0, 0, 48, 24 ))\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab560\ql\qnatural\pardirnatural
+\cf3 		.string_( \cf5 "-6 dB"\cf3  );\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf3 	flow.nextLine;\
+\
+	gui.staticText.new( win, \cf4 Rect\cf3 ( 0, 0, 80, 24 ))\
+		.align_( \cf6 \\right\cf3  )\
+		.string_( \cf5 "Reverb Level"\cf3  );\
+\pard\pardeftab560\ql\qnatural
+\cf3 	gui.slider.new( win, \cf4 Rect\cf3 ( 0, 0, 240, 20 ))\
+		.value_( levelSpec.unmap( tailLevel.ampdb ))\
+		.action_(\{ \cf4 arg\cf3  b;\
+			tailLevel = levelSpec.map( b.value ).dbamp;\
+			lbTailLevel.string = levelSpec.map( b.value ).round( 0.1 ).asString ++ \cf5 " dB"\cf3 ;\
+			synth.set( \cf6 \\tailLevel\cf3 , tailLevel );\
+		\});\
+	lbTailLevel = gui.staticText.new( win, \cf4 Rect\cf3 ( 0, 0, 48, 24 ))\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab560\ql\qnatural\pardirnatural
+\cf3 		.string_( \cf5 "-12 dB"\cf3  );\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf3 	flow.nextLine;\
+\
+	flow.shift( 8, 8 );\
+\
+	fStop = \{\
+		synth.free;\
+		synth = \cf4 nil\cf3 ;\
+	\};\
+	\
+	fCreateDef = \{ \cf4 arg\cf3  numChannels;\
+		\cf4 SynthDef\cf3 ( \cf6 \\filterGVerb\cf3 , \{ \cf4 arg\cf3  bus = 0, roomSize = 30, revTime = 3, outDamping = 0.5, inDamping = 0.5, spread = 15, dryLevel = 0, earlyLevel = 0.5, tailLevel = 0.25;\
+			\cf4 var\cf3  inp, filter;\
+			inp 		= \cf4 In\cf3 .ar( bus, numChannels ).asArray;\
+			filter	= 0;\
+			numChannels.do(\{ \cf4 arg\cf3  ch;\
+				filter = filter + \cf4 GVerb\cf3 .ar( inp[ ch ], roomSize, revTime, outDamping, inDamping, spread, dryLevel, earlyLevel, tailLevel, maxRoomSize );\
+			\});\
+			\cf4 ReplaceOut\cf3 .ar( bus, filter );\
+		\});\
+	\};\
+	\
+	ggBypass = gui.button.new( win, \cf4 Rect\cf3 ( 0, 0, 80, 24 ))\
+		.states_([[ \cf5 "Bypass"\cf3  ], [ \cf5 "Bypass"\cf3 , \cf4 Color\cf3 .black, \cf4 Color\cf3 .yellow ]])\
+		.value_( 1 )\
+		.action_(\{ \cf4 arg\cf3  b;\
+			if( b.value == 0, \{\
+				\{\
+					\cf4 var\cf3  msg, grpInput, diskBus, localThresh, localFFTSize, def;\
+					\
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\tx31200\tx31680\tx32160\tx32640\tx33120\tx33600\tx34080\tx34560\tx35040\tx35520\tx36000\tx36480\tx36960\tx37440\tx37920\tx38400\tx38880\tx39360\tx39840\tx40320\tx40800\tx41280\tx41760\tx42240\tx42720\tx43200\tx43680\tx44160\tx44640\tx45120\tx45600\tx46080\tx46560\tx47040\tx47520\tx48000\ql\qnatural\pardirnatural
+\cf3 						msg = e.query( \cf6 '/doc/active/sc'\cf3 , [ \cf6 \\diskBusIndex\cf3 , \cf6 \\diskBusNumChannels\cf3 , \cf6 \\inputGroup\cf3  ]);\
+						if( msg.notNil, \{\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf3 						diskBus 	= \cf4 Bus\cf3 ( \cf6 \\audio\cf3 , msg[ 0 ], msg[ 1 ], e.scsynth );\
+						grpInput	= \cf4 Group\cf3 .basicNew( e.scsynth, msg[ 2 ]);\
+						def = fCreateDef.value( diskBus.numChannels );\
+						synth = \cf4 Synth\cf3 .basicNew( def.name, e.scsynth );\
+						def.send( e.scsynth, synth.newMsg( grpInput, [ \cf6 \\bus\cf3 , diskBus.index, \cf6 \\roomSize\cf3 , roomSize, \cf6 \\revTime\cf3 , revTime, \cf6 \\outDamping\cf3 , outDamping, \cf6 \\inDamping\cf3 , inDamping, \cf6 \\spread\cf3 , spread, \cf6 \\dryLevel\cf3 , dryLevel, \cf6 \\earlyLevel\cf3 , earlyLevel, \cf6 \\tailLevel\cf3 , tailLevel ], \cf6 \\addAfter\cf3  ));\
+					\});\
+				\}.fork( \cf4 AppClock\cf3  );\
+			\}, \{\
+				fStop.value;\
+			\});\
+		\});\
+	ggBypass.onClose = fStop; \cf2 // XXX NEVER GETS CALLED\cf3 \
+\
+	ggRender = gui.button.new( win, \cf4 Rect\cf3 ( 0, 0, 80, 24 ))\
+		.states_([[ \cf5 "Render"\cf3  ]])\
+		.action_(\{ \cf4 arg\cf3  b;\
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\tx31200\tx31680\tx32160\tx32640\tx33120\tx33600\tx34080\tx34560\tx35040\tx35520\tx36000\tx36480\tx36960\tx37440\tx37920\tx38400\tx38880\tx39360\tx39840\tx40320\tx40800\tx41280\tx41760\tx42240\tx42720\tx43200\tx43680\tx44160\tx44640\tx45120\tx45600\tx46080\tx46560\tx47040\tx47520\tx48000\ql\qnatural\pardirnatural
+\cf3 			\{\
+				\cf4 var\cf3  msg, msg2, msg3, oscFileName, oscFile, fna, audioFileName, numChannels, rate, totalLen, cmd, prog, newProg,\
+				    localThresh, def, oscFileName2, oscRaw;\
+				msg		= e.sendMsgSync( \cf6 '/main'\cf3 , \cf6 \\createTempFile\cf3  );\
+				msg2	= e.sendMsgSync( \cf6 '/main'\cf3 , \cf6 \\createTempFile\cf3  );\
+				msg3	= e.sendMsgSync( \cf6 '/main'\cf3 , \cf6 \\createTempFile\cf3  );\
+				if( msg.notNil && msg2.notNil && msg3.notNil, \{\
+					oscFileName = msg.first;\
+					oscFileName2 = msg.first;\
+					audioFileName = msg3.first;\
+					msg = e.query( \cf6 '/doc/active/sc'\cf3 , [ \cf6 \\diskBusNumChannels\cf3  ]);\
+					if( msg.notNil, \{\
+						numChannels = msg.first;\
+						msg = e.query( \cf6 '/doc/active/timeline'\cf3 , [ \cf6 \\rate\cf3 , \cf6 \\selectionStart\cf3 , \cf6 \\selectionStop\cf3  ]);\
+						if( msg.notNil, \{\
+							rate = msg[ 0 ];\
+							totalLen = (msg[ 2 ] - msg[ 1 ]) / rate;\
+							(oscFileName.asString.asCompileString ++ \cf5 " (numCh = "\cf3 ++numChannels++\cf5 "; rate = "\cf3 ++rate++\cf5 "; duration = "\cf3 ++totalLen++\cf5 ") --> "\cf3  ++ audioFileName).postln;\
+							\cf5 "Creating NRT file..."\cf3 .postln;\
+							e.sendMsg( \cf6 '/doc/active/sc'\cf3 , \cf6 \\createNRTFile\cf3 , oscFileName, 0, 0, numChannels, rate );\
+\cf2 // XXX BROKEN\cf3 \
+\cf2 //							e.sync;\cf3 \
+e.query( \cf6 '/main'\cf3 , [ \cf6 \\version\cf3  ]);\
+							\cf5 "...done"\cf3 .postln;\
+							\
+							1.0.wait;\
+							\
+\cf2 //							"Reading NRT file...".postln;\cf3 \
+\cf2 //\cf3 \
+\cf2 //							oscFile = OSCFile.read( oscFileName );\cf3 \
+\cf2 //							"...done".postln;\cf3 \
+\cf2 //\cf3 \
+							\cf5 "Creating merged NRT file..."\cf3 .postln;\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf3 oscFileName2=\cf5 "/tmp/test.osc"\cf3 ;\
+						fna = \cf4 FileNetAddr\cf3 .openWrite( oscFileName2 );\
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\tx31200\tx31680\tx32160\tx32640\tx33120\tx33600\tx34080\tx34560\tx35040\tx35520\tx36000\tx36480\tx36960\tx37440\tx37920\tx38400\tx38880\tx39360\tx39840\tx40320\tx40800\tx41280\tx41760\tx42240\tx42720\tx43200\tx43680\tx44160\tx44640\tx45120\tx45600\tx46080\tx46560\tx47040\tx47520\tx48000\ql\qnatural\pardirnatural
+\cf3 							\cf5 "-----------1"\cf3 .postln;\
+							\cf5 "-----------2"\cf3 .postln;\
+							\cf5 "-----------3"\cf3 .postln;\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf3 						def = fCreateDef.value( numChannels );\
+						synth = \cf4 Synth\cf3 .basicNew( def.name, e.scsynth );\
+						fna.sendBundle( 0.0, def.recvMsg );\
+						fna.sendBundle( 0.0, synth.newMsg( \cf4 Group\cf3 .basicNew( e.scsynth, 0 ), [ \cf6 \\threshold\cf3 , localThresh, \cf6 \\bus\cf3 , 0 ], \cf6 \\addToTail\cf3  ));\
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\tx31200\tx31680\tx32160\tx32640\tx33120\tx33600\tx34080\tx34560\tx35040\tx35520\tx36000\tx36480\tx36960\tx37440\tx37920\tx38400\tx38880\tx39360\tx39840\tx40320\tx40800\tx41280\tx41760\tx42240\tx42720\tx43200\tx43680\tx44160\tx44640\tx45120\tx45600\tx46080\tx46560\tx47040\tx47520\tx48000\ql\qnatural\pardirnatural
+\cf3 							\cf5 "-----------4"\cf3 .postln;\
+(\cf5 "cp "\cf3  ++ oscFileName ++ \cf5 " /tmp/test2.osc"\cf3 ).systemCmd;\
+							\cf5 "-----------4.5"\cf3 .postln;\
+oscFileName = \cf5 "/tmp/test2.osc"\cf3 ;\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf3 						oscFile = \cf4 File\cf3 ( oscFileName, \cf5 "rb"\cf3  );\
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\tx31200\tx31680\tx32160\tx32640\tx33120\tx33600\tx34080\tx34560\tx35040\tx35520\tx36000\tx36480\tx36960\tx37440\tx37920\tx38400\tx38880\tx39360\tx39840\tx40320\tx40800\tx41280\tx41760\tx42240\tx42720\tx43200\tx43680\tx44160\tx44640\tx45120\tx45600\tx46080\tx46560\tx47040\tx47520\tx48000\ql\qnatural\pardirnatural
+\cf3 							\cf5 "-----------5"\cf3 .postln;\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf3 						oscRaw = \cf4 Int8Array\cf3 .newClear( oscFile.length );\
+						oscFile.read( oscRaw );\
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\tx31200\tx31680\tx32160\tx32640\tx33120\tx33600\tx34080\tx34560\tx35040\tx35520\tx36000\tx36480\tx36960\tx37440\tx37920\tx38400\tx38880\tx39360\tx39840\tx40320\tx40800\tx41280\tx41760\tx42240\tx42720\tx43200\tx43680\tx44160\tx44640\tx45120\tx45600\tx46080\tx46560\tx47040\tx47520\tx48000\ql\qnatural\pardirnatural
+\cf3 							\cf5 "-----------6"\cf3 .postln;\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf3 						oscFile.close;\
+						fna.file.write( oscRaw );\
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\tx31200\tx31680\tx32160\tx32640\tx33120\tx33600\tx34080\tx34560\tx35040\tx35520\tx36000\tx36480\tx36960\tx37440\tx37920\tx38400\tx38880\tx39360\tx39840\tx40320\tx40800\tx41280\tx41760\tx42240\tx42720\tx43200\tx43680\tx44160\tx44640\tx45120\tx45600\tx46080\tx46560\tx47040\tx47520\tx48000\ql\qnatural\pardirnatural
+\cf3 							\cf5 "-----------7"\cf3 .postln;\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf2 //						oscFile.packets.do(\{ arg p;\cf3 \
+\cf2 //							fna.sendRaw( p.asRawOSC );\cf3 \
+\cf2 //						\});\cf3 \
+						fna.closeFile;\
+						\
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\tx31200\tx31680\tx32160\tx32640\tx33120\tx33600\tx34080\tx34560\tx35040\tx35520\tx36000\tx36480\tx36960\tx37440\tx37920\tx38400\tx38880\tx39360\tx39840\tx40320\tx40800\tx41280\tx41760\tx42240\tx42720\tx43200\tx43680\tx44160\tx44640\tx45120\tx45600\tx46080\tx46560\tx47040\tx47520\tx48000\ql\qnatural\pardirnatural
+\cf3 							\cf5 "...done"\cf3 .postln;\
+audioFileName = desktopFolder ++ \cf5 "test.aif"\cf3 ;\
+							cmd = \cf5 "./scsynth -i 0 -o "\cf3 ++numChannels++\cf5 " -N "\cf3  ++ oscFileName2 ++ \cf5 " _ "\cf3  ++ audioFileName ++ \cf5 " "\cf3 ++rate++\cf5 " AIFF float"\cf3 ;\
+							ggProgress.knobColor_( \cf4 Color\cf3 .blue( 0.3 ));\
+							ggProgress.hi = 0.0;\
+							prog = 0.0;\
+							ggProgress.visible = \cf4 true\cf3 ;\
+							\cf4 Pipe\cf3 .do( cmd, \{ \cf4 arg\cf3  line, i;\
+								if( line.beginsWith( \cf5 "nextOSCPacket "\cf3  ), \{\
+									newProg = line.copyToEnd( 14 ).asFloat / totalLen;\
+									if( (newProg - prog) > 0.01, \{\
+										prog = newProg;\
+										ggProgress.hi = newProg;\
+										0.yield;\
+									\});\
+								\}, \{\
+									line.postln;\
+									0.yield;\
+								\});\
+							\});\
+							ggProgress.hi = 1.0;\
+							ggProgress.knobColor = \cf4 Color\cf3 .green( 0.75 );\
+\cf2 //							win.userCanClose = true;\cf3 \
+\cf2 //							win.name = win.name + "done.";\cf3 \
+\
+						\}, \{\
+							\cf5 "timeout"\cf3 .warn;	\
+						\});\
+					\}, \{\
+						\cf5 "timeout"\cf3 .warn;	\
+					\});\
+				\}, \{\
+					\cf5 "timeout"\cf3 .warn;	\
+				\});\
+			\}.fork( \cf4 AppClock\cf3  );\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf3 		\});\
+\
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\tx31200\tx31680\tx32160\tx32640\tx33120\tx33600\tx34080\tx34560\tx35040\tx35520\tx36000\tx36480\tx36960\tx37440\tx37920\tx38400\tx38880\tx39360\tx39840\tx40320\tx40800\tx41280\tx41760\tx42240\tx42720\tx43200\tx43680\tx44160\tx44640\tx45120\tx45600\tx46080\tx46560\tx47040\tx47520\tx48000\ql\qnatural\pardirnatural
+\cf3 	ggProgress = \cf4 GUI\cf3 .rangeSlider.new( win, \cf4 Rect\cf3 ( 0, 0, 172, 24 ))\
+		.canFocus_( \cf4 false\cf3  )\
+		.visible_( \cf4 false\cf3  );\
+\} \{ \cf4 arg\cf3  error;\
+	error.reportError;\
+\};\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf3 \};\
+)\
+}

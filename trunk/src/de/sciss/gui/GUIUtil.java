@@ -38,7 +38,10 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsEnvironment;
 import java.awt.IllegalComponentStateException;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Window;
@@ -487,6 +490,32 @@ public class GUIUtil
 		c.setMinimumSize( d );
 		c.setMaximumSize( d );
 		c.setPreferredSize( d );
+	}
+	
+	public static void wrapWindowBounds( Rectangle r, GraphicsConfiguration gc, Insets i )
+	{
+		if( gc == null ) gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+		if( i == null ) {
+			final boolean isMacOS = System.getProperty( "os.name" ).indexOf( "Mac OS" ) >= 0;
+//			final boolean isWindows = System.getProperty( "os.name" ).indexOf( "Windows" ) >= 0;
+			i = new Insets( isMacOS ? 61 : 42, 42, 42, 42 );
+			// XXX should take dock size and position into account
+			// $ defaults read com.apple.dock tilesize
+			// $ defaults read com.apple.dock orientation
+		}
+		final Rectangle sr = gc.getBounds();
+		sr.x		+= i.left;
+		sr.y		+= i.top;
+		sr.width	-= (i.left + i.right);
+		sr.height	-= (i.top + i.bottom);
+		if( (r.x < sr.x) || ((r.x + r.width) > (sr.x + sr.width)) ) {
+			r.x		= sr.x;
+			if( r.width > sr.width ) r.width = sr.width;
+		}
+		if( (r.y < sr.y) || ((r.y + r.height) > (sr.y + sr.height)) ) {
+			r.y		= sr.y;
+			if( r.height > sr.height ) r.height = sr.height;
+		}
 	}
 
 	/**

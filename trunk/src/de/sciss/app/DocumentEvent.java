@@ -25,6 +25,7 @@
  *
  *  Changelog:
  *		02-Aug-05	created
+ *		18-Mar-08	fixed incorporate
  */
 
 package de.sciss.app;
@@ -38,7 +39,7 @@ import de.sciss.app.BasicEvent;
  *	or switched.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.16, 05-May-06
+ *  @version	0.17, 18-Mar-08
  *
  *  @see		DocumentHandler#addDocumentListener( DocumentListener )
  *  @see		DocumentHandler
@@ -92,12 +93,10 @@ extends BasicEvent
 
 	public boolean incorporate( BasicEvent oldEvent )
 	{
-		if( oldEvent instanceof DocumentEvent &&
-			this.getSource() == oldEvent.getSource() &&
-			this.getID() == oldEvent.getID() ) {
-			
-			// XXX beware, when the actionID and actionObj
-			// are used, we have to deal with them here
+		if( (oldEvent instanceof DocumentEvent) &&
+			(this.getSource() == oldEvent.getSource()) &&
+			(this.getID() == oldEvent.getID()) &&
+			(this.getDocument() == ((DocumentEvent) oldEvent).getDocument()) ) {
 			
 			return true;
 
