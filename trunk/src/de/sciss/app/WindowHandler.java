@@ -35,7 +35,7 @@ import java.util.Map;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.16, 07-Dec-07
+ *  @version	0.17, 19-Mar-08
  */
 public interface WindowHandler
 {
@@ -48,6 +48,7 @@ public interface WindowHandler
 	public void removeWindow( AbstractWindow w, Map options );
 	public Iterator getWindows();
 	public AbstractWindow createWindow( int flags );
+//	public int showOptionPane( JOptionPane op );
 	public boolean usesInternalFrames();
 	public boolean usesScreenMenuBar();
 }

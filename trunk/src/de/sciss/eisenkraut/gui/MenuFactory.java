@@ -58,6 +58,7 @@ import de.sciss.app.AbstractApplication;
 import de.sciss.app.AbstractWindow;
 import de.sciss.common.BasicApplication;
 import de.sciss.common.BasicMenuFactory;
+import de.sciss.common.BasicWindowHandler;
 import de.sciss.common.ProcessingThread;
 import de.sciss.gui.AbstractWindowHandler;
 import de.sciss.gui.BooleanPrefsMenuAction;
@@ -532,6 +533,7 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 			final String[]				queryOptions = { getResourceString( "buttonCreate" ),
 														 getResourceString( "buttonCancel" )};
 			final int					result;
+//			final Object				result;
 //			final Component				c			= ((AbstractWindow) root.getComponent( Main.COMP_MAIN )).getWindow();
 			final Server.Status			status;
 			final double				sampleRate;
@@ -566,10 +568,19 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 				affp.fromDescr( afd );
 			}
 				
-			result		= JOptionPane.showOptionDialog( null, p, getValue( NAME ).toString(),
-														JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
-														null, queryOptions, queryOptions[ 0 ]);
+//			result		= JOptionPane.showOptionDialog( null, p, getValue( NAME ).toString(),
+//					JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
+//					null, queryOptions, queryOptions[ 0 ]);
+			
+			//  Object message, String title, int optionType, int messageType, Icon icon, Object[] options, Object initialValue)
+			// (Object message, int messageType, int optionType, Icon icon, Object[] options, Object initialValue) 
+			final JOptionPane op = new JOptionPane( p, JOptionPane.QUESTION_MESSAGE, JOptionPane.YES_NO_OPTION, null, queryOptions, queryOptions[ 0 ]);
+//		    final JDialog dlg = op.createDialog( null, getValue( NAME ).toString() );
+//		    dlg.show();
+//		    result = op.getValue();
+			result = BasicWindowHandler.showDialog( op, null, getValue( NAME ).toString() );
 
+//			if( queryOptions[ 0 ].equals( result )) {}
 			if( result == 0 ) {
 				affp.toDescr( afd );
 				return afd;

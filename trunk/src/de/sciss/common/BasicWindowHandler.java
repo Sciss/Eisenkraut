@@ -47,6 +47,7 @@ import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JMenuBar;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import net.roydesign.mac.MRJAdapter;
@@ -64,7 +65,7 @@ import de.sciss.gui.WindowListenerWrapper;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 14-Jun-07
+ *  @version	0.70, 19-Mar-08
  */
 public class BasicWindowHandler
 extends AbstractWindowHandler
@@ -278,7 +279,46 @@ extends AbstractWindowHandler
 //	{
 //		return actionCollect;
 //	}
-	
+
+	public static int showDialog( JOptionPane op, Component parent, String title )
+	{
+		final BasicWindowHandler wh = (BasicWindowHandler) AbstractApplication.getApplication().getWindowHandler();
+		final AbstractWindow w;
+		final Object value;
+		final int result;
+//		if( wh.usesInternalFrames() ) {
+////			w = AppWindow.wrap( op.createInternalFrame( parent, title ));
+//			throw new IllegalStateException( "showDialog with internal frames unsupported" );
+//		} else {
+			w = new AppWindow( op.createDialog( parent, title ));
+//		}
+		wh.addWindow( w, null );
+		w.setVisible( true );
+		value = op.getValue();
+		if( value == null ) {
+			result = JOptionPane.CLOSED_OPTION;
+		} else {
+			final Object[] options = op.getOptions();
+			if( options == null ) {
+				if( value instanceof Integer ) {
+					result = ((Integer) value).intValue();
+				} else {
+					result = JOptionPane.CLOSED_OPTION;
+		       	}
+			} else {
+				int i;
+				for( i = 0; i < options.length; i++ ) {
+			        if( options[ i ].equals( value )) break;
+				}
+				result = i < options.length ? i : JOptionPane.CLOSED_OPTION;
+			}
+		}
+// called by dispose
+//		wh.removeWindow( w, null );
+		w.dispose();
+		return result;
+	}
+
 	// -------------------- internal classes --------------------
 	private static class MasterFrame
 	extends JFrame

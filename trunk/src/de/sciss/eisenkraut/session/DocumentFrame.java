@@ -927,6 +927,13 @@ bbb.add( markAxisHeader );
 		toFront();
 	}
 	
+	/*
+	 * 	XXX
+	 *	@todo	should provide Insets for wrapWindowBounds
+	 *			that reflect wh.usesInternalFrames().
+	 *			also they could be determined from maximized
+	 *			bounds (see master frame in internal frames mode)
+	 */
 	private void initBounds()
 	{
 		final Preferences classPrefs = getClassPrefs();

@@ -45,6 +45,8 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Window;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
@@ -61,10 +63,7 @@ import javax.swing.SpringLayout;
 import javax.swing.SwingUtilities;
 import javax.swing.event.AncestorEvent;
 
-//import de.sciss.app.AbstractApplication;
 import de.sciss.app.AncestorAdapter;
-//import de.sciss.app.Application;
-//import de.sciss.app.GraphicsHandler;
 import de.sciss.app.PreferenceEntrySync;
 
 /**
@@ -72,7 +71,7 @@ import de.sciss.app.PreferenceEntrySync;
  *  for common Swing / GUI operations
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.36, 10-Dec-07
+ *  @version	0.37, 19-Mar-08
  */
 public class GUIUtil
 {
@@ -536,6 +535,24 @@ public class GUIUtil
 				c.removeAncestorListener( this );
 			}
 		});
+	}
+	
+	public static boolean setAlwaysOnTop( Component c, boolean b )
+	{
+		// setAlwaysOnTop doesn't exist in Java 1.4
+		try {
+			final Method m = c.getClass().getMethod( "setAlwaysOnTop", new Class[] { Boolean.TYPE });
+			m.invoke( c, new Object[] { new Boolean( b )});
+			return true;
+		}
+		catch( NoSuchMethodException e1 ) {}
+		catch( NullPointerException e1 ) {}
+		catch( SecurityException e1 ) {}
+		catch( IllegalAccessException e1 ) {}
+		catch( IllegalArgumentException e1 ) {}
+		catch( InvocationTargetException e1 ) {}
+		catch( ExceptionInInitializerError e1 ) {}
+		return false;
 	}
 
 	/**

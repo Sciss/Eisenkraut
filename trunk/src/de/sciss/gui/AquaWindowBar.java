@@ -58,8 +58,6 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import javax.swing.Box;
 import javax.swing.ButtonModel;
 import javax.swing.Icon;
@@ -462,27 +460,14 @@ implements Disposable, SwingConstants, WindowConstants
 				tft.dispose();
 				tft = null;
 			}
-			// setAlwaysOnTop doesn't exist in Java 1.4
-			try {
-				final Object o = w.getWindow();
-				final Method m = o.getClass().getMethod( "setAlwaysOnTop", new Class[] { Boolean.TYPE });
-				final JFrame jf;
-				m.invoke( o, new Object[] { new Boolean( b )});
-				alwaysOnTop = b;
+			if( GUIUtil.setAlwaysOnTop( w.getWindow(), true )) {
 				if( alwaysOnTop && w.isVisible() ) w.toFront();
-				jf = (javax.swing.JFrame) o;
+				final JFrame jf = (JFrame) w.getWindow();
 				jf.setFocusableWindowState( false );
 				// now track components that need to be focussed
 				tft = new TempFocusTracker( jf );
 				repaint();
 			}
-			catch( NoSuchMethodException e1 ) {}
-			catch( NullPointerException e1 ) {}
-			catch( SecurityException e1 ) {}
-			catch( IllegalAccessException e1 ) {}
-			catch( IllegalArgumentException e1 ) {}
-			catch( InvocationTargetException e1 ) {}
-			catch( ExceptionInInitializerError e1 ) {}
 		}
 	}
 	

@@ -63,6 +63,7 @@ import de.sciss.app.AbstractWindow;
 import de.sciss.app.DynamicAncestorAdapter;
 import de.sciss.app.DynamicListening;
 import de.sciss.gui.AquaWindowBar;
+import de.sciss.gui.GUIUtil;
 import de.sciss.gui.InternalFrameListenerWrapper;
 import de.sciss.gui.WindowListenerWrapper;
 
@@ -107,7 +108,7 @@ implements AbstractWindow
 	private static final String KEY_VISIBLE		= "visible";	// boolean
 
 	private ComponentListener	cmpListener		= null;
-	private final Listener		winListener;
+	private Listener			winListener		= null;
 
 	// windows bounds get saved to a sub node inside the shared node
 	// the node's name is the class name's last part (omitting the package)
@@ -144,9 +145,6 @@ implements AbstractWindow
 	public AppWindow( int flags )
 	{
 		super();
-		
-//		this.flags	= flags;
-		
 		wh = (BasicWindowHandler) AbstractApplication.getApplication().getWindowHandler();
 		
 		switch( flags & TYPES_MASK ) {
@@ -223,69 +221,25 @@ borrowMenuBar = wh.usesScreenMenuBar();
 		default:
 			throw new IllegalArgumentException( "Unsupported window type : " + (flags & TYPES_MASK) );
 		}
-
-		winListener = new AbstractWindow.Adapter() {
-			public void windowOpened( AbstractWindow.Event e )
-			{
-//System.err.println( "shown" );
-				if( classPrefs != null ) classPrefs.putBoolean( KEY_VISIBLE, true );
-				if( !initialized ) System.err.println( "WARNING: window not initialized (" + e.getWindow() + ")" );
-			}
-
-//			public void windowClosing( WindowEvent e )
-//			{
-//				classPrefs.putBoolean( PrefsUtil.KEY_VISIBLE, false );
-//			}
-
-			public void windowClosed( AbstractWindow.Event e )
-			{
-//System.err.println( "hidden" );
-				if( classPrefs != null ) classPrefs.putBoolean( KEY_VISIBLE, false );
-			}
-			
-			public void windowActivated( AbstractWindow.Event e )
-			{
-				try {
-					active = true;
-					if( wh.usesInternalFrames() && ownMenuBar ) {
-						wh.getMasterFrame().setJMenuBar( bar );
-					} else if( borrowMenuBar && (barBorrower != null) ) {
-						barBorrower.setJMenuBar( null );
-						if( jf != null ) {
-							jf.setJMenuBar( bar );
-						} else if( jif != null ) {
-							wh.getMasterFrame().setJMenuBar( bar );
-						} else {
-							throw new IllegalStateException();
-						}
-					}
-				}
-				// seems to be a bug ... !
-				catch( NullPointerException e1 ) {
-					e1.printStackTrace();
-				}
-			}
-
-			public void windowDeactivated( AbstractWindow.Event e )
-			{
-				try {
-					active = false;
-					if( wh.usesInternalFrames() && ownMenuBar ) {
-						if( wh.getMasterFrame().getJMenuBar() == bar ) wh.getMasterFrame().setJMenuBar( null );
-					} else if( borrowMenuBar && (barBorrower != null) ) {
-						if( jf != null ) {
-							jf.setJMenuBar( null );
-						}
-						barBorrower.setJMenuBar( bar );
-					}
-				}
-				// seems to be a bug ... !
-				catch( NullPointerException e1 ) {
-					e1.printStackTrace();
-				}
-			}
-		};
    	}
+	
+	protected AppWindow( JDialog wrap )
+	{
+		super();
+		wh = (BasicWindowHandler) AbstractApplication.getApplication().getWindowHandler();
+
+		final Preferences prefs = AbstractApplication.getApplication().getUserPrefs();
+		c = w				= wrap;
+		f = jf				= null;	// XXX
+		jc = jif			= null;
+		d = jd				= null;
+		ownMenuBar			= false;
+		floating			= !wh.usesInternalFrames() && prefs.getBoolean( BasicWindowHandler.KEY_FLOATINGPALETTES, false );
+		borrowMenuBar		= false;
+		ggTitle				= null;
+		
+		if( floating ) GUIUtil.setAlwaysOnTop( wrap, true );
+	}
 
 	protected static Dimension stringToDimension( String value )
 	{
@@ -493,6 +447,67 @@ borrowMenuBar = wh.usesScreenMenuBar();
 		wh.addWindow( this, null );
 //		AbstractApplication.getApplication().addComponent( getClass().getName(), this );
 		
+		winListener = new AbstractWindow.Adapter() {
+			public void windowOpened( AbstractWindow.Event e )
+			{
+//System.err.println( "shown" );
+				if( classPrefs != null ) classPrefs.putBoolean( KEY_VISIBLE, true );
+				if( !initialized ) System.err.println( "WARNING: window not initialized (" + e.getWindow() + ")" );
+			}
+
+//			public void windowClosing( WindowEvent e )
+//			{
+//				classPrefs.putBoolean( PrefsUtil.KEY_VISIBLE, false );
+//			}
+
+			public void windowClosed( AbstractWindow.Event e )
+			{
+//System.err.println( "hidden" );
+				if( classPrefs != null ) classPrefs.putBoolean( KEY_VISIBLE, false );
+			}
+			
+			public void windowActivated( AbstractWindow.Event e )
+			{
+				try {
+					active = true;
+					if( wh.usesInternalFrames() && ownMenuBar ) {
+						wh.getMasterFrame().setJMenuBar( bar );
+					} else if( borrowMenuBar && (barBorrower != null) ) {
+						barBorrower.setJMenuBar( null );
+						if( jf != null ) {
+							jf.setJMenuBar( bar );
+						} else if( jif != null ) {
+							wh.getMasterFrame().setJMenuBar( bar );
+						} else {
+							throw new IllegalStateException();
+						}
+					}
+				}
+				// seems to be a bug ... !
+				catch( NullPointerException e1 ) {
+					e1.printStackTrace();
+				}
+			}
+
+			public void windowDeactivated( AbstractWindow.Event e )
+			{
+				try {
+					active = false;
+					if( wh.usesInternalFrames() && ownMenuBar ) {
+						if( wh.getMasterFrame().getJMenuBar() == bar ) wh.getMasterFrame().setJMenuBar( null );
+					} else if( borrowMenuBar && (barBorrower != null) ) {
+						if( jf != null ) {
+							jf.setJMenuBar( null );
+						}
+						barBorrower.setJMenuBar( bar );
+					}
+				}
+				// seems to be a bug ... !
+				catch( NullPointerException e1 ) {
+					e1.printStackTrace();
+				}
+			}
+		};
 		addListener( winListener );
 
 		initialized = true;
@@ -569,7 +584,7 @@ borrowMenuBar = wh.usesScreenMenuBar();
 	public void dispose()
 	{
 		if( initialized ) {
-			removeListener( winListener );
+			if( winListener != null ) removeListener( winListener );
 			if( cmpListener != null ) c.removeComponentListener( cmpListener );
 			
 			wh.removeWindow( this, null );
@@ -596,6 +611,7 @@ borrowMenuBar = wh.usesScreenMenuBar();
 		
 		classPrefs	= null;
 		cmpListener	= null;
+		winListener = null;
 	}
 	
 //	public void setSize( int width, int height )
