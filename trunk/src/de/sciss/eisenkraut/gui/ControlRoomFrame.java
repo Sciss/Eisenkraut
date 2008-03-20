@@ -285,6 +285,11 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 		app.addComponent( Main.COMP_CTRLROOM, this );
 	}
 	
+	protected boolean autoUpdatePrefs()
+	{
+		return true;
+	}
+
 	public void dispose()
 	{
 		AbstractApplication.getApplication().removeComponent( Main.COMP_CTRLROOM );

@@ -278,6 +278,11 @@ ggDumpOSC.addItem( getResourceString( "labelDumpHex" ), null, new Color( 0xFF, 0
 //		toFront();
 	}
 	
+	protected boolean autoUpdatePrefs()
+	{
+		return true;
+	}
+
 	public void dispose()
 	{
 		AbstractApplication.getApplication().removeComponent( Main.COMP_MAIN );

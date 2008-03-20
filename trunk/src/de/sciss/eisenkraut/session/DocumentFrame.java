@@ -44,8 +44,6 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GradientPaint;
 import java.awt.Graphics2D;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Stroke;
@@ -927,43 +925,50 @@ bbb.add( markAxisHeader );
 		toFront();
 	}
 	
+	protected boolean alwaysPackSize()
+	{
+		return false;
+	}
+	
 	/*
-	 * 	XXX
-	 *	@todo	should provide Insets for wrapWindowBounds
-	 *			that reflect wh.usesInternalFrames().
-	 *			also they could be determined from maximized
-	 *			bounds (see master frame in internal frames mode)
 	 */
 	private void initBounds()
 	{
-		final Preferences classPrefs = getClassPrefs();
-		final GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
-		final Rectangle sr = gc.getBounds();
-		final Dimension d = stringToDimension( classPrefs.get( KEY_TRACKSIZE, null ));
-		final float hFact = (float) Math.sqrt( waveView.getNumChannels() );
-		int w = d == null ? 0 : d.width;
-		int h = d == null ? 0 : d.height;
+		final Preferences			cp	= getClassPrefs();
+		final BasicWindowHandler	wh	= getWindowHandler();
+		final Rectangle				sr	= wh.getWindowSpace();
+		final Dimension				d	= stringToDimension( cp.get( KEY_TRACKSIZE, null ));
+		final float					hf	= (float) Math.sqrt( Math.max( 1, waveView.getNumChannels() ));
+		final Dimension				winSize;
+		final Rectangle				wr;
+		int							w	= d == null ? 0 : d.width;
+		int							h	= d == null ? 0 : d.height;
+		sr.x		+= 36;
+		sr.y		+= 36;
+		sr.width	-= 60;
+		sr.height	-= 60;
 		if( w <= 0 ) {
 			w = sr.width*2/3 - AudioTrackRowHeader.WIDTH;
 		}
 		if( h <= 0 ) {
 			h = (sr.height - 106) / 4; // 106 = approx. extra space for title bar, tool bar etc. 
 		}
-		waveView.setPreferredSize( new Dimension( w, (int) (h * hFact + 0.5f) ));
+//System.out.println( "h " + h + " hf " + hf );
+		waveView.setPreferredSize( new Dimension( w, (int) (h * hf + 0.5f) ));
 		pack();
-		final Dimension winSize = getSize();
-		final Rectangle r = new Rectangle( lastLeftTop.x + 21, lastLeftTop.y + 23,
+		winSize = getSize();
+		wr = new Rectangle( lastLeftTop.x + 21, lastLeftTop.y + 23,
 				winSize.width, winSize.height );
-		GUIUtil.wrapWindowBounds( r, gc, null );
-		lastLeftTop.setLocation( r.getLocation() );
-		setBounds( r );
+		GUIUtil.wrapWindowBounds( wr, sr );
+		lastLeftTop.setLocation( wr.getLocation() );
+		setBounds( wr );
 		waveView.addComponentListener( new ComponentAdapter() {
 			public void componentResized( ComponentEvent e )
 			{
 				if( waveExpanded ) {
 					final Dimension d = e.getComponent().getSize();
-					d.height = (int) (d.height / hFact + 0.5f); 
-					classPrefs.put( KEY_TRACKSIZE, dimensionToString( d ));
+					d.height = (int) (d.height / hf + 0.5f); 
+					cp.put( KEY_TRACKSIZE, dimensionToString( d ));
 				}
 			}
 		});
@@ -1005,11 +1010,6 @@ bbb.add( markAxisHeader );
 //		return false;
 //	}
 
-	protected boolean autoUpdatePrefs()
-	{
-		return false;
-	}
-	
 	public void setSRCEnabled( boolean onOff )
 	{
 		lbSRC.setForeground( onOff ? Color.red : colrClear );

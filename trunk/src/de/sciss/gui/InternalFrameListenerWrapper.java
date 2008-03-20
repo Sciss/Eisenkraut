@@ -25,12 +25,11 @@
  *
  *  Changelog:
  *		30-Aug-06	created
+ *		19-Mar-08	fixed severe design mistake
  */
 
 package de.sciss.gui;
 
-import java.util.HashMap;
-import java.util.Map;
 import javax.swing.JInternalFrame;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
@@ -39,12 +38,12 @@ import de.sciss.app.AbstractWindow;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 30-Aug-06
+ *  @version	0.70, 19-Mar-08
  */
 public class InternalFrameListenerWrapper
 implements InternalFrameListener
 {
-	private static	Map							mapListeners = null;
+//	private static	Map							mapListeners = null;
 	private final	AbstractWindow.Listener		l;
 	private final	AbstractWindow				w;
 
@@ -58,14 +57,28 @@ implements InternalFrameListener
 	{
 		final InternalFrameListenerWrapper iflw = new InternalFrameListenerWrapper( l, w );
 		((JInternalFrame) w.getWindow()).addInternalFrameListener( iflw );
-		if( mapListeners == null ) mapListeners = new HashMap();
-		mapListeners.put( w, iflw );
+//		if( mapListeners == null ) mapListeners = new HashMap();
+//		mapListeners.put( w, iflw );
 	}
 	
 	public static void remove( AbstractWindow.Listener l, AbstractWindow w )
 	{
-		final InternalFrameListenerWrapper iflw = (InternalFrameListenerWrapper) mapListeners.remove( w );
-		((JInternalFrame) w.getWindow()).removeInternalFrameListener( iflw );
+		final JInternalFrame jif = (JInternalFrame) w.getWindow();
+//		final InternalFrameListenerWrapper iflw = (InternalFrameListenerWrapper) mapListeners.remove( w );
+//		jif.removeInternalFrameListener( iflw );
+		
+		final InternalFrameListener[] coll = jif.getInternalFrameListeners();
+		InternalFrameListenerWrapper iflw;
+		for( int i = 0; i < coll.length; i++ ) {
+			if( coll[ i ] instanceof InternalFrameListenerWrapper ) {
+				iflw = (InternalFrameListenerWrapper) coll[ i ];
+				if( iflw.l == l ) {
+					jif.removeInternalFrameListener( iflw );
+					return;
+				}
+			}
+		}
+		throw new IllegalArgumentException( "Listener was not registered " + l );
 	}
 
 	public void internalFrameOpened( InternalFrameEvent e )

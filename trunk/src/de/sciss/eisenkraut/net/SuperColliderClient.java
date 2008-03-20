@@ -66,6 +66,7 @@ import de.sciss.net.OSCBundle;
 import de.sciss.net.OSCChannel;
 import de.sciss.net.OSCMessage;
 import de.sciss.jcollider.Bus;
+import de.sciss.jcollider.Constants;
 import de.sciss.jcollider.ContiguousBlockAllocator;
 import de.sciss.jcollider.Group;
 import de.sciss.jcollider.NodeWatcher;
@@ -80,13 +81,13 @@ import de.sciss.util.Param;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
+ *  @version	0.70, 19-Mar-08
  *
  *	@todo		volume should be managed in separate synths pre limiters
  *				so that pre-fader metering becomes possible
  */
 public class SuperColliderClient
-implements OSCRouter, de.sciss.jcollider.Constants, ServerListener, DocumentListener, EventManager.Processor
+implements OSCRouter, Constants, ServerListener, DocumentListener
 {
 	private ServerOptions			so;
 	private Server					server				= null;
@@ -127,7 +128,8 @@ implements OSCRouter, de.sciss.jcollider.Constants, ServerListener, DocumentList
 	
 	private final MeterManager		meterManager;
 	
-	private EventManager			elm					= null;
+	private EventManager			elmClient					= null;
+//	private final EventManager		elmServer;
 	
 	private static SuperColliderClient instance;
 
@@ -161,8 +163,8 @@ implements OSCRouter, de.sciss.jcollider.Constants, ServerListener, DocumentList
 //							p.setOutputConfig( oCfg, volume );
 							p.setOutputConfig( oCfg );
 						}
-						if( elm != null ) {
-							elm.dispatchEvent( new Event( instance, Event.OUTPUTCONFIG, System.currentTimeMillis(), instance ));
+						if( elmClient != null ) {
+							elmClient.dispatchEvent( new Event( instance, Event.OUTPUTCONFIG, System.currentTimeMillis(), instance ));
 						}
 					} else {
 						assert false : key;
@@ -175,6 +177,13 @@ implements OSCRouter, de.sciss.jcollider.Constants, ServerListener, DocumentList
 		osc = new OSCRouterWrapper( OSCRoot.getInstance(), this );
 		
 		meterManager = new MeterManager( this );
+		
+//		elmServer = new EventManager( new EventManager.Processor() {
+//			public void processEvent( BasicEvent e )
+//			{
+////				serverAction( (ServerEvent) e );
+//			}
+//		});
 	}
 	
 	public void init()
@@ -233,16 +242,21 @@ implements OSCRouter, de.sciss.jcollider.Constants, ServerListener, DocumentList
 	public void addClientListener( Listener listener )
 	{
 		synchronized( this ) {
-			if( elm == null ) {
-				elm = new EventManager( this );
+			if( elmClient == null ) {
+				elmClient = new EventManager( new EventManager.Processor() {
+					public void processEvent( BasicEvent e )
+					{
+						clientAction( (Event) e );
+					}
+				});
 			}
-			elm.addListener( listener );
+			elmClient.addListener( listener );
 		}
 	}
 
 	public void removeClientListener( Listener listener )
 	{
-		if( elm != null ) elm.removeListener( listener );
+		if( elmClient != null ) elmClient.removeListener( listener );
 	}
 
 	public void setVolume( Object source, float volume )
@@ -268,8 +282,8 @@ implements OSCRouter, de.sciss.jcollider.Constants, ServerListener, DocumentList
 				printError( "setVolume", e1 );
 			}
 		}
-		if( (source != null) && (elm != null) ) {
-			elm.dispatchEvent( new Event( source, Event.VOLUME, System.currentTimeMillis(), this ));
+		if( (source != null) && (elmClient != null) ) {
+			elmClient.dispatchEvent( new Event( source, Event.VOLUME, System.currentTimeMillis(), this ));
 		}
 	}
 	
@@ -636,18 +650,17 @@ implements OSCRouter, de.sciss.jcollider.Constants, ServerListener, DocumentList
 
 // ------------- EventManager.Processor interface -------------
 
-	/**
+	/*
 	 *  This is called by the EventManager
 	 *  if new events are to be processed.
 	 */
-	public void processEvent( BasicEvent e )
+	private void clientAction( Event e )
 	{
-		final Event		scle = (Event) e;
-		Listener		listener;
+		Listener listener;
 		
-		for( int i = 0; i < elm.countListeners(); i++ ) {
-			listener = (Listener) elm.getListener( i );
-			listener.clientAction( scle );
+		for( int i = 0; i < elmClient.countListeners(); i++ ) {
+			listener = (Listener) elmClient.getListener( i );
+			listener.clientAction( e );
 		}
 	}
 

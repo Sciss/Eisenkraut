@@ -38,10 +38,8 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
 import java.awt.IllegalComponentStateException;
-import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Window;
@@ -491,29 +489,30 @@ public class GUIUtil
 		c.setPreferredSize( d );
 	}
 	
-	public static void wrapWindowBounds( Rectangle r, GraphicsConfiguration gc, Insets i )
+	public static void wrapWindowBounds( Rectangle wr, Rectangle sr )
 	{
-		if( gc == null ) gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
-		if( i == null ) {
-			final boolean isMacOS = System.getProperty( "os.name" ).indexOf( "Mac OS" ) >= 0;
-//			final boolean isWindows = System.getProperty( "os.name" ).indexOf( "Windows" ) >= 0;
-			i = new Insets( isMacOS ? 61 : 42, 42, 42, 42 );
-			// XXX should take dock size and position into account
-			// $ defaults read com.apple.dock tilesize
-			// $ defaults read com.apple.dock orientation
+		if( sr == null ) {
+			sr = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
 		}
-		final Rectangle sr = gc.getBounds();
-		sr.x		+= i.left;
-		sr.y		+= i.top;
-		sr.width	-= (i.left + i.right);
-		sr.height	-= (i.top + i.bottom);
-		if( (r.x < sr.x) || ((r.x + r.width) > (sr.x + sr.width)) ) {
-			r.x		= sr.x;
-			if( r.width > sr.width ) r.width = sr.width;
+//		if( i == null ) {
+//			final boolean isMacOS = System.getProperty( "os.name" ).indexOf( "Mac OS" ) >= 0;
+////			final boolean isWindows = System.getProperty( "os.name" ).indexOf( "Windows" ) >= 0;
+//			i = new Insets( isMacOS ? 61 : 42, 42, 42, 42 );
+//			// XXX should take dock size and position into account
+//			// $ defaults read com.apple.dock tilesize
+//			// $ defaults read com.apple.dock orientation
+//		}
+//		sr.x		+= i.left;
+//		sr.y		+= i.top;
+//		sr.width	-= (i.left + i.right);
+//		sr.height	-= (i.top + i.bottom);
+		if( (wr.x < sr.x) || ((wr.x + wr.width) > (sr.x + sr.width)) ) {
+			wr.x		= sr.x;
+			if( wr.width > sr.width ) wr.width = sr.width;
 		}
-		if( (r.y < sr.y) || ((r.y + r.height) > (sr.y + sr.height)) ) {
-			r.y		= sr.y;
-			if( r.height > sr.height ) r.height = sr.height;
+		if( (wr.y < sr.y) || ((wr.y + wr.height) > (sr.y + sr.height)) ) {
+			wr.y		= sr.y;
+			if( wr.height > sr.height ) wr.height = sr.height;
 		}
 	}
 
@@ -544,6 +543,26 @@ public class GUIUtil
 			final Method m = c.getClass().getMethod( "setAlwaysOnTop", new Class[] { Boolean.TYPE });
 			m.invoke( c, new Object[] { new Boolean( b )});
 			return true;
+		}
+		catch( NoSuchMethodException e1 ) {}
+		catch( NullPointerException e1 ) {}
+		catch( SecurityException e1 ) {}
+		catch( IllegalAccessException e1 ) {}
+		catch( IllegalArgumentException e1 ) {}
+		catch( InvocationTargetException e1 ) {}
+		catch( ExceptionInInitializerError e1 ) {}
+		return false;
+	}
+
+	public static boolean isAlwaysOnTop( Component c )
+	{
+		// setAlwaysOnTop doesn't exist in Java 1.4
+		try {
+			final Method m = c.getClass().getMethod( "isAlwaysOnTop", null );
+			final Object result = m.invoke( c, null );
+			if( result instanceof Boolean ) {
+				return ((Boolean) result).booleanValue();
+			}
 		}
 		catch( NoSuchMethodException e1 ) {}
 		catch( NullPointerException e1 ) {}

@@ -33,6 +33,7 @@ package de.sciss.eisenkraut.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+//import java.awt.EventQueue;
 import java.awt.FileDialog;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
@@ -523,7 +524,20 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 		public void actionPerformed( ActionEvent e )
 		{
 			final AudioFileDescr afd = query();
-			if( afd != null ) perform( afd );
+			if( afd != null ) {
+//				// XXX there is a bug with
+//				// FloatingPaletteHandler
+//				// causing infinite mutual window
+//				// refresh if we open the new window
+//				// straight away. The bug disappears
+//				// if we defer the window opening...
+//				EventQueue.invokeLater( new Runnable() {
+//					public void run()
+//					{
+						perform( afd );
+//					}
+//				});
+			}
 		}
 		
 		private AudioFileDescr query()

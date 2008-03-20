@@ -26,14 +26,13 @@
  *  Changelog:
  *		20-May-05	created from from de.sciss.meloncillo.util.EventManager
  *		06-Aug-05	added dispose()
+ *		19-Mar-07	collapsing calls to invokeLater
  */
 
 package de.sciss.app;
 
 import java.awt.EventQueue;
 import java.util.ArrayList;
-
-import de.sciss.util.Disposable;
 
 /**
  *  A custom event dispatcher which
@@ -53,17 +52,18 @@ import de.sciss.util.Disposable;
  *  predictable and easily synchronizable.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.16, 17-Oct-06
+ *  @version	0.17, 19-Mar-07
  */
 public class EventManager
-implements Runnable, Disposable
+implements Runnable
 {
 	public static final boolean DEBUG_EVENTS	= false;
 	
 	private final ArrayList		collListeners   = new ArrayList();  // sync'ed because always in Swing thread
 	private final ArrayList		collQueue		= new ArrayList();  // sync'ed through synchronized( this )
 	private boolean				paused			= false;
-
+	private volatile boolean	invoked			= false;
+	
 	protected EventManager.Processor eventProcessor;
 
 	public EventManager( EventManager.Processor eventProcessor )
@@ -71,7 +71,7 @@ implements Runnable, Disposable
 		this.eventProcessor = eventProcessor;
 	}
 	
-	protected EventManager() {}
+	protected EventManager() { /* empty */ }
 	
 	public void dispose()
 	{
@@ -82,7 +82,7 @@ implements Runnable, Disposable
 	}
 	
 	/**
-	 *  Adds a new listener. The listner
+	 *  Adds a new listener. The listener
 	 *  will receive all events queued after this
 	 *  method is called. Events already in queue
 	 *  at the moment this method is called are not
@@ -142,6 +142,7 @@ implements Runnable, Disposable
 		int		eventsInCycle;
 
 		synchronized( this ) {
+			invoked = false;
 			if( paused ) return;
 			// we only process that many events
 			// we find NOW in the queue. if the
@@ -149,12 +150,12 @@ implements Runnable, Disposable
 			// add new events they will be processed
 			// in the next later invocation
 			eventsInCycle = collQueue.size();
-		}
+//		}
 
 		for( ; eventsInCycle > 0; eventsInCycle-- ) {
-			synchronized( this ) {
+//			synchronized( this ) {
 				o = collQueue.remove( 0 );
-			}
+//			}
 			if( o instanceof BasicEvent ) {
 				eventProcessor.processEvent( (BasicEvent) o );
 			} else if( o instanceof PostponedAction ) {
@@ -169,6 +170,7 @@ implements Runnable, Disposable
 				assert false : o.getClass().getName();
 			}
 		}
+		} // synchronized( this )
 	}
 
 	/**
@@ -219,7 +221,7 @@ implements Runnable, Disposable
 		final Object	o;
 
 sync:	synchronized( this ) {
-			invoke  = !paused;
+			invoke  = !(paused || invoked);
 			i		= collQueue.size() - 1;
 			if( i >= 0 ) {
 				o = collQueue.get( i );
@@ -231,7 +233,10 @@ sync:	synchronized( this ) {
 			collQueue.add( e );
 		} // synchronized( this )
 
-		if( invoke ) EventQueue.invokeLater( this );
+		if( invoke ) {
+			invoked = true;
+			EventQueue.invokeLater( this );
+		}
 	}
 	
 	/**
@@ -290,10 +295,10 @@ sync:	synchronized( this ) {
 
 	private class PostponedAction
 	{
-		private final Object   listener;
-		private final boolean  state;
+		protected final Object   listener;
+		protected final boolean  state;
 		
-		private PostponedAction( Object listener, boolean state )
+		protected PostponedAction( Object listener, boolean state )
 		{
 			this.listener   = listener;
 			this.state		= state;

@@ -76,8 +76,11 @@ implements ActionListener
 	private final AbstractWindow.Listener	winListener;
 	
 	private boolean					listen			= false;
+//	private boolean					hidden			= false;
 //	private AbstractWindow			borrower		= null;
 	  
+	private static final boolean	DEBUG			= false;
+	
     public static FloatingPaletteHandler getInstance()
 	{
 		return getInstance( AbstractApplication.getApplication() );
@@ -156,7 +159,9 @@ implements ActionListener
      */
 	public void add( AbstractWindow w )
 	{
-		if( w.isFloating() ) {
+    	if( DEBUG ) System.out.println( "add : " + w.getClass().getName() );
+
+    	if( w.isFloating() ) {
 			if( !palettes.add( w )) {
 				throw new IllegalArgumentException( "Palette was already registered" );
 			}
@@ -170,23 +175,47 @@ implements ActionListener
 			if( listen ) {
 				w.addListener( winListener );
 				if( isFocused( w )) {
-					setFocusedWindow( w );
+//					setFocusedWindow( w );
+focusedWindow = w;
+if( DEBUG ) System.out.println( "focusedWindow = " + w.getClass().getName() );
 				}
 			}
 		}
 	}
+	
+//	public void switchFloating( AbstractWindow w )
+//	{
+//		if( w.isFloating() ) {
+//			if( !frames.remove( w )) {
+//				throw new IllegalArgumentException( "Frame was not registered" );
+//			}
+//			
+//			if( listen ) {
+//				w.removeListener( winListener );
+//				if(	isFocused( w )) {
+//focusedWindow = null;
+//if( DEBUG ) System.out.println( "focusedWindow = null" );
+//timer.restart();
+//				}
+//			}
+//		} else {
+//			
+//		}
+//	}
     
     /**
      * Unregisters a project window with the FloatingPaletteHandler.
      */
     public void remove( AbstractWindow w )
 	{
-		if( w.isFloating() ) {
+    	if( DEBUG ) System.out.println( "remove : " + w.getClass().getName() );
+
+    	if( w.isFloating() ) {
 			if( !palettes.remove( w )) {
 				throw new IllegalArgumentException( "Palette was not registered" );
 			}
 			if( listen ) w.removeListener( winListener );
-		} else {		
+		} else {
 			if( !frames.remove( w )) {
 				throw new IllegalArgumentException( "Frame was not registered" );
 			}
@@ -196,6 +225,8 @@ implements ActionListener
 				if(	isFocused( w )) {
 //					setFocusedWindow( null );
 focusedWindow = null;
+if( DEBUG ) System.out.println( "focusedWindow = null" );
+//System.out.println( "got null" );
 timer.restart();
 				}
 			}
@@ -235,7 +266,17 @@ timer.restart();
     public AbstractWindow getFocussedWindow() {
         return focusedWindow;
     }
-
+    
+    public AbstractWindow findAFloatingPalette()
+    {
+    	AbstractWindow w;
+        for( Iterator iter = palettes.iterator(); iter.hasNext(); ) {
+            w = (AbstractWindow) iter.next();
+            if( w.isVisible() ) return w;
+        }
+        return null;
+    }
+    
 	// --------------- ActionListener interface ---------------
 
 	public void actionPerformed( ActionEvent e )
@@ -270,32 +311,60 @@ timer.restart();
         return false;
     }
 	
+//    boolean DEBUG_ENTERED = false;
+    
     private void setFocusedWindow( AbstractWindow w )
 	{
+//if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
+//    	System.err.println( "setFocusedWindow " + w );
+//    	if( DEBUG_ENTERED ) throw new IllegalStateException( "DEADLOCK" );
+//    	DEBUG_ENTERED = true;
+    	
         focusedWindow = w;
+		if( DEBUG ) System.out.println( "focusedWindow : " + (w == null ? null : w.getClass().getName()) );
 		if( w != null ) {
+//System.out.println( "not null" );
             showPalettes();
 		} else {
 			hidePalettes();
 		}
-    }
+		
+//    	System.err.println( "...done" );
+//    	DEBUG_ENTERED = false;
+	}
 	
     private void showPalettes()
 	{
+//    	hidden = false;
+//System.out.println( "in the beginning " + (focusedWindow != null) );
 		if( !hiddenPalettes.isEmpty() ) {
+			// in metal look-n-feel, seems that
+			// setVisible might dispatch instanenously\
+			// somehow setting focusedWindow to null (weird?!!!)
+//			final AbstractWindow w = focusedWindow;
+			AbstractWindow w;
 			for( Iterator iter = hiddenPalettes.iterator(); iter.hasNext(); ) {
-				((AbstractWindow) iter.next()).setVisible( true );
+				w = (AbstractWindow) iter.next();
+				if( DEBUG ) System.out.println( "setVisible( true ) : " + w.getClass().getName() );
+				w.setVisible( true );
 			}
+			if( DEBUG ) System.out.println( "hiddenPalettes.clear" );
 			hiddenPalettes.clear();
 			//		focusedWindow.requestFocus();
 			// trick to not have the originally focussed window loose its focus due to palettes showing up
-			focusedWindow.setVisible( true );
+//System.out.println( "entonces " + (focusedWindow != null) );
+//			if( focusedWindow != null ) {
+				if( DEBUG ) System.out.println( "setVisible( true ) : " + focusedWindow.getClass().getName() );
+				focusedWindow.setVisible( true );
+//				if( DEBUG ) System.out.println( "toFront : " + focusedWindow.getClass().getName() );
+//				focusedWindow.toFront();
+//			}
 		}
     }
     
     private void hidePalettes()
 	{
-//System.err.println( "KOOKA" );
+//    	hidden = true;
 		AbstractWindow w;
 
 		if( !frames.isEmpty() ) {
@@ -314,9 +383,20 @@ timer.restart();
 		for( Iterator iter = palettes.iterator(); iter.hasNext(); ) {
             w = (AbstractWindow) iter.next();
 			if( w.isVisible() ) {
+				if( DEBUG ) {
+					System.out.println( "hiddenPalettes.add : " + w.getClass().getName() );
+					System.out.println( "setVisible( false ) : " + w.getClass().getName() );
+				}
 				hiddenPalettes.add( w );
 				w.setVisible( false );
             }
         }
+		
+//		// XXX fuer test
+//		for( Iterator iter = hiddenPalettes.iterator(); iter.hasNext(); ) {
+//            w = (AbstractWindow) iter.next();
+//			w.setVisible( false );
+//			if( DEBUG ) System.out.println( "setVisible( false ) : " + w.getClass().getName() );
+//		}
     }
 }

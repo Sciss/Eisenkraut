@@ -166,6 +166,11 @@ implements	DynamicListening, de.sciss.app.DocumentListener, ParamField.Listener,
 		app.addComponent( Main.COMP_AUDIOINFO, this );
 	}
 	
+	protected boolean autoUpdatePrefs()
+	{
+		return true;
+	}
+
 	public void dispose()
 	{
 		AbstractApplication.getApplication().removeComponent( Main.COMP_AUDIOINFO );

@@ -29,6 +29,7 @@
 
 package de.sciss.eisenkraut.net;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -69,7 +70,7 @@ implements OSCListener, Constants, ServerListener, ActionListener
 	private Bus						bus					= null;
 	private Group					grp					= null;
 	
-	private final Object			sync				= new Object();
+//	private final Object			sync				= new Object();
 	
 	private int						numCtrlChans		= 0;
 	
@@ -96,7 +97,7 @@ implements OSCListener, Constants, ServerListener, ActionListener
 
 	private void meterBang()
 	{
-		synchronized( sync ) {
+//		synchronized( sync ) {
 			if( (server != null) && (meterBangBndl != null) ) {
 				try {
 //					if( meterListening ) server.sendBundle( meterBangBndl );
@@ -104,7 +105,7 @@ implements OSCListener, Constants, ServerListener, ActionListener
 				}
 				catch( IOException e1 ) {} // don't print coz the frequency might be high
 			}
-		}
+//		}
 	}
 
 	// ------------- ActionListener interface -------------
@@ -118,7 +119,7 @@ implements OSCListener, Constants, ServerListener, ActionListener
 
 	public void serverAction( ServerEvent e )
 	{
-		synchronized( sync ) {	
+//		synchronized( sync ) {	
 			switch( e.getID() ) {
 			case ServerEvent.STOPPED:
 				setServer( null );
@@ -131,18 +132,33 @@ implements OSCListener, Constants, ServerListener, ActionListener
 			default:
 				break;
 			}
-		}
+//		}
 	}
 
 	// ------------- OSCListener interface -------------
 	
+	private volatile OSCMessage rcvMsg;
+	private final Runnable runProcessMessage = new Runnable() {
+		public void run()
+		{
+			processMessage();
+		}
+	};
+	
 	public void messageReceived( OSCMessage msg, SocketAddress sender, long time )
 	{
+		rcvMsg = msg;
+		EventQueue.invokeLater( runProcessMessage );
+	}
+	
+	private void processMessage()
+	{
+		final OSCMessage msg = rcvMsg;
 		final int		busIndex	= ((Number) msg.getArg( 0 )).intValue();
 		final int		numVals		= ((Number) msg.getArg( 1 )).intValue();
-		MeterClient		mc;
+		MeterClient		mc;	
 		
-		synchronized( sync ) {
+//		synchronized( sync ) {
 			if( (bus == null) || (busIndex != bus.getIndex()) ) return;
 
 			for( int i = 0; i < collActiveClients.size(); i++ ) {
@@ -163,7 +179,7 @@ implements OSCListener, Constants, ServerListener, ActionListener
 				}
 				mc.ml.meterUpdate( mc.peakRMSPairs );
 			}
-		}
+//		}
 	}
 
 	private static void printError( String name, Throwable t )
@@ -212,7 +228,7 @@ implements OSCListener, Constants, ServerListener, ActionListener
 	// @synchronization	must be called with sync on sync
 	private void setServer( Server s )
 	{
-		if( !Thread.holdsLock( sync )) throw new IllegalMonitorStateException();
+//		if( !Thread.holdsLock( sync )) throw new IllegalMonitorStateException();
 	
 		MeterClient mc;
 
@@ -235,7 +251,9 @@ implements OSCListener, Constants, ServerListener, ActionListener
 	
 	public void setListenerTask( MeterListener ml, boolean task, OSCBundle bndl )
 	{
-		synchronized( sync ) {
+		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
+
+//		synchronized( sync ) {
 			final MeterClient mc = (MeterClient) mapClients.get( ml );
 			if( mc == null ) return;
 			if( mc.task != task ) {
@@ -271,7 +289,7 @@ implements OSCListener, Constants, ServerListener, ActionListener
 					}
 				}
 			}
-		}
+//		}
 	}
 
 	public void addListener( MeterListener ml, Bus b, Group g, boolean task )
@@ -292,8 +310,9 @@ implements OSCListener, Constants, ServerListener, ActionListener
 
 //Thread.dumpStack();
 //System.err.println( "addListener( "+ml+", "+channels.length+", "+g );
+		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
 		
-		synchronized( sync ) {
+//		synchronized( sync ) {
 			mc = new MeterClient( ml, s, channels, g, task );
 //System.err.println( "add "+ml+"; bus "+b );
 			if( mapClients.put( ml, mc ) != null ) throw new IllegalArgumentException( "MeterListener was already registered" );
@@ -302,7 +321,7 @@ implements OSCListener, Constants, ServerListener, ActionListener
 				collActiveClients.add( mc );
 				resortClients();
 			}
-		}
+//		}
 	}
 	
 	public void removeListener( MeterListener ml )
@@ -310,11 +329,11 @@ implements OSCListener, Constants, ServerListener, ActionListener
 		final MeterClient	mc;
 		final OSCBundle		bndl;
 		
-		synchronized( sync ) {
+		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
+
+//		synchronized( sync ) {
 			mc = (MeterClient) mapClients.remove( ml );
 			if( mc == null ) return;
-//			if( mc == null ) throw new IllegalArgumentException( "MeterListener was not registered" );
-//System.err.println( "remove "+mc.ml+"; bus "+mc.b );
 			collAllClients.remove( mc );
 			if( collActiveClients.remove( mc )) {
 				bndl = new OSCBundle();
@@ -334,13 +353,13 @@ implements OSCListener, Constants, ServerListener, ActionListener
 					}
 				}
 			}
-		}
+//		}
 	}
 	
 	// @synchronization	must be called with sync on sync
 	private void resortClients()
 	{
-		if( !Thread.holdsLock( sync )) throw new IllegalMonitorStateException();
+//		if( !Thread.holdsLock( sync )) throw new IllegalMonitorStateException();
 
 		final NodeWatcher	nw;
 		int					off	= 0;

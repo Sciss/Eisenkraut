@@ -34,12 +34,15 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Frame;
 import java.awt.GraphicsEnvironment;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -57,12 +60,15 @@ import javax.swing.JLayeredPane;
 import javax.swing.JMenuBar;
 import javax.swing.SwingUtilities;
 import javax.swing.RootPaneContainer;
+import javax.swing.Timer;
 
 import de.sciss.app.AbstractApplication;
 import de.sciss.app.AbstractWindow;
+import de.sciss.app.Application;
 import de.sciss.app.DynamicAncestorAdapter;
 import de.sciss.app.DynamicListening;
 import de.sciss.gui.AquaWindowBar;
+import de.sciss.gui.FloatingPaletteHandler;
 import de.sciss.gui.GUIUtil;
 import de.sciss.gui.InternalFrameListenerWrapper;
 import de.sciss.gui.WindowListenerWrapper;
@@ -132,7 +138,8 @@ implements AbstractWindow
 	// support	own				---					---
 	// palette	borrow			borrow (deleg)		---
 	
-	private final boolean					floating, ownMenuBar, borrowMenuBar;
+	private boolean							floating;
+	private final boolean					ownMenuBar, borrowMenuBar;
 	private final BasicWindowHandler		wh;
 	private JMenuBar						bar			= null;
 	private AbstractWindow					barBorrower	= null;
@@ -142,12 +149,18 @@ implements AbstractWindow
 	
 	private boolean							initialized	= false;
 	
+	private static final int		TEMPFLOAT_TIMEOUT	= 100;
+	private final boolean					tempFloating;
+	private javax.swing.Timer				tempFloatingTimer;
+
 	public AppWindow( int flags )
 	{
 		super();
-		wh = (BasicWindowHandler) AbstractApplication.getApplication().getWindowHandler();
-		
-		switch( flags & TYPES_MASK ) {
+		final Application	app		= AbstractApplication.getApplication();
+		final int			type	= flags & TYPES_MASK;
+		wh = (BasicWindowHandler) app.getWindowHandler();
+
+		switch( type ) {
 		case REGULAR:
 		case SUPPORT:
 			if( wh.usesInternalFrames() ) {
@@ -155,23 +168,24 @@ implements AbstractWindow
 				w = f = jf		= null;
 				d = jd			= null;
 				wh.getDesktop().add( jif );
-				ownMenuBar		= (flags & TYPES_MASK) == REGULAR;
+				ownMenuBar		= type == REGULAR;
 
 			} else {
 				c = w = f = jf	= new JFrame();
 				jc = jif		= null;
 				d = jd			= null;
-				ownMenuBar		= wh.usesScreenMenuBar() || ((flags & TYPES_MASK) == REGULAR);
+				ownMenuBar		= wh.usesScreenMenuBar() || (type == REGULAR);
 			}
-			floating			= false;
+//			floating			= false;
+			tempFloating		= (type == SUPPORT) && wh.usesFloating();
+floating						= tempFloating;
 			borrowMenuBar		= false;
 			ggTitle				= null;
 			break;
 			
 		case PALETTE:
-			final Preferences prefs = AbstractApplication.getApplication().getUserPrefs();
-			
-			floating			= prefs.getBoolean( BasicWindowHandler.KEY_FLOATINGPALETTES, false );
+			floating			= wh.usesFloating();
+			tempFloating		= false;
 			ownMenuBar			= false;
 			
 			if( wh.usesInternalFrames() ) {
@@ -221,24 +235,59 @@ borrowMenuBar = wh.usesScreenMenuBar();
 		default:
 			throw new IllegalArgumentException( "Unsupported window type : " + (flags & TYPES_MASK) );
 		}
+		
+		initTempFloating();
    	}
 	
 	protected AppWindow( JDialog wrap )
 	{
 		super();
-		wh = (BasicWindowHandler) AbstractApplication.getApplication().getWindowHandler();
+		final Application app	= AbstractApplication.getApplication();
+		wh = (BasicWindowHandler) app.getWindowHandler();
 
-		final Preferences prefs = AbstractApplication.getApplication().getUserPrefs();
 		c = w				= wrap;
 		f = jf				= null;	// XXX
 		jc = jif			= null;
 		d = jd				= null;
 		ownMenuBar			= false;
-		floating			= !wh.usesInternalFrames() && prefs.getBoolean( BasicWindowHandler.KEY_FLOATINGPALETTES, false );
+// WARNING: modal dialogs must not be permanent floating
+// because they would cause the floating palette handler
+// to hide and show them, re-creating a modal event queue
+// interruption!!
+//		permFloating		= !wh.usesInternalFrames() && wh.usesFloating();
+//		tempFloating		= false;
+//		tempFloating		= !wh.usesInternalFrames() && wh.usesFloating();
+//		floating			= false;
+//floating = tempFloating;
+		tempFloating		= false;
+		floating			= false;
 		borrowMenuBar		= false;
 		ggTitle				= null;
 		
-		if( floating ) GUIUtil.setAlwaysOnTop( wrap, true );
+//		if( floating ) GUIUtil.setAlwaysOnTop( wrap, true );
+//		initTempFloating();
+//lala=true;
+	}
+//boolean lala=false;
+//	
+//	protected void gaga() { removeListener( winListener ); }
+	
+	private void initTempFloating()
+	{
+		if( tempFloating ) {
+			tempFloatingTimer = new Timer( TEMPFLOAT_TIMEOUT, new ActionListener() {
+				public void actionPerformed( ActionEvent e )
+				{
+					GUIUtil.setAlwaysOnTop( getWindow(), true );
+				}
+			});
+			tempFloatingTimer.setRepeats( false );
+		}
+	}
+	
+	public BasicWindowHandler getWindowHandler()
+	{
+		return wh;
 	}
 
 	protected static Dimension stringToDimension( String value )
@@ -287,6 +336,11 @@ borrowMenuBar = wh.usesScreenMenuBar();
 	{
 		return floating;
 	}
+	
+//	public boolean isTempFloating()
+//	{
+//		return tempFloating;
+//	}
 	
 	/*
 	 *  Restores this frame's bounds and visibility
@@ -376,7 +430,7 @@ borrowMenuBar = wh.usesScreenMenuBar();
 
 	protected boolean autoUpdatePrefs()
 	{
-		return true;
+		return false;
 	}
 
 //	/**
@@ -437,7 +491,9 @@ borrowMenuBar = wh.usesScreenMenuBar();
 	public void init()
 	{
 		if( initialized ) throw new IllegalStateException( "Window was already initialized." );
-		
+
+//System.out.println( "init " + getClass().getName() );
+
 		if( borrowMenuBar ) {
 			borrowMenuBar( wh.getMenuBarBorrower() );
 			wh.addBorrowListener( this );
@@ -447,6 +503,7 @@ borrowMenuBar = wh.usesScreenMenuBar();
 		wh.addWindow( this, null );
 //		AbstractApplication.getApplication().addComponent( getClass().getName(), this );
 		
+//		final AbstractWindow enc_this = this;
 		winListener = new AbstractWindow.Adapter() {
 			public void windowOpened( AbstractWindow.Event e )
 			{
@@ -482,6 +539,26 @@ borrowMenuBar = wh.usesScreenMenuBar();
 							throw new IllegalStateException();
 						}
 					}
+					if( tempFloating ) {
+						if( jif == null ) {
+//System.out.println( "activ " + enc_this.getClass().getName() );
+////							wh.removeWindow( enc_this, null );
+tempFloatingTimer.restart();
+//							GUIUtil.setAlwaysOnTop( getWindow(), true );
+////							floating = true;
+////							wh.addWindow( enc_this, null );
+						} else {
+							jif.setLayer( JLayeredPane.MODAL_LAYER );
+						}
+//					} else if( wh.usesFloating() ) {
+//						// tricky...
+//						// we need to do this because if the opposite's
+//						// window is tempFloating, it will reset
+//						// alwaysOnTop to false too late for the OS,
+//						// so this one is not jumping to the front
+//						// automatically upon activation...
+//						toFront();
+					}
 				}
 				// seems to be a bug ... !
 				catch( NullPointerException e1 ) {
@@ -491,6 +568,7 @@ borrowMenuBar = wh.usesScreenMenuBar();
 
 			public void windowDeactivated( AbstractWindow.Event e )
 			{
+//System.out.println( "deac2 " + enc_this.getClass().getName() );
 				try {
 					active = false;
 					if( wh.usesInternalFrames() && ownMenuBar ) {
@@ -500,6 +578,29 @@ borrowMenuBar = wh.usesScreenMenuBar();
 							jf.setJMenuBar( null );
 						}
 						barBorrower.setJMenuBar( bar );
+					}
+					if( tempFloating ) {
+						if( jif == null ) {
+//System.out.println( "deact " + enc_this.getClass().getName() );
+//							wh.removeWindow( enc_this, null );
+							GUIUtil.setAlwaysOnTop( getWindow(), false );
+tempFloatingTimer.stop();
+//							floating = false;
+//							wh.addWindow( enc_this, null );
+
+// find the new active window (is valid only after
+// the next event cycle) and re-put it in the front\
+// coz setAlwaysOnTop came "too late"
+EventQueue.invokeLater( new Runnable() {
+	public void run()
+	{
+		final AbstractWindow w = FloatingPaletteHandler.getInstance().getFocussedWindow();
+		if( w != null ) w.toFront();
+	}
+});
+						} else {
+							jif.setLayer( JLayeredPane.DEFAULT_LAYER );
+						}
 					}
 				}
 				// seems to be a bug ... !
@@ -538,6 +639,10 @@ borrowMenuBar = wh.usesScreenMenuBar();
 				}
 			};
 			c.addComponentListener( cmpListener );
+		} else {
+			if( alwaysPackSize() ) {
+				pack();
+			}
 		}
 	}
 	
@@ -583,6 +688,10 @@ borrowMenuBar = wh.usesScreenMenuBar();
 	 */
 	public void dispose()
 	{
+		if( tempFloatingTimer != null ) {
+			tempFloatingTimer.stop();
+		}
+		
 		if( initialized ) {
 			if( winListener != null ) removeListener( winListener );
 			if( cmpListener != null ) c.removeComponentListener( cmpListener );
@@ -734,6 +843,11 @@ borrowMenuBar = wh.usesScreenMenuBar();
 	
 	public void toFront()
 	{
+//if( lala ) {
+//	System.out.println( "toFront" );
+//	new Exception().printStackTrace();
+//}
+//		
 		if( w != null ) {
 			w.toFront();
 		} else if( jif != null ) {
@@ -748,6 +862,11 @@ borrowMenuBar = wh.usesScreenMenuBar();
 	
 	public void setVisible( boolean b )
 	{
+//if( lala ) {
+//	System.out.println( "setVisible( " + b + " )" );
+//	new Exception().printStackTrace();
+//}
+//
 		c.setVisible( b );
 	}
 	

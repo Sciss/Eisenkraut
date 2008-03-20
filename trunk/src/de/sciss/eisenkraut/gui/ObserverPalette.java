@@ -214,6 +214,11 @@ implements	ParamField.Listener, TimelineListener, DynamicListening, DocumentList
 		app.addComponent( Main.COMP_OBSERVER, this );
 	}
 	
+	protected boolean autoUpdatePrefs()
+	{
+		return true;
+	}
+
 	public void dispose()
 	{
 		AbstractApplication.getApplication().removeComponent( Main.COMP_OBSERVER );

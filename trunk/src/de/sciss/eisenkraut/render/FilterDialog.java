@@ -125,10 +125,10 @@ implements	RenderConsumer, RenderHost,
 		AbstractApplication.getApplication().addComponent( Main.COMP_FILTER, this );
 	}
 	
-	protected boolean restoreVisibility()
-	{
-		return false;
-	}
+//	protected boolean restoreVisibility()
+//	{
+//		return false;
+//	}
 	
 	public void dispose()
 	{

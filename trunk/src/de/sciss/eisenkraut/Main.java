@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
+
 import javax.swing.UIManager;
 
 import de.sciss.eisenkraut.gui.AudioFileInfoPalette;
@@ -316,6 +317,27 @@ implements OSCRouter // ProgressComponent // , PreferenceChangeListener
 				getMenuFactory().openDocument( new File( openDoc.get( i ).toString() ));
 			}
 		}
+		
+//		final javax.swing.JFrame test = new javax.swing.JFrame( "SCHOKO" );
+//		test.setSize( 200, 200 );
+//		GUIUtil.setAlwaysOnTop( test, true );
+//		test.setVisible( true );
+//		final JDialog test2 = new JDialog( test );
+//		test2.add( new javax.swing.JLabel( "1111" ));
+//		test2.pack();
+//		test2.setVisible( true );
+//		final JDialog test3 = new JDialog( test );
+//		test3.add( new javax.swing.JLabel( "2222" ));
+//		test3.pack();
+//		test3.setVisible( true );
+//		final JDialog test4 = new JDialog( test3 );
+//		test4.add( new javax.swing.JLabel( "3333" ));
+//		test4.pack();
+//		test4.setVisible( true );
+//		final JDialog test5 = new JDialog( test3 );
+//		test5.add( new javax.swing.JLabel( "4444" ));
+//		test5.pack();
+//		test5.setVisible( true );
 	}
 
 	protected BasicMenuFactory createMenuFactory()

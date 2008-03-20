@@ -31,6 +31,7 @@
 package de.sciss.common;
 
 import java.awt.Component;
+import java.awt.Frame;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 import java.awt.Window;
@@ -39,11 +40,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.List;
+import java.util.prefs.Preferences;
+
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JDesktopPane;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JMenuBar;
@@ -57,6 +61,7 @@ import de.sciss.app.AbstractWindow;
 import de.sciss.app.WindowHandler;
 import de.sciss.gui.AbstractWindowHandler;
 import de.sciss.gui.FloatingPaletteHandler;
+import de.sciss.gui.GUIUtil;
 import de.sciss.gui.MenuRoot;
 import de.sciss.gui.WindowListenerWrapper;
 
@@ -92,9 +97,10 @@ extends AbstractWindowHandler
 	public static final String KEY_LAFDECORATION = "lafdecoration";
 
 	private final FloatingPaletteHandler	fph;
-	private final boolean					internalFrames;
+	private final boolean					internalFrames, floating;
 	private final JDesktopPane				desktop;
 	private final MasterFrame				masterFrame;
+	private final Window					hiddenTopWindow;
 	
 	private final List						collBorrowListeners		= new ArrayList();
 	private AbstractWindow					borrower				= null;
@@ -108,11 +114,13 @@ extends AbstractWindowHandler
 	{
 		super();
 		
-		final boolean lafDeco = root.getUserPrefs().getBoolean( KEY_LAFDECORATION, false );
+		final Preferences	prefs	= root.getUserPrefs();
+		final boolean		lafDeco = prefs.getBoolean( KEY_LAFDECORATION, false );
 		JFrame.setDefaultLookAndFeelDecorated( lafDeco );
 		
 		this.root		= root;
-		internalFrames	= root.getUserPrefs().getBoolean( KEY_INTERNALFRAMES, false );
+		internalFrames	= prefs.getBoolean( KEY_INTERNALFRAMES, false );
+		floating		= prefs.getBoolean( BasicWindowHandler.KEY_FLOATINGPALETTES, false );
 		fph				= FloatingPaletteHandler.getInstance();
 
 		if( internalFrames ) {
@@ -122,10 +130,17 @@ extends AbstractWindowHandler
 //			masterFrame.setVisible( true );
 			desktop		= new JDesktopPane();
 			masterFrame.getContentPane().add( desktop );
+			hiddenTopWindow = null;
 		} else {
 			desktop		= null;
 			masterFrame	= null;
 			fph.setListening( true );
+			if( floating ) {
+				hiddenTopWindow = new Frame();
+				GUIUtil.setAlwaysOnTop( hiddenTopWindow, true );
+			} else {
+				hiddenTopWindow = null;
+			}
 		}
 		
 		actionCollect	= new actionCollectClass( root.getResourceString( "menuCollectWindows" ));
@@ -260,6 +275,11 @@ extends AbstractWindowHandler
 		return internalFrames;
 	}
 
+	public boolean usesFloating()
+	{
+		return floating;
+	}
+
 	public boolean usesScreenMenuBar()
 	{
 		return MRJAdapter.isSwingUsingScreenMenuBar();
@@ -275,6 +295,20 @@ extends AbstractWindowHandler
 		return masterFrame;
 	}
 	
+	public Window getHiddenTopWindow()
+	{
+		return hiddenTopWindow;
+	}
+	
+	public Rectangle getWindowSpace()
+	{
+		if( masterFrame != null ) {
+			return new Rectangle( 0, 0, masterFrame.getWidth(), masterFrame.getHeight() );
+		} else {
+			return GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+		}
+	}
+	
 //	public Action getCollectAction()
 //	{
 //		return actionCollect;
@@ -283,40 +317,69 @@ extends AbstractWindowHandler
 	public static int showDialog( JOptionPane op, Component parent, String title )
 	{
 		final BasicWindowHandler wh = (BasicWindowHandler) AbstractApplication.getApplication().getWindowHandler();
+		return wh.instShowDialog( op, parent, title );
+	}
+	
+	private int instShowDialog( JOptionPane op, Component parent, String title )
+	{
+//		System.out.println( "instShowDialog" );
+		
 		final AbstractWindow w;
 		final Object value;
 		final int result;
-//		if( wh.usesInternalFrames() ) {
-////			w = AppWindow.wrap( op.createInternalFrame( parent, title ));
-//			throw new IllegalStateException( "showDialog with internal frames unsupported" );
-//		} else {
-			w = new AppWindow( op.createDialog( parent, title ));
-//		}
-		wh.addWindow( w, null );
-		w.setVisible( true );
-		value = op.getValue();
-		if( value == null ) {
-			result = JOptionPane.CLOSED_OPTION;
-		} else {
-			final Object[] options = op.getOptions();
-			if( options == null ) {
-				if( value instanceof Integer ) {
-					result = ((Integer) value).intValue();
-				} else {
-					result = JOptionPane.CLOSED_OPTION;
-		       	}
-			} else {
-				int i;
-				for( i = 0; i < options.length; i++ ) {
-			        if( options[ i ].equals( value )) break;
+		final JDialog dlg;
+		final List wasOnTop = new ArrayList();
+		AbstractWindow w2;
+		dlg = op.createDialog( parent, title );
+
+		// temporarily disable alwaysOnTop
+		if( !internalFrames && floating ) {
+			for( Iterator iter = getWindows(); iter.hasNext(); ) {
+				w2 = (AbstractWindow) iter.next();
+				if( GUIUtil.isAlwaysOnTop( w2.getWindow() )) {
+					wasOnTop.add( w2 );
+					GUIUtil.setAlwaysOnTop( w2.getWindow(), false );
 				}
-				result = i < options.length ? i : JOptionPane.CLOSED_OPTION;
 			}
 		}
-// called by dispose
-//		wh.removeWindow( w, null );
-		w.dispose();
-		return result;
+		try {
+			w = new AppWindow( dlg );
+			w.init();  // calls addWindow
+//			((AppWindow) w).gaga();
+				
+			// --- modal interruption ---
+			w.setVisible( true );
+			
+			value = op.getValue();
+			if( value == null ) {
+				result = JOptionPane.CLOSED_OPTION;
+			} else {
+				final Object[] options = op.getOptions();
+				if( options == null ) {
+					if( value instanceof Integer ) {
+						result = ((Integer) value).intValue();
+					} else {
+						result = JOptionPane.CLOSED_OPTION;
+			       	}
+				} else {
+					int i;
+					for( i = 0; i < options.length; i++ ) {
+				        if( options[ i ].equals( value )) break;
+					}
+					result = i < options.length ? i : JOptionPane.CLOSED_OPTION;
+				}
+			}
+	//		wh.removeWindow( w, null );
+			w.dispose();	// calls removeWindow
+			return result;
+
+		} finally { // make sure to restore original state
+			for( int i = 0; i < wasOnTop.size(); i++ ) {
+				w2 = (AbstractWindow) wasOnTop.get( i );
+//				System.out.println( "wasOnTop " + i + " : " + w2.getClass().getName() );
+				GUIUtil.setAlwaysOnTop( w2.getWindow(), true );
+			}
+		}
 	}
 
 	// -------------------- internal classes --------------------
