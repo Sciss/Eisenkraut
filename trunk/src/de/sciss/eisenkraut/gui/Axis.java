@@ -66,7 +66,7 @@ import de.sciss.util.Disposable;
  *  timeline.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 06-Dec-07
+ *  @version	0.70, 20-Mar-08
  *
  *	@todo		FIXEDBOUNDS is ignored in logarithmic mode now
  *	@todo		new label width calculation not performed in logarithmic mode
@@ -123,7 +123,7 @@ implements Disposable
 	private String[]			msgPtrn;
 	private long[]				labelRaster;
 	private long				labelMinRaster;
-	private int					flags;
+	private int					flags			= -1;
 
 	private boolean				flMirroir;			// MIRROIR set
 	private boolean				flTimeFormat;		// TIMEFORMAT set
@@ -212,6 +212,8 @@ implements Disposable
 	
 	public void setFlags( int flags )
 	{
+		if( this.flags == flags ) return;
+		
 		this.flags		= flags;
 		flMirroir		= (flags & MIRROIR) != 0;
 		flTimeFormat	= (flags & TIMEFORMAT) != 0;

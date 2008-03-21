@@ -43,6 +43,7 @@ import java.awt.event.AdjustmentListener;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 
 import javax.swing.JScrollBar;
 import javax.swing.LookAndFeel;
@@ -52,7 +53,6 @@ import de.sciss.app.AbstractApplication;
 import de.sciss.app.DynamicAncestorAdapter;
 import de.sciss.app.DynamicListening;
 import de.sciss.app.DynamicPrefChangeManager;
-import de.sciss.app.LaterInvocationManager;
 import de.sciss.eisenkraut.gui.GraphicsUtil;
 import de.sciss.eisenkraut.session.Session;
 import de.sciss.eisenkraut.util.PrefsUtil;
@@ -72,7 +72,7 @@ import de.sciss.io.Span;
  *	This class tracks the catch preferences
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
+ *  @version	0.70, 20-Mar-08
  *
  *  @todo		the display properties work well
  *				with the Aqua look+and+feel, however
@@ -81,7 +81,7 @@ import de.sciss.io.Span;
  */
 public class TimelineScroll
 extends JScrollBar
-implements AdjustmentListener, TimelineListener, DynamicListening, LaterInvocationManager.Listener
+implements AdjustmentListener, TimelineListener, DynamicListening, PreferenceChangeListener
 {
 	public static final int 	TYPE_UNKNOWN		= 0;
 	public static final int 	TYPE_DRAG			= 1;
@@ -329,13 +329,12 @@ implements AdjustmentListener, TimelineListener, DynamicListening, LaterInvocati
         doc.timeline.removeTimelineListener( this );
     }
  
-// ---------------- LaterInvocationManager.Listener interface ---------------- 
+// ---------------- PreferenceChangeListener interface ---------------- 
 
-	// o instanceof PreferenceChangeEvent
-	public void laterInvocation( Object o )
+	public void preferenceChange( PreferenceChangeEvent e )
 	{
-		final String  key	= ((PreferenceChangeEvent) o).getKey();
-		final String  value	= ((PreferenceChangeEvent) o).getNewValue();
+		final String  key	= e.getKey();
+		final String  value	= e.getNewValue();
 
 		if( !key.equals( PrefsUtil.KEY_CATCH )) return;
 		

@@ -1,16 +1,37 @@
-//
-//  LevelMeterManager.java
-//  Eisenkraut
-//
-//  Created by Hanns Holger Rutz on 21.09.06.
-//  Copyright 2006 __MyCompanyName__. All rights reserved.
-//
+/*
+ *  PeakMeterManager.java
+ *  Eisenkraut
+ *
+ *  Copyright (c) 2004-2008 Hanns Holger Rutz. All rights reserved.
+ *
+ *	This software is free software; you can redistribute it and/or
+ *	modify it under the terms of the GNU General Public License
+ *	as published by the Free Software Foundation; either
+ *	version 2, june 1991 of the License, or (at your option) any later version.
+ *
+ *	This software is distributed in the hope that it will be useful,
+ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *	General Public License for more details.
+ *
+ *	You should have received a copy of the GNU General Public
+ *	License (gpl.txt) along with this software; if not, write to the Free Software
+ *	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ *
+ *	For further information, please contact Hanns Holger Rutz at
+ *	contact@sciss.de
+ *
+ *
+ *  Changelog:
+ *		21-Sep-06	created
+ */
 
 package de.sciss.eisenkraut.gui;
 
 import java.awt.EventQueue;
 import javax.swing.JComponent;
-import javax.swing.RepaintManager;
+//import javax.swing.RepaintManager;
 
 import de.sciss.app.DynamicAncestorAdapter;
 import de.sciss.app.DynamicListening;
@@ -28,7 +49,7 @@ import de.sciss.gui.PeakMeter;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 29-Nov-07
+ *  @version	0.70, 20-Mar-08
  *
  *	@synchronization	all methods are to be called in the event thread
  */
@@ -48,7 +69,7 @@ implements MeterListener, Disposable, DynamicListening, GroupSync.Slave
 	private final GroupAnySync				anySync;
 	private final Runnable					runStopTasking;
 	
-	private Object							sync			= new Object();
+//	private Object							sync			= new Object();
 
 	public PeakMeterManager( MeterManager mm )
 	{
@@ -65,12 +86,12 @@ implements MeterListener, Disposable, DynamicListening, GroupSync.Slave
 		};
 	}
 	
-	public void setSync( Object sync ) {
-		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
-		
-		this.sync	= sync;
-		for( int i = 0; i < meters.length; i++ ) meters[ i ].setSync( sync );
-	}
+//	public void setSync( Object sync ) {
+//		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
+//		
+//		this.sync	= sync;
+//		for( int i = 0; i < meters.length; i++ ) meters[ i ].setSync( sync );
+//	}
 	
 	private void checkStopTasking()
 	{
@@ -87,7 +108,7 @@ implements MeterListener, Disposable, DynamicListening, GroupSync.Slave
 			daa.remove();
 		}
 		daa.addTo( c );
-		setSync( RepaintManager.currentManager( c ));
+//		setSync( RepaintManager.currentManager( c ));
 	}
 	
 	public void setGroup( Group g )
@@ -147,7 +168,7 @@ implements MeterListener, Disposable, DynamicListening, GroupSync.Slave
 		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
 	
 		this.meters	= meters;
-		for( int i = 0; i < meters.length; i++ ) meters[ i ].setSync( sync );
+//		for( int i = 0; i < meters.length; i++ ) meters[ i ].setSync( sync );
 	}
 	
 	private void clear()
@@ -241,11 +262,11 @@ implements MeterListener, Disposable, DynamicListening, GroupSync.Slave
 		final long			now			= System.currentTimeMillis();
 		int					dirty		= 0;
 
-		synchronized( sync ) {
+//		synchronized( sync ) {
 			for( int i = 0, j = 0; i < numMeters; i++ ) {
 				if( meters[ i ].setPeakAndRMS( peakRMSPairs[ j++ ], peakRMSPairs[ j++ ], now )) dirty++;
 			}
-		}
+//		}
 		
 		if( !task && (dirty == 0) ) {
 			EventQueue.invokeLater( runStopTasking );

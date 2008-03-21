@@ -267,15 +267,15 @@ timer.restart();
         return focusedWindow;
     }
     
-    public AbstractWindow findAFloatingPalette()
-    {
-    	AbstractWindow w;
-        for( Iterator iter = palettes.iterator(); iter.hasNext(); ) {
-            w = (AbstractWindow) iter.next();
-            if( w.isVisible() ) return w;
-        }
-        return null;
-    }
+//    public AbstractWindow findAFloatingPalette()
+//    {
+//    	AbstractWindow w;
+//        for( Iterator iter = palettes.iterator(); iter.hasNext(); ) {
+//            w = (AbstractWindow) iter.next();
+//            if( w.isVisible() ) return w;
+//        }
+//        return null;
+//    }
     
 	// --------------- ActionListener interface ---------------
 

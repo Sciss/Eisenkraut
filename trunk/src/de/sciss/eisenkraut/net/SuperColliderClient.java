@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -61,7 +62,6 @@ import de.sciss.app.BasicEvent;
 import de.sciss.app.DocumentListener;
 import de.sciss.app.DynamicPrefChangeManager;
 import de.sciss.app.EventManager;
-import de.sciss.app.LaterInvocationManager;
 import de.sciss.net.OSCBundle;
 import de.sciss.net.OSCChannel;
 import de.sciss.net.OSCMessage;
@@ -148,11 +148,10 @@ implements OSCRouter, Constants, ServerListener, DocumentListener
 		so.setBlockAllocFactory( new ContiguousBlockAllocator.Factory() );	// deals better with fragmentation
 		
 		new DynamicPrefChangeManager( audioPrefs, new String[] { PrefsUtil.KEY_OUTPUTCONFIG },
-			new LaterInvocationManager.Listener() {
-				public void laterInvocation( Object o )
+			new PreferenceChangeListener() {
+				public void preferenceChange( PreferenceChangeEvent e )
 				{
-					final PreferenceChangeEvent pce = (PreferenceChangeEvent) o;
-					final String				key	= pce.getKey();
+					final String				key	= e.getKey();
 					SuperColliderPlayer			p;
 					
 					if( key.equals( PrefsUtil.KEY_OUTPUTCONFIG )) {
@@ -170,7 +169,7 @@ implements OSCRouter, Constants, ServerListener, DocumentListener
 						assert false : key;
 					}
 				}
-			}
+			}, false
 		).startListening();	// fires change and hence createOutputConfig()
 
 //		osc = new OSCRouterWrapper( superRouter, this );

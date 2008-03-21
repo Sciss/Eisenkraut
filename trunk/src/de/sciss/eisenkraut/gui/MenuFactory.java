@@ -33,7 +33,6 @@ package de.sciss.eisenkraut.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-//import java.awt.EventQueue;
 import java.awt.FileDialog;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;

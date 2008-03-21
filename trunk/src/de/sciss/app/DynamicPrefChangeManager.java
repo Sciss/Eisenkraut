@@ -25,6 +25,7 @@
  *
  *  Changelog:
  *		20-May-05	created from de.sciss.meloncillo.util.DynamicPrefChangeManager
+ *		20-Mar-08	the client is now a PreferenceChangeListener, public deliverChanges
  */
 
 package de.sciss.app;
@@ -65,18 +66,25 @@ import de.sciss.app.PreferenceNodeSync;
  *  is <strong>NOT</strong> forwarded to the LIM-Listener.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.13, 15-Sep-05
+ *  @version	0.14, 20-Mar-08
  */
 public class DynamicPrefChangeManager
-implements DynamicListening, PreferenceChangeListener, PreferenceNodeSync
+implements DynamicListening, PreferenceChangeListener, PreferenceNodeSync,
+		   LaterInvocationManager.Listener
 {
-	private final String[]							keys;
-	private Preferences								prefs;
-	private final LaterInvocationManager			lim;
-	private final LaterInvocationManager.Listener	limClient;
-	private final String[]							values;
-	private boolean									listening   = false;
+	private final String[]					keys;
+	private Preferences						prefs;
+	private final LaterInvocationManager	lim;
+	private final PreferenceChangeListener	client;
+	private final String[]					values;
+	private boolean							listening   = false;
 
+	public DynamicPrefChangeManager( Preferences prefs, String[] keys,
+			 PreferenceChangeListener client )
+	{
+		this( prefs, keys, client, true );
+	}
+	
 	/**
 	 *  Constructs a new <code>DynamicPrefChangeManager</code>.
 	 *
@@ -97,13 +105,15 @@ implements DynamicListening, PreferenceChangeListener, PreferenceNodeSync
 	 *						laterInvocation is a PreferenceChangeEvent.
 	 */
 	public DynamicPrefChangeManager( Preferences prefs, String[] keys,
-									 LaterInvocationManager.Listener limClient )
+									 PreferenceChangeListener client,
+									 boolean initialDelivery )
 	{
 		this.keys		= keys;
 		this.prefs		= prefs;
-		this.limClient  = limClient;
-		lim				= new LaterInvocationManager( limClient );
+		this.client  	= client;
+		lim				= new LaterInvocationManager( this );
 		values			= new String[ keys.length ];	// all set null by java VM automatically
+		if( initialDelivery ) deliverChanges();
 	}
 
 	public void setPreferences( Preferences prefs )
@@ -118,18 +128,17 @@ implements DynamicListening, PreferenceChangeListener, PreferenceNodeSync
 		if( EventManager.DEBUG_EVENTS ) System.err.println( "@pref setPreferences" );
 	}
 
-	private void analyzeChanges()
+	public void deliverChanges()
 	{
-		int		i;
 		String  oldValue, newValue;
 		
-		for( i = 0; i < keys.length; i++ ) {
+		for( int i = 0; i < keys.length; i++ ) {
 			oldValue	= values[i];
 			newValue	= prefs.get( keys[i], oldValue );
 
 			if( newValue != oldValue && (newValue == null || oldValue == null || !newValue.equals( oldValue ))) {
 				values[i] = newValue;
-				limClient.laterInvocation( new PreferenceChangeEvent( prefs, keys[i], newValue ));
+				client.preferenceChange( new PreferenceChangeEvent( prefs, keys[i], newValue ));
 				if( EventManager.DEBUG_EVENTS ) System.err.println( "@pref direct lim "+keys[i]+"; old = "+oldValue+" --> "+newValue );
 			}
 		}
@@ -139,6 +148,8 @@ implements DynamicListening, PreferenceChangeListener, PreferenceNodeSync
 
     public void startListening()
     {
+//    	if( listening ) return;
+    	
 		if( EventManager.DEBUG_EVENTS ) {
 			System.err.print( "@pref startListening. keys = " );
 			for( int i = 0; i < keys.length; i++ ) {
@@ -148,29 +159,37 @@ implements DynamicListening, PreferenceChangeListener, PreferenceNodeSync
 		}
 		if( prefs != null ) {
 			prefs.addPreferenceChangeListener( this );
-			analyzeChanges();
+			deliverChanges();
 		}
 		listening   = true;
 	}
 
     public void stopListening()
     {
+//    	if( !listening ) return;
+    	
 		if( EventManager.DEBUG_EVENTS ) System.err.println( "@pref stopListening" );
 		if( prefs != null ) prefs.removePreferenceChangeListener( this );
 		listening   = false;
     }
 
+// ---------------- LaterInvocation.Listener interface ---------------- 
+
+    public void laterInvocation( Object o )
+    {
+    	client.preferenceChange( (PreferenceChangeEvent) o );
+    }
+    
 // ---------------- PreferenceChangeListener interface ---------------- 
 
 	public void preferenceChange( PreferenceChangeEvent e )
 	{
 		String  key		= e.getKey();
 		String  newValue, oldValue;
-		int		i;
 		
-// System.err.println( "currentThread : "+Thread.currentThread().getName()+" ; is awt thread ? "+EventQueue.isDispatchThread() );
+//System.err.println( "currentThread : "+Thread.currentThread().getName()+" ; is awt thread ? "+java.awt.EventQueue.isDispatchThread() );
 
-		for( i = 0; i < keys.length; i++ ) {
+		for( int i = 0; i < keys.length; i++ ) {
 			if( keys[i].equals( key )) {
 				oldValue	= values[i];
 				newValue	= e.getNewValue();

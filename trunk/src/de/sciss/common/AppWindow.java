@@ -82,11 +82,8 @@ import de.sciss.gui.WindowListenerWrapper;
  *  @author		Hanns Holger Rutz
  *  @version	0.70, 18-Mar-08
  *
- *  @todo   the window bounds prefs storage sucks like hell
- *          ; there's a bug: if recall-window-bounds is deactivated
- *          the prefs are loaded nevertheless, hence when restarting
- *          the application, the bounds will be those of the
- *          last loaded session
+ *  @todo   tempFloatingTimer could maybe be eliminated
+ *  		in favour of a simple EventQueue.invokeLater
  */
 public class AppWindow
 implements AbstractWindow
@@ -151,7 +148,7 @@ implements AbstractWindow
 	
 	private static final int		TEMPFLOAT_TIMEOUT	= 100;
 	private final boolean					tempFloating;
-	private javax.swing.Timer				tempFloatingTimer;
+	private Timer							tempFloatingTimer;
 
 	public AppWindow( int flags )
 	{

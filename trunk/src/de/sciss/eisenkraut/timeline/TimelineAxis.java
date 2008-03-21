@@ -36,6 +36,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 
 import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoableEdit;
@@ -51,7 +52,6 @@ import de.sciss.app.AbstractApplication;
 import de.sciss.app.DynamicAncestorAdapter;
 import de.sciss.app.DynamicListening;
 import de.sciss.app.DynamicPrefChangeManager;
-import de.sciss.app.LaterInvocationManager;
 
 import de.sciss.io.Span;
 
@@ -64,12 +64,12 @@ import de.sciss.io.Span;
  *  timeline.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
+ *  @version	0.70, 20-Mar-08
  */
 public class TimelineAxis
 extends Axis
 implements	TimelineListener, MouseListener, MouseMotionListener,
-			DynamicListening, LaterInvocationManager.Listener
+			DynamicListening, PreferenceChangeListener
 {
     private final Session   doc;
 
@@ -175,16 +175,14 @@ implements	TimelineListener, MouseListener, MouseMotionListener,
 		doc.getUndoManager().addEdit( edit );
 	}
 
-// ---------------- LaterInvocationManager.Listener interface ---------------- 
+// ---------------- PreferenceChangeListener interface ---------------- 
 
-		// called by DynamicPrefChangeManager ; o = PreferenceChangeEvent
-		public void laterInvocation( Object o )
+		public void preferenceChange( PreferenceChangeEvent e )
 		{
-			final PreferenceChangeEvent	pce = (PreferenceChangeEvent) o;
-			final String				key = pce.getKey();
+			final String key = e.getKey();
 			
 			if( key.equals( PrefsUtil.KEY_TIMEUNITS )) {
-				int timeUnits = pce.getNode().getInt( key, 0 );
+				int timeUnits = e.getNode().getInt( key, 0 );
 				if( timeUnits == 0 ) {
 					setFlags( INTEGERS );
 				} else {

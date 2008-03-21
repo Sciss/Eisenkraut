@@ -45,6 +45,8 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Area;
 import java.awt.geom.RoundRectangle2D;
 import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.InputMap;
@@ -57,7 +59,6 @@ import javax.swing.event.MouseInputAdapter;
 
 import de.sciss.app.DynamicAncestorAdapter;
 import de.sciss.app.DynamicPrefChangeManager;
-import de.sciss.app.LaterInvocationManager;
 
 /**
  *  A component suitable for using as
@@ -68,7 +69,7 @@ import de.sciss.app.LaterInvocationManager;
  *  instead of the normal operation.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.16, 05-May-06
+ *  @version	0.17, 20-Mar-08
  *
  *  @see	javax.swing.JFrame#setGlassPane( Component )
  *
@@ -76,7 +77,7 @@ import de.sciss.app.LaterInvocationManager;
  */
 public class HelpGlassPane
 extends JComponent
-implements	LaterInvocationManager.Listener
+implements PreferenceChangeListener
 {
 	/**
 	 *  Value: Prefs key string "(int) modifiers (int) keyCode" for online
@@ -281,11 +282,10 @@ implements	LaterInvocationManager.Listener
 		if( helpStroke != null ) imap.put( helpStroke, HELP_PROPERTY );
 	}
 
-// ---------------- LaterInvocationManager.Listener interface ---------------- 
+// ---------------- PreferenceChangeListener interface ---------------- 
 
-	// o is PreferenceChangeEvent
-	public void laterInvocation( Object o )
+	public void preferenceChange( PreferenceChangeEvent e )
 	{
-		updateHelpStroke( KeyStrokeTextField.prefsToStroke( ((PreferenceChangeEvent) o).getNewValue() ));
+		updateHelpStroke( KeyStrokeTextField.prefsToStroke( e.getNewValue() ));
 	}
 } // class HelpGlassPane

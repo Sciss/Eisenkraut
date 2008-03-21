@@ -30,6 +30,8 @@
 package de.sciss.eisenkraut.gui;
 
 import java.awt.event.ActionEvent;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.JToggleButton;
@@ -38,7 +40,6 @@ import de.sciss.eisenkraut.util.PrefsUtil;
 
 import de.sciss.app.DynamicAncestorAdapter;
 import de.sciss.app.DynamicPrefChangeManager;
-import de.sciss.app.LaterInvocationManager;
 
 /**
  *	A class implementing the <code>Action</code> interface
@@ -47,11 +48,11 @@ import de.sciss.app.LaterInvocationManager;
  *	this button reflects the catch preferences settings.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.56, 05-May-06
+ *  @version	0.70, 20-Mar-08
  */
 public class CatchAction
 extends AbstractAction
-implements LaterInvocationManager.Listener
+implements PreferenceChangeListener
 {
 	private final JToggleButton b;
 	private final Preferences	prefs;
@@ -91,8 +92,7 @@ implements LaterInvocationManager.Listener
 		prefs.putBoolean( PrefsUtil.KEY_CATCH, b.isSelected() );
 	}
 
-	// o instanceof PreferenceChangeEvent
-	public void laterInvocation( Object o )
+	public void preferenceChange( PreferenceChangeEvent e )
 	{
 		updateButtonState();
 	}

@@ -66,6 +66,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import java.text.MessageFormat;
 
@@ -103,7 +104,6 @@ import de.sciss.app.AbstractApplication;
 import de.sciss.app.AbstractWindow;
 import de.sciss.app.DynamicPrefChangeManager;
 import de.sciss.app.GraphicsHandler;
-import de.sciss.app.LaterInvocationManager;
 import de.sciss.common.AppWindow;
 import de.sciss.common.BasicApplication;
 import de.sciss.common.BasicMenuFactory;
@@ -181,10 +181,10 @@ import org.unicode.Normalizer;
  */
 public class DocumentFrame
 extends AppWindow
-implements	ProgressComponent, TimelineListener,
-			ClipboardOwner, ToolActionListener,
-			DecimatedWaveTrail.AsyncListener,
-			TransportListener
+implements ProgressComponent, TimelineListener,
+		   ClipboardOwner, ToolActionListener,
+		   DecimatedWaveTrail.AsyncListener,
+		   TransportListener, PreferenceChangeListener
 {
 	private final Session					doc;
 	
@@ -214,6 +214,7 @@ implements	ProgressComponent, TimelineListener,
 	private PeakMeter[]						channelMeters			= new PeakMeter[ 0 ];
 	
 	private final JLabel					lbSRC;
+	private final TreeExpanderButton		ggTreeExp;
 
 	// --- tools ---
 	
@@ -358,7 +359,6 @@ implements	ProgressComponent, TimelineListener,
 		final AbstractButton			ggAudioInfo, ggRevealFile;
 		final int						myMeta		= MenuFactory.MENU_SHORTCUT == KeyEvent.CTRL_MASK ?
 			KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK : MenuFactory.MENU_SHORTCUT;	// META on Mac, CTRL+SHIFT on PC
-		final TreeExpanderButton		ggTreeExp;
 		final TopPainter				trackPainter;
 		final MenuRoot					mr;
 		final GradientPanel				topPane		= new GradientPanel();
@@ -721,50 +721,6 @@ bbb.add( markAxisHeader );
 		
 		timeTB.addToolActionListener( this );
 		timeTB.selectTool( ToolAction.POINTER );
-
-//		new DynamicAncestorAdapter
-		addDynamicListening( new DynamicPrefChangeManager( app.getUserPrefs(), new String[] {
-			PrefsUtil.KEY_VIEWNULLLINIE, PrefsUtil.KEY_VIEWVERTICALRULERS, PrefsUtil.KEY_VIEWMARKERS,
-			PrefsUtil.KEY_TIMEUNITS, PrefsUtil.KEY_VIEWCHANMETERS },
-			new LaterInvocationManager.Listener() {
-
-			public void laterInvocation( Object o )
-			{
-				final PreferenceChangeEvent e			= (PreferenceChangeEvent) o;
-				final String				key			= e.getKey();
-				
-				if( key == PrefsUtil.KEY_VIEWNULLLINIE ) {
-					waveView.setNullLinie( e.getNode().getBoolean( e.getKey(), false ));
-				} else if( key == PrefsUtil.KEY_VIEWVERTICALRULERS ) {
-					final boolean visible = e.getNode().getBoolean( e.getKey(), false );
-					rulersPanel.setVisible( visible );
-//					for( int ch = 0; ch < collChannelRulers.size(); ch++ ) {
-//						((JComponent) collChannelRulers.get( ch )).setVisible( visible );
-//					}
-//					waveHeaderView.makeCompactGrid();
-//					GUIUtil.makeCompactSpringGrid( waveHeaderView, collChannelRulers.size(), 3, 0, 0, 1, 1 );
-				} else if( key == PrefsUtil.KEY_VIEWCHANMETERS ) {
-					chanMeters = e.getNode().getBoolean( e.getKey(), false );
-					showHideMeters();
-//					GUIUtil.makeCompactSpringGrid( waveHeaderView, collChannelMeters.size(), 3, 0, 0, 1, 1 );
-				} else if( key == PrefsUtil.KEY_VIEWMARKERS ) {
-					markVisible = e.getNode().getBoolean( e.getKey(), false );
-					if( ggTreeExp.isExpanded() ) {
-						markAxis.setVisible( markVisible );
-						markAxisHeader.setVisible( markVisible );
-						wavePanel.updateAll();
-					}
-					if( markVisible ) {
-						markAxis.startListening();
-					} else {
-						markAxis.stopListening();
-					}
-				} else if( key == PrefsUtil.KEY_TIMEUNITS ) {
-					final int timeUnits = e.getNode().getInt( key, 0 );
-					msgCsr1.applyPattern( timeUnits == 0 ? smpPtrn : timePtrn );
-				}
-			}
-		})); // .addTo( rp );
 		
 		playTimer = new Timer( 33, new ActionListener() {
 			public void actionPerformed( ActionEvent e )
@@ -917,9 +873,16 @@ bbb.add( markAxisHeader );
 		app.getMenuFactory().addToWindowMenu( actionShowWindow );	// MUST BE BEFORE INIT()!!
 
 		init();
-		initBounds();
 		updateTitle();
 		documentUpdate();
+
+//		new DynamicAncestorAdapter
+		addDynamicListening( new DynamicPrefChangeManager( app.getUserPrefs(), new String[] {
+			PrefsUtil.KEY_VIEWNULLLINIE, PrefsUtil.KEY_VIEWVERTICALRULERS, PrefsUtil.KEY_VIEWMARKERS,
+			PrefsUtil.KEY_TIMEUNITS, PrefsUtil.KEY_VIEWCHANMETERS },
+			this )); // .addTo( rp );
+
+		initBounds();	// be sure this is after documentUpdate!
 
 		setVisible( true );
 		toFront();
@@ -953,7 +916,8 @@ bbb.add( markAxisHeader );
 		if( h <= 0 ) {
 			h = (sr.height - 106) / 4; // 106 = approx. extra space for title bar, tool bar etc. 
 		}
-//System.out.println( "h " + h + " hf " + hf );
+//System.out.println( "read KEY_TRACKSIZE : " + d );
+//System.out.println( "w " + w + "; h " + h + "; hf " + hf );
 		waveView.setPreferredSize( new Dimension( w, (int) (h * hf + 0.5f) ));
 		pack();
 		winSize = getSize();
@@ -962,13 +926,18 @@ bbb.add( markAxisHeader );
 		GUIUtil.wrapWindowBounds( wr, sr );
 		lastLeftTop.setLocation( wr.getLocation() );
 		setBounds( wr );
+//System.out.println( "winSize " + winSize + "; wr " + wr );
 		waveView.addComponentListener( new ComponentAdapter() {
 			public void componentResized( ComponentEvent e )
 			{
 				if( waveExpanded ) {
-					final Dimension d = e.getComponent().getSize();
-					d.height = (int) (d.height / hf + 0.5f); 
-					cp.put( KEY_TRACKSIZE, dimensionToString( d ));
+					final Dimension dNew = e.getComponent().getSize();
+					dNew.height = (int) (dNew.height / hf + 0.5f);
+					if( !dNew.equals( d )) {
+//System.out.println( "write KEY_TRACKSIZE : " + dNew );
+						d.setSize( dNew );
+						cp.put( KEY_TRACKSIZE, dimensionToString( dNew ));
+					}
 				}
 			}
 		});
@@ -2026,6 +1995,46 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 		}
 	}
 
+// ---------------- PreferenceChangeListener interface ---------------- 
+
+	public void preferenceChange( PreferenceChangeEvent e )
+	{
+		final String key = e.getKey();
+		
+//System.out.println( "laterInvocation. key = " + key + ", value = " + e.getNewValue() );
+		
+		if( key == PrefsUtil.KEY_VIEWNULLLINIE ) {
+			waveView.setNullLinie( e.getNode().getBoolean( e.getKey(), false ));
+		} else if( key == PrefsUtil.KEY_VIEWVERTICALRULERS ) {
+			final boolean visible = e.getNode().getBoolean( e.getKey(), false );
+			rulersPanel.setVisible( visible );
+//			for( int ch = 0; ch < collChannelRulers.size(); ch++ ) {
+//				((JComponent) collChannelRulers.get( ch )).setVisible( visible );
+//			}
+//			waveHeaderView.makeCompactGrid();
+//			GUIUtil.makeCompactSpringGrid( waveHeaderView, collChannelRulers.size(), 3, 0, 0, 1, 1 );
+		} else if( key == PrefsUtil.KEY_VIEWCHANMETERS ) {
+			chanMeters = e.getNode().getBoolean( e.getKey(), false );
+			showHideMeters();
+//			GUIUtil.makeCompactSpringGrid( waveHeaderView, collChannelMeters.size(), 3, 0, 0, 1, 1 );
+		} else if( key == PrefsUtil.KEY_VIEWMARKERS ) {
+			markVisible = e.getNode().getBoolean( e.getKey(), false );
+			if( ggTreeExp.isExpanded() ) {
+				markAxis.setVisible( markVisible );
+				markAxisHeader.setVisible( markVisible );
+				wavePanel.updateAll();
+			}
+			if( markVisible ) {
+				markAxis.startListening();
+			} else {
+				markAxis.stopListening();
+			}
+		} else if( key == PrefsUtil.KEY_TIMEUNITS ) {
+			final int timeUnits = e.getNode().getInt( key, 0 );
+			msgCsr1.applyPattern( timeUnits == 0 ? smpPtrn : timePtrn );
+		}
+	}
+	
 // ---------------- ClipboardOwner interface ---------------- 
 
 	public void lostOwnership( Clipboard clipboard, Transferable contents )

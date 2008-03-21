@@ -31,7 +31,6 @@
 package de.sciss.common;
 
 import java.awt.Component;
-import java.awt.Frame;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 import java.awt.Window;
@@ -100,7 +99,7 @@ extends AbstractWindowHandler
 	private final boolean					internalFrames, floating;
 	private final JDesktopPane				desktop;
 	private final MasterFrame				masterFrame;
-	private final Window					hiddenTopWindow;
+//	private final Window					hiddenTopWindow;
 	
 	private final List						collBorrowListeners		= new ArrayList();
 	private AbstractWindow					borrower				= null;
@@ -130,17 +129,17 @@ extends AbstractWindowHandler
 //			masterFrame.setVisible( true );
 			desktop		= new JDesktopPane();
 			masterFrame.getContentPane().add( desktop );
-			hiddenTopWindow = null;
+//			hiddenTopWindow = null;
 		} else {
 			desktop		= null;
 			masterFrame	= null;
 			fph.setListening( true );
-			if( floating ) {
-				hiddenTopWindow = new Frame();
-				GUIUtil.setAlwaysOnTop( hiddenTopWindow, true );
-			} else {
-				hiddenTopWindow = null;
-			}
+//			if( floating ) {
+//				hiddenTopWindow = new Frame();
+//				GUIUtil.setAlwaysOnTop( hiddenTopWindow, true );
+//			} else {
+//				hiddenTopWindow = null;
+//			}
 		}
 		
 		actionCollect	= new actionCollectClass( root.getResourceString( "menuCollectWindows" ));
@@ -295,10 +294,10 @@ extends AbstractWindowHandler
 		return masterFrame;
 	}
 	
-	public Window getHiddenTopWindow()
-	{
-		return hiddenTopWindow;
-	}
+//	public Window getHiddenTopWindow()
+//	{
+//		return hiddenTopWindow;
+//	}
 	
 	public Rectangle getWindowSpace()
 	{

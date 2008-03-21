@@ -43,6 +43,8 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.prefs.BackingStoreException;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
@@ -85,7 +87,6 @@ import de.sciss.app.Application;
 import de.sciss.app.DynamicAncestorAdapter;
 import de.sciss.app.DynamicPrefChangeManager;
 import de.sciss.app.GraphicsHandler;
-import de.sciss.app.LaterInvocationManager;
 import de.sciss.gui.CoverGrowBox;
 import de.sciss.gui.DoClickAction;
 import de.sciss.gui.GUIUtil;
@@ -108,12 +109,13 @@ import de.sciss.eisenkraut.session.Session;
 import de.sciss.eisenkraut.util.PrefsUtil;
 
 /**
- *	@version	0.70, 07-Dec-07
+ *	@version	0.70, 20-Mar-09
  *	@author		Hanns Holger Rutz
  */
 public class RecorderDialog
 extends JDialog
-implements Constants, ServerListener, NodeListener, OSCRouter // , MeterListener
+implements Constants, ServerListener, NodeListener, OSCRouter,
+		   PreferenceChangeListener
 {
 	private static final int DISKBUF_SIZE		= 32768;	// buffer size in frames
 	private static final String NODE_CONF		= PrefsUtil.NODE_INPUTCONFIGS;
@@ -362,15 +364,6 @@ implements Constants, ServerListener, NodeListener, OSCRouter // , MeterListener
 		};
 		this.addWindowListener( winListener );
 				
-		new DynamicAncestorAdapter( new DynamicPrefChangeManager( classPrefs, new String[] { KEY_CONFIG },
-			new LaterInvocationManager.Listener() {
-				public void laterInvocation( Object o )
-				{
-					createRecordConfig();
-				}
-			}
-		)).addTo( getRootPane() );
-
 		superCollider.addServerListener( this );
 //		player.addMeterListener( this );
 //		player.setMetering( true );
@@ -396,6 +389,9 @@ implements Constants, ServerListener, NodeListener, OSCRouter // , MeterListener
 		meterTimer.start();
 
 GUIUtil.setInitialDialogFocus( rp );	// necessary to get keyboard shortcuts working
+
+		new DynamicAncestorAdapter( new DynamicPrefChangeManager( classPrefs, new String[] { KEY_CONFIG },
+				this )).addTo( getRootPane() );
 
 		pack();
 		setLocationRelativeTo( getOwner() );
@@ -749,6 +745,13 @@ disposeRecorder();
 		}
 	}
 	
+	// ------------- PreferenceChangeListener interface -------------
+
+	public void preferenceChange( PreferenceChangeEvent e )
+	{
+		createRecordConfig();
+	}
+
 // ------------- NodeListener interface -------------
 
 	public void nodeAction( NodeEvent e )

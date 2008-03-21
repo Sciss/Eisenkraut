@@ -31,6 +31,7 @@ package de.sciss.gui;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
@@ -56,13 +57,10 @@ import de.sciss.util.Disposable;
  *	for a smooth look.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 22-Nov-07
+ *  @version	0.70, 20-Mar-08
  *
  *	@todo	allow linear display (now it's hard coded logarithmic)
  *	@todo	add optional horizontal orientation
- *	@todo	add optional labels
- *	@todo	allow to change the bar width (now hard coded to 12 pixels)
- *	@todo	allow grouping of meters for synchronized paint updates
  */
 public class PeakMeter
 extends JComponent
@@ -128,7 +126,7 @@ implements Disposable
 //	private boolean				ttUpdate		= false;
 //	private MouseAdapter		ma				= null;
 	
-	private Object				sync			= new Object();
+//	private Object				sync			= new Object();
 	
 	private int					yPeakPainted	= 0;
 	private int					yRMSPainted		= 0;
@@ -172,11 +170,11 @@ implements Disposable
 		refreshParent = onOff;
 	}
 	
-	public void setSync( Object sync ) {
-		synchronized( this.sync ) {
-			this.sync = sync;
-		}
-	}
+//	public void setSync( Object sync ) {
+//		synchronized( this.sync ) {
+//			this.sync = sync;
+//		}
+//	}
 	
 //	// doesn't work XXX
 //	public void setToolTipEnabled( boolean onOff )
@@ -218,10 +216,10 @@ implements Disposable
 	 */
 	public void setHoldPainted( boolean onOff )
 	{
-		synchronized( sync ) {
+//		synchronized( sync ) {
 			holdPainted	= onOff;
 			repaint();
-		}
+//		}
 	}
 	
 	/**
@@ -233,10 +231,10 @@ implements Disposable
 	 */
 	public void setRMSPainted( boolean onOff )
 	{
-		synchronized( sync ) {
+//		synchronized( sync ) {
 			rmsPainted	= onOff;
 			repaint();
-		}
+//		}
 	}
 	
 	/**
@@ -249,10 +247,10 @@ implements Disposable
 	 */
 	public void setHoldDuration( int millis )
 	{
-		synchronized( sync ) {
+//		synchronized( sync ) {
 			holdDuration	= millis == -1 ? Integer.MAX_VALUE: millis;
 			holdEnd			= System.currentTimeMillis();
-		}
+//		}
 	}
 	
 	/**
@@ -263,10 +261,10 @@ implements Disposable
 	 */
 	public void clearHold()
 	{
-		synchronized( sync ) {
+//		synchronized( sync ) {
 			hold		= -160f;
 			holdNorm	= 0.0f;
-		}
+//		}
 	}
 	
 	/**
@@ -283,7 +281,7 @@ implements Disposable
 		final int	rh1		= (h1 - 1) & ~1;
 
 //		System.out.println( "p clear " + hashCode() );
-		synchronized( sync ) {
+//		synchronized( sync ) {
 			peak		= -160f;
 			rms			= -160f;
 			hold		= -160f;
@@ -302,7 +300,7 @@ implements Disposable
 			} else {
 				repaint( insets.left, insets.top, w1, h1 );
 			}
-		}
+//		}
 	}
 	
 //	/**
@@ -351,7 +349,7 @@ implements Disposable
 //		}
 //	}
 
-	private void recalcPrefSize()
+	protected void recalcPrefSize()
 	{
 		insets = getInsets();
 		final int w = 10 + insets.left + insets.right;
@@ -363,16 +361,16 @@ implements Disposable
 	
 	public float getPeakDecibels()
 	{
-		synchronized( sync ) {
+//		synchronized( sync ) {
 			return peak <= -160f ? Float.NEGATIVE_INFINITY : peak;
-		}
+//		}
 	}
 
 	public float getHoldDecibels()
 	{
-		synchronized( sync ) {
+//		synchronized( sync ) {
 			return hold <= -160f ? Float.NEGATIVE_INFINITY : hold;
-		}
+//		}
 	}
 	
 	/**
@@ -437,7 +435,9 @@ implements Disposable
 //	public void setPeakAndRMS( float peak, float rms )
 	public boolean setPeakAndRMS( float peak, float rms, long now )
 	{
-		synchronized( sync ) {
+		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
+		
+//		synchronized( sync ) {
 //			final float		maxFall		= fallSpeed * (lastUpdate - now);	// a negative value
 			final boolean	result;
 			final int		h1;
@@ -556,7 +556,7 @@ implements Disposable
 //			}
 			
 			return result;
-		}
+//		}
 	}
 	
 	/**
@@ -572,9 +572,9 @@ implements Disposable
 	 */
 	public boolean setPeak( float peak )
 	{
-		synchronized( sync ) {
+//		synchronized( sync ) {
 			return setPeakAndRMS( peak, this.rms );
-		}
+//		}
 	}
 	
 	private void recalcPaint()
@@ -702,7 +702,7 @@ implements Disposable
 		g.setColor( Color.black );
 		g.fillRect( 0, 0, getWidth(), getHeight() );
 		if( h > 0 ) {
-			synchronized( sync ) {	
+//			synchronized( sync ) {	
 				if( h != recentHeight ) {
 //					yPeak		= ((int) ((1.0f - peakNorm) * h) + 1) & ~1;
 //					yRMS		= ((int) ((1.0f - rmsNorm)  * h) + 1) & ~1;
@@ -748,7 +748,7 @@ implements Disposable
 				yHoldPainted	= yHold;
 				
 				g2.setTransform( atOrig );
-			}
+//			}
 		}
 	}
 	
@@ -756,7 +756,7 @@ implements Disposable
 	
 	public void dispose()
 	{
-		synchronized( sync ) {
+//		synchronized( sync ) {
 			if( imgPeak != null ) {
 				imgPeak.flush();
 				imgPeak = null;
@@ -771,6 +771,6 @@ implements Disposable
 				pntBg	= null;
 			}
 			calcedHeight = -1;
-		}
+//		}
 	}
 }
