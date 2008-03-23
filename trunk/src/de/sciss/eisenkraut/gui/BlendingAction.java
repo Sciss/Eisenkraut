@@ -99,7 +99,7 @@ import de.sciss.util.ParamSpace;
  *	when alt+pressed will prompt the user to alter the blending settings.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 05-Nov-07
+ *  @version	0.70, 23-Mar-08
  *
  *	@todo		gui panels should be destroyed / disposed
  *				because otherwise different BlendingAction instances
@@ -265,7 +265,7 @@ extends AbstractAction
 		ggBlendTime		= new PrefParamField( ut );
 		ggBlendTime.addSpace( ParamSpace.spcTimeMillis );
 		ggBlendTime.addSpace( ParamSpace.spcTimeSmps );
-		ggBlendTime.setPreferences( this.prefs, KEY_DURATION );
+		ggBlendTime.setPreferences( prefs, KEY_DURATION );
 		ggBlendTime.setReadPrefs( false );
 		if( current.duration != null ) {
 //System.err.println( "setDuration" );
@@ -310,6 +310,10 @@ extends AbstractAction
 		createPopup();
 //		startListening();
 		popup.show( invoker, x, y );
+		// XXX this is necessary unfortunately
+		// coz the DynamicAncestorAdapter doesn't seem
+		// to work with the popup menu ...
+		ggBlendTime.startListening();
 //		if( beginDragging ) pan.beginDragging();
 	}
 
@@ -323,13 +327,22 @@ extends AbstractAction
 		popup.addPopupMenuListener( new PopupMenuListener() {
 			public void popupMenuCanceled( PopupMenuEvent e )
 			{
-				dispose();
+				stopAndDispose();
 			}
 			
 			public void popupMenuWillBecomeInvisible( PopupMenuEvent e ) {}
 			public void popupMenuWillBecomeVisible( PopupMenuEvent e ) {}
 		});
 //popup.setCursor( new java.awt.Cursor( java.awt.Cursor.CROSSHAIR_CURSOR ));
+	}
+	
+	private void stopAndDispose()
+	{
+		// XXX this is necessary unfortunately
+		// coz the DynamicAncestorAdapter doesn't seem
+		// to work with the popup menu ...
+		ggBlendTime.stopListening();
+		dispose();
 	}
 
 	public void showPalette()
@@ -393,6 +406,7 @@ extends AbstractAction
 //System.err.println( "setItem " + o );
 				if( o != null ) {
 					current.setFrom( (Settings) o );
+					current.toPrefs( prefs );
 					updateButton();
 				}
 			}
@@ -476,7 +490,7 @@ extends AbstractAction
 		final JButton	ggClose;
 
 		bottomPanel		= new JPanel( new FlowLayout( FlowLayout.TRAILING, 4, 2 ));
-		ggClose			= new JButton( new actionCloseClass( getResourceString( "buttonClose" )));
+		ggClose			= new JButton( new CloseAction( getResourceString( "buttonClose" )));
 		GUIUtil.createKeyAction( ggClose, KeyStroke.getKeyStroke( KeyEvent.VK_ESCAPE, 0 ));
 		ggClose.setFocusable( false );
 		bottomPanel.add( ggClose );
@@ -810,17 +824,17 @@ extends AbstractAction
 		}
 	} 
 
-	private class actionCloseClass
+	private class CloseAction
 	extends AbstractAction
 	{
-		private actionCloseClass( String text )
+		private CloseAction( String text )
 		{
 			super( text );
 		}
 
 		public void actionPerformed( ActionEvent e )
 		{
-			dispose();
+			stopAndDispose();
 			storeRecent();
 		}
 	}

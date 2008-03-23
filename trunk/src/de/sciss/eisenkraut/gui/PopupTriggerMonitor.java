@@ -41,6 +41,10 @@ import javax.swing.Timer;
 
 import de.sciss.util.Disposable;
 
+/**
+ *	@version	0.70, 22-Mar-08
+ *	@author		Hanns Holger Rutz
+ */
 public class PopupTriggerMonitor
 implements ActionListener, MouseListener, Disposable
 {
@@ -61,6 +65,7 @@ implements ActionListener, MouseListener, Disposable
 		this.c	= c;
 		c.addMouseListener( this );
 		timer	= new Timer( DEFAULT_DELAY, this );
+		timer.setRepeats( false );
 	}
 	
 	public void addListener( Listener l )

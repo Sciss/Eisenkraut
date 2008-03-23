@@ -47,7 +47,7 @@ import de.sciss.util.ParamSpace;
  *  preference storing / recalling capabilities.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.30, 25-Sep-07
+ *  @version	0.31, 23-Mar-08
  *
  *  @see		java.util.prefs.PreferenceChangeListener
  */
@@ -92,6 +92,7 @@ implements  DynamicListening, PreferenceChangeListener,
 			public void paramValueChanged( ParamField.Event e )
 			{
 				if( e.isAdjusting() ) return;
+//System.out.println( "paramValueChanged" );
 			
 				if( EventManager.DEBUG_EVENTS ) System.err.println( "@param paramValueChanged : "+key+" --> "+e.getValue()+" ; node = "+(prefs != null ? prefs.name() : "null" ));
 				if( writePrefs ) writePrefs();
@@ -153,7 +154,7 @@ implements  DynamicListening, PreferenceChangeListener,
 			if( ((prefsValue == null) && (guiValue != null)) ||
 				((prefsValue != null) && ((guiValue == null) || !guiValue.equals( prefsValue ))) ) {
 
-//System.out.println( "Write " + guiValue.toString() );
+//System.out.println( "Write to " + prefs.absolutePath() + " key " + key + " value " + guiValue.toString() );
 				prefs.put( key, guiValue.toString() );
 			}
 		}
@@ -209,6 +210,9 @@ implements  DynamicListening, PreferenceChangeListener,
 	
 	public void startListening()
 	{
+		if( listening ) return;
+		
+//System.out.println( "startListening" );
 		if( prefs != null ) {
 			listening = true;
 			if( writePrefs ) this.addListener( listener );
@@ -221,6 +225,9 @@ implements  DynamicListening, PreferenceChangeListener,
 
 	public void stopListening()
 	{
+		if( !listening ) return;
+
+//System.out.println( "stopListening" );
 		if( prefs != null ) {
 			if( readPrefs ) prefs.removePreferenceChangeListener( this );
 			if( writePrefs ) this.removeListener( listener );
