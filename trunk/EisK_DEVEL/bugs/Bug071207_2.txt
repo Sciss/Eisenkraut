@@ -1,5 +1,0 @@
-NullPointerException (in JFrame -> pack()) when using the combination:
-look-and-feel		= Metal
-floating palettes	= true
-internal frames		= false
-laf-window-decoration	= true

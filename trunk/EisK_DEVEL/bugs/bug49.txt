@@ -1,1 +1,0 @@
-put catch out of function while dragging markers

@@ -1,5 +1,0 @@
-Paste : progress bar läuft nit
-
-Processes : doc frames gets de-focussed
-
-Processes : blending not working

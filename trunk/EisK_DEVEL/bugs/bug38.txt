@@ -1,3 +1,0 @@
-setLimiter : java.io.IOException : Kanal ist nicht verbunden
-
-when switching on/off limiter while server is not booted

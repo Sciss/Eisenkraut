@@ -166,9 +166,9 @@ implements OSCRouter
 	 *	index is returned.
 	 *	The reply message looks as follows:
 	 *	<pre>
-	 *	[ "/get.reply", <getID>, [ <(int) idx> * N ]]
+	 *	[ "/get.reply", &lt;getID&gt;, [ &lt;(int) idx&gt; * N ]]
 	 *	</pre>
-	 *	Quick calculation : (1 << 31 - 1) / 96000 / 60 / 60 --> with 32bit signed ints, audio at 96 kHz can be represented if length doesn't exceed about 6 hours
+	 *	Quick calculation : (1 &lt;&lt; 31 - 1) / 96000 / 60 / 60 --&gt; with 32bit signed ints, audio at 96 kHz can be represented if length doesn't exceed about 6 hours
 	 */
 	public Object[] oscGet_indexOf( RoutedOSCMessage rom )
 	{
@@ -257,12 +257,12 @@ implements OSCRouter
 	 *	These commands query a range of markers.
 	 *	The reply message looks as follows:
 	 *
-	 *	[ "/get.reply", <getID>, [ <(int) pos>, <(String) markName> ] * N ]]
+	 *	[ "/get.reply", &lt;getID&gt;, [ &lt;(int) pos&gt;, &lt;(String) markName&gt; ] * N ]]
 	 *
 	 *	NOTE: as soon as SuperCollder supports 64bit OSC tags,
-	 *	the reply will send <pos> as a 64bit long!!
+	 *	the reply will send &lt;pos&gt; as a 64bit long!!
 	 *
-	 *	Quick calculation : (1 << 31 - 1) / 96000 / 60 / 60 --> with 32bit signed ints, audio at 96 kHz can be represented if length doesn't exceed about 6 hours
+	 *	Quick calculation : (1 &lt;&lt; 31 - 1) / 96000 / 60 / 60 --&gt; with 32bit signed ints, audio at 96 kHz can be represented if length doesn't exceed about 6 hours
 	 */
 	private Object[] oscGetMarkers( List coll )
 	{
@@ -298,7 +298,7 @@ implements OSCRouter
 
 	/**
 	 *	<pre>
-	 *	[ <address>, "add", [ <(long) pos>, <(String) name> ] * N ]
+	 *	[ &lt;address&gt;, "add", [ &lt;(long) pos&gt;, &lt;(String) name&gt; ] * N ]
 	 *	</pre>
 	 */
 	public void oscCmd_add( RoutedOSCMessage rom )
@@ -344,9 +344,9 @@ implements OSCRouter
 	/**
 	 *	either of:
 	 *	<pre>
-	 *	[ <address>, "remove", "span", <(long) startPos>, <(long) stopPos> ]
-	 *	[ <address>, "remove", "range", <(int) startIdx>, <(int) stopIdx> ]
-	 *	[ <address>, "remove", "at", [ <(int) idx> ] * N ]
+	 *	[ &lt;address&gt;, "remove", "span", &lt;(long) startPos&gt;, &lt;(long) stopPos&gt; ]
+	 *	[ &lt;address&gt;, "remove", "range", &lt;(int) startIdx&gt;, &lt;(int) stopIdx&gt; ]
+	 *	[ &lt;address&gt;, "remove", "at", [ &lt;(int) idx&gt; ] * N ]
 	 *	</pre>
 	 */
 	public void oscCmd_remove( RoutedOSCMessage rom )

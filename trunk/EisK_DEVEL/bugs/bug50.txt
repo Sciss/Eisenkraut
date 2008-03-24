@@ -1,1 +1,0 @@
-Cache-Overview wird nicht aktualisiert nach speichern? (e.g. File geladen mit vorhandenem Overview -> ein kurzes StŸck rausgeschnitten -> speichern -> neu šffnen -> falscher overview)

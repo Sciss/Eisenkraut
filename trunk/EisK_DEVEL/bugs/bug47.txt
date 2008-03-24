@@ -1,8 +1,0 @@
-Exception in thread "Thread-10" java.lang.IllegalArgumentException: 18176 ... 18432 not within 0 ... 18176
-	at de.sciss.eisenkraut.io.InterleavedAudioStake.readFrames(InterleavedAudioStake.java:124)
-	at de.sciss.eisenkraut.io.DecimatedTrail$2.run(DecimatedTrail.java:1365)
-	at java.lang.Thread.run(Thread.java:613)
-
-
-
-when opening modified soundfile for which previous waveform cache exists

@@ -1,1 +1,0 @@
-Audiofile Header Fenster : kein Name-Update nach Save-As , Fenster sollte resizable sein
