@@ -637,7 +637,7 @@ extends BasicTrail
 		final List			coll		= editGetCollByStart( ce );
 		final MutableInt	readyLen	= new MutableInt( 0 );
 		final MutableInt	busyLen		= new MutableInt( 0 );
-		DecimatedWaveStake		stake;
+		DecimatedWaveStake	stake;
 		int					chunkLen, discrepancy;
 		Span				subSpan;
 		int					readOffset, nextOffset = dataOffset;

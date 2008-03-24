@@ -101,7 +101,9 @@ implements RandomAccessRequester
 		p.add( new JLabel( getResourceString( "plugInGain" ), JLabel.RIGHT ));
 		p.add( ggGain );
 		p.add( ggGainType );
+		ggGain.setValueAndSpace( DEFAULT_GAIN );
 		ggGain.setPreferences( this.prefs, KEY_GAIN );
+		ggGainType.setSelectedIndex( 1 );
 		ggGainType.setPreferences( this.prefs, KEY_GAINTYPE );
 
 		return p;

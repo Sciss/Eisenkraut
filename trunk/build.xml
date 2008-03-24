@@ -13,7 +13,7 @@
 	<property name="lib.dir"		value="libraries"/>
 	<property name="libraries"		value="${lib.dir}/JCollider.jar:${lib.dir}/MRJAdapter.jar:${lib.dir}/NetUtil.jar:${lib.dir}/Normalizer.jar:${lib.dir}/SwingOSC.jar"/>
 	<property name="version"		value="0.70unstable"/>
-	<property name="debug"			value="false"/>
+	<property name="debug"			value="true"/>
 
 	<target name="clean">
 		<delete dir="${build.dir}" />

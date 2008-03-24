@@ -74,6 +74,7 @@ extends AbstractRenderPlugIn
 		final Application		app			= AbstractApplication.getApplication();
 		
 		ggNimRod.addSpace( new ParamSpace( Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, 1, 0, 0, 1 ));
+		ggNimRod.setValueAndSpace( DEFAULT_NUMROT );
 		ggNimRod.setPreferences( this.prefs, KEY_NUMROT );
 
 		p.add( new JLabel( app.getResourceString( "plugInChanShift" ), JLabel.RIGHT ), BorderLayout.WEST );

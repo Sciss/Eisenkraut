@@ -373,7 +373,7 @@ consc.as = at.alloc( source.context.getTimeSpan() );
 	public boolean consumerFinish( RenderSource source )
 	throws IOException
 	{
-//System.err.println( "consumerFinish" );
+//System.err.println( "consumerFinish " + java.awt.EventQueue.isDispatchThread() );
 		final ConsumerContext		consc   = (ConsumerContext) source.context.getOption( KEY_CONSC );
 		final AudioTrail			at		= consc.doc.getAudioTrail();
 
@@ -400,9 +400,9 @@ consc.as = at.alloc( source.context.getTimeSpan() );
 				doc.markers.editAddAll( this, source.markers.getAll( true ), consc.edit );
 				doc.markers.editEnd( consc.edit );
 			}
-			consc.edit.perform();
-			consc.edit.end();
-			doc.getUndoManager().addEdit( consc.edit );
+//			consc.edit.perform();
+//			consc.edit.end();
+//			doc.getUndoManager().addEdit( consc.edit );
 		}
 //		setTrueProgression( 1.0f );
 
@@ -451,12 +451,12 @@ consc.as.writeFrames( source.audioBlockBuf, source.audioBlockBufOff, source.bloc
 	public void consumerCancel( RenderSource source )
 	throws IOException
 	{
-		ConsumerContext	consc   = (ConsumerContext) source.context.getOption( KEY_CONSC );
-
-		if( consc != null && consc.edit != null ) {
-			consc.edit.cancel();
-			consc.edit = null;
-		}
+//		ConsumerContext	consc   = (ConsumerContext) source.context.getOption( KEY_CONSC );
+//
+//		if( consc != null && consc.edit != null ) {
+//			consc.edit.cancel();
+//			consc.edit = null;
+//		}
 	}
 
 	/*
@@ -872,18 +872,27 @@ at.readFrames( inBuf, inOff, source.blockSpan );
 	/**
 	 *	Re-enables the frame components.
 	 */
-	public void processFinished( ProcessingThread context )
+	public void processFinished( ProcessingThread pt )
 	{
-		if( context.getReturnCode() == FAILED ) {
-//			final Object[] args = (Object[]) argument;
-			final Object message = context.getClientArg( "error" );
-			if( message != null ) {
-				JOptionPane.showMessageDialog( getWindow(), message, plugIn == null ? null : plugIn.getName(), JOptionPane.ERROR_MESSAGE );
+		ConsumerContext	consc   = (ConsumerContext) context.getOption( KEY_CONSC );
+
+		if( pt.getReturnCode() == DONE ) {
+			if( consc != null && consc.edit != null ) {
+				consc.edit.perform();
+				consc.edit.end();
+				doc.getUndoManager().addEdit( consc.edit );
+			}
+		} else {
+			if( consc != null && consc.edit != null ) {
+				consc.edit.cancel();
+			}
+			if( pt.getReturnCode() == FAILED ) {
+				final Object message = pt.getClientArg( "error" );
+				if( message != null ) {
+					JOptionPane.showMessageDialog( getWindow(), message, plugIn == null ? null : plugIn.getName(), JOptionPane.ERROR_MESSAGE );
+				}
 			}
 		}
-//		ggClose.setEnabled( true );
-//		ggRender.setAction( actionRender );
-//		hibernation( false );
 	}
 
 	// we'll check shouldCancel() from time to time anyway

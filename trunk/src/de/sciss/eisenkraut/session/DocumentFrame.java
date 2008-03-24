@@ -759,6 +759,7 @@ bbb.add( markAxisHeader );
 		actionInvert		= new ActionPlugIn( plugInPackage + "Invert" );
 		actionMix			= new ActionPlugIn( plugInPackage + "Mix" );
 		actionReverse		= new ActionPlugIn( plugInPackage + "Reverse" );
+actionReverse.setEnabled( false ); // currently broken (re FilterDialog)
 		actionRotateChannels = new ActionPlugIn( plugInPackage + "RotateChannels" );
 //		actionSilence		= new actionPlugInClass( plugInPackage + "Silence" );
 		actionFScNeedlehole	= new ActionPlugIn( fscapePackage + "Needlehole" );
