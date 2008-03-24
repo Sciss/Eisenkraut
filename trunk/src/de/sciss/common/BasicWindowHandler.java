@@ -31,7 +31,9 @@
 package de.sciss.common;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GraphicsEnvironment;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -306,6 +308,15 @@ extends AbstractWindowHandler
 		} else {
 			return GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
 		}
+	}
+	
+	public void place( AbstractWindow w, float halign, float valign )
+	{
+		final Rectangle sr = getWindowSpace();
+		final Dimension wd = w.getSize();
+		w.setLocation( new Point(
+			(int) (sr.x + halign * (sr.width - wd.width)),
+		   (int) (sr.y + valign * (sr.height - wd.height)) ));
 	}
 	
 //	public Action getCollectAction()

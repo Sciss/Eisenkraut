@@ -232,6 +232,11 @@ extends AppWindow
 		app.addComponent( Main.COMP_IOSETUP, this );
     }
 	
+	protected boolean autoUpdatePrefs()
+	{
+		return true;
+	}
+
 	private JComponent createTab( final int ID )
 	{
 		final JPanel				tab;

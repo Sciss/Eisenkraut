@@ -36,6 +36,7 @@ import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.Dictionary;
 import java.util.Enumeration;
@@ -288,6 +289,16 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 	protected boolean autoUpdatePrefs()
 	{
 		return true;
+	}
+
+	protected boolean restoreVisibility()
+	{
+		return true;
+	}
+
+	protected Point2D getPreferredLocation()
+	{
+		return new Point2D.Float( 0.95f, 0.2f );
 	}
 
 	public void dispose()

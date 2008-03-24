@@ -56,7 +56,7 @@ import de.sciss.gui.GUIUtil;
  *  upon application launch).
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
+ *  @version	0.70, 24-Mar-08
  */
 public class WelcomeScreen
 extends JFrame
@@ -79,8 +79,8 @@ implements HyperlinkListener
 	private static final String htmlWelcome2 =
 		" beta version. <B>BETA</B> means it "+
 		"still contains a lot of bugs that can possibly damage your files. Use this at your own risk!</p>"+
-		"<p>This screen pops up because I couldn't find any known "+
-		"preferences version, which suggests that you start this application for the first time. Please take a few "+
+		"<p>This screen pops up because no valid "+
+		"preferences file was found, which suggests that you start this application for the first time. Please take a few "+
 		"minutes to read the <EM>readme.html</EM> file and the introductory part of the manual. As a first step before doing "+
 		"anything else, you should adjust your preferences. The preferences pane will show up when you "+
 		"close this window.</p>"+

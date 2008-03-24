@@ -38,6 +38,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.Point2D;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -217,6 +218,16 @@ implements	ParamField.Listener, TimelineListener, DynamicListening, DocumentList
 	protected boolean autoUpdatePrefs()
 	{
 		return true;
+	}
+
+	protected boolean restoreVisibility()
+	{
+		return true;
+	}
+
+	protected Point2D getPreferredLocation()
+	{
+		return new Point2D.Float( 0.95f, 0.8f );
 	}
 
 	public void dispose()

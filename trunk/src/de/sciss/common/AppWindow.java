@@ -46,6 +46,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.geom.Point2D;
 import java.beans.PropertyVetoException;
 import java.util.prefs.Preferences;
 import java.util.NoSuchElementException;
@@ -356,7 +357,7 @@ borrowMenuBar = wh.usesScreenMenuBar();
 //System.err.println( "this "+this.getClass().getName()+ " visi = "+visiVal );
 
 		Dimension d			= stringToDimension( sizeVal );
-		if( d == null || alwaysPackSize() ) {
+		if( (d == null) || alwaysPackSize() ) {
 			pack();
 			d				= c.getSize();
 		}
@@ -368,7 +369,9 @@ borrowMenuBar = wh.usesScreenMenuBar();
 			c.setBounds( r );
 		} else {
 			c.setSize( d );
-			setLocationRelativeTo( null );
+			final Point2D prefLoc = this.getPreferredLocation();
+			wh.place( this, (float) prefLoc.getX(), (float) prefLoc.getY() );
+//			if( shouldBeCentered() ) setLocationRelativeTo( null );
 		}
 		c.invalidate();
 //		if( alwaysPackSize() ) {
@@ -428,6 +431,11 @@ borrowMenuBar = wh.usesScreenMenuBar();
 	protected boolean autoUpdatePrefs()
 	{
 		return false;
+	}
+	
+	protected Point2D getPreferredLocation()
+	{
+		return new Point2D.Float( 0.5f, 0.5f );
 	}
 
 //	/**

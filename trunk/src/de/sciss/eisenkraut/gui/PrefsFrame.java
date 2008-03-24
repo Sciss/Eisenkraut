@@ -612,6 +612,11 @@ final SpringPanel tabAudio = tab;
 		app.addComponent( Main.COMP_PREFS, this );
     }
 	
+	protected boolean autoUpdatePrefs()
+	{
+		return true;
+	}
+
 	public void dispose()
 	{
 		AbstractApplication.getApplication().removeComponent( Main.COMP_PREFS );

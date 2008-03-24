@@ -47,6 +47,7 @@ import de.sciss.eisenkraut.gui.MainFrame;
 import de.sciss.eisenkraut.gui.MenuFactory;
 import de.sciss.eisenkraut.gui.ObserverPalette;
 import de.sciss.eisenkraut.gui.PrefsFrame;
+import de.sciss.eisenkraut.gui.WelcomeScreen;
 import de.sciss.eisenkraut.io.PrefCacheManager;
 import de.sciss.eisenkraut.net.OSCRouter;
 import de.sciss.eisenkraut.net.OSCRouterWrapper;
@@ -87,10 +88,10 @@ import de.sciss.util.Flag;
  *  class from the <code>de.sciss.app</code> package.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
+ *  @version	0.70, 24-Mar-08
  *
  *	@todo		OSC /main/quit doesn't work repeatedly
- *				; scheint an menuFactory.closeAll zu liegen!
+ *				; seems to be a problem of menuFactory.closeAll!
  */
 public class Main
 extends BasicApplication
@@ -292,7 +293,7 @@ implements OSCRouter // ProgressComponent // , PreferenceChangeListener
         new ObserverPalette();
 
 		if( prefsVersion == 0.0 ) { // means no preferences found, so display splash screen
-    		new de.sciss.eisenkraut.gui.WelcomeScreen( this );
+    		new WelcomeScreen( this );
 		}
 
 		if( warnings != null ) {

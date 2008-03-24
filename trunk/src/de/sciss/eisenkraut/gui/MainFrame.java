@@ -43,6 +43,7 @@ import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.Point2D;
 import java.text.MessageFormat;
 import java.util.Locale;
 import javax.swing.AbstractAction;
@@ -281,6 +282,11 @@ ggDumpOSC.addItem( getResourceString( "labelDumpHex" ), null, new Color( 0xFF, 0
 	protected boolean autoUpdatePrefs()
 	{
 		return true;
+	}
+
+	protected Point2D getPreferredLocation()
+	{
+		return new Point2D.Float( 0f, 0f );
 	}
 
 	public void dispose()
