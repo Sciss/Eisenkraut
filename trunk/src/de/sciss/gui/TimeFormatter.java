@@ -30,6 +30,8 @@
 package de.sciss.gui;
 
 import java.text.ParseException;
+
+import javax.swing.JFormattedTextField;
 import javax.swing.SwingConstants;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -40,7 +42,7 @@ import javax.swing.text.NavigationFilter;
 import javax.swing.text.Position;
 
 /**
- *  @version	0.25, 05-May-06
+ *  @version	0.37, 25-Feb-08
  */
 public class TimeFormatter
 extends DefaultFormatter
@@ -86,6 +88,11 @@ extends DefaultFormatter
 		}
 	}
 
+	protected JFormattedTextField getFormattedTextField()
+	{
+		return super.getFormattedTextField();
+	}
+
 	protected DocumentFilter getDocumentFilter()
 	{
 		return docFilter;
@@ -99,6 +106,8 @@ extends DefaultFormatter
 	private class DocFilter
 	extends DocumentFilter
 	{
+		protected DocFilter() { /* empty */ }
+		
 		public void insertString( DocumentFilter.FilterBypass fb, int off, String s, AttributeSet attr )
 		throws BadLocationException
 		{
@@ -153,7 +162,7 @@ extends DefaultFormatter
 						try {
 							getFormattedTextField().setCaretPosition( off + 1 + len );
 						}
-						catch( IllegalArgumentException e1 ) {}
+						catch( IllegalArgumentException e1 ) { /* ignored */ }
 						return;
 					}
 				} else {
@@ -180,6 +189,8 @@ extends DefaultFormatter
 	extends NavigationFilter
 	implements SwingConstants
 	{
+		protected NavFilter() { /* empty */ }
+
 		public void setDot( NavigationFilter.FilterBypass fb, int dot, Position.Bias bias )
 		{
 			super.setDot( fb, dot, bias );

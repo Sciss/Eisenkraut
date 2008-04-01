@@ -73,13 +73,13 @@ import de.sciss.app.PreferenceEntrySync;
  */
 public class GUIUtil
 {
-	private static final double VERSION	= 0.36;
+	private static final double VERSION	= 0.37;
 	private static final ResourceBundle resBundle = ResourceBundle.getBundle( "GUIUtilStrings" );
 	private static final Preferences prefs = Preferences.userNodeForPackage( GUIUtil.class );
 
 	private static Icon icnNoWrite = null;
 	
-    private GUIUtil() {}
+    private GUIUtil() { /* empty */ }
 
 	public static final Preferences getUserPrefs()
 	{
@@ -267,8 +267,9 @@ public class GUIUtil
 		SpringLayout.Constraints	cons;
         SpringLayout.Constraints	lastCons		= null;
         SpringLayout.Constraints	lastRowCons		= null;
-		int							i;
 		int							max				= rows * cols;
+		
+		if( max == 0 ) return;
 		
         try {
             layout = (SpringLayout) parent.getLayout();
@@ -286,7 +287,7 @@ public class GUIUtil
         // cells have the same size.
         maxWidthSpring  = layout.getConstraints( parent.getComponent( 0 )).getWidth();
         maxHeightSpring = layout.getConstraints( parent.getComponent( 0 )).getWidth();
-        for( i = 1; i < max; i++ ) {
+        for( int i = 1; i < max; i++ ) {
             cons			= layout.getConstraints( parent.getComponent( i ));
             maxWidthSpring  = Spring.max( maxWidthSpring, cons.getWidth() );
             maxHeightSpring = Spring.max( maxHeightSpring, cons.getHeight() );
@@ -294,37 +295,37 @@ public class GUIUtil
 
         // Apply the new width/height Spring. This forces all the
         // components to have the same size.
-        for( i = 0; i < max; i++ ) {
+        for( int i = 0; i < max; i++ ) {
             cons = layout.getConstraints( parent.getComponent( i ));
             cons.setWidth( maxWidthSpring );
             cons.setHeight( maxHeightSpring );
         }
 
-        // Then adjust the x/y constraints of all the cells so that they
-        // are aligned in a grid.
-        for( i = 0; i < max; i++ ) {
-            cons = layout.getConstraints( parent.getComponent( i ));
-            if( i % cols == 0 ) {   // start of new row
-                lastRowCons = lastCons;
-                cons.setX( initialXSpring );
-            } else {				// x position depends on previous component
-                cons.setX( Spring.sum( lastCons.getConstraint( SpringLayout.EAST ), xPadSpring ));
-            }
+    	// Then adjust the x/y constraints of all the cells so that they
+    	// are aligned in a grid.
+        for( int i = 0; i < max; i++ ) {
+        	cons = layout.getConstraints( parent.getComponent( i ));
+        	if( i % cols == 0 ) {   // start of new row
+        		lastRowCons = lastCons;
+        		cons.setX( initialXSpring );
+        	} else {				// x position depends on previous component
+        		cons.setX( Spring.sum( lastCons.getConstraint( SpringLayout.EAST ), xPadSpring ));
+        	}
 
-            if( i / cols == 0 ) {   // first row
-                cons.setY( initialYSpring );
-            } else {				// y position depends on previous row
-                cons.setY( Spring.sum( lastRowCons.getConstraint( SpringLayout.SOUTH ), yPadSpring ));
-            }
-            lastCons = cons;
+        	if( i / cols == 0 ) {   // first row
+        		cons.setY( initialYSpring );
+        	} else {				// y position depends on previous row
+        		cons.setY( Spring.sum( lastRowCons.getConstraint( SpringLayout.SOUTH ), yPadSpring ));
+        	}
+        	lastCons = cons;
         }
 
-		// Set the parent's size.
-		cons = layout.getConstraints( parent );
-		cons.setConstraint( SpringLayout.SOUTH, Spring.sum( Spring.constant( yPad ),
-							lastCons.getConstraint( SpringLayout.SOUTH )));
+        // Set the parent's size.
+        cons = layout.getConstraints( parent );
+        cons.setConstraint( SpringLayout.SOUTH, Spring.sum( Spring.constant( yPad ),
+                            lastCons.getConstraint( SpringLayout.SOUTH )));
         cons.setConstraint( SpringLayout.EAST, Spring.sum( Spring.constant( xPad ),
-							lastCons.getConstraint( SpringLayout.EAST )));
+                            lastCons.getConstraint( SpringLayout.EAST )));
     }
 
     /**
@@ -544,13 +545,13 @@ public class GUIUtil
 			m.invoke( c, new Object[] { new Boolean( b )});
 			return true;
 		}
-		catch( NoSuchMethodException e1 ) {}
-		catch( NullPointerException e1 ) {}
-		catch( SecurityException e1 ) {}
-		catch( IllegalAccessException e1 ) {}
-		catch( IllegalArgumentException e1 ) {}
-		catch( InvocationTargetException e1 ) {}
-		catch( ExceptionInInitializerError e1 ) {}
+		catch( NoSuchMethodException e1 ) { /* ingore */ }
+		catch( NullPointerException e1 ) { /* ingore */ }
+		catch( SecurityException e1 ) { /* ingore */ }
+		catch( IllegalAccessException e1 ) { /* ingore */ }
+		catch( IllegalArgumentException e1 ) { /* ingore */ }
+		catch( InvocationTargetException e1 ) { /* ingore */ }
+		catch( ExceptionInInitializerError e1 ) { /* ingore */ }
 		return false;
 	}
 
@@ -564,13 +565,13 @@ public class GUIUtil
 				return ((Boolean) result).booleanValue();
 			}
 		}
-		catch( NoSuchMethodException e1 ) {}
-		catch( NullPointerException e1 ) {}
-		catch( SecurityException e1 ) {}
-		catch( IllegalAccessException e1 ) {}
-		catch( IllegalArgumentException e1 ) {}
-		catch( InvocationTargetException e1 ) {}
-		catch( ExceptionInInitializerError e1 ) {}
+		catch( NoSuchMethodException e1 ) { /* ingore */ }
+		catch( NullPointerException e1 ) { /* ingore */ }
+		catch( SecurityException e1 ) { /* ingore */ }
+		catch( IllegalAccessException e1 ) { /* ingore */ }
+		catch( IllegalArgumentException e1 ) { /* ingore */ }
+		catch( InvocationTargetException e1 ) { /* ingore */ }
+		catch( ExceptionInInitializerError e1 ) { /* ingore */ }
 		return false;
 	}
 

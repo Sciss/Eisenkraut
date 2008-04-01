@@ -48,7 +48,7 @@ import java.util.Map;
  *	they can be a single class (ending with '.class').
  *
  *	@author		Hanns Holger Rutz
- *	@version	0.43, 30-Jul-07
+ *	@version	0.59, 25-Feb-08
  */
 public class DynamicURLClassLoader
 extends URLClassLoader
@@ -178,7 +178,7 @@ extends URLClassLoader
 				try {
 					is.close();
 				}
-				catch( IOException e11 ) {}
+				catch( IOException e11 ) { /* ignored */ }
 			}
 			return null;
 		}

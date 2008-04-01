@@ -33,7 +33,7 @@ package de.sciss.gui;
 import java.awt.Component;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
+import java.awt.event.InputEvent;
 import javax.swing.AbstractAction;
 import javax.swing.KeyStroke;
 import javax.swing.text.JTextComponent;
@@ -51,7 +51,7 @@ import javax.swing.text.JTextComponent;
  *	and they won't interfer when the user edits text fields.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.27, 24-Sep-05
+ *  @version	0.37, 25-Feb-08
  */
 public abstract class KeyedAction
 extends AbstractAction
@@ -66,7 +66,7 @@ extends AbstractAction
 		putValue( ACCELERATOR_KEY, stroke );
 		
 		ignoreFocus = (stroke == null) ||
-					  ((stroke.getModifiers() & (KeyEvent.META_DOWN_MASK | KeyEvent.CTRL_DOWN_MASK)) != 0);
+					  ((stroke.getModifiers() & (InputEvent.META_DOWN_MASK | InputEvent.CTRL_DOWN_MASK)) != 0);
 //		if( !ignoreFocus ) {
 //			
 //		}

@@ -83,7 +83,7 @@ import javax.swing.SwingConstants;
  *	New version paints focus WITHOUT requiring <code>focus.png</code> resource.
  *
  *	@author		Hanns Holger Rutz
- *	@version	0.71, 24-Dec-07
+ *	@version	0.37, 25-Feb-08
  *
  *	@todo		preferred size : maxH calculation is stupid ; we should try to
  *				get a LineBreakMeasure instance and reveal ascent / descent / leading
@@ -246,8 +246,8 @@ maxH = Math.max( maxH, (int) r.getHeight() );
 
 	private void configureBgColor( StateView sv, Color c )
 	{
-		configureColor( sv.colrBackTop, colrBackTop[ NORMAL ], colrBackTopN, c );
-		configureColor( sv.colrBackBot, colrBackBot[ NORMAL ], colrBackBotN, c );
+		configureColor( sv.colrSVBackTop, colrBackTop[ NORMAL ], colrBackTopN, c );
+		configureColor( sv.colrSVBackBot, colrBackBot[ NORMAL ], colrBackBotN, c );
 
 		BufferedImage	img;
 		int[]			p;
@@ -255,13 +255,13 @@ maxH = Math.max( maxH, (int) r.getHeight() );
 		p	= mixPixels( pntBackPix, pntBackPixN, c );
 		img = new BufferedImage( 1, 6, BufferedImage.TYPE_INT_ARGB );
 		img.setRGB( 0, 0, 1, 6, p, 0, 1 );
-		sv.pntBackBot[ NORMAL ] = new TexturePaint( img, new Rectangle( 0, 0, 1, 6 ));
+		sv.pntSVBackBot[ NORMAL ] = new TexturePaint( img, new Rectangle( 0, 0, 1, 6 ));
 		img = new BufferedImage( 1, 6, BufferedImage.TYPE_INT_ARGB );
 		img.setRGB( 0, 0, 1, 6, createdArmedPixels( p ), 0, 1 );
-		sv.pntBackBot[ ARMED ] = new TexturePaint( img, new Rectangle( 0, 0, 1, 6 ));
+		sv.pntSVBackBot[ ARMED ] = new TexturePaint( img, new Rectangle( 0, 0, 1, 6 ));
 		img = new BufferedImage( 1, 6, BufferedImage.TYPE_INT_ARGB );
 		img.setRGB( 0, 0, 1, 6, createdDisabledPixels( p ), 0, 1 );
-		sv.pntBackBot[ DISABLED ] = new TexturePaint( img, new Rectangle( 0, 0, 1, 6 ));
+		sv.pntSVBackBot[ DISABLED ] = new TexturePaint( img, new Rectangle( 0, 0, 1, 6 ));
 
 		sv.pntBack		= c;
 		sv.isGradient	= false;
@@ -599,12 +599,12 @@ maxH = Math.max( maxH, (int) r.getHeight() );
 				g2.setComposite( cmpOrig );
 			}
 		} else {
-			g2.setColor( sv.colrBackTop[ cidx ]);
+			g2.setColor( sv.colrSVBackTop[ cidx ]);
 			g2.fillRect( x + 1, y + 1, w - 2, hh - 1 );
-			g2.setColor( sv.colrBackBot[ cidx ]);
+			g2.setColor( sv.colrSVBackBot[ cidx ]);
 			g2.fillRect( x + 1, y + hh, w - 2, hh2 - 7 );
 			g2.translate( x + 1, y2 - 7 );
-			g2.setPaint( sv.pntBackBot[ cidx ]);
+			g2.setPaint( sv.pntSVBackBot[ cidx ]);
 			g2.fillRect( 0, 0, w - 2, 6 );		
 		}
 		g2.setTransform( atOrig );
@@ -838,7 +838,7 @@ maxH = Math.max( maxH, (int) r.getHeight() );
 		}
 	}
 	
-	public void dispose() {}
+	public void dispose() { /* empty */ }
 
 // ---------------- Mouse(Motion)Listener interfaces ----------------
 
@@ -873,10 +873,10 @@ maxH = Math.max( maxH, (int) r.getHeight() );
 		}
 	}
 	
-	public void mouseClicked( MouseEvent e ) {}
-	public void mouseEntered( MouseEvent e ) {}
-	public void mouseExited( MouseEvent e ) {}
-	public void mouseMoved( MouseEvent e ) {}
+	public void mouseClicked( MouseEvent e ) { /* ignored */ }
+	public void mouseEntered( MouseEvent e ) { /* ignored */ }
+	public void mouseExited( MouseEvent e ) { /* ignored */ }
+	public void mouseMoved( MouseEvent e ) { /* ignored */ }
 
 // ---------------- KeyListener interface ----------------
 
@@ -895,7 +895,7 @@ maxH = Math.max( maxH, (int) r.getHeight() );
 		}
 	}
 
-	public void keyTyped( KeyEvent e ) {}
+	public void keyTyped( KeyEvent e ) { /* ignored */ }
 
 // ---------------- FocusListener interface ----------------
 
@@ -922,22 +922,22 @@ maxH = Math.max( maxH, (int) r.getHeight() );
 
 	private static class StateView
 	{
-		private String	text;
-		private Paint	pntBack;
-		private Color[]	colrLabel;
-		private Color	colrBackGrad1, colrBackGrad2;
-		private boolean	isGradient;
-		private boolean	isClear;
-		private Color[]	colrBackTop, colrBackBot;
-		private Paint[]	pntBackBot;
-		private Icon	icon;
+		protected String	text;
+		protected Paint		pntBack;
+		protected Color[]	colrLabel;
+		protected Color		colrBackGrad1, colrBackGrad2;
+		protected boolean	isGradient;
+		protected boolean	isClear;
+		protected Color[]	colrSVBackTop, colrSVBackBot;
+		protected Paint[]	pntSVBackBot;
+		protected Icon		icon;
 		
-		private StateView()
+		protected StateView()
 		{
 			colrLabel				= new Color[ 3 ];
-			colrBackTop				= new Color[ 3 ];
-			colrBackBot				= new Color[ 3 ];
-			pntBackBot				= new Paint[ 3 ];
+			colrSVBackTop			= new Color[ 3 ];
+			colrSVBackBot			= new Color[ 3 ];
+			pntSVBackBot			= new Paint[ 3 ];
 		}
 
 //		private StateView( StateView orig )

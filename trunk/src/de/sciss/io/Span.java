@@ -50,7 +50,7 @@ import java.util.Comparator;
  *  in sense rate frames.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.28, 12-Aug-07
+ *  @version	0.29, 25-Feb-08
  */
 public class Span
 implements Serializable, Cloneable
@@ -304,6 +304,8 @@ implements Serializable, Cloneable
 	private static class StartComparator
 	implements Comparator
 	{
+		protected StartComparator() { /* empty */ }
+		
 		public int compare( Object o1, Object o2 )
 		{
 			final long n1, n2;
@@ -340,6 +342,8 @@ implements Serializable, Cloneable
 	private static class StopComparator
 	implements Comparator
 	{
+		protected StopComparator() { /* empty */ }
+
 		public int compare( Object o1, Object o2 )
 		{
 			final long n1, n2;

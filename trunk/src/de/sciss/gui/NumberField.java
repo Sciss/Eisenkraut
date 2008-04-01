@@ -80,7 +80,7 @@ import de.sciss.util.NumberSpace;
  *  a <code>NumberListener</code>.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.3, 05-May-06
+ *  @version	0.37, 25-Feb-08
  */
 public class NumberField
 extends JFormattedTextField
@@ -101,7 +101,7 @@ implements EventManager.Processor //, PropertyChangeListener
 //	public static final int ENTER_UNFOCUS	=	0x00001;
 
 	private NumberSpace						space;
-	private Number							value;
+	protected Number						value;
 	private NumberFormat					numberFormat;
 	private TimeFormat						timeFormat;
 	private int								flags;
@@ -112,8 +112,8 @@ implements EventManager.Processor //, PropertyChangeListener
 	private final NumberFormatter			numberFormatter	= new NumberFormatter();
 	private final TimeFormatter				timeFormatter	= new TimeFormatter();
 	
-	private static final DataFlavor			numberFlavor	= new DataFlavor( Number.class, Number.class.getName() );
-	private static final DataFlavor[]		supportedFlavors= { numberFlavor, DataFlavor.stringFlavor };
+	protected static final DataFlavor		numberFlavor	= new DataFlavor( Number.class, Number.class.getName() );
+	protected static final DataFlavor[]		supportedFlavors= { numberFlavor, DataFlavor.stringFlavor };
 	
 	/**
 	 *  Create a new <code>NumberField</code> for
@@ -410,7 +410,7 @@ implements EventManager.Processor //, PropertyChangeListener
 	private class NumberTransferHandler
 	extends TransferHandler
 	{
-		private NumberTransferHandler() {}
+		protected NumberTransferHandler() { /* empty */ }
 
 		/**
 		 * Overridden to import a Number or String if it is available.
@@ -432,9 +432,9 @@ implements EventManager.Processor //, PropertyChangeListener
 					return true;
 				}
 			}
-			catch( UnsupportedFlavorException e1 ) {}
-			catch( IOException e2 ) {}
-			catch( ParseException e3 ) {}
+			catch( UnsupportedFlavorException e1 ) { /* ignored */ }
+			catch( IOException e2 ) { /* ignored */ }
+			catch( ParseException e3 ) { /* ignored */ }
 
 			return false;
 		}
@@ -470,7 +470,7 @@ implements EventManager.Processor //, PropertyChangeListener
 		private final Number n;
 		private final JFormattedTextField.AbstractFormatter f;
 		
-		private NumberTransferable( Number n, JFormattedTextField.AbstractFormatter f )
+		protected NumberTransferable( Number n, JFormattedTextField.AbstractFormatter f )
 		{
 			this.n	= n;
 			this.f	= f;

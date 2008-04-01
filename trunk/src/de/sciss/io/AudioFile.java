@@ -98,7 +98,7 @@ import java.util.Map;
  *	of streaming files, not just audio files.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.35, 06-Jan-07
+ *  @version	0.36, 25-Feb-08
  *
  *  @see		AudioFileDescr
  *
@@ -118,28 +118,28 @@ implements InterleavedStreamFile
 	private static final int MODE_READONLY   = 0;
 	private static final int MODE_READWRITE  = 1;
 
-	private final RandomAccessFile	raf;
-	private final FileChannel		fch;
-	private final int				mode;
+	protected final RandomAccessFile	raf;
+	protected final FileChannel			fch;
+	private final int					mode;
 
-	private AudioFileDescr			afd;
-	private AudioFileHeader			afh;
+	protected AudioFileDescr			afd;
+	private AudioFileHeader				afh;
 	
-	private ByteBuffer				byteBuf;
-	private int						byteBufCapacity;
-	private int						bytesPerFrame;
-	private int						frameBufCapacity;
-	private BufferHandler			bh;
-	private int						channels;
-	private long					framePosition;
+	protected ByteBuffer				byteBuf;
+	private int							byteBufCapacity;
+	protected int						bytesPerFrame;
+	protected int						frameBufCapacity;
+	private BufferHandler				bh;
+	protected int						channels;
+	private long						framePosition;
 	
-	private long					updateTime;
-	private long					updateLen;
-	private long					updateStep;
+	private long						updateTime;
+	private long						updateLen;
+	private long						updateStep;
 
-	private static final String	NAME_LOOP		= "loop";
-	private static final String	NAME_MARK		= "mark";
-	private static final String	NAME_REGION		= "region";
+	private static final String			NAME_LOOP		= "loop";
+	private static final String			NAME_MARK		= "mark";
+	private static final String			NAME_REGION		= "region";
 
 // -------- public Methoden --------
 
@@ -643,7 +643,7 @@ implements InterleavedStreamFile
 		try {
 			close();
 		}
-		catch( IOException e ) {}		// ignore
+		catch( IOException e ) { /* ignored */ }
 	}
 
 	/**
@@ -682,7 +682,7 @@ implements InterleavedStreamFile
 		afh.readAppCode();
 	}
 
-	private static final String getResourceString( String key )
+	protected static final String getResourceString( String key )
 	{
 		return IOUtil.getResourceString( key );
 	}
@@ -691,6 +691,7 @@ implements InterleavedStreamFile
 
 	private abstract class BufferHandler
 	{
+		protected BufferHandler() { /* empty */ }
 		protected abstract void writeFrames( float[][] frames, int off, int len ) throws IOException;
 		protected abstract void readFrames( float[][] frames, int off, int len ) throws IOException;
 	}
@@ -700,7 +701,7 @@ implements InterleavedStreamFile
 	{
 		private final byte[]	arrayBuf;
 
-		private ByteBufferHandler()
+		protected ByteBufferHandler()
 		{
 			arrayBuf	= new byte[ byteBuf.capacity() ];
 		}
@@ -762,7 +763,7 @@ implements InterleavedStreamFile
 	{
 		private final byte[]	arrayBuf;
 
-		private UByteBufferHandler()
+		protected UByteBufferHandler()
 		{
 			arrayBuf	= new byte[ byteBuf.capacity() ];
 		}
@@ -827,7 +828,7 @@ implements InterleavedStreamFile
 		private final ShortBuffer	viewBuf;
 		private final short[]		arrayBuf;
 	
-		private ShortBufferHandler()
+		protected ShortBufferHandler()
 		{
 			byteBuf.clear();
 			viewBuf		= byteBuf.asShortBuffer();
@@ -894,7 +895,7 @@ implements InterleavedStreamFile
 		private final byte[]		arrayBuf;
 		private final int			chStep = (channels - 1) * 3;
 	
-		private ThreeByteBufferHandler()
+		protected ThreeByteBufferHandler()
 		{
 			// note : it's *not* faster to use ByteBuffer.allocate()
 			// and ByteBuffer.array() than this implementation
@@ -966,7 +967,7 @@ implements InterleavedStreamFile
 		private final byte[]		arrayBuf;
 		private final int			chStep = (channels - 1) * 3;
 	
-		private ThreeLittleByteBufferHandler()
+		protected ThreeLittleByteBufferHandler()
 		{
 			// note : it's *not* faster to use ByteBuffer.allocate()
 			// and ByteBuffer.array() than this implementation
@@ -1036,7 +1037,7 @@ implements InterleavedStreamFile
 		private final IntBuffer		viewBuf;
 		private final int[]			arrayBuf;
 	
-		private IntBufferHandler()
+		protected IntBufferHandler()
 		{
 			byteBuf.clear();
 			viewBuf		= byteBuf.asIntBuffer();
@@ -1099,7 +1100,7 @@ implements InterleavedStreamFile
 		private final FloatBuffer	viewBuf;
 		private final float[]		arrayBuf;
 	
-		private FloatBufferHandler()
+		protected FloatBufferHandler()
 		{
 			byteBuf.clear();
 			viewBuf		= byteBuf.asFloatBuffer();
@@ -1162,7 +1163,7 @@ implements InterleavedStreamFile
 		private final DoubleBuffer	viewBuf;
 		private final double[]		arrayBuf;
 	
-		private DoubleBufferHandler()
+		protected DoubleBufferHandler()
 		{
 			byteBuf.clear();
 			viewBuf		= byteBuf.asDoubleBuffer();
@@ -1225,6 +1226,8 @@ implements InterleavedStreamFile
 	{
 		protected static final long SECONDS_FROM_1904_TO_1970 = 2021253247L;
 	
+		protected AudioFileHeader() { /* empty */ }
+		
 		protected abstract void readHeader( AudioFileDescr afd ) throws IOException;
 		protected abstract void writeHeader( AudioFileDescr afd ) throws IOException;
 		protected abstract void updateHeader( AudioFileDescr afd ) throws IOException;
@@ -1235,10 +1238,10 @@ implements InterleavedStreamFile
 		protected boolean isUnsignedPCM() { return false; }
 
 		// WAV and AIFF might overwrite this
-		protected void readMarkers() throws IOException {}
+		protected void readMarkers() throws IOException { /* empty */ }
 
 		// AIFF might overwrite this
-		protected void readAppCode() throws IOException {}
+		protected void readAppCode() throws IOException { /* empty */ }
 
 		protected final int readLittleUShort()
 		throws IOException
@@ -1332,6 +1335,8 @@ implements InterleavedStreamFile
 		private int			loopStart			= 0;
 		private int			loopEnd				= 0;
 
+		protected AIFFHeader() { /* empty */ }
+		
 		protected void readHeader( AudioFileDescr afd )
 		throws IOException
 		{
@@ -1817,6 +1822,8 @@ commentLp:			for( i = 0; !comment && (i < i1); i++ ) {
 		private long	listMagicLen		= 0L;
 		private long	cueMagicOff			= 0L;
 
+		protected WAVEHeader() { /* empty */ }
+		
 		protected void readHeader( AudioFileDescr afd )
 		throws IOException
 		{
@@ -2258,6 +2265,8 @@ len	= raf.length() - 8;
 		private long headDataLenOffset= 8L;
 		private long lastUpdateLength = 0L;
 		
+		protected SNDHeader() { /* empty */ }
+		
 		protected void readHeader( AudioFileDescr afd )
 		throws IOException
 		{
@@ -2397,6 +2406,8 @@ len	= raf.length() - 8;
 
 		private long sampleDataOffset;
 
+		protected IRCAMHeader() { /* empty */ }
+		
 		protected void readHeader( AudioFileDescr afd )
 		throws IOException
 		{
@@ -2561,20 +2572,22 @@ len	= raf.length() - 8;
 	private class RawHeader
 	extends AudioFileHeader
 	{
+		protected RawHeader() { /* empty */ }
+		
 		// this never get's called because
 		// retrieveType will never say it's a raw file
 		protected void readHeader( AudioFileDescr afd )
 		throws IOException
-		{}
+		{ /* empty */ }
 		
 		// naturally a raw file doesn't have a header
 		protected void writeHeader( AudioFileDescr afd )
 		throws IOException
-		{}
+		{ /* empty */ }
 		
 		protected void updateHeader( AudioFileDescr afd )
 		throws IOException
-		{}
+		{ /* empty */ }
 		
 		protected long getSampleDataOffset()
 		{

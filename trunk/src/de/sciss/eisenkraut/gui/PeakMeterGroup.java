@@ -55,8 +55,8 @@ public class PeakMeterGroup
 extends JPanel
 implements SwingConstants
 {
-	private PeakMeter[]			meters			= new PeakMeter[ 0 ];
-	private PeakMeterCaption	caption;
+	protected PeakMeter[]		meters			= new PeakMeter[ 0 ];
+	protected PeakMeterCaption	caption;
 	private int					captionPosition	= LEFT;
 	private int					captionAlign	= RIGHT;
 	private boolean				captionVisible	= true;

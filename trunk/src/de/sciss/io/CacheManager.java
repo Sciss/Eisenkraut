@@ -42,7 +42,7 @@ import javax.swing.Action;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 21-Aug-07
+ *  @version	0.32, 25-Feb-08
  */
 public class CacheManager
 implements FilenameFilter
@@ -60,6 +60,7 @@ implements FilenameFilter
 	
 	public CacheManager()
 	{
+		/* empty */
 	}
 	
 	public void setActive( boolean onOff )
@@ -219,10 +220,10 @@ implements FilenameFilter
 	 */
 	public Action getDebugDumpAction()
 	{
-		return new actionDebugDump();
+		return new ActionDebugDump();
 	}
 	
-	private void debugDump()
+	protected void debugDump()
 	{
 		System.err.println( "WaveformCacheManager " + this.hashCode() + "; active ? " + isActive() +
 			"; cache folder = " + (folder == null ? "null" : folder.getAbsolutePath()) +
@@ -243,10 +244,10 @@ implements FilenameFilter
 	
 // ------- internal classes -------
 
-	private class actionDebugDump
+	private class ActionDebugDump
 	extends AbstractAction
 	{
-		private actionDebugDump()
+		protected ActionDebugDump()
 		{
 			super( "Dump Waveform Cache" );
 		}
@@ -260,11 +261,11 @@ implements FilenameFilter
 	private static class CacheEntry
 	implements Comparable
 	{
-		private final File file;
-		private final long size;
-		private final long lastModified;
+		protected final File	file;
+		protected final long	size;
+		protected final long	lastModified;
 		
-		private CacheEntry( File file )
+		protected CacheEntry( File file )
 		{
 			this.file			= file;
 			this.size			= file.length();

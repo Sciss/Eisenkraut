@@ -40,14 +40,14 @@ import javax.swing.event.AncestorListener;
  *  methods they're interested in.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.10, 20-May-05
+ *  @version	0.11, 25-Feb-08
  *
  *  @see	java.awt.event.ComponentAdapter
  */
 public class AncestorAdapter
 implements AncestorListener
 {
-    public void ancestorAdded( AncestorEvent e ) {}
-    public void ancestorRemoved( AncestorEvent e ) {}
-    public void ancestorMoved( AncestorEvent e ) {}
+    public void ancestorAdded( AncestorEvent e ) { /* empty */ }
+    public void ancestorRemoved( AncestorEvent e ) { /* empty */ }
+    public void ancestorMoved( AncestorEvent e ) { /* empty */ }
 }

@@ -56,7 +56,7 @@ import de.sciss.app.AncestorAdapter;
  *  <code>DynamicAncestorAdapter</code>.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.11, 26-Nov-07
+ *  @version	0.12, 25-Feb-08
  *
  *  @see		DynamicListening
  */
@@ -68,7 +68,7 @@ extends AncestorAdapter
 	private final ComponentListener	cmpL;
 	private Window					win			= null;
 	private JComponent				cmp			= null;
-	private boolean					listening   = false;
+	protected boolean				listening   = false;
     
 	/**
 	 *  Constructs a new <code>DynamicAncestorAdapter</code>
@@ -235,13 +235,13 @@ extends AncestorAdapter
 		}
 	}
 
-	private void startListening()
+	protected void startListening()
 	{
 		dynL.startListening();
 		listening = true;
 	}
 
-	private void stopListening()
+	protected void stopListening()
 	{
 		dynL.stopListening();
 		listening = false;

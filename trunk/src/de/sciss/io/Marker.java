@@ -42,7 +42,7 @@ import java.util.List;
  *  an audio file. (copied from FScape).
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.22, 05-May-06
+ *  @version	0.23, 25-Feb-08
  *
  *  @see	de.sciss.io.AudioFileDescr#KEY_MARKERS
  */
@@ -214,6 +214,8 @@ implements Cloneable, Comparable, Serializable
 	private static class NameComparator
 	implements Comparator
 	{
+		protected NameComparator() { /* empty */ }
+		
 		public int compare( Object o1, Object o2 )
 		{
 			if( o1 instanceof String ) {

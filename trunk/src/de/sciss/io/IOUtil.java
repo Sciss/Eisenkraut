@@ -52,7 +52,7 @@ import java.util.prefs.Preferences;
  *  functions for common file operations.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.31, 10-Mar-06
+ *  @version	0.32, 25-Feb-08
  */
 public class IOUtil
 {
@@ -64,11 +64,11 @@ public class IOUtil
 	 */
 	public static final String KEY_TEMPDIR	= "tmpdir";		// string : pathname
 
-	private static final double VERSION	= 0.31;
+	private static final double VERSION	= 0.32;
 	private static final ResourceBundle resBundle = ResourceBundle.getBundle( "IOUtilStrings" );
 	private static final Preferences prefs = Preferences.userNodeForPackage( IOUtil.class );
 	
-	private IOUtil() {}
+	private IOUtil() { /* empty */ }
 	
 	public static final Preferences getUserPrefs()
 	{
