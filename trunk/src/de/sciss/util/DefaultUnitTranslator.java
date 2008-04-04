@@ -226,9 +226,9 @@ implements ParamSpace.Translator
 	{
 //		private final int		sourceUnit;
 //		private final int		targetUnit;
-		private final double	coeff;
+		protected final double	coeff;
 		
-		private Coefficient( int sourceUnit, int targetUnit, double coeff )
+		protected Coefficient( int sourceUnit, int targetUnit, double coeff )
 		{
 //			this.sourceUnit	= sourceUnit;
 //			this.targetUnit	= targetUnit;

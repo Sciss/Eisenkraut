@@ -95,7 +95,7 @@ implements OSCRouter
 	
 	public final Timeline					timeline;
 
-	private AudioTrail						at				= null;
+	protected AudioTrail					at				= null;
 	private DecimatedWaveTrail				dwt				= null;
 	private DecimatedSonaTrail				dst				= null;
 
@@ -139,7 +139,7 @@ implements OSCRouter
 
 	private final ActionSave			actionSave;
 	private final ActionCut				actionCut;
-	private final ActionCopy			actionCopy;
+	protected final ActionCopy			actionCopy;
 	private final ActionPaste			actionPaste;
 	private final ActionDelete			actionDelete;
 	private final ActionSilence			actionSilence;
@@ -149,7 +149,7 @@ implements OSCRouter
 	private final UndoManager				undo			= new UndoManager( this );
 	private boolean							dirty			= false;
 
-	private final Session					enc_this		= this;
+	protected final Session					enc_this		= this;
 
 	public static final int					EDIT_INSERT		= 0;
 	public static final int					EDIT_OVERWRITE	= 1;
@@ -166,7 +166,7 @@ implements OSCRouter
 	
 	private final BlendingAction			blending;
 	
-	private ProcessingThread				pt				= null;
+	protected ProcessingThread				pt				= null;
 	
 	private Session( AudioFileDescr[] afds, boolean createOSC )
 	throws IOException
@@ -298,7 +298,7 @@ implements OSCRouter
 		
 		pt = process;
 		pt.addListener( new ProcessingThread.Listener() {
-			public void processStarted( ProcessingThread.Event e ) {}
+			public void processStarted( ProcessingThread.Event e ) { /* empty */ }
 			public void processStopped( ProcessingThread.Event e )
 			{
 				pt = null;
@@ -548,9 +548,9 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 		return actionDelete.initiate( name, span, mode );
 	}
 
-	public ProcessingThread procSave( String name, Span span, AudioFileDescr[] afds, boolean asCopy )
+	public ProcessingThread procSave( String name, Span span, AudioFileDescr[] targetAFDs, boolean asCopy )
 	{
-		return actionSave.initiate( name, span, afds, asCopy );
+		return actionSave.initiate( name, span, targetAFDs, asCopy );
 	}
 	
 	public MenuAction getCutAction()
@@ -726,7 +726,7 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 		}
 	}
 
-	private static String getResourceString( String key )
+	protected static String getResourceString( String key )
 	{
 		return AbstractApplication.getApplication().getResourceString( key );
 	}
@@ -743,7 +743,7 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 //		}
 //	}
 	
-	private BlendContext createBlendContext( long maxLeft, long maxRight, Flag hasSelectedAudio )
+	protected BlendContext createBlendContext( long maxLeft, long maxRight, Flag hasSelectedAudio )
 	{
 		if( !hasSelectedAudio.isSet() || ((maxLeft == 0L) && (maxRight == 0L)) ) {
 			return null;
@@ -752,7 +752,7 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 		}
 	}
 
-	private void discardEditsAndClipboard()
+	protected void discardEditsAndClipboard()
 	{
 		undo.discardAllEdits();
 //		ClipboardTrackList.checkDispose( AbstractApplication.getApplication().getClipboard() );
@@ -792,7 +792,7 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 			OSCRoot.failed( rom.msg, getResourceString( "errWindowNotFound" ));
 		}
 	
-		final ProcessingThread	pt;
+		final ProcessingThread	proc;
 		final boolean			force;
 
 		try {
@@ -801,8 +801,8 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 			} else {
 				force = false;
 			}
-			pt = closeDocument( force, new Flag( false ));
-			if( pt != null ) start( pt );
+			proc = closeDocument( force, new Flag( false ));
+			if( proc != null ) start( proc );
 		}
 		catch( IndexOutOfBoundsException e1 ) {
 			OSCRoot.failedArgCount( rom );
@@ -850,7 +850,7 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 	public void oscCmd_insertSilence( RoutedOSCMessage rom )
 	{
 		final long				pos, numFrames;
-		final ProcessingThread	pt;
+		final ProcessingThread	proc;
 		int						argIdx	= 1;
 	
 //		if( !bird.attemptShared( DOOR_TIME, 250 )) return;
@@ -870,8 +870,8 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 //			bird.releaseExclusive( Session.DOOR_TIME );
 //		}
 		
-		pt = actionSilence.initiate( pos, numFrames );
-		if( pt != null ) start( pt );
+		proc = actionSilence.initiate( pos, numFrames );
+		if( proc != null ) start( proc );
 	}
 
 	public void oscCmd_trim( RoutedOSCMessage rom )
@@ -956,6 +956,8 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 	private class ActionSave
 	implements ProcessingThread.Client
 	{
+		protected ActionSave() { /* empty */ }
+		
 		/**
 		 *  Initiate the save process.
 		 *  Transport is stopped before, if it was running.
@@ -970,20 +972,20 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 		 *
 		 *  @synchronization	this method is to be called in the event thread
 		 */
-		private ProcessingThread initiate( String name, Span span, AudioFileDescr[] afds, boolean asCopy )
+		protected ProcessingThread initiate( String name, Span span, AudioFileDescr[] descrs, boolean asCopy )
 		{
-			final ProcessingThread pt;
+			final ProcessingThread proc;
 		
 			getTransport().stop();
 			if( !checkProcess() ) return null;
 			
 //			pt				= new ProcessingThread( this, getFrame(), bird, name, args, Session.DOOR_ALL );
-			pt				= new ProcessingThread( this, getFrame(), name );
-			pt.putClientArg( "afds", afds );
-			pt.putClientArg( "doc", enc_this );
-			pt.putClientArg( "asCopy", new Boolean( asCopy ));
-			pt.putClientArg( "span", span == null ? new Span( 0, timeline.getLength() ) : span );
-			return pt;
+			proc				= new ProcessingThread( this, getFrame(), name );
+			proc.putClientArg( "afds", descrs );
+			proc.putClientArg( "doc", enc_this );
+			proc.putClientArg( "asCopy", new Boolean( asCopy ));
+			proc.putClientArg( "span", span == null ? new Span( 0, timeline.getLength() ) : span );
+			return proc;
 		}
 
 		/**
@@ -996,12 +998,12 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 		public int processRun( ProcessingThread context )
 		throws IOException
 		{
-			final AudioFileDescr[]			afds		= (AudioFileDescr[]) context.getClientArg( "afds" );
-			final int						numFiles	= afds.length;
+			final AudioFileDescr[]			clientAFDs	= (AudioFileDescr[]) context.getClientArg( "afds" );
+			final int						numFiles	= clientAFDs.length;
 			final Session					doc			= (Session) context.getClientArg( "doc" );
 //			final boolean					asCopy		= ((Boolean) context.getClientArg( "asCopy" )).booleanValue();
 			final Span						span		= (Span) context.getClientArg( "span" );
-			final AudioTrail				at			= doc.getAudioTrail();
+			final AudioTrail				audioTrail	= doc.getAudioTrail();
 //			final File[]					tempFs		= new File[ numFiles ];
 //			final boolean[]					renamed		= new boolean[ numFiles ];
 			final AudioFile[]				afs			= new AudioFile[ numFiles ];
@@ -1010,33 +1012,33 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 			
 			context.putClientArg( "afs", afs );
 
-			if( afds[ 0 ].isPropertySupported( AudioFileDescr.KEY_MARKERS )) {
-				doc.markers.copyToAudioFile( afds[ 0 ], span );	// XXX
+			if( clientAFDs[ 0 ].isPropertySupported( AudioFileDescr.KEY_MARKERS )) {
+				doc.markers.copyToAudioFile( clientAFDs[ 0 ], span );	// XXX
 			} else if( doc.markers.isEmpty() ) {
 				System.err.println( "WARNING: markers are not saved in this file format!!!" );
 			}
 			for( int i = 0; i < numFiles; i++ ) {
-				if( afds[ i ].file.exists() ) {
+				if( clientAFDs[ i ].file.exists() ) {
 //						tempFs[ i ]			= File.createTempFile( "eis", null, afds[ i ].file.getParentFile() );
 //						tempFs[ i ].delete();
-					tempF				= File.createTempFile( "eis", null, afds[ i ].file.getParentFile() );
-					afdTemp				= new AudioFileDescr( afds[ i ]);
+					tempF				= File.createTempFile( "eis", null, clientAFDs[ i ].file.getParentFile() );
+					afdTemp				= new AudioFileDescr( clientAFDs[ i ]);
 //						afdTemp.file		= tempFs[ i ];
 					afdTemp.file		= tempF;
 //						renamed[ i ]		= true;
 					afs[ i ]			= AudioFile.openAsWrite( afdTemp );
 				} else {
-					afs[ i ]			= AudioFile.openAsWrite( afds[ i ]);
+					afs[ i ]			= AudioFile.openAsWrite( clientAFDs[ i ]);
 				}
 			}
 			
-			at.flatten( afs, span );
+			audioTrail.flatten( afs, span );
 			return DONE;
 		} // run
 
 		public void processFinished( ProcessingThread context )
 		{
-			final AudioFileDescr[]			afds		= (AudioFileDescr[]) context.getClientArg( "afds" );
+			final AudioFileDescr[]			clientAFDs	= (AudioFileDescr[]) context.getClientArg( "afds" );
 			final AudioFile[]				afs			= (AudioFile[]) context.getClientArg( "afs" );
 			final Session					doc			= (Session) context.getClientArg( "doc" );
 			final boolean					asCopy		= ((Boolean) context.getClientArg( "asCopy" )).booleanValue();
@@ -1051,14 +1053,14 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 							System.err.println( "File '" + afs[ i ].getFile().getName() + "' could not be closed ("+
 								e1.getClass().getName() + " : " + e1.getLocalizedMessage() + ")" );
 						}
-						if( !afds[ i ].file.equals( afs[ i ].getFile() )) {
-							if( afds[ i ].file.delete() ) {
-								if( !afs[ i ].getFile().renameTo( afds[ i ].file )) {
+						if( !clientAFDs[ i ].file.equals( afs[ i ].getFile() )) {
+							if( clientAFDs[ i ].file.delete() ) {
+								if( !afs[ i ].getFile().renameTo( clientAFDs[ i ].file )) {
 									System.err.println( "Newly saved file '" + afs[ i ].getFile().getName() + "' "+
 										"could not be renamed!" );
 								}
 							} else {
-								System.err.println( "Previous file '" +afds[ i ].file.getAbsolutePath() + "' "+
+								System.err.println( "Previous file '" +clientAFDs[ i ].file.getAbsolutePath() + "' "+
 									"could not be deleted! Newly saved file is '" + afs[ i ].getFile().getName() + "'!" );
 							}
 						}
@@ -1081,12 +1083,12 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 							System.err.println( "File '" + afs[ i ].getFile().getName() + "' could not be closed ("+
 								e1.getClass().getName() + " : " + e1.getLocalizedMessage() + ")" );
 						}
-						if( afds[ i ].file.equals( afs[ i ].getFile() )) {
+						if( clientAFDs[ i ].file.equals( afs[ i ].getFile() )) {
 							f = afs[ i ].getFile();
 						} else {
-							if( afds[ i ].file.delete() ) {
-								if( afs[ i ].getFile().renameTo( afds[ i ].file )) {
-									f = afds[ i ].file;
+							if( clientAFDs[ i ].file.delete() ) {
+								if( afs[ i ].getFile().renameTo( clientAFDs[ i ].file )) {
+									f = clientAFDs[ i ].file;
 								} else {
 									System.err.println( "New current working file '" + afs[ i ].getFile().getName() + "' "+
 										"could not be renamed!" );
@@ -1095,25 +1097,25 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 							} else
 tryRename:					  {
 								try {
-									tempF = File.createTempFile( "eis", null, afds[ i ].file.getParentFile() );
+									tempF = File.createTempFile( "eis", null, clientAFDs[ i ].file.getParentFile() );
 								} catch( IOException e1 ) {
-									System.err.println( "Previous file '" + afds[ i ].file.getAbsolutePath() + "' could neither be " +
+									System.err.println( "Previous file '" + clientAFDs[ i ].file.getAbsolutePath() + "' could neither be " +
 										"deleted nor renamed. New current working file is '" + afs[ i ].getFile().getName() + "'!" );
 									f = afs[ i ].getFile();
 									break tryRename;
 								}
-								if( afds[ i ].file.renameTo( tempF )) {
-									System.err.println( "Previous file '" + afds[ i ].file.getAbsolutePath() + "' could not be " +
+								if( clientAFDs[ i ].file.renameTo( tempF )) {
+									System.err.println( "Previous file '" + clientAFDs[ i ].file.getAbsolutePath() + "' could not be " +
 										"deleted. It was renamed to '" + tempF.getName() + "'!" );
-									if( afs[ i ].getFile().renameTo( afds[ i ].file )) {
-										f = afds[ i ].file;
+									if( afs[ i ].getFile().renameTo( clientAFDs[ i ].file )) {
+										f = clientAFDs[ i ].file;
 									} else {
 										System.err.println( "New current working file '" + afs[ i ].getFile().getName() + "' "+
 											"could not be renamed!" );
 										f = afs[ i ].getFile();
 									}
 								} else {
-									System.err.println( "Previous file '" + afds[ i ].file.getAbsolutePath() + "' could neither be " +
+									System.err.println( "Previous file '" + clientAFDs[ i ].file.getAbsolutePath() + "' could neither be " +
 										"deleted nor renamed. New current working file is '" + afs[ i ].getFile().getName() + "'!" );
 									f = afs[ i ].getFile();
 								}
@@ -1125,7 +1127,7 @@ tryRename:					  {
 							System.err.println( "File '" + f.getName() + "' could not be opened ("+
 								e1.getClass().getName() + " : " + e1.getLocalizedMessage() + ")" );
 						}
-						afds[ i ]	= afs[ i ].getDescr();
+						clientAFDs[ i ]	= afs[ i ].getDescr();
 					}
 					try {
 						at.exchange( afs );
@@ -1133,7 +1135,7 @@ tryRename:					  {
 						System.err.println( "Audio files could not be exchanged ("+
 							e1.getClass().getName() + " : " + e1.getLocalizedMessage() + ")" );
 					}
-					doc.setDescr( afds );
+					doc.setDescr( clientAFDs );
 				}
 			} else {	// ------------------------------- FAILED or CANCELLED -------------------------------
 				if( afs != null ) {
@@ -1150,30 +1152,32 @@ tryRename:					  {
 			}
 		}
 		
-		public void processCancel( ProcessingThread context ) {}
+		public void processCancel( ProcessingThread context ) { /* ignored */ }
 	}
 	
 	private class ActionCut
 	extends MenuAction
 	{
+		protected ActionCut() { /* empty */ }
+
 		public void actionPerformed( ActionEvent e )
 		{
 			perform();
 		}
 		
-		private void perform()
+		protected void perform()
 		{
-			final ProcessingThread pt; // = null;
+			final ProcessingThread proc; // = null;
 			
 			if( actionCopy.perform() ) {
 //				if( !bird.attemptShared( Session.DOOR_TIME | Session.DOOR_MTE )) return;
 //				try {
-					pt = procDelete( getValue( NAME ).toString(), timeline.getSelectionSpan(), getEditMode() );
+					proc = procDelete( getValue( NAME ).toString(), timeline.getSelectionSpan(), getEditMode() );
 //				}
 //				finally {
 //					bird.releaseShared( Session.DOOR_TIME | Session.DOOR_MTE );
 //				}
-				if( pt != null ) start( pt );
+				if( proc != null ) start( proc );
 			}
 		}
 	}
@@ -1181,12 +1185,14 @@ tryRename:					  {
 	private class ActionCopy
 	extends MenuAction
 	{
+		protected ActionCopy() { /* empty */ }
+
 		public void actionPerformed( ActionEvent e )
 		{
 			perform();
 		}
 
-		private ClipboardTrackList getSelectionAsTrackList()
+		protected ClipboardTrackList getSelectionAsTrackList()
 		{
 			final Span span;
 			
@@ -1202,7 +1208,7 @@ tryRename:					  {
 //			}
 		}
 
-		private boolean perform()
+		protected boolean perform()
 		{
 			boolean						success	= false;
 			final ClipboardTrackList	tl		= getSelectionAsTrackList();
@@ -1225,12 +1231,14 @@ tryRename:					  {
 	extends MenuAction
 	implements ProcessingThread.Client
 	{
+		protected ActionPaste() { /* empty */ }
+
 		public void actionPerformed( ActionEvent e )
 		{
 			perform();
 		}
 		
-		private void perform()
+		protected void perform()
 		{
 			perform( getValue( NAME ).toString(), getEditMode() );
 		}
@@ -1261,19 +1269,19 @@ tryRename:					  {
 			}
 			
 			if( !checkProcess() ) return;
-			final ProcessingThread pt = initiate( tl, timeline.getPosition(), name, mode );	// XXX sync
-			if( pt != null ) {
-				start( pt );
+			final ProcessingThread proc = initiate( tl, timeline.getPosition(), name, mode );	// XXX sync
+			if( proc != null ) {
+				start( proc );
 			}
 		}
 
-		private ProcessingThread initiate( ClipboardTrackList tl, long insertPos, String name, int mode )
+		protected ProcessingThread initiate( ClipboardTrackList tl, long insertPos, String name, int mode )
 		{
 			if( !checkProcess() ) return null;
 			
 			if( (insertPos < 0) || (insertPos > timeline.getLength()) ) throw new IllegalArgumentException( String.valueOf( insertPos ));
 			
-			final ProcessingThread		pt;
+			final ProcessingThread		proc;
 			final Span					oldSelSpan, insertSpan, copySpan, cutTimelineSpan;
 			final AbstractCompoundEdit	edit;
 			final Flag					hasSelectedAudio;
@@ -1344,22 +1352,22 @@ tryRename:					  {
 				edit.addPerform( TimelineVisualEdit.select( this, enc_this, new Span() ));
 			}
 
-			pt	= new ProcessingThread( this, getFrame(), name );
-			pt.putClientArg( "tl", tl );
-			pt.putClientArg( "pos", new Long( insertPos ));
-			pt.putClientArg( "mode", new Integer( mode ));
-			pt.putClientArg( "tis", tis );
-			pt.putClientArg( "pasteLen", new Long( pasteLength ));
-			pt.putClientArg( "exp", new Boolean( expTimeline ));
-			pt.putClientArg( "bcPre", bcPre );
-			pt.putClientArg( "bcPost", bcPost );
-			pt.putClientArg( "insertSpan", insertSpan );
-			pt.putClientArg( "copySpan", copySpan );
-			pt.putClientArg( "cut", new Boolean( cutTimeline ));
-			pt.putClientArg( "cutSpan", cutTimelineSpan );
-			pt.putClientArg( "edit", edit );
+			proc	= new ProcessingThread( this, getFrame(), name );
+			proc.putClientArg( "tl", tl );
+			proc.putClientArg( "pos", new Long( insertPos ));
+			proc.putClientArg( "mode", new Integer( mode ));
+			proc.putClientArg( "tis", tis );
+			proc.putClientArg( "pasteLen", new Long( pasteLength ));
+			proc.putClientArg( "exp", new Boolean( expTimeline ));
+			proc.putClientArg( "bcPre", bcPre );
+			proc.putClientArg( "bcPost", bcPost );
+			proc.putClientArg( "insertSpan", insertSpan );
+			proc.putClientArg( "copySpan", copySpan );
+			proc.putClientArg( "cut", new Boolean( cutTimeline ));
+			proc.putClientArg( "cutSpan", cutTimelineSpan );
+			proc.putClientArg( "edit", edit );
 
-			return pt;
+			return proc;
 		}
 		
 		// --------- ProcessingThread.Client interface ---------
@@ -1384,7 +1392,7 @@ tryRename:					  {
 			final long						delta				= insertPos - tl.getSpan().start;
 			Track.Info						ti;
 			Trail							srcTrail;
-			AudioTrail						at;
+			AudioTrail						audioTrail;
 			boolean[]						trackMap;
 			boolean							isAudio, pasteAudio;
 
@@ -1411,12 +1419,12 @@ tryRename:					  {
 						}
 						
 						if( pasteAudio ) {
-							at			= (AudioTrail) ti.trail;
+							audioTrail			= (AudioTrail) ti.trail;
 							trackMap	= tl.getTrackMap( ti.trail.getClass() );
 							
 //System.err.println( "clipboard tm : " );
 //for( int x = 0; x < trackMap.length; x++ ) { System.err.println( "  " + trackMap[ x ]); }
-							int[] trackMap2 = new int[ at.getChannelNum() ];
+							int[] trackMap2 = new int[ audioTrail.getChannelNum() ];
 							for( int j = 0, k = 0; j < trackMap2.length; j++ ) {
 								if( ti.trackMap[ j ]) {	// target track selected
 									for( ; (k < trackMap.length) && !trackMap[ k ] ; k++ ) ;
@@ -1432,7 +1440,7 @@ tryRename:					  {
 									trackMap2[ j ] = -1;
 								}
 							}
-							if( !at.copyRangeFrom( (AudioTrail) srcTrail, copySpan, insertPos, mode, this, edit, trackMap2, bcPre, bcPost )) return CANCELLED;
+							if( !audioTrail.copyRangeFrom( (AudioTrail) srcTrail, copySpan, insertPos, mode, this, edit, trackMap2, bcPre, bcPost )) return CANCELLED;
 
 						} else if( (ti.numTracks == 1) && (tl.getTrackNum( ti.trail.getClass() ) == 1) ) {
 							ti.trail.editAddAll( this, srcTrail.getCuttedRange(
@@ -1480,7 +1488,7 @@ tryRename:					  {
 		}
 
 		// mte will check pt.shouldCancel() itself
-		public void processCancel( ProcessingThread context ) {}
+		public void processCancel( ProcessingThread context ) { /* ignored */ }
 	} // class actionPasteClass
 
 	/**
@@ -1491,18 +1499,20 @@ tryRename:					  {
 	extends MenuAction
 	implements ProcessingThread.Client
 	{
+		protected ActionDelete() { /* empty */ }
+
 		public void actionPerformed( ActionEvent e )
 		{
 			perform();
 		}
 		
-		private void perform()
+		protected void perform()
 		{		
 			final Span				span	= timeline.getSelectionSpan(); // XXX sync
 			if( span.isEmpty() ) return;
 			
-			final ProcessingThread	pt		= initiate( getValue( NAME ).toString(), span, getEditMode() );
-			if( pt != null ) start( pt );
+			final ProcessingThread	proc		= initiate( getValue( NAME ).toString(), span, getEditMode() );
+			if( proc != null ) start( proc );
 		}
 		
 		// XXX sync
@@ -1600,15 +1610,15 @@ tryRename:					  {
 				edit.addPerform( new EditSetTimelineLength( this, enc_this, newDocLength ));
 			}
 
-			final ProcessingThread pt = new ProcessingThread( this, getFrame(), name );
-			pt.putClientArg( "span", span );
-			pt.putClientArg( "mode", new Integer( mode ));
-			pt.putClientArg( "tis", tis );
-			pt.putClientArg( "edit", edit );
-			pt.putClientArg( "bc", bc );
-			pt.putClientArg( "cut", new Boolean( cutTimeline ));
-			pt.putClientArg( "cutSpan", cutTimelineSpan );
-			return pt;
+			final ProcessingThread proc = new ProcessingThread( this, getFrame(), name );
+			proc.putClientArg( "span", span );
+			proc.putClientArg( "mode", new Integer( mode ));
+			proc.putClientArg( "tis", tis );
+			proc.putClientArg( "edit", edit );
+			proc.putClientArg( "bc", bc );
+			proc.putClientArg( "cut", new Boolean( cutTimeline ));
+			proc.putClientArg( "cutSpan", cutTimelineSpan );
+			return proc;
 		}
 
 		// --------- ProcessingThread.Client interface ---------
@@ -1628,7 +1638,7 @@ tryRename:					  {
 			final long						right				= bc == null ? 0L : bc.getRightLen();
 			final boolean					cutTimeline			= ((Boolean) context.getClientArg( "cut" )).booleanValue();
 			final Span						cutTimelineSpan		= (Span) context.getClientArg( "cutSpan" );
-			AudioTrail						at;
+			AudioTrail						audioTrail;
 			Track.Info						ti;
 			boolean							isAudio;
 
@@ -1646,16 +1656,16 @@ tryRename:					  {
 									ti.trail.editRemove( this, new Span( span.start - left, span.stop + right ), edit );
 									ti.trail.editInsert( this, new Span( span.start - left, span.start + right ), edit );
 								}
-								at = (AudioTrail) ti.trail;
-								at.clearRange( span, EDIT_INSERT, this, edit, ti.trackMap, bc );
+								audioTrail = (AudioTrail) ti.trail;
+								audioTrail.clearRange( span, EDIT_INSERT, this, edit, ti.trackMap, bc );
 							} else {
 								ti.trail.editRemove( this, span, edit );
 							}
 						} else {
 							ti.trail.editClear( this, span, edit );
 							if( isAudio ) {
-								at = (AudioTrail) ti.trail;
-								at.clearRange( span, EDIT_OVERWRITE, this, edit, ti.trackMap, bc );
+								audioTrail = (AudioTrail) ti.trail;
+								audioTrail.clearRange( span, EDIT_OVERWRITE, this, edit, ti.trackMap, bc );
 							}
 						}
 					} else if( cutTimeline ) {
@@ -1683,19 +1693,21 @@ tryRename:					  {
 		}
 
 		// mte will check pt.shouldCancel() itself
-		public void processCancel( ProcessingThread context ) {}
+		public void processCancel( ProcessingThread context ) { /* ignore */ }
 	} // class actionDeleteClass
 
 	private class ActionTrim
 	extends MenuAction
 	{
+		protected ActionTrim() { /* empty */ }
+
 		// performs inplace (no runnable processing) coz it's always fast
 		public void actionPerformed( ActionEvent e )
 		{
 			perform();
 		}
 		
-		private void perform()
+		protected void perform()
 		{
 			final Span						selSpan, deleteBefore, deleteAfter;
 			final BasicCompoundEdit		edit;
@@ -1755,6 +1767,8 @@ tryRename:					  {
 		private Param		value = null;
 		private ParamSpace	space = null;
 	
+		protected ActionSilence() { /* empty */ }
+
 		public void actionPerformed( ActionEvent e )
 		{
 			perform();
@@ -1796,10 +1810,10 @@ tryRename:					  {
 				space			= ggDuration.getSpace();
 				durationSmps	= timeTrans.translate( value, ParamSpace.spcTimeSmps );
 				if( durationSmps.val > 0.0 ) {
-					final ProcessingThread pt;
+					final ProcessingThread proc;
 					
-					pt = initiate( timeline.getPosition(), (long) durationSmps.val );
-					if( pt != null ) start( pt );
+					proc = initiate( timeline.getPosition(), (long) durationSmps.val );
+					if( proc != null ) start( proc );
 				}
 			}
 		}
@@ -1811,13 +1825,13 @@ tryRename:					  {
 			if( numFrames < 0 ) throw new IllegalArgumentException( String.valueOf( numFrames ));
 			if( (pos < 0) || (pos > timeline.getLength()) ) throw new IllegalArgumentException( String.valueOf( pos ));
 
-			final ProcessingThread 		pt;
+			final ProcessingThread 		proc;
 			final AbstractCompoundEdit	edit;
 			final Span					oldSelSpan, insertSpan;
 
-			pt = new ProcessingThread( this, getFrame(), getValue( NAME ).toString() );
+			proc = new ProcessingThread( this, getFrame(), getValue( NAME ).toString() );
 
-			edit		= new BasicCompoundEdit( pt.getName() );
+			edit		= new BasicCompoundEdit( proc.getName() );
 			oldSelSpan	= timeline.getSelectionSpan();
 			insertSpan	= new Span( pos, pos + numFrames );
 
@@ -1825,10 +1839,10 @@ tryRename:					  {
 				edit.addPerform( TimelineVisualEdit.select( this, enc_this, new Span() ));
 			}
 
-			pt.putClientArg( "tis", Track.getInfos( selectedTracks.getAll(), tracks.getAll() ));
-			pt.putClientArg( "edit", edit );
-			pt.putClientArg( "span", insertSpan );
-			return pt;
+			proc.putClientArg( "tis", Track.getInfos( selectedTracks.getAll(), tracks.getAll() ));
+			proc.putClientArg( "edit", edit );
+			proc.putClientArg( "span", insertSpan );
+			return proc;
 		}
 
 		/**
@@ -1841,7 +1855,7 @@ tryRename:					  {
 			final AbstractCompoundEdit	edit		= (AbstractCompoundEdit) context.getClientArg( "edit" );
 			final Span					insertSpan	= (Span) context.getClientArg( "span" );
 			Track.Info					ti;
-			AudioTrail					at;
+			AudioTrail					audioTrail;
 
 			for( int i = 0; i < tis.size(); i++ ) {
 				ti = (Track.Info) tis.get( i );
@@ -1849,8 +1863,8 @@ tryRename:					  {
 				try {
 					ti.trail.editInsert( this, insertSpan, edit );
 					if( ti.trail instanceof AudioTrail ) {
-						at			= (AudioTrail) ti.trail;							
-						at.editAdd( this, at.allocSilent( insertSpan ), edit );
+						audioTrail			= (AudioTrail) ti.trail;							
+						audioTrail.editAdd( this, audioTrail.allocSilent( insertSpan ), edit );
 					}
 				}
 				finally {
@@ -1885,6 +1899,6 @@ tryRename:					  {
 		}
 
 		// mte will check pt.shouldCancel() itself
-		public void processCancel( ProcessingThread context ) {}
+		public void processCancel( ProcessingThread context ) { /* ignore */ }
 	} // class actionSilenceClass
 }

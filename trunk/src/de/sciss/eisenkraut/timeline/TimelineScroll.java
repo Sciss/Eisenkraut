@@ -373,7 +373,7 @@ implements AdjustmentListener, TimelineListener, DynamicListening, PreferenceCha
     }
 
 	// ignored since the timeline frame will inform us
-	public void timelinePositioned( TimelineEvent e ) {}
+	public void timelinePositioned( TimelineEvent e ) { /* ignore */ }
 
     public void timelineScrolled( TimelineEvent e )
     {

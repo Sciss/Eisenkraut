@@ -36,6 +36,7 @@ import java.awt.Component;
 import java.awt.FileDialog;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
@@ -103,9 +104,9 @@ public class MenuFactory
 extends BasicMenuFactory
 {
 	// ---- misc actions ----
-	private actionOpenClass				actionOpen;
-	private actionOpenMMClass			actionOpenMM;
-	private actionNewEmptyClass			actionNewEmpty;
+	private ActionOpen				actionOpen;
+	private ActionOpenMM			actionOpenMM;
+	private ActionNewEmpty			actionNewEmpty;
 
 //	private final List					collGlobalKeyCmd	= new ArrayList();
 	
@@ -137,7 +138,7 @@ if( doc.getFrame() == null ) {
 	System.err.println( "Yukk, no doc frame for "+doc.getDisplayDescr().file );
 	try {
 		Thread.sleep( 4000 );
-	} catch( InterruptedException e1 ) {}
+	} catch( InterruptedException e1 ) { /* ignore */ }
 	confirmed.set( true );
 	return null;
 }
@@ -232,32 +233,32 @@ if( doc.getFrame() == null ) {
 	private void createActions()
 	{
 		// --- file menu ---
-		actionNewEmpty	= new actionNewEmptyClass( getResourceString( "menuNewEmpty" ),
+		actionNewEmpty	= new ActionNewEmpty( getResourceString( "menuNewEmpty" ),
 												KeyStroke.getKeyStroke( KeyEvent.VK_N, MENU_SHORTCUT ));
-		actionOpen		= new actionOpenClass(  getResourceString( "menuOpen" ),
+		actionOpen		= new ActionOpen(  getResourceString( "menuOpen" ),
 												KeyStroke.getKeyStroke( KeyEvent.VK_O, MENU_SHORTCUT ));
-		actionOpenMM	= new actionOpenMMClass( getResourceString( "menuOpenMM" ),
-												KeyStroke.getKeyStroke( KeyEvent.VK_O, MENU_SHORTCUT + KeyEvent.SHIFT_MASK ));
+		actionOpenMM	= new ActionOpenMM( getResourceString( "menuOpenMM" ),
+												KeyStroke.getKeyStroke( KeyEvent.VK_O, MENU_SHORTCUT + InputEvent.SHIFT_MASK ));
 	}
 	
 	// @todo	this should eventually read the tree from an xml file
 	protected void addMenuItems()
 	{
+		final Preferences		prefs = getApplication().getUserPrefs();
 		MenuGroup				mg, smg;
 		MenuCheckItem			mci;
 		MenuRadioGroup			rg;
 //		Action					a;
 		BooleanPrefsMenuAction	ba;
 		IntPrefsMenuAction		ia;
-		Preferences				prefs;
 		int						i;
 		
 		// Ctrl on Mac / Ctrl+Alt on PC
-		final int myCtrl = MENU_SHORTCUT == KeyEvent.CTRL_MASK ? KeyEvent.CTRL_MASK | KeyEvent.ALT_MASK : KeyEvent.CTRL_MASK;
+		final int myCtrl = MENU_SHORTCUT == InputEvent.CTRL_MASK ? InputEvent.CTRL_MASK | InputEvent.ALT_MASK : InputEvent.CTRL_MASK;
 
 		// --- file menu ---
 		
-		mg	= (MenuGroup) this.get( "file" );
+		mg	= (MenuGroup) get( "file" );
 		smg = new MenuGroup( "new", getResourceString( "menuNew" ));
 		smg.add( new MenuItem( "empty", actionNewEmpty ));
 		smg.add( new MenuItem( "fromSelection", getResourceString( "menuNewFromSelection" )));
@@ -296,7 +297,7 @@ if( doc.getFrame() == null ) {
 //			mg.addSeparator();
 //			mg.add( new MenuItem( "quit", root.getQuitAction() ));
 //		}
-//		this.add( mg );
+//		add( mg );
 
 //		// --- edit menu ---
 //		mg	= new MenuGroup( "edit", getResourceString( "menuEdit" ));
@@ -315,18 +316,18 @@ if( doc.getFrame() == null ) {
 //			mg.addSeparator();
 //			mg.add( new MenuItem( "preferences", actionPreferences ));
 //		}
-//		this.add( mg );
+//		add( mg );
 		
 		// --- timeline menu ---
-		i	= this.indexOf( "edit" );
+		i	= indexOf( "edit" );
 		mg	= new MenuGroup( "timeline", getResourceString( "menuTimeline" ));
 		mg.add( new MenuItem( "trimToSelection", getResourceString( "menuTrimToSelection" ),
 							  KeyStroke.getKeyStroke( KeyEvent.VK_F5, MENU_SHORTCUT )));
 
 		mg.add( new MenuItem( "insertSilence", getResourceString( "menuInsertSilence" ),
-							  KeyStroke.getKeyStroke( KeyEvent.VK_E, MENU_SHORTCUT + KeyEvent.SHIFT_MASK )));
+							  KeyStroke.getKeyStroke( KeyEvent.VK_E, MENU_SHORTCUT + InputEvent.SHIFT_MASK )));
 		mg.add( new MenuItem( "insertRecording", getResourceString( "menuInsertRec" )));
-		this.add( mg, i + 1 );
+		add( mg, i + 1 );
 
 		// --- process menu ---
 		mg  = new MenuGroup( "process", getResourceString( "menuProcess" ));
@@ -345,21 +346,19 @@ if( doc.getFrame() == null ) {
 		mg.add( new MenuItem( "mix", getResourceString( "menuMix" )));
 		mg.add( new MenuItem( "reverse", getResourceString( "menuReverse" )));
 		mg.add( new MenuItem( "rotateChannels", getResourceString( "menuRotateChannels" )));
-		this.add( mg, i + 2 );
+		add( mg, i + 2 );
 
 		// --- operation menu ---
 		mg			= new MenuGroup( "operation", getResourceString( "menuOperation" ));
-		prefs		= root.getUserPrefs();
 		ba			= new BooleanPrefsMenuAction( getResourceString( "menuInsertionFollowsPlay" ), null );
 		mci			= new MenuCheckItem( "insertionFollowsPlay", ba );
 		ba.setCheckItem( mci );
 		ba.setPreferences( prefs, PrefsUtil.KEY_INSERTIONFOLLOWSPLAY );
 		mg.add( mci );
-		this.add( mg, i + 3 );
+		add( mg, i + 3 );
 
 		// --- view menu ---
 		mg			= new MenuGroup( "view", getResourceString( "menuView" ));
-		prefs		= root.getUserPrefs();
 		smg			= new MenuGroup( "timeUnits", getResourceString( "menuTimeUnits" ));
 		ia			= new IntPrefsMenuAction( getResourceString( "menuTimeUnitsSamples" ), null, PrefsUtil.TIME_SAMPLES );
 		rg			= new MenuRadioGroup();
@@ -392,21 +391,21 @@ if( doc.getFrame() == null ) {
 		ba.setCheckItem( mci );
 		ba.setPreferences( prefs, PrefsUtil.KEY_VIEWMARKERS );
 		mg.add( mci );
-		this.add( mg, i + 4 );
+		add( mg, i + 4 );
 
 		// --- window menu ---
 //		mWindowRadioGroup = new MenuRadioGroup();
 //		mgWindow = new MenuGroup( "window", getResourceString( "menuWindow" ));
-		mg	= (MenuGroup) this.get( "window" );
-		mg.add( new MenuItem( "ioSetup", new actionIOSetupClass( getResourceString( "frameIOSetup" ), null )), 0 );
+		mg	= (MenuGroup) get( "window" );
+		mg.add( new MenuItem( "ioSetup", new ActionIOSetup( getResourceString( "frameIOSetup" ), null )), 0 );
 		mg.add( new MenuSeparator(), 1 );
 		mg.add( new MenuItem( "main", new ActionShowWindow( getResourceString( "frameMain" ), null, Main.COMP_MAIN )), 2 );
-		mg.add( new MenuItem( "observer", new actionObserverClass( getResourceString( "paletteObserver" ), KeyStroke.getKeyStroke( KeyEvent.VK_NUMPAD3, MENU_SHORTCUT ))), 3 );
-		mg.add( new MenuItem( "ctrlRoom", new actionCtrlRoomClass( getResourceString( "paletteCtrlRoom" ), KeyStroke.getKeyStroke( KeyEvent.VK_NUMPAD2, MENU_SHORTCUT ))), 4 );
+		mg.add( new MenuItem( "observer", new ActionObserver( getResourceString( "paletteObserver" ), KeyStroke.getKeyStroke( KeyEvent.VK_NUMPAD3, MENU_SHORTCUT ))), 3 );
+		mg.add( new MenuItem( "ctrlRoom", new ActionCtrlRoom( getResourceString( "paletteCtrlRoom" ), KeyStroke.getKeyStroke( KeyEvent.VK_NUMPAD2, MENU_SHORTCUT ))), 4 );
 //		mg.add( new MenuSeparator(), 5 );
 //		mgWindow.add( new MenuItem( "collect", ((WindowHandler) root.getWindowHandler()).getCollectAction() ));
 //		mgWindow.addSeparator();
-//		this.add( mgWindow );
+//		add( mgWindow );
 
 		// --- debug menu ---
 		mg   = new MenuGroup( "debug", "Debug" );
@@ -417,8 +416,8 @@ if( doc.getFrame() == null ) {
 		mg.add( new MenuItem( "dumpAudioStakes", AudioStake.getDebugDumpAction() ));
 		mg.add( new MenuItem( "dumpNodeTree", SuperColliderClient.getInstance().getDebugNodeTreeAction() ));
 		mg.add( new MenuItem( "dumpKillAll", SuperColliderClient.getInstance().getDebugKillAllAction() ));
-		i	= this.indexOf( "help" );
-		this.add( mg, i );
+		i	= indexOf( "help" );
+		add( mg, i );
 
 //		// --- help menu ---
 //		mg	= new MenuGroup( "help", getResourceString( "menuHelp" ));
@@ -434,12 +433,12 @@ if( doc.getFrame() == null ) {
 //			mg.add( new MenuItem( "about", a ));
 //		}
 //
-//		this.add( mg );
+//		add( mg );
 	}
 	
 	public void showPreferences()
 	{
-		PrefsFrame prefsFrame = (PrefsFrame) root.getComponent( Main.COMP_PREFS );
+		PrefsFrame prefsFrame = (PrefsFrame) getApplication().getComponent( Main.COMP_PREFS );
 	
 		if( prefsFrame == null ) {
 			prefsFrame = new PrefsFrame();
@@ -488,7 +487,7 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 //		removeMenuItem( mSuperCollider, a );
 	}
 	
-	private Session findDocumentForPath( File f )
+	protected Session findDocumentForPath( File f )
 	{
 		final de.sciss.app.DocumentHandler	dh	= AbstractApplication.getApplication().getDocumentHandler();
 		Session								doc;
@@ -509,13 +508,13 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 // ---------------- Action objects for file (session) operations ---------------- 
 
 	// action for the New-Empty Document menu item
-	private class actionNewEmptyClass
+	private class ActionNewEmpty
 	extends MenuAction
 	{
 		private JPanel				p	= null;
 		private AudioFileFormatPane	affp;
 	
-		private actionNewEmptyClass( String text, KeyStroke shortcut )
+		protected ActionNewEmpty( String text, KeyStroke shortcut )
 		{
 			super( text, shortcut );
 		}
@@ -564,7 +563,7 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 			if( status != null ) {
 				sampleRate	= status.sampleRate;
 			} else {
-				audioPrefs	= root.getUserPrefs().node( PrefsUtil.NODE_AUDIO );
+				audioPrefs	= getApplication().getUserPrefs().node( PrefsUtil.NODE_AUDIO );
 				param		= Param.fromPrefs( audioPrefs, PrefsUtil.KEY_AUDIORATE, null );
 				if( param != null ) {
 					sampleRate = param.val;
@@ -602,7 +601,7 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 			}
 		}
 		
-		private Session perform( AudioFileDescr afd )
+		protected Session perform( AudioFileDescr afd )
 		{
 			final Session doc;
 
@@ -620,12 +619,12 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 	}
 	
 	// action for the Open-Session menu item
-	private class actionOpenClass
+	private class ActionOpen
 	extends MenuAction
 	{
 //		private String text;
 	
-		private actionOpenClass( String text, KeyStroke shortcut )
+		protected ActionOpen( String text, KeyStroke shortcut )
 		{
 			super( text, shortcut );
 			
@@ -648,7 +647,7 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 		{
 			final FileDialog		fDlg;
 			final String			strFile, strDir;
-			final AbstractWindow	w		= (AbstractWindow) root.getComponent( Main.COMP_MAIN );
+			final AbstractWindow	w		= (AbstractWindow) getApplication().getComponent( Main.COMP_MAIN );
 			final Frame				frame	= (w.getWindow() instanceof Frame) ? (Frame) w.getWindow() : null;
 
 //System.err.println( "frame : "+frame );
@@ -675,7 +674,7 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 		 *  
 		 *  @synchronization	this method must be called in event thread
 		 */
-		private void perform( File path )
+		protected void perform( File path )
 		{
 			Session	doc;
 			
@@ -700,10 +699,10 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 	}
 	
 	// action for the Open-Multiple-Mono menu item
-	private class actionOpenMMClass
+	private class ActionOpenMM
 	extends MenuAction
 	{
-		private actionOpenMMClass( String text, KeyStroke shortcut )
+		protected ActionOpenMM( String text, KeyStroke shortcut )
 		{
 			super( text, shortcut );
 		}
@@ -725,7 +724,7 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 		{
 			final JFileChooser	fDlg	= new JFileChooser();
 			final int			result;
-			final Component		c		= ((AbstractWindow) root.getComponent( Main.COMP_MAIN )).getWindow();
+			final Component		c		= ((AbstractWindow) getApplication().getComponent( Main.COMP_MAIN )).getWindow();
 
 			fDlg.setMultiSelectionEnabled( true );
 			fDlg.setDialogTitle( getValue( Action.NAME ).toString() );
@@ -747,7 +746,7 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 		 *  
 		 *  @synchronization	this method must be called in event thread
 		 */
-		private void perform( File[] paths )
+		protected void perform( File[] paths )
 		{
 			if( paths.length == 0 ) return;
 		
@@ -794,11 +793,11 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 		protected void setPath( File path )
 		{
 			paths			= new File[] { path };
-			boolean enabled	= false;
+			boolean enable	= false;
 			try {
 				if( path == null ) return;
 				if( path.isFile() ) {
-					enabled	= true;
+					enable	= true;
 					return;
 				}
 				
@@ -814,15 +813,15 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 				final StringTokenizer	tok			= new StringTokenizer(
 					name.substring( idxOpenBr + 1, idxCloseBr ), "," );
 				paths	= new File[ tok.countTokens() ];
-				enabled	= true;
+				enable	= true;
 				for( int i = 0; i < paths.length; i++ ) {
 					paths[ i ] = new File( parent, pre + tok.nextToken() + post );
 //					System.out.println( "testing path: '" + paths[ i ].getAbsolutePath() + "'" );
-					enabled   &= paths[ i ].isFile();
+					enable   &= paths[ i ].isFile();
 				}
 			}
 			finally {
-				setEnabled( enabled );
+				setEnabled( enable );
 			}
 		}
 		
@@ -846,10 +845,10 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 // ---------------- Action objects for window operations ---------------- 
 
 	// action for the IOSetup menu item
-	private class actionIOSetupClass
+	private class ActionIOSetup
 	extends MenuAction
 	{
-		private actionIOSetupClass( String text, KeyStroke shortcut )
+		protected ActionIOSetup( String text, KeyStroke shortcut )
 		{
 			super( text, shortcut );
 		}
@@ -859,7 +858,7 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 		 */
 		public void actionPerformed( ActionEvent e )
 		{
-			IOSetupFrame f = (IOSetupFrame) root.getComponent( Main.COMP_IOSETUP );
+			IOSetupFrame f = (IOSetupFrame) getApplication().getComponent( Main.COMP_IOSETUP );
 		
 			if( f == null ) {
 				f = new IOSetupFrame();		// automatically adds component
@@ -870,10 +869,10 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 	}
 
 	// action for the Control Room menu item
-	private class actionCtrlRoomClass
+	private class ActionCtrlRoom
 	extends MenuAction
 	{
-		private actionCtrlRoomClass( String text, KeyStroke shortcut )
+		protected ActionCtrlRoom( String text, KeyStroke shortcut )
 		{
 			super( text, shortcut );
 		}
@@ -883,7 +882,7 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 		 */
 		public void actionPerformed( ActionEvent e )
 		{
-			ControlRoomFrame f = (ControlRoomFrame) root.getComponent( Main.COMP_CTRLROOM );
+			ControlRoomFrame f = (ControlRoomFrame) getApplication().getComponent( Main.COMP_CTRLROOM );
 		
 			if( f == null ) {
 				f = new ControlRoomFrame();	// automatically adds component
@@ -894,10 +893,10 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 	}
 
 	// action for the Observer menu item
-	private class actionObserverClass
+	private class ActionObserver
 	extends MenuAction
 	{
-		private actionObserverClass( String text, KeyStroke shortcut )
+		protected ActionObserver( String text, KeyStroke shortcut )
 		{
 			super( text, shortcut );
 		}
@@ -907,7 +906,7 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 		 */
 		public void actionPerformed( ActionEvent e )
 		{
-			ObserverPalette f = (ObserverPalette) root.getComponent( Main.COMP_OBSERVER );
+			ObserverPalette f = (ObserverPalette) getApplication().getComponent( Main.COMP_OBSERVER );
 		
 			if( f == null ) {
 				f = new ObserverPalette();	// automatically adds component

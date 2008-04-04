@@ -23,6 +23,7 @@ implements Disposable
 
 	public GroupSync()
 	{
+		 /* empty */ 
 	}
 
 	public void addSlave( Slave s )

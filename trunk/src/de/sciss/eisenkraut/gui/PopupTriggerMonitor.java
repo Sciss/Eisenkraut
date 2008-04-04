@@ -144,9 +144,9 @@ implements ActionListener, MouseListener, Disposable
 		}
 	}
 
-	public void mouseEntered( MouseEvent e ) {}
-	public void mouseExited( MouseEvent e ) {}
-	public void mouseClicked( MouseEvent e ) {}
+	public void mouseEntered( MouseEvent e ) { /* ignore */ }
+	public void mouseExited( MouseEvent e ) { /* ignore */ }
+	public void mouseClicked( MouseEvent e ) { /* ignore */ }
 	
 	public void actionPerformed( ActionEvent e )
 	{

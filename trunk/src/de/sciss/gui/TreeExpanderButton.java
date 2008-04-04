@@ -278,8 +278,8 @@ implements ActionListener, MouseListener, MouseMotionListener
 		}
 	}
 	
-	public void mouseClicked( MouseEvent e1 ) {}
-	public void mouseEntered( MouseEvent e1 ) {}
-	public void mouseExited( MouseEvent e1 ) {}
-	public void mouseMoved( MouseEvent e1 ) {}
+	public void mouseClicked( MouseEvent e1 ) { /* ignore */ }
+	public void mouseEntered( MouseEvent e1 ) { /* ignore */ }
+	public void mouseExited( MouseEvent e1 ) { /* ignore */ }
+	public void mouseMoved( MouseEvent e1 ) { /* ignore */ }
 }

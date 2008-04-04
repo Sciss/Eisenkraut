@@ -103,7 +103,7 @@ implements OSCListener, Constants, ServerListener, ActionListener
 //					if( meterListening ) server.sendBundle( meterBangBndl );
 					server.sendBundle( meterBangBndl );
 				}
-				catch( IOException e1 ) {} // don't print coz the frequency might be high
+				catch( IOException e1 ) { /* don't print coz the frequency might be high */ }
 			}
 //		}
 	}
@@ -151,7 +151,7 @@ implements OSCListener, Constants, ServerListener, ActionListener
 		EventQueue.invokeLater( runProcessMessage );
 	}
 	
-	private void processMessage()
+	protected void processMessage()
 	{
 		final OSCMessage msg = rcvMsg;
 		final int		busIndex	= ((Number) msg.getArg( 0 )).intValue();
@@ -486,17 +486,17 @@ implements OSCListener, Constants, ServerListener, ActionListener
 	
 	private static class MeterClient
 	{
-		private final float[]		peakRMSPairs;
-		private final int			cNum;
-		private int					cOffset;
-		private final MeterListener	ml;
-		private final int[]			channels;
-		private final Group			g;
-		private final Synth[]		synths;
-		private final Server		server;
-		private boolean				task;
+		protected final float[]		peakRMSPairs;
+		protected final int			cNum;
+		protected int				cOffset;
+		protected final MeterListener ml;
+		protected final int[]		channels;
+		protected final Group		g;
+		protected final Synth[]		synths;
+		protected final Server		server;
+		protected boolean			task;
 		
-		private MeterClient( MeterListener ml, Server server, int[] channels, Group g, boolean task )
+		protected MeterClient( MeterListener ml, Server server, int[] channels, Group g, boolean task )
 		{
 			this.ml			= ml;
 			this.server		= server;
@@ -509,7 +509,7 @@ implements OSCListener, Constants, ServerListener, ActionListener
 			synths			= new Synth[ channels.length ];
 		}
 		
-		private void setOffset( int cOffset )
+		protected void setOffset( int cOffset )
 		{
 			this.cOffset	= cOffset;
 		}

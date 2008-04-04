@@ -49,6 +49,7 @@ public class MenuRadioGroup
 
 	public MenuRadioGroup()
 	{
+		/* empty */ 
 	}
 	
 	protected void add( AbstractWindow w, AbstractButton b )

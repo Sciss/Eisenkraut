@@ -49,14 +49,14 @@ implements DocumentHandler, EventManager.Processor
 	// to iterate safely over all documents
 	protected final Object			sync		= new Object();
 
-	protected AbstractDocumentHandler( boolean isMultiDocumentApplication )
+	protected AbstractDocumentHandler( boolean isMDA )
 	{
-		this.isMDA	= isMultiDocumentApplication;
+		this.isMDA	= isMDA;
 	}
 
 	public boolean isMultiDocumentApplication()
 	{
-		return( isMDA );
+		return isMDA;
 	}
 
 	public int getDocumentCount()

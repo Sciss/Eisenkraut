@@ -109,8 +109,8 @@ implements Disposable
 	
 	public void setNullLinie( boolean onOff )
 	{
-		if( this.nullLinie != onOff ) {
-			this.nullLinie = onOff;
+		if( nullLinie != onOff ) {
+			nullLinie = onOff;
 			triggerRedisplay();
 		}
 	}
@@ -177,9 +177,9 @@ implements Disposable
 	/**
 	 *	@synchronization	use in swing thread only
 	 */
-	public void update( Span viewSpan )
+	public void update( Span s )
 	{
-		this.viewSpan	= viewSpan;
+		viewSpan	= s;
 		triggerRedisplay();
 	}
 
@@ -236,7 +236,7 @@ implements Disposable
 		
 		final int				w		= getWidth();
 //		final int				h		= getHeight();
-		Rectangle				r;
+		Rectangle				cr;
 		int						y;
 		
 		info	= dt.getBestSubsample( new Span( viewSpan.start, viewSpan.stop + 1 ), w );
@@ -246,9 +246,9 @@ implements Disposable
 			g2.setPaint( pntNull );
 			g2.setStroke( strkNull );
 			for( int ch = 0; ch < fullChannels; ch++ ) {
-				r = rectForChannel( ch );
-				y = r.y + (r.height >> 1);
-				g2.drawLine( r.x, y, r.x + r.width, y );
+				cr = rectForChannel( ch );
+				y = cr.y + (cr.height >> 1);
+				g2.drawLine( cr.x, y, cr.x + cr.width, y );
 			}
 		}
 	}
@@ -267,7 +267,7 @@ implements Disposable
 		
 		final int				w		= getWidth();
 //		final int				h		= getHeight();
-		Rectangle				r;
+		Rectangle				cr;
 		int						y;
 		
 		info	= dt.getBestSubsample( new Span( viewSpan.start, viewSpan.stop + 1 ), w );
@@ -277,9 +277,9 @@ implements Disposable
 			g2.setPaint( pntNull );
 			g2.setStroke( strkNull );
 			for( int ch = 0; ch < fullChannels; ch++ ) {
-				r = rectForChannel( ch );
-				y = r.y + (r.height >> 1);
-				g2.drawLine( r.x, y, r.x + r.width, y );
+				cr = rectForChannel( ch );
+				y = cr.y + (cr.height >> 1);
+				g2.drawLine( cr.x, y, cr.x + cr.width, y );
 			}
 		}
 	}
@@ -296,5 +296,5 @@ implements Disposable
   
 	// -------------- Disposable interface --------------
 	
-	public void dispose() {}
+	public void dispose() { /* empty */ }
 }

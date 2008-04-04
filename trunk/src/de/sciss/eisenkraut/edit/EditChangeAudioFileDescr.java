@@ -55,8 +55,8 @@ extends BasicUndoableEdit
 		this.source			= source;
 		this.afd			= afd;
 		this.key			= key;
-		this.newValue		= value;
-		this.oldValue		= afd.getProperty( key );
+		newValue			= value;
+		oldValue			= afd.getProperty( key );
 		this.name			= name;
 	}
 
@@ -68,7 +68,7 @@ extends BasicUndoableEdit
 	public PerformableEdit perform()
 	{
 		afd.setProperty( source, key, newValue );
-		this.source = this;
+		source = this;
 		return this;
 	}
 

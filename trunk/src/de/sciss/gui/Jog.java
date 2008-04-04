@@ -94,20 +94,18 @@ implements PropertyChangeListener, EventManager.Processor
 	private static final Stroke	strkArcShadow	= new BasicStroke( 1.2f );
 	private static final Stroke	strkArcLight	= new BasicStroke( 1.0f );
 	private static final Shape	shpBelly		= new Ellipse2D.Double( -2.5, -2.5, 5.0, 5.0 );
-	private final Point2D		bellyPos		= new Point2D.Double( -0.7071064, -0.7071064 );
-																	 
-	private final Jog			enc_this		= this;
+	protected final Point2D		bellyPos		= new Point2D.Double( -0.7071064, -0.7071064 );
 
-	private static final Cursor	dragCursor		= new Cursor( Cursor.MOVE_CURSOR );
-	private Cursor				savedCursor		= null;
-	private int					dragX, dragY;
-	private double				dragArc;
-	private double				dispArc			= -2.356194;
-	private boolean				refire			= false;	// if true, refire a number event after dragging
+	protected static final Cursor dragCursor	= new Cursor( Cursor.MOVE_CURSOR );
+	protected Cursor			savedCursor		= null;
+	protected int				dragX, dragY;
+	protected double			dragArc;
+	protected double			dispArc			= -2.356194;
+	protected boolean			refire			= false;	// if true, refire a number event after dragging
 	
 	private static final double	PI2				= Math.PI * 2;
 	
-	private Insets				in;
+	protected Insets			in;
 
 	private EventManager		elm				= null;	// lazy creation
 
@@ -116,6 +114,7 @@ implements PropertyChangeListener, EventManager.Processor
 		updatePreferredSize();
 		setFocusable( true );
 
+		final Jog enc_this = this;
 		final MouseInputAdapter mia = new MouseInputAdapter() {
 			public void mousePressed( MouseEvent e )
 			{
@@ -330,7 +329,7 @@ g2.translate( 0.5f + in.left, 0.5f + in.top );	// tricky disco to blur the outli
 		} // for( i = 0; i < elm.countListeners(); i++ )
 	}
 
-	private void dispatchChange( int delta, boolean adjusting )
+	protected void dispatchChange( int delta, boolean adjusting )
 	{
 		if( elm != null ) {
 			elm.dispatchEvent( new NumberEvent( this, NumberEvent.CHANGED, System.currentTimeMillis(),

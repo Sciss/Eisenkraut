@@ -79,8 +79,8 @@ extends BasicUndoableEdit
 		super();
 		this.source			= source;
 		this.quoi			= quoi;
-		this.oldSelection   = quoi.getAll();
-		this.newSelection   = new ArrayList( collNewSelection );
+		oldSelection   		= quoi.getAll();
+		newSelection   		= new ArrayList( collNewSelection );
 	}
 
 	/**
@@ -96,7 +96,7 @@ extends BasicUndoableEdit
 	{
 		quoi.clear( source );
 		quoi.addAll( source, newSelection );
-		this.source			= this;
+		source			= this;
 		return this;
 	}
 
@@ -139,8 +139,8 @@ extends BasicUndoableEdit
 	public boolean addEdit( UndoableEdit anEdit )
 	{
 		if( anEdit instanceof EditSetSessionObjects ) {
-			this.newSelection.clear();
-			this.newSelection.addAll( ((EditSetSessionObjects) anEdit).newSelection );
+			newSelection.clear();
+			newSelection.addAll( ((EditSetSessionObjects) anEdit).newSelection );
 			anEdit.die();
 			return true;
 		} else {
@@ -156,8 +156,8 @@ extends BasicUndoableEdit
 	public boolean replaceEdit( UndoableEdit anEdit )
 	{
 		if( anEdit instanceof EditSetSessionObjects ) {
-			this.oldSelection.clear();
-			this.oldSelection.addAll( ((EditSetSessionObjects) anEdit).oldSelection );
+			oldSelection.clear();
+			oldSelection.addAll( ((EditSetSessionObjects) anEdit).oldSelection );
 			anEdit.die();
 			return true;
 		} else {

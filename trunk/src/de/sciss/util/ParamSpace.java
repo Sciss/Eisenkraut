@@ -248,7 +248,7 @@ extends NumberSpace
 				}
 			}
 		}
-		catch( NoSuchElementException e1 ) {}
+		catch( NoSuchElementException e1 ) { e1.printStackTrace(); }
 		throw new NumberFormatException( str );
 	}
 }

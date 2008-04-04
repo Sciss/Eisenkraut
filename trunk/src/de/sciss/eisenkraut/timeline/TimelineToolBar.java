@@ -39,6 +39,7 @@ import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
 
 import de.sciss.app.AbstractApplication;
 
@@ -76,7 +77,7 @@ implements Disposable
 	 */
 	public TimelineToolBar( Session doc )
 	{
-		super( ToolBar.HORIZONTAL );
+		super( SwingConstants.HORIZONTAL );
 
 		final Preferences		prefs = AbstractApplication.getApplication().getUserPrefs();
 		final CatchAction		actionCatch;
@@ -210,6 +211,6 @@ GUIUtil.createKeyAction( button, KeyStroke.getKeyStroke( KeyEvent.VK_CAPS_LOCK, 
 	
 	public void dispose()
 	{
-	
+		/* empty */ 
 	}
 }

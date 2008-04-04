@@ -72,8 +72,8 @@ extends BasicUndoableEdit
 		super();
 		this.source			= source;
 		this.doc			= doc;
-		this.newLength		= length;
-		this.oldLength		= doc.timeline.getLength();
+		newLength			= length;
+		oldLength			= doc.timeline.getLength();
 	}
 
 	/**
@@ -92,7 +92,7 @@ extends BasicUndoableEdit
 	public PerformableEdit perform()
 	{
 		doc.timeline.setLength( source, newLength );
-		this.source		= this;
+		source		= this;
 		return this;
 	}
 	

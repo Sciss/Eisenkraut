@@ -78,13 +78,15 @@ implements HyperlinkListener, PropertyChangeListener
 	public static final Object COMP_HELP	= HelpFrame.class;
 
     private final JEditorPane		htmlPane;
-    private final JButton			ggEdit, ggOpenInBrowser, ggBack;
-    private final ArrayList			history			= new ArrayList();	// elements = historyEntry
-    private int						historyIndex	= -1;
+    protected final JButton			ggEdit;
+    private final JButton			ggOpenInBrowser;
+    protected final JButton			ggBack;
+    protected final ArrayList		history			= new ArrayList();	// elements = historyEntry
+    protected int					historyIndex	= -1;
 	private final JScrollBar		ggVScroll;
 	private final String			plainTitle;
 	
-	private final AbstractWindow	win;
+	protected final AbstractWindow	win;
 	
 	/**
 	 *  Creates a new help frame. Use
@@ -289,7 +291,7 @@ implements HyperlinkListener, PropertyChangeListener
         }
     }
     
-    private void loadURL()
+    protected void loadURL()
     throws IOException
     {
 		try {
@@ -308,7 +310,7 @@ implements HyperlinkListener, PropertyChangeListener
         ggBack.setEnabled( historyIndex > 0 );
     }
 
-    private void openInBrowser()
+    protected void openInBrowser()
     {
         if( historyIndex >= 0 ) {
             try {
@@ -358,7 +360,7 @@ implements HyperlinkListener, PropertyChangeListener
 
 	private static class HistoryEntry
 	{
-		private final URL	url;
+		protected final URL	url;
 		private int	verticalScroll;
 	
 		private HistoryEntry( URL url, int verticalScroll )
@@ -367,17 +369,17 @@ implements HyperlinkListener, PropertyChangeListener
 			this.verticalScroll	= verticalScroll;
 		}
 		
-		private HistoryEntry( URL url )
+		protected HistoryEntry( URL url )
 		{
 			this( url, 0 );
 		}
 		
-		private void setVerticalScroll( int verticalScroll )
+		protected void setVerticalScroll( int verticalScroll )
 		{
 			this.verticalScroll	= verticalScroll;
 		}
 
-		private int getVerticalScroll()
+		protected int getVerticalScroll()
 		{
 			return verticalScroll;
 		}

@@ -61,7 +61,7 @@ import javax.swing.event.MouseInputAdapter;
 extends JComponent
 {
 	private final AffineTransform	at				= new AffineTransform();
-	private static final Insets		insets			= new Insets( 1, 1, 1, 1 );
+	protected static final Insets	insets			= new Insets( 1, 1, 1, 1 );
 	private static final Shape		shpCtrlIn		= new Ellipse2D.Double( -2, -2, 5, 5 );
 	private static final Area		shpCtrlOut;
 	private static final Paint		pntCtrlIn		= new Color( 0x00, 0x00, 0x00, 0x7F );
@@ -78,13 +78,13 @@ extends JComponent
 
 	private final Point2D			ctrlPt			= new Point2D.Double( 0.0, 0.75 );
 
-	private double					recentRadius	= -1;
+	protected double				recentRadius	= -1;
 	private boolean					recalc			= true;
-	private boolean					isDragging		= false;
+	protected boolean				isDragging		= false;
 	
-	private final double			startAngle, deltaAngle;
+	protected final double			startAngle, deltaAngle;
 	private final int				numSpots;
-	private double					azi, spread;
+	protected double				azi, spread;
 	
 	private static final List		collListeners	= new ArrayList();
 	
@@ -100,8 +100,8 @@ extends JComponent
 		if( startAng < 0 ) {
 			startAng = 360 - ((-startAng) % 360);
 		}
-		this.startAngle = startAng % 360;
-		this.deltaAngle	= 360.0 / numSpots;
+		startAngle		 = startAng % 360;
+		deltaAngle		= 360.0 / numSpots;
 		this.numSpots	= numSpots;
 			
 		outlines.add( new Ellipse2D.Double( -1.0, -1.0, 2.0, 2.0 ));
@@ -153,11 +153,11 @@ extends JComponent
 			// x ^= radius, y ^= angleRad
 			private Point2D getVirtualMousePos( MouseEvent e )
 			{
-				final double dx = ((e.getX() - insets.left) / recentRadius) - 1.15;
-				final double dy = 1.15 - ((e.getY() - insets.top) / recentRadius);
+				final double x = ((e.getX() - insets.left) / recentRadius) - 1.15;
+				final double y = 1.15 - ((e.getY() - insets.top) / recentRadius);
 			
-				return new Point2D.Double( Math.min( 1.0, Math.sqrt( dx * dx + dy * dy )),
-										   Math.atan2( dy, dx ));
+				return new Point2D.Double( Math.min( 1.0, Math.sqrt( x * x + y * y )),
+										   Math.atan2( y, x ));
 			}
 
 			public void mouseDragged( MouseEvent e )
@@ -172,7 +172,7 @@ extends JComponent
 			
 			private void processDrag( Point2D mousePt, boolean snap )
 			{
-				double angDeg, temp, temp2; // , spreadDegH;
+				double dragAngDeg, temp, temp2; // , spreadDegH;
 			
 				if( snap ) {
 					if( mousePt.getX() < 0.1 ) {
@@ -183,12 +183,12 @@ extends JComponent
 						mousePt.setLocation( 1.0, mousePt.getY() );
 					}
 					
-					angDeg = -(mousePt.getY() * 180 / Math.PI) + 90;
-					if( angDeg < 0 ) angDeg += 360;
+					dragAngDeg = -(mousePt.getY() * 180 / Math.PI) + 90;
+					if( dragAngDeg < 0 ) dragAngDeg += 360;
 
 					for( int i = 0; i < numSpots * 2; i++ ) {
 						temp	= (startAngle + (deltaAngle * i) / 2) % 360;
-						temp2	= Math.abs( temp - angDeg );
+						temp2	= Math.abs( temp - dragAngDeg );
 						if( temp2 > 180 ) temp2 = 360 - temp2;
 						if( temp2 < 5 ) {
 							mousePt.setLocation( mousePt.getX(), (-temp + 90) * Math.PI / 180 );
@@ -203,9 +203,9 @@ extends JComponent
 				} else {
 					spread	= (0.75 - mousePt.getX()) / 0.25;
 				}
-				angDeg = -(mousePt.getY() * 180 / Math.PI) + 90;
+				dragAngDeg = -(mousePt.getY() * 180 / Math.PI) + 90;
 
-				setAzimuthAndSpread( angDeg, spread );
+				setAzimuthAndSpread( dragAngDeg, spread );
 				dispatchAction();
 			}
 		};
@@ -221,7 +221,7 @@ extends JComponent
 		isDragging = true;
 	}
 	
-	private void dispatchAction()
+	protected void dispatchAction()
 	{
 		final ActionEvent e = new ActionEvent( this, ActionEvent.ACTION_PERFORMED, null );
 	

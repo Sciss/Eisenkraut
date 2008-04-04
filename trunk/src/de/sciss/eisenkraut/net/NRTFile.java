@@ -62,7 +62,7 @@ public class NRTFile
 		try {
 			fch.close();
 		}
-		catch( IOException e1 ) {}
+		catch( IOException e1 ) { /* ignore */ }
 	}
 	
 	public void write( OSCPacket p )

@@ -83,22 +83,22 @@ extends BasicTrail
 
 //	private final int				modelChannels;
 //	private final int				decimChannels;
-	private final int				fullChannels;
+	protected final int				fullChannels;
 	private final int				model;
 
 	private AudioFile[]				tempF					= null; // lazy
-	private final DecimationHelp[]	decimHelps;
-	private final AudioTrail		fullScale;
+	protected final DecimationHelp[] decimHelps;
+	protected final AudioTrail		fullScale;
 
 	private final int				SUBNUM;
 	private final int				MAXSHIFT;
-	private final int				MAXCOARSE;
+	protected final int				MAXCOARSE;
 	private final long				MAXMASK;
 	private final int				MAXCEILADD;
 
-	private float[][]				tmpBuf					= null; // lazy
+	protected float[][]				tmpBuf					= null; // lazy
 	private final int				tmpBufSize;
-	private float[][]				tmpBuf2					= null; // lazy
+	protected float[][]				tmpBuf2					= null; // lazy
 	private final int				tmpBufSize2;
 
 	private final Decimator			decimator;
@@ -115,22 +115,22 @@ extends BasicTrail
 //			0xFFE6E6E6, 0xFFB2B2B2, 0xFFCACACA,
 //			0xFFB1B1B1, 0xFFD5D5D5, 0xFFC0C0C0 };
 
-	private final Object			bufSync					= new Object();
+	protected final Object			bufSync					= new Object();
 	private final Object			fileSync				= new Object();
 
-	private final List				busyList				= new ArrayList();
+	private final List				drawBusyList			= new ArrayList();
 
-	private Thread					threadAsync				= null;
+	protected Thread				threadAsync				= null;
 	private AudioFile[]				tempFAsync				= null; // lazy
-	private volatile boolean		keepAsyncRunning		= false;
+	protected volatile boolean		keepAsyncRunning		= false;
 
-	private EventManager			asyncManager			= null;
+	protected EventManager			asyncManager			= null;
 	
 	private final int				fftSize					= 1024;
 	private final int				numMag					= fftSize >> 1;
 	private final int				stepSize				= fftSize; // >> 1;
 	private final float[]			fftBuf					= new float[ fftSize + 2 ];
-	private final float[] 			win;
+	protected final float[] 		win;
 
 	private static final int[] 		colors = {  // from niklas werner's sonasound!
 		0x000000, 0x050101, 0x090203, 0x0E0304, 0x120406, 0x160507, 0x1A0608, 0x1D0609,
@@ -270,8 +270,8 @@ extends BasicTrail
 		0xFEFEFE
 	};
 	
-	private final double LNKORR_MUL = 10 / Math.log( 10.0 );
-	private final double LNKORR_ADD = -2 * Math.log( fftSize );
+	protected final double LNKORR_MUL = 10 / Math.log( 10.0 );
+	protected final double LNKORR_ADD = -2 * Math.log( fftSize );
 
 //	static {
 //		final BufferedImage img = new BufferedImage( 3, 3, BufferedImage.TYPE_INT_ARGB );
@@ -369,7 +369,7 @@ extends BasicTrail
 		g2.setRenderingHint( RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR );
 		
 		try {
-			busyList.clear(); // "must be called in the event thread"
+			drawBusyList.clear(); // "must be called in the event thread"
 
 			synchronized( bufSync ) {
 				createBuffers();
@@ -403,7 +403,7 @@ extends BasicTrail
 						decimator.decimatePCM( tmpBuf, tmpBuf2, fftBuf, 0, decimLen, info.inlineDecim );
 					} else {
 						chunkSpan = new Span( start, start + fullLen );
-						readFrames( info.idx, tmpBuf2, 0, busyList, chunkSpan, null);
+						readFrames( info.idx, tmpBuf2, 0, drawBusyList, chunkSpan, null);
 						if( info.inlineDecim > 1 ) decimator.decimate( tmpBuf2, tmpBuf2, 0, decimLen, info.inlineDecim );
 					}
 					for( int ch = 0; ch < fullChannels; ch++ ) {
@@ -694,16 +694,16 @@ if( chanBuf.length <= off ) break;
 			asyncManager = new EventManager( new EventManager.Processor() {
 				public void processEvent( BasicEvent e ) {
 					final AsyncEvent	ae = (AsyncEvent) e;
-					AsyncListener		l;
+					AsyncListener		al;
 
 					for( int i = 0; i < asyncManager.countListeners(); i++ ) {
-						l = (AsyncListener) asyncManager.getListener( i );
+						al = (AsyncListener) asyncManager.getListener( i );
 						switch( e.getID() ) {
 						case AsyncEvent.UPDATE:
-							l.asyncUpdate( ae );
+							al.asyncUpdate( ae );
 							break;
 						case AsyncEvent.FINISHED:
-							l.asyncFinished( ae );
+							al.asyncFinished( ae );
 							break;
 						default:
 							assert false : e.getID();
@@ -787,12 +787,13 @@ if( chanBuf.length <= off ) break;
 		final Span					extSpan;
 		final long					fullrateStop, fullrateLen; // , insertLen;
 		final int					numFullBuf;
-		final Object				enc_this	= this;
+	//	final Object				enc_this	= this;
 		// final CacheManager cm = CacheManager.getInstance();
 		final AbstractCompoundEdit	ce			= null; // XXX
 		final Object				source		= null; // XXX
 		final AudioStake			cacheReadAS;
 		final AudioStake			cacheWriteAS;
+		final DecimatedSonaTrail	enc_this	= this;
 
 		synchronized( fileSync ) {
 			das			= allocAsync( union );
@@ -1043,7 +1044,7 @@ if( chanBuf.length <= off ) break;
 
 	// ----------- private schnucki -----------
 
-	private File[] createCacheFileNames()
+	protected File[] createCacheFileNames()
 	{
 		final AudioFile[] audioFiles = fullScale.getAudioFiles();
 		if( (audioFiles.length == 0) || (audioFiles[0] == null) ) return null;
@@ -1300,7 +1301,7 @@ if( chanBuf.length <= off ) break;
 	private AudioFile[] createTempFiles() throws IOException {
 		// simply use an AIFC file with float format as temp file
 		final AudioFileDescr proto = new AudioFileDescr();
-		final AudioFile[] tempF = new AudioFile[SUBNUM];
+		final AudioFile[] tempFiles = new AudioFile[SUBNUM];
 		AudioFileDescr afd;
 		proto.type = AudioFileDescr.TYPE_AIFF;
 		proto.channels = fullChannels; // decimChannels;
@@ -1313,23 +1314,23 @@ if( chanBuf.length <= off ) break;
 				afd = new AudioFileDescr(proto);
 				afd.file = IOUtil.createTempFile();
 				afd.rate = decimHelps[i].rate;
-				tempF[i] = AudioFile.openAsWrite(afd);
+				tempFiles[i] = AudioFile.openAsWrite(afd);
 			}
-			return tempF;
+			return tempFiles;
 		} catch (IOException e1) {
 			for (int i = 0; i < SUBNUM; i++) {
-				if (tempF[i] != null)
-					tempF[i].cleanUp();
+				if (tempFiles[i] != null)
+					tempFiles[i].cleanUp();
 			}
 			throw e1;
 		}
 	}
 
-	private void deleteTempFiles(AudioFile[] tempF) {
-		for (int i = 0; i < tempF.length; i++) {
-			if (tempF[i] != null) {
-				tempF[i].cleanUp();
-				tempF[i].getFile().delete();
+	private void deleteTempFiles( AudioFile[] tempFiles ) {
+		for( int i = 0; i < tempFiles.length; i++ ) {
+			if( tempFiles[i] != null ) {
+				tempFiles[i].cleanUp();
+				tempFiles[i].getFile().delete();
 			}
 		}
 	}
@@ -1344,8 +1345,8 @@ if( chanBuf.length <= off ) break;
 	 */
 	// private void subsampleWrite( float[][] inBuf, float[][] outBuf,
 	// DecimatedStake das, int len )
-	private void subsampleWrite( float[][] inBuf, float[][] outBuf, DecimatedSonaStake das,
-								 int len, AudioStake cacheAS, long cacheOff )
+	protected void subsampleWrite( float[][] inBuf, float[][] outBuf, DecimatedSonaStake das,
+								   int len, AudioStake cacheAS, long cacheOff )
 	throws IOException
 	{
 		int decim;
@@ -1400,7 +1401,7 @@ if( chanBuf.length <= off ) break;
 		private static final int UPDATE = 0;
 		private static final int FINISHED = 1;
 
-		private AsyncEvent( Object source, int id, long when ) {
+		protected AsyncEvent( Object source, int id, long when ) {
 			super( source, id, when );
 		}
 
@@ -1420,8 +1421,10 @@ if( chanBuf.length <= off ) break;
 
 	private abstract class Decimator
 	{
+		protected Decimator() { /* empty */ }
+		
 		protected abstract void decimate( float[][] inBuf, float[][] outBuf, int outOff, int len, int decim );
-		protected abstract void decimatePCM( float[][] inBuf, float[][] outBuf, float[] fftBuf, int outOff, int len, int decim );
+		protected abstract void decimatePCM( float[][] inBuf, float[][] outBuf, float[] fBuf, int outOff, int len, int decim );
 		// protected abstract void decimatePCMFast( float[][] inBuf, float[][]
 		// outBuf, int outOff, int len, int decim );
 		protected abstract int draw( DecimationInfo info, int ch, int[][] peakPolyX, int[][] peakPolyY,
@@ -1432,6 +1435,8 @@ if( chanBuf.length <= off ) break;
 	private class SonaDecimator
 	extends Decimator
 	{
+		protected SonaDecimator() { /* empty */ }
+		
 		protected void decimate( float[][] inBuf, float[][] outBuf, int outOff, int len, int decim )
 		{
 			int 	stop, j, k, m, ch;
@@ -1452,7 +1457,7 @@ if( chanBuf.length <= off ) break;
 			}
 		}
 
-		protected void decimatePCM( float[][] inBuf, float[][] outBuf, float[] fftBuf, int outOff, int len, int decim )
+		protected void decimatePCM( float[][] inBuf, float[][] outBuf, float[] fBuf, int outOff, int len, int decim )
 		{
 			float[] inBufCh, outBufCh;
 			float f1, f2;
@@ -1463,21 +1468,21 @@ if( chanBuf.length <= off ) break;
 //					System.arraycopy( inBuf[ ch ], inOff, fftBuf, 0, fftSize );
 					inBufCh = inBuf[ ch ];
 					for( int i = 0, j = inOff; i < fftSize; i++, j++ ) {
-						fftBuf[ i ] = inBufCh[ j ] * win[ i ];
+						fBuf[ i ] = inBufCh[ j ] * win[ i ];
 					}
-					Fourier.realTransform( fftBuf, fftSize, Fourier.FORWARD );
+					Fourier.realTransform( fBuf, fftSize, Fourier.FORWARD );
 					outBufCh = outBuf[ ch ];
 					if( decimCnt == 0 ) {
 						for( int i = outOff, j = 0; j < fftSize; ) {
-							f1 = fftBuf[ j++ ];
-							f2 = fftBuf[ j++ ];
+							f1 = fBuf[ j++ ];
+							f2 = fBuf[ j++ ];
 							outBufCh[ i++ ] = (float) ((Math.log( f1 * f1 + f2 * f2 ) + LNKORR_ADD) * w);
 //							outBufCh[ i++ ] = (float) (Math.max( -160, Math.log( f1 * f1 + f2 * f2 ) * w));
 						}
 					} else {
 						for( int i = outOff, j = 0; j < fftSize; ) {
-							f1 = fftBuf[ j++ ];
-							f2 = fftBuf[ j++ ];
+							f1 = fBuf[ j++ ];
+							f2 = fBuf[ j++ ];
 							outBufCh[ i++ ] += (float) ((Math.log( f1 * f1 + f2 * f2 ) + LNKORR_ADD) * w);
 //							outBufCh[ i++ ] += (float) (Math.max( -160, Math.log( f1 * f1 + f2 * f2 ) * w));
 						}

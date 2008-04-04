@@ -72,7 +72,7 @@ extends JComponent
 
 	private final CubicCurve2D[]	shpFades;
 	private final AffineTransform	at				= new AffineTransform();
-	private static final Insets		insets			= new Insets( 1, 1, 1, 1 );
+	protected static final Insets	insets			= new Insets( 1, 1, 1, 1 );
 	private static final Shape		shpCtrlIn		= new Ellipse2D.Double( -2, -2, 5, 5 );
 	private static final Area		shpCtrlOut;
 	private static final Paint		pntCtrlIn		= new Color( 0x00, 0x00, 0x00, 0x7F );
@@ -81,13 +81,13 @@ extends JComponent
 
 	private final Shape[]			tShpFades;
 
-	private final Point2D[]	ctrlPt	= new Point2D[] {
+	protected final Point2D[]	ctrlPt	= new Point2D[] {
 		new Point2D.Double( 0.5, 0.5 ), new Point2D.Double( 0.5, 0.5 )};
 
-	private int						recentWidth		= -1;
-	private int						recentHeight	= -1;
-	private boolean					recalc			= true;
-	private Point2D					dragPt			= null;
+	protected int					recentWidth		= -1;
+	protected int					recentHeight	= -1;
+	protected boolean				recalc			= true;
+	protected Point2D				dragPt			= null;
 //	private final Preferences		prefs;
 	
 	private ActionListener			actionListener	= null;
@@ -103,8 +103,8 @@ extends JComponent
 	
 		final Dimension d = new Dimension( 64, 64 );
 		
-		this.shpFades	= basicCurves;
-//		this.prefs		= prefs;
+		shpFades	= basicCurves;
+//		prefs		= prefs;
 		tShpFades		= new Shape[ shpFades.length ];
 		
 		if( prefs != null ) {
@@ -203,7 +203,7 @@ extends JComponent
 		}
      }
 	 
-     private void dispatchAction()
+     protected void dispatchAction()
 	 {
          final ActionListener listener = actionListener;
          if( listener != null ) {

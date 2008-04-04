@@ -118,7 +118,7 @@ public class TiledImage
 		mediaTracker.addImage( img, 0 );
 		try {
 			mediaTracker.waitForID( 0 );
-		} catch( InterruptedException e1 ) {}
+		} catch( InterruptedException e1 ) { /* ignore */ }
 	}
 	
 	/**
@@ -190,7 +190,7 @@ public class TiledImage
 	{
 		private final int	col, row;
 
-		private Icon( int col, int row )
+		protected Icon( int col, int row )
 		{
 			this.col	= col;
 			this.row	= row;

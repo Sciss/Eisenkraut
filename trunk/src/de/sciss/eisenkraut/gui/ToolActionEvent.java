@@ -84,8 +84,8 @@ extends BasicEvent
 	public boolean incorporate( BasicEvent oldEvent )
 	{
 		if( oldEvent instanceof ToolActionEvent &&
-			this.getSource() == oldEvent.getSource() &&
-			this.getID() == oldEvent.getID() ) {
+			getSource() == oldEvent.getSource() &&
+			getID() == oldEvent.getID() ) {
 			
 			return true;
 

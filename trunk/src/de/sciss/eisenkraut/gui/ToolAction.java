@@ -103,7 +103,7 @@ extends AbstractAction
 		Cursor.getPredefinedCursor( Cursor.HAND_CURSOR )	// csrZoomIn
 	};
 
-	private final int		ID;
+	private final int		id;
 	private final Icon[]	icons;
 //	private AbstractButton  b;
 
@@ -111,16 +111,16 @@ extends AbstractAction
 	 *  Creates a tool action with
 	 *  the given ID.
 	 *
-	 *  @param  ID  identier for the tool, e.g. LINE or PENCIL,
+	 *  @param  id  identier for the tool, e.g. LINE or PENCIL,
 	 *				which determines the icons and mouse pointer
 	 */
-	public ToolAction( int ID )
+	public ToolAction( int id )
 	{
 		super();
 		
-		this.ID = ID;
+		this.id = id;
 		
-		icons = GraphicsUtil.createToolIcons( ICONS[ID] );
+		icons = GraphicsUtil.createToolIcons( ICONS[id] );
 	}
 	
 	/**
@@ -149,7 +149,7 @@ extends AbstractAction
 	 */
 	public int getID()
 	{
-		return ID;
+		return id;
 	}
 	
 	/**
@@ -160,6 +160,6 @@ extends AbstractAction
 	 */
 	public Cursor getDefaultCursor()
 	{
-		return CURSORS[ ID ];
+		return CURSORS[ id ];
 	}
 }

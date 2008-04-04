@@ -70,19 +70,20 @@ implements Runnable, EventManager.Processor, ActionListener, Disposable	// , Pro
 //	private final Object				clientArg;
 //	private final int					requiredDoors;
 	private final Map					clientMap	= Collections.synchronizedMap( new HashMap() );
-	private final String				name;
+	protected final String				name;
 
 	private final Runnable				runProgressUpdate, runProcessFinished;
-	private volatile float				progress, progOff = 0f, progStop = 1f, progWeight = 1f;
-	private volatile boolean			progressInvoked	= false;
+	protected volatile float			progress;
+	private volatile float				progOff = 0f, progStop = 1f, progWeight = 1f;
+	protected volatile boolean			progressInvoked	= false;
 //	private boolean						procAlive;
-	private volatile Exception			exception   = null;
-	private EventManager				elm			= null; // lazily created ; flushed due to synchronized()s?
+	protected volatile Exception		exception   = null;
+	protected EventManager				elm			= null; // lazily created ; flushed due to synchronized()s?
 	
-	private int							returnCode	= -1;	// flushed due to synchronized()s
+	protected int						returnCode	= -1;	// flushed due to synchronized()s
 	private volatile boolean			shouldCancel= false;
 	
-	private final Object				sync		= new Object();
+	protected final Object				sync		= new Object();
 	private Thread						thread		= null;	// flushed due to synchronized()s
 	
 	private static final Map			mapThreads	= Collections.synchronizedMap( new HashMap() );
@@ -115,7 +116,7 @@ implements Runnable, EventManager.Processor, ActionListener, Disposable	// , Pro
 		this.client			= client;
 //		this.clientArg		= clientArg;
 		this.pc				= pc;
-		this.name			= procName;
+		name				= procName;
 //		this.lm				= lm;
 //		this.requiredDoors  = requiredDoors;
 		
@@ -230,7 +231,7 @@ implements Runnable, EventManager.Processor, ActionListener, Disposable	// , Pro
 			while( (thread != null) && thread.isAlive() ) {
 				try {
 					sync.wait();
-				} catch( InterruptedException e1 ) {}
+				} catch( InterruptedException e1 ) { /* ignore */ }
 			}
 		}
 	}
@@ -243,7 +244,7 @@ implements Runnable, EventManager.Processor, ActionListener, Disposable	// , Pro
 			if( (thread != null) && thread.isAlive() ) {
 				try {
 					sync.wait( timeout );
-				} catch( InterruptedException e1 ) {}
+				} catch( InterruptedException e1 ) { /* ignore */ }
 			}
 		}
 	}
@@ -252,15 +253,15 @@ implements Runnable, EventManager.Processor, ActionListener, Disposable	// , Pro
 	 *	Forwards the cancel request
 	 *	to the client.
 	 *
-	 *	@param	sync	if <code>true</code>, wait for the client to
+	 *	@param	doSync	if <code>true</code>, wait for the client to
 	 *					abort, otherwise return immediately
 	 */
-	public void cancel( boolean sync )
+	public void cancel( boolean doSync )
 	{
 		shouldCancel = true;
 //		client.processCancel( this, clientArg );
 		client.processCancel( this );
-		if( sync ) sync();
+		if( doSync ) sync();
 	}
 	
 //	/**
@@ -419,7 +420,7 @@ implements Runnable, EventManager.Processor, ActionListener, Disposable	// , Pro
 	 */
 	public void setException( Exception e )
 	{
-		this.exception = e;
+		exception = e;
 	}
 
 	/**
@@ -651,8 +652,8 @@ implements Runnable, EventManager.Processor, ActionListener, Disposable	// , Pro
 		public boolean incorporate( BasicEvent oldEvent )
 		{
 			if( (oldEvent instanceof ProcessingThread.Event) &&
-				(this.getSource() == oldEvent.getSource()) &&
-				(this.getID() == oldEvent.getID()) ) {
+				(getSource() == oldEvent.getSource()) &&
+				(getID() == oldEvent.getID()) ) {
 				
 				// XXX beware, when the actionID and actionObj
 				// are used, we have to deal with them here
@@ -666,7 +667,7 @@ implements Runnable, EventManager.Processor, ActionListener, Disposable	// , Pro
 	public static class CancelledException
 	extends IOException
 	{
-		
+		/* empty */
 	}
 	
 //	public interface Hook

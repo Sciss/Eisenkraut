@@ -35,6 +35,7 @@ import java.io.IOException;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 
 import de.sciss.gui.PrefComboBox;
 import de.sciss.gui.PrefParamField;
@@ -98,13 +99,13 @@ implements RandomAccessRequester
 		ggGainType.addItem( new StringItem( GAIN_ABSOLUTE, getResourceString( "plugInGainAbsolute" )));
 		ggGainType.addItem( new StringItem( GAIN_NORMALIZED, getResourceString( "plugInGainNormalized" )));
 		
-		p.add( new JLabel( getResourceString( "plugInGain" ), JLabel.RIGHT ));
+		p.add( new JLabel( getResourceString( "plugInGain" ), SwingConstants.RIGHT ));
 		p.add( ggGain );
 		p.add( ggGainType );
 		ggGain.setValueAndSpace( DEFAULT_GAIN );
-		ggGain.setPreferences( this.prefs, KEY_GAIN );
+		ggGain.setPreferences( prefs, KEY_GAIN );
 		ggGainType.setSelectedIndex( 1 );
-		ggGainType.setPreferences( this.prefs, KEY_GAINTYPE );
+		ggGainType.setPreferences( prefs, KEY_GAINTYPE );
 
 		return p;
 	}
@@ -113,9 +114,9 @@ implements RandomAccessRequester
 	throws IOException
 	{
 		prGain			= (float) ut.translate( Param.fromPrefs( prefs, KEY_GAIN, DEFAULT_GAIN ), ParamSpace.spcAmpRel ).val;
-		prNormalize		= prefs.get( KEY_GAINTYPE, "" ).equals( GAIN_NORMALIZED );
-		prFramesWritten	= 0;
-		prTotalSpan		= source.context.getTimeSpan();
+		prNormalize	= prefs.get( KEY_GAINTYPE, "" ).equals( GAIN_NORMALIZED );
+		prFramesWritten= 0;
+		prTotalSpan	= source.context.getTimeSpan();
 		prConsumer		= source.context.getConsumer();
 		prHost			= source.context.getHost();
 		
@@ -125,7 +126,7 @@ implements RandomAccessRequester
 			// request first block
 			prRenderLength	= prTotalSpan.getLength();
 			prNextSpan		= new Span( prTotalSpan.start, Math.min( prTotalSpan.start + BLOCKSIZE, prTotalSpan.stop ));
-			prPeakKnown		= false;
+			prPeakKnown	= false;
 			prMaxAmp		= 0.0f;
 			prProgWeight	= 1.0f / (3 * Math.max( 1, prRenderLength ));
 			return true;

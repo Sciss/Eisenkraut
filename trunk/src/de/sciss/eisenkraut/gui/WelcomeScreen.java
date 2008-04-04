@@ -62,9 +62,9 @@ public class WelcomeScreen
 extends JFrame
 implements HyperlinkListener
 {
-	private final JEditorPane	ggContent;
-	private final JButton		ggClose;
-	private final WelcomeScreen welcome		= this;
+	private final JEditorPane		ggContent;
+	protected final JButton			ggClose;
+	protected final WelcomeScreen	welcome		= this;
 
 	private static final String htmlWelcome1 =
 		"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\" \"http://www.w3.org/TR/REC-html40/loose.dtd\">"+
@@ -142,7 +142,7 @@ implements HyperlinkListener
 				MRJAdapter.openURL( e.getURL().toString() );
 			}
 			catch( Exception e1 ) {
-				GUIUtil.displayError( this, e1, this.getTitle() );
+				GUIUtil.displayError( this, e1, getTitle() );
 			}
 		}
 	}

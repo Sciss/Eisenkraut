@@ -469,7 +469,7 @@ public class PrefsUtil
 						f = MRJAdapter.findApplication( "SCjm" );
 						if( f != null ) f = new File( f.getParentFile(), "scsynth" );
 					}
-					catch( IOException e1 ) {}
+					catch( IOException e1 ) { /* ignore */ }
 				}
 				if( f == null ) {
 					warnings.add( AbstractApplication.getApplication().getResourceString( "errSCSynthAppNotFound" ));
@@ -552,8 +552,8 @@ public class PrefsUtil
 				rect	= new Rectangle( Integer.parseInt( tok.nextToken() ), Integer.parseInt( tok.nextToken() ),
 										 Integer.parseInt( tok.nextToken() ), Integer.parseInt( tok.nextToken() ));
 			}
-			catch( NoSuchElementException e1 ) {}
-			catch( NumberFormatException e2 ) {}
+			catch( NoSuchElementException e1 ) { e1.printStackTrace(); }
+			catch( NumberFormatException e2 ) { e2.printStackTrace(); }
 		}
 		return rect;
 	}
@@ -568,8 +568,8 @@ public class PrefsUtil
 				tok		= new StringTokenizer( value );
 				pt		= new Point( Integer.parseInt( tok.nextToken() ), Integer.parseInt( tok.nextToken() ));
 			}
-			catch( NoSuchElementException e1 ) {}
-			catch( NumberFormatException e2 ) {}
+			catch( NoSuchElementException e1 ) { e1.printStackTrace(); }
+			catch( NumberFormatException e2 ) { e2.printStackTrace(); }
 		}
 		return pt;
 	}
@@ -584,8 +584,8 @@ public class PrefsUtil
 				tok		= new StringTokenizer( value );
 				dim		= new Dimension( Integer.parseInt( tok.nextToken() ), Integer.parseInt( tok.nextToken() ));
 			}
-			catch( NoSuchElementException e1 ) {}
-			catch( NumberFormatException e2 ) {}
+			catch( NoSuchElementException e1 ) { e1.printStackTrace(); }
+			catch( NumberFormatException e2 ) { e2.printStackTrace(); }
 		}
 		return dim;
 	}
@@ -635,7 +635,7 @@ public class PrefsUtil
 			prefsStroke = KeyStroke.getKeyStroke( Integer.parseInt( prefsValue.substring( i+1 )),
 												  Integer.parseInt( prefsValue.substring( 0, i )));
 		}
-		catch( NumberFormatException e1 ) {}
+		catch( NumberFormatException e1 ) { e1.printStackTrace(); }
 
 		return prefsStroke;
 	}

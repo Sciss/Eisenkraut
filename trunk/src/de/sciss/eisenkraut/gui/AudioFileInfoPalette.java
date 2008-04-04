@@ -39,6 +39,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 
 import de.sciss.eisenkraut.Main;
@@ -74,11 +76,11 @@ extends AppWindow
 implements	DynamicListening, de.sciss.app.DocumentListener, ParamField.Listener,
 			TimelineListener, PropertyChangeListener
 {
-	private Session				doc;
+	protected Session			doc;
 	private AudioFileDescr		afd;
 	private final JLabel		lbName;
 	private final ParamField	ggRate;
-	private final JTextArea		ggComment;
+	protected final JTextArea	ggComment;
 	private final SpringPanel	p;
 	
 	/**
@@ -128,10 +130,10 @@ implements	DynamicListening, de.sciss.app.DocumentListener, ParamField.Listener,
 				}
 			}
 		});
-		ggScroll	= new JScrollPane( ggComment, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-												  JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
+		ggScroll	= new JScrollPane( ggComment, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+		        	                   			  ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER );
 		lb			= new JLabel( getResourceString( "labelComment" ));
-		lb.setVerticalAlignment( JLabel.TOP );
+		lb.setVerticalAlignment( SwingConstants.TOP );
 		p.gridAdd( lb, 0, 2 );
 		ggComment.setLineWrap( true );
 		ggComment.setWrapStyleWord( true );
@@ -177,9 +179,9 @@ implements	DynamicListening, de.sciss.app.DocumentListener, ParamField.Listener,
 		super.dispose();
 	}
 	
-	public void updateDocumentName( Session doc )
+	public void updateDocumentName( Session aDoc )
 	{
-		if( isVisible() && (this.doc == doc) ) {
+		if( isVisible() && (doc == aDoc) ) {
 			setDocumentName();
 		}
 	}
@@ -229,7 +231,7 @@ implements	DynamicListening, de.sciss.app.DocumentListener, ParamField.Listener,
 		}
 	}
 	
-	private String getResourceString( String key )
+	protected String getResourceString( String key )
 	{
 		return AbstractApplication.getApplication().getResourceString( key );
 	}
@@ -276,9 +278,9 @@ implements	DynamicListening, de.sciss.app.DocumentListener, ParamField.Listener,
 		}
 	}
 
-	public void timelineSelected( TimelineEvent e ) {}
-	public void timelinePositioned( TimelineEvent e ) {}
-	public void timelineScrolled( TimelineEvent e ) {}
+	public void timelineSelected( TimelineEvent e ) { /* empty */ }
+	public void timelinePositioned( TimelineEvent e ) { /* empty */ }
+	public void timelineScrolled( TimelineEvent e ) { /* empty */ }
 
 // ---------------- NumberListener interface ---------------- 
 
@@ -292,7 +294,7 @@ implements	DynamicListening, de.sciss.app.DocumentListener, ParamField.Listener,
 //			doc.timeline.setRate( this, ggRate.getValue().val );	// XXX should be undoable edit
 	}
     
-	public void paramSpaceChanged( ParamField.Event e ) {}
+	public void paramSpaceChanged( ParamField.Event e ) { /* empty */ }
 
 // ---------------- DocumentListener interface ---------------- 
 
@@ -301,6 +303,6 @@ implements	DynamicListening, de.sciss.app.DocumentListener, ParamField.Listener,
 		updateSchnucki( (Session) e.getDocument() );
 	}
 
-	public void documentAdded( de.sciss.app.DocumentEvent e ) {}
-	public void documentRemoved( de.sciss.app.DocumentEvent e ) {}
+	public void documentAdded( de.sciss.app.DocumentEvent e ) { /* empty */ }
+	public void documentRemoved( de.sciss.app.DocumentEvent e ) { /* empty */ }
 }

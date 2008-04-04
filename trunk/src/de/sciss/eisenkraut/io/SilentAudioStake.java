@@ -143,14 +143,18 @@ extends AudioStake
 	
 	public void flush()
 	throws IOException
-	{}
+	{
+		 /* empty */ 
+	}
 	
 	public void addToCache( CacheManager cm )
-	{}
-	
-	public void addBufferReadMessages( OSCBundle bndl, Span span, Buffer[] bufs, int bufOff )
 	{
-		final int	len			= (int) span.getLength();
+		 /* empty */ 
+	}
+	
+	public void addBufferReadMessages( OSCBundle bndl, Span s, Buffer[] bufs, int bufOff )
+	{
+		final int	len			= (int) s.getLength();
 		if( len == 0 ) return;
 
 		for( int i = 0; i < bufs.length; i++ ) {

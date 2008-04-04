@@ -33,7 +33,10 @@ package de.sciss.app;
 
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.util.List;
+
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
@@ -80,9 +83,9 @@ extends javax.swing.undo.UndoManager
 
 	private AbstractAction	debugAction	= null;
 
-	protected final Document	doc;
+	private final Document	doc;
 
-	private final String undoText, redoText;
+	protected final String undoText, redoText;
 
 	/*
 	 *	The concept of pendingEdits is that
@@ -124,12 +127,12 @@ extends javax.swing.undo.UndoManager
 	
 	protected AbstractAction createUndoAction()
 	{
-		return new actionUndoClass();
+		return new ActionUndo();
 	}
 	
 	protected AbstractAction createRedoAction()
 	{
-		return new actionRedoClass();
+		return new ActionRedo();
 	}
 
 	/**
@@ -160,10 +163,10 @@ extends javax.swing.undo.UndoManager
 	 *
 	 *  @return <code>Action</code> suitable for attaching to a <code>JMenuItem</code>.
 	 */
-	public synchronized Action getDebugDumpAction()
+	public Action getDebugDumpAction()
 	{
 		if( debugAction == null ) {
-			debugAction = new actionDebugDump();
+			debugAction = new ActionDebugDump();
 		}
 	
 		return debugAction;
@@ -285,10 +288,30 @@ extends javax.swing.undo.UndoManager
 		if( !text.equals( redoAction.getValue( Action.NAME ))) redoAction.putValue( Action.NAME, text );
 	}
 
-	protected class actionUndoClass
+	protected UndoableEdit editToBeRedone()
+	{
+		return super.editToBeRedone();
+	}
+
+	protected UndoableEdit editToBeUndone()
+	{
+		return super.editToBeUndone();
+	}
+	
+	public Document getDocument()
+	{
+		return doc;
+	}
+	
+	protected List getEdits()
+	{
+		return edits;
+	}
+
+	protected class ActionUndo
 	extends AbstractAction
 	{
-		protected actionUndoClass()
+		protected ActionUndo()
 		{
 			super( undoText );
 			putValue( ACCELERATOR_KEY, KeyStroke.getKeyStroke( KeyEvent.VK_Z,
@@ -306,16 +329,16 @@ extends javax.swing.undo.UndoManager
 		}
 	}
 
-	protected class actionRedoClass
+	protected class ActionRedo
 	extends AbstractAction
 	{
 //		private final String menuText = doc.getApplication().getResourceString( "menuRedo" );
 
-		protected actionRedoClass()
+		protected ActionRedo()
 		{
 			super( redoText );
 			putValue( ACCELERATOR_KEY, KeyStroke.getKeyStroke( KeyEvent.VK_Z,
-					  Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() + KeyEvent.SHIFT_MASK ));
+					  Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() + InputEvent.SHIFT_MASK ));
 		}
 
 		public void actionPerformed( ActionEvent e )
@@ -329,17 +352,17 @@ extends javax.swing.undo.UndoManager
 		}
 	}
 
-	private class actionDebugDump
+	private class ActionDebugDump
 	extends AbstractAction
 	{
-		private actionDebugDump()
+		protected ActionDebugDump()
 		{
 			super( "Dump Undo History" );
 		}
 
 		public void actionPerformed( ActionEvent e )
 		{
-			final int			num			= edits.size();
+			final int			num			= getEdits().size();
 			final UndoableEdit	redoEdit	= editToBeRedone();
 			final UndoableEdit	undoEdit	= editToBeUndone();
 
@@ -348,7 +371,7 @@ extends javax.swing.undo.UndoManager
 			System.err.println( "Undo buffer contains "+num+" edits." );
 			
 			for( int i = 0; i < num; i++ ) {
-				edit = (UndoableEdit) edits.get( i );
+				edit = (UndoableEdit) getEdits().get( i );
 				if( edit == redoEdit ) System.err.print( "R" );
 				else if( edit == undoEdit ) System.err.print( "U" );
 				else System.err.print( " " );

@@ -204,10 +204,10 @@ implements PerformableEdit
 		for( int i = 0; i < collToPerform.size(); i++ ) {
 			edit = (PerformableEdit) collToPerform.get( i );
 			edit.perform();
-			this.addEdit( edit );
+			addEdit( edit );
 		}
 		collToPerform = null;
-//		this.end();
+//		end();
 		
 		return this;
 	}

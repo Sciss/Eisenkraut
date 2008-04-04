@@ -15,30 +15,34 @@ extends de.sciss.app.UndoManager
 
 	protected AbstractAction createUndoAction()
 	{
-		return new actionUndoProcClass();
+		return new ActionUndoProc();
 	}
 	
 	protected AbstractAction createRedoAction()
 	{
-		return new actionRedoProcClass();
+		return new ActionRedoProc();
 	}
 	
-	private class actionUndoProcClass
-	extends actionUndoClass
+	private class ActionUndoProc
+	extends ActionUndo
 	{
+		protected ActionUndoProc() { /* empty */ }
+
 		public void actionPerformed( ActionEvent e )
 		{
-			if( !((Session) doc).checkProcess() ) return;
+			if( !((Session) getDocument()).checkProcess() ) return;
 			super.actionPerformed( e );
 		}
 	}
 
-	private class actionRedoProcClass
-	extends actionRedoClass
+	private class ActionRedoProc
+	extends ActionRedo
 	{
+		protected ActionRedoProc() { /* empty */ }
+
 		public void actionPerformed( ActionEvent e )
 		{
-			if( !((Session) doc).checkProcess() ) return;
+			if( !((Session) getDocument()).checkProcess() ) return;
 			super.actionPerformed( e );
 		}
 	}

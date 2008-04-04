@@ -46,6 +46,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
+import javax.swing.ScrollPaneConstants;
 
 import de.sciss.app.AbstractApplication;
 import de.sciss.app.Application;
@@ -136,9 +137,9 @@ implements	RenderConsumer, RenderHost,
 		super.dispose();
 	}
 
-	public void process( String plugInClassName, Session doc, boolean forceDisplay, boolean blockDisplay )
+	public void process( String plugInClassName, Session aDoc, boolean forceDisplay, boolean blockDisplay )
 	{
-		this.doc	= doc;
+		this.doc	= aDoc;
 
 		final JComponent view;
 
@@ -194,8 +195,8 @@ implements	RenderConsumer, RenderHost,
 	private void createGadgets( int flags )
 	{
 		bottomPanel		= createBottomPanel( flags );
-		ggSettingsPane	= new JScrollPane( JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-										   JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
+		ggSettingsPane	= new JScrollPane( ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+		              	                   ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER );
 	}
 
 	/*
@@ -206,13 +207,13 @@ implements	RenderConsumer, RenderHost,
 	 */
 	private JComponent createBottomPanel( int flags )
 	{
-		JPanel		bottomPanel;
+		final JPanel panel;
 
 		actionClose		= new ActionClose(  getResourceString( "buttonClose" ));
 //		actionCancel	= new actionCancelClass( getResourceString( "buttonCancel" ));
 		actionRender	= new ActionRender( getResourceString( "buttonRender" ));
 		
-		bottomPanel		= new JPanel( new FlowLayout( FlowLayout.TRAILING, 4, 2 ));
+		panel		= new JPanel( new FlowLayout( FlowLayout.TRAILING, 4, 2 ));
 //		bottomPanel.setLayout( new BorderLayout() );
 		ggClose			= new JButton( actionClose );
 		GUIUtil.createKeyAction( ggClose, KeyStroke.getKeyStroke( KeyEvent.VK_ESCAPE, 0 ));
@@ -220,12 +221,12 @@ implements	RenderConsumer, RenderHost,
 		GUIUtil.createKeyAction( ggRender, KeyStroke.getKeyStroke( KeyEvent.VK_ENTER, 0 ));
 //		ggRender.setEnabled( false );
 		ggHelp			= new HelpButton();
-		bottomPanel.add( ggClose );
-		bottomPanel.add( ggRender );
-		bottomPanel.add( ggHelp );
-		bottomPanel.add( CoverGrowBox.create() );
+		panel.add( ggClose );
+		panel.add( ggRender );
+		panel.add( ggHelp );
+		panel.add( CoverGrowBox.create() );
 
-		return bottomPanel;
+		return panel;
 	}
 
 //	protected List getProducerTypes()
@@ -296,7 +297,7 @@ implements	RenderConsumer, RenderHost,
 	 *
 	 *	@see	RenderContext#KEY_CONSUMER
 	 */
-	private boolean invokeProducerBegin( ProcessingThread pt, RenderSource source, RenderPlugIn prod )
+	private boolean invokeProducerBegin( ProcessingThread proc, RenderSource source, RenderPlugIn prod )
 	throws IOException
 	{
 //		context.setOption( RenderContext.KEY_CONSUMER, this );
@@ -309,7 +310,7 @@ implements	RenderConsumer, RenderHost,
 	 *	This implementation simply calls
 	 *	<code>prod.producerCancel( source )</code>
 	 */
-	private void invokeProducerCancel( ProcessingThread pt, RenderSource source, RenderPlugIn prod )
+	private void invokeProducerCancel( ProcessingThread proc, RenderSource source, RenderPlugIn prod )
 	throws IOException
 	{
 		prod.producerCancel( source );
@@ -319,7 +320,7 @@ implements	RenderConsumer, RenderHost,
 	 *	This implementation simply calls
 	 *	<code>prod.producerRender( source )</code>
 	 */
-	private boolean invokeProducerRender( ProcessingThread pt, RenderSource source, RenderPlugIn prod )
+	private boolean invokeProducerRender( ProcessingThread proc, RenderSource source, RenderPlugIn prod )
 	throws IOException
 	{
 		return prod.producerRender( source );
@@ -329,7 +330,7 @@ implements	RenderConsumer, RenderHost,
 	 *	This implementation simply calls
 	 *	<code>prod.producerFinish( source )</code>
 	 */
-	private boolean invokeProducerFinish( ProcessingThread pt, RenderSource source, RenderPlugIn prod )
+	private boolean invokeProducerFinish( ProcessingThread proc, RenderSource source, RenderPlugIn prod )
 	throws IOException
 	{
 		return prod.producerFinish( source );
@@ -493,7 +494,7 @@ consc.as.writeFrames( source.audioBlockBuf, source.audioBlockBufOff, source.bloc
 		return success;
 	}
 	
-	private void hideAndDispose()
+	protected void hideAndDispose()
 	{
 		if( ggSettingsPane != null ) ggSettingsPane.setViewportView( null );
 		setVisible( false );
@@ -506,7 +507,7 @@ consc.as.writeFrames( source.audioBlockBuf, source.audioBlockBufOff, source.bloc
 //	}
 	
 	// to be called in event thread
-	private void processStart()
+	protected void processStart()
 	{
 		hideAndDispose();
 	
@@ -565,7 +566,9 @@ consc.as.writeFrames( source.audioBlockBuf, source.audioBlockBufOff, source.bloc
 	
 	public void setProgression( float p )
 	{
-		try { ProcessingThread.update( p ); } catch( ProcessingThread.CancelledException e1 ) {}
+		try {
+			ProcessingThread.update( p );
+		} catch( ProcessingThread.CancelledException e1 ) { /* ignore */ }
 //		doc.getFrame().setProgression( p ); // p * 0.9f;
 		this.progress	= p;
 	}
@@ -657,13 +660,13 @@ consc.as.writeFrames( source.audioBlockBuf, source.audioBlockBufOff, source.bloc
  *	@see	#invokeProducerRender( ProcessingThread, RenderContext, RenderSource, RenderPlugIn )
  *	@see	#invokeProducerFinish( ProcessingThread, RenderContext, RenderSource, RenderPlugIn )
  */
-	public int processRun( ProcessingThread pt )
+	public int processRun( ProcessingThread proc )
 	throws IOException
 	{
-		final RenderContext				context				= (RenderContext) pt.getClientArg( "context" );
+		final RenderContext				rc					= (RenderContext) proc.getClientArg( "context" );
 //		final List						tis					= (List) pt.getClientArg( "tis" );
-		final List						tis					= context.getTrackInfos();
-		final ConsumerContext			consc				= (ConsumerContext) context.getOption( KEY_CONSC );
+		final List						tis					= rc.getTrackInfos();
+		final ConsumerContext			consc				= (ConsumerContext) rc.getOption( KEY_CONSC );
 		final RenderSource				source;
 
 		final Flag						hasSelectedAudio	= new Flag( false );
@@ -693,12 +696,12 @@ consc.as.writeFrames( source.audioBlockBuf, source.audioBlockBufOff, source.bloc
 
 		// --- init ---
 
-		readOffset			= context.getTimeSpan().getStart();
+		readOffset			= rc.getTimeSpan().getStart();
 		
 		at					= consc.doc.getAudioTrail();
-		source				= new RenderSource( context );
+		source				= new RenderSource( rc );
 		
-		if( !AudioTracks.checkSyncedAudio( tis, consc.plugIn.getLengthPolicy() == RenderPlugIn.POLICY_MODIFY, pt, hasSelectedAudio )) return FAILED;
+		if( !AudioTracks.checkSyncedAudio( tis, consc.plugIn.getLengthPolicy() == RenderPlugIn.POLICY_MODIFY, proc, hasSelectedAudio )) return FAILED;
 		source.validAudio	= (consc.plugIn.getAudioPolicy() == RenderPlugIn.POLICY_MODIFY) && hasSelectedAudio.isSet();
 		for( int i = 0; i < tis.size(); i++ ) {
 			ti = (Track.Info) tis.get( i );
@@ -708,33 +711,33 @@ consc.as.writeFrames( source.audioBlockBuf, source.audioBlockBufOff, source.bloc
 			}
 		}
 		source.validMarkers	= (consc.plugIn.getMarkerPolicy() == RenderPlugIn.POLICY_MODIFY) && hasSelectedMarkers;
-		if( source.validMarkers ) source.markers = doc.markers.getCuttedTrail( context.getTimeSpan(), doc.markers.getDefaultTouchMode(), 0 );
+		if( source.validMarkers ) source.markers = doc.markers.getCuttedTrail( rc.getTimeSpan(), doc.markers.getDefaultTouchMode(), 0 );
 		
 		try {
-			if( !invokeProducerBegin( pt, source, plugIn )) return FAILED;
+			if( !invokeProducerBegin( proc, source, plugIn )) return FAILED;
 			consStarted			= true;
-			remainingRead		= context.getTimeSpan().getLength();
-			newOptions			= context.getModifiedOptions();
+			remainingRead		= rc.getTimeSpan().getLength();
+			newOptions			= rc.getModifiedOptions();
 			if( newOptions.contains( RenderContext.KEY_MINBLOCKSIZE )) {
-				val				= context.getOption( RenderContext.KEY_MINBLOCKSIZE );
+				val				= rc.getOption( RenderContext.KEY_MINBLOCKSIZE );
 				minBlockSize	= ((Integer) val).intValue();
 			} else {
 				minBlockSize	= 1;
 			}
 			if( newOptions.contains( RenderContext.KEY_MAXBLOCKSIZE )) {
-				val				= context.getOption( RenderContext.KEY_MAXBLOCKSIZE );
+				val				= rc.getOption( RenderContext.KEY_MAXBLOCKSIZE );
 				maxBlockSize	= ((Integer) val).intValue();
 			} else {
 				maxBlockSize	= 0x7FFFFF;
 			}
 			if( newOptions.contains( RenderContext.KEY_PREFBLOCKSIZE )) {
-				val				= context.getOption( RenderContext.KEY_PREFBLOCKSIZE );
+				val				= rc.getOption( RenderContext.KEY_PREFBLOCKSIZE );
 				prefBlockSize	= ((Integer) val).intValue();
 			} else {
 				prefBlockSize   = Math.max( minBlockSize, Math.min( maxBlockSize, 1024 ));
 			}
 			if( newOptions.contains( RenderContext.KEY_RANDOMACCESS )) {
-				rar				= (RandomAccessRequester) context.getOption( RenderContext.KEY_RANDOMACCESS );
+				rar				= (RandomAccessRequester) rc.getOption( RenderContext.KEY_RANDOMACCESS );
 				randomAccess	= true;
 			}
 			if( newOptions.contains( RenderContext.KEY_CLIPBOARD )) {
@@ -841,25 +844,25 @@ at.readFrames( inBuf, inOff, source.blockSpan );
 				if( ProcessingThread.shouldCancel() ) break prodLp;
 
 				// --- producer rendering ---
-				if( !invokeProducerRender( pt, source, plugIn )) return FAILED;
+				if( !invokeProducerRender( proc, source, plugIn )) return FAILED;
 			} // while( isRunning() )
 
 			// --- finishing ---
 			consFinished = true;
 			if( ProcessingThread.shouldCancel() ) {
-				invokeProducerCancel( pt, source, plugIn );
+				invokeProducerCancel( proc, source, plugIn );
 				return CANCELLED;
 			} else {
-				return( invokeProducerFinish( pt, source, plugIn ) ? DONE : FAILED );
+				return( invokeProducerFinish( proc, source, plugIn ) ? DONE : FAILED );
 			}
 		}
 		finally {
 			if( consStarted && !consFinished ) {	// on failure cancel rendering and undo edits
 				try {
-					invokeProducerCancel( pt, source, plugIn );
+					invokeProducerCancel( proc, source, plugIn );
 				}
 				catch( IOException e2 ) {
-					pt.setException( e2 );
+					proc.setException( e2 );
 				}
 			}
 			if( source.markers != null ) {
@@ -872,11 +875,11 @@ at.readFrames( inBuf, inOff, source.blockSpan );
 	/**
 	 *	Re-enables the frame components.
 	 */
-	public void processFinished( ProcessingThread pt )
+	public void processFinished( ProcessingThread proc )
 	{
 		ConsumerContext	consc   = (ConsumerContext) context.getOption( KEY_CONSC );
 
-		if( pt.getReturnCode() == DONE ) {
+		if( proc.getReturnCode() == DONE ) {
 			if( consc != null && consc.edit != null ) {
 				consc.edit.perform();
 				consc.edit.end();
@@ -886,8 +889,8 @@ at.readFrames( inBuf, inOff, source.blockSpan );
 			if( consc != null && consc.edit != null ) {
 				consc.edit.cancel();
 			}
-			if( pt.getReturnCode() == FAILED ) {
-				final Object message = pt.getClientArg( "error" );
+			if( proc.getReturnCode() == FAILED ) {
+				final Object message = proc.getClientArg( "error" );
 				if( message != null ) {
 					JOptionPane.showMessageDialog( getWindow(), message, plugIn == null ? null : plugIn.getName(), JOptionPane.ERROR_MESSAGE );
 				}
@@ -896,14 +899,14 @@ at.readFrames( inBuf, inOff, source.blockSpan );
 	}
 
 	// we'll check shouldCancel() from time to time anyway
-	public void processCancel( ProcessingThread context ) {}
+	public void processCancel( ProcessingThread proc ) { /* ignore */ }
 
 // ---------------- Action objects ---------------- 
 
 	private class ActionClose
 	extends AbstractAction
 	{
-		private ActionClose( String text )
+		protected ActionClose( String text )
 		{
 			super( text );
 		}
@@ -916,7 +919,7 @@ at.readFrames( inBuf, inOff, source.blockSpan );
 
 	private class ActionRender extends AbstractAction
 	{
-		private ActionRender( String text )
+		protected ActionRender( String text )
 		{
 			super( text );
 		}
@@ -944,12 +947,14 @@ at.readFrames( inBuf, inOff, source.blockSpan );
 // -------- ConsumerContext internal class --------
 	private static class ConsumerContext
 	{
-		private Session						doc;
-		private RenderPlugIn				plugIn;
-		private AbstractCompoundEdit		edit;
+		protected Session					doc;
+		protected RenderPlugIn				plugIn;
+		protected AbstractCompoundEdit		edit;
 //		private BlendContext				bc;
-		private float						progOff, progWeight;
-		private long						framesWritten;
-		private AudioStake					as;
+		protected float						progOff, progWeight;
+		protected long						framesWritten;
+		protected AudioStake				as;
+		
+		protected ConsumerContext() { /* empty */ }
 	}
 }

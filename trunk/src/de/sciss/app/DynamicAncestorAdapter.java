@@ -88,7 +88,7 @@ extends AncestorAdapter
 	 */
     public DynamicAncestorAdapter( DynamicListening listener )
     {
-        this.dynL = listener;
+        dynL = listener;
 		winL = new WindowAdapter() {
 			public void windowOpened( WindowEvent e )
 			{
@@ -135,17 +135,17 @@ extends AncestorAdapter
 	 *  attached to a window when you register the
 	 *  listener.
 	 *
-	 *  @param  cmp		the <code>JComponent</code> who will be tracked for
+	 *  @param  c		the <code>JComponent</code> who will be tracked for
 	 *					ancestor changes.
 	 *  @see	javax.swing.JComponent#addAncestorListener( AncestorListener )
 	 */
-	public void addTo( JComponent cmp )
+	public void addTo( JComponent c )
 	{
-		if( this.cmp != null ) throw new IllegalStateException( "Already added" );
+		if( cmp != null ) throw new IllegalStateException( "Already added" );
 	
-		this.cmp = cmp;
-		cmp.addAncestorListener( this );
-		learnWindow( cmp.getTopLevelAncestor() );
+		cmp = c;
+		c.addAncestorListener( this );
+		learnWindow( c.getTopLevelAncestor() );
 	}
 	
 	public void remove()

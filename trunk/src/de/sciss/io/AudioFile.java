@@ -1228,9 +1228,9 @@ implements InterleavedStreamFile
 	
 		protected AudioFileHeader() { /* empty */ }
 		
-		protected abstract void readHeader( AudioFileDescr afd ) throws IOException;
-		protected abstract void writeHeader( AudioFileDescr afd ) throws IOException;
-		protected abstract void updateHeader( AudioFileDescr afd ) throws IOException;
+		protected abstract void readHeader( AudioFileDescr descr ) throws IOException;
+		protected abstract void writeHeader( AudioFileDescr descr ) throws IOException;
+		protected abstract void updateHeader( AudioFileDescr descr ) throws IOException;
 		protected abstract long getSampleDataOffset();
 		protected abstract ByteOrder getByteOrder();
 
@@ -1337,7 +1337,7 @@ implements InterleavedStreamFile
 
 		protected AIFFHeader() { /* empty */ }
 		
-		protected void readHeader( AudioFileDescr afd )
+		protected void readHeader( AudioFileDescr descr )
 		throws IOException
 		{
 			long			l1, l2, l3, len;
@@ -1364,11 +1364,11 @@ len = raf.length() - 8;
 				switch( magic ) {
 				case COMM_MAGIC:
 					essentials--;
-					afd.channels		= raf.readShort();	// # of channels
+					descr.channels		= raf.readShort();	// # of channels
 					commSmpNumOffset	= raf.getFilePointer();
-					afd.length			= raf.readInt();	// # of samples
-					afd.bitsPerSample	= raf.readShort();	// # of bits per sample
-					afd.sampleFormat	= AudioFileDescr.FORMAT_INT;   // default, AIFC will be dealt with later
+					descr.length			= raf.readInt();	// # of samples
+					descr.bitsPerSample	= raf.readShort();	// # of bits per sample
+					descr.sampleFormat	= AudioFileDescr.FORMAT_INT;   // default, AIFC will be dealt with later
 //					byteOrder			= ByteOrder.BIG_ENDIAN;   // default, AIFC will be dealt with later
 
 					// suckers never die. perhaps the most stupid data format to store a float:
@@ -1378,7 +1378,7 @@ len = raf.length() - 8;
 					i1					= ((int) (l1 >> 48) & 0x7FFF) - 0x3FFE;
 //					afd.rate			= (float) ((((double) l3 * Math.pow( 2.0, i1 - 48 )) +
 //												    ((double) l2 * Math.pow( 2.0, i1 - 64 ))) * (l1 < 0 ? -1 : 1));
-					afd.rate			= ((l3 * Math.pow( 2.0, i1 - 48 )) +
+					descr.rate			= ((l3 * Math.pow( 2.0, i1 - 48 )) +
 										   (l2 * Math.pow( 2.0, i1 - 64 ))) * (l1 < 0 ? -1 : 1);
 
 					chunkLen -= 18;
@@ -1387,26 +1387,26 @@ len = raf.length() - 8;
 						case NONE_MAGIC:
 							break;
 						case in16_MAGIC:
-							afd.bitsPerSample	= 16;
+							descr.bitsPerSample	= 16;
 							break;
 						case in24_MAGIC:
-							afd.bitsPerSample	= 24;
+							descr.bitsPerSample	= 24;
 							break;
 						case in32_MAGIC:
-							afd.bitsPerSample	= 32;
+							descr.bitsPerSample	= 32;
 							break;
 						case fl32_MAGIC:
 						case FL32_MAGIC:
-							afd.bitsPerSample	= 32;
-							afd.sampleFormat	= AudioFileDescr.FORMAT_FLOAT;
+							descr.bitsPerSample	= 32;
+							descr.sampleFormat	= AudioFileDescr.FORMAT_FLOAT;
 							break;
 						case fl64_MAGIC:
 						case FL64_MAGIC:
-							afd.bitsPerSample	= 64;
-							afd.sampleFormat	= AudioFileDescr.FORMAT_FLOAT;
+							descr.bitsPerSample	= 64;
+							descr.sampleFormat	= AudioFileDescr.FORMAT_FLOAT;
 							break;
 						case in16LE_MAGIC:
-							afd.bitsPerSample	= 16;
+							descr.bitsPerSample	= 16;
 							byteOrder			= ByteOrder.LITTLE_ENDIAN;
 							break;
 						default:
@@ -1424,7 +1424,7 @@ len = raf.length() - 8;
 //					stream.base			= (float) (440.0 * Math.pow( 2, ((float) (((i1 & 0x7F000000) >> 24) -
 //											69) + (float) b1 / 100.0f) / 12.0f ));
 					i1					= raf.readInt();		// char velocityLo, char velocityHi, short gain [dB]
-					afd.setProperty( AudioFileDescr.KEY_GAIN,
+					descr.setProperty( AudioFileDescr.KEY_GAIN,
 									 new Float( Math.exp( (double) (i1 & 0xFFFF) / 20 * Math.log( 10 ))));
 					i1	 				= raf.readShort();		// Sustain-Loop: 0 = no loop, 1 = fwd, 2 = back
 					loop				= i1 != 0;
@@ -1450,7 +1450,7 @@ len = raf.length() - 8;
 					strBuf		= new byte[ 4 ];
 					raf.readFully( strBuf );		// App code
 					chunkLen   -= 4;
-					afd.appCode	= new String( strBuf );
+					descr.appCode	= new String( strBuf );
 					appCodeOff	= raf.getFilePointer();
 					appCodeLen	= chunkLen;
 					break;
@@ -1470,7 +1470,7 @@ commentLp:			for( i = 0; !comment && (i < i1); i++ ) {
 							// the dedicated count field. Logic Pro 6 writes a PString
 							// but leaves count at zero, so this won't get read...
 							raf.readFully( strBuf );
-							afd.setProperty( AudioFileDescr.KEY_COMMENT, new String( strBuf ));
+							descr.setProperty( AudioFileDescr.KEY_COMMENT, new String( strBuf ));
 							if( (i2 & 1) == 1 ) {
 								i2++;
 								raf.readByte();
@@ -1491,7 +1491,7 @@ commentLp:			for( i = 0; !comment && (i < i1); i++ ) {
 					if( !comment ) {
 						strBuf		= new byte[ chunkLen ];
 						raf.readFully( strBuf );
-						afd.setProperty( AudioFileDescr.KEY_COMMENT, new String( strBuf ));
+						descr.setProperty( AudioFileDescr.KEY_COMMENT, new String( strBuf ));
 						chunkLen	= 0;
 						comment		= true;
 					}
@@ -1504,7 +1504,7 @@ commentLp:			for( i = 0; !comment && (i < i1); i++ ) {
 			if( essentials > 0 ) throw new IOException( getResourceString( "errAudioFileIncomplete" ));
 		}
 		
-		protected void writeHeader( AudioFileDescr afd )
+		protected void writeHeader( AudioFileDescr descr )
 		throws IOException
 		{
 			int				i1, i2;
@@ -1516,9 +1516,9 @@ commentLp:			for( i = 0; !comment && (i < i1); i++ ) {
 			Marker			marker;
 			double			d1, d2;
 			long			pos, pos2;
-			boolean			loop;
+			boolean			lp;
 
-			isAIFC = afd.sampleFormat == AudioFileDescr.FORMAT_FLOAT;	// floating point requires AIFC compression extension
+			isAIFC = descr.sampleFormat == AudioFileDescr.FORMAT_FLOAT;	// floating point requires AIFC compression extension
 			raf.writeInt( FORM_MAGIC );
 			raf.writeInt( 0 );				// Laenge ohne FORM-Header (Dateilaenge minus 8); unknown now
 			raf.writeInt( isAIFC ? AIFC_MAGIC : AIFF_MAGIC );
@@ -1534,14 +1534,14 @@ commentLp:			for( i = 0; !comment && (i < i1); i++ ) {
 			raf.writeInt( COMM_MAGIC );
 			pos = raf.getFilePointer();
 			raf.writeInt( 0 );				// not known yet
-			raf.writeShort( afd.channels );
+			raf.writeShort( descr.channels );
 			commSmpNumOffset = raf.getFilePointer();
 			raf.writeInt( 0 );				// updated later
-			raf.writeShort( isAIFC ? 16 : afd.bitsPerSample );	// a quite strange convention ...
+			raf.writeShort( isAIFC ? 16 : descr.bitsPerSample );	// a quite strange convention ...
 
 			// suckers never die.
-			i2		= (afd.rate < 0.0) ? 128 : 0;
-			d2		= Math.abs( afd.rate  );
+			i2		= (descr.rate < 0.0) ? 128 : 0;
+			d2		= Math.abs( descr.rate  );
 			i1		= (int) (Math.log( d2 ) / Math.log( 2 ) + 16383.0) & 0xFFFF;
 			d1		= d2 * (1 << (0x401E-i1));	// Math.pow( 2.0, 0x401E - i1 );
 			raf.writeShort( (((i2 | (i1 >> 8)) & 0xFF) << 8) | (i1 & 0xFF) );
@@ -1549,7 +1549,7 @@ commentLp:			for( i = 0; !comment && (i < i1); i++ ) {
 			raf.writeInt( (int) ((long) ((d1 % 1.0) * 4294967296.0) & 0xFFFFFFFF) );
 
 			if( isAIFC ) {
-				if( afd.bitsPerSample == 32 ) {
+				if( descr.bitsPerSample == 32 ) {
 					str	= fl32_HUMAN;
 					i1	= fl32_MAGIC;
 				} else {
@@ -1582,7 +1582,7 @@ commentLp:			for( i = 0; !comment && (i < i1); i++ ) {
 			raf.writeInt( (69 << 24) | (0 << 16) | 0x007F );	// char: MIDI Note, Detune, LowNote, HighNote
 			
 			// XXX the gain information could be updated in updateHeader()
-			o = afd.getProperty( AudioFileDescr.KEY_GAIN );
+			o = descr.getProperty( AudioFileDescr.KEY_GAIN );
 			if( o != null ) {
 				i1	= (int) (20 * Math.log( ((Float) o).floatValue() ) / Math.log( 10 ) + 0.5);
 			} else {
@@ -1590,24 +1590,24 @@ commentLp:			for( i = 0; !comment && (i < i1); i++ ) {
 			}
 			raf.writeInt( (0x007F << 16) | (i1 & 0xFFFF) );		// char velLo, char velHi, short gain [dB]
 
-			region  = (Region) afd.getProperty( AudioFileDescr.KEY_LOOP );
-			loop	= region != null;
-			raf.writeShort( loop ? 1 : 0 );					// No loop vs. loop forward
-			raf.writeInt( loop ? 0x00010002 : 0 );			// Sustain-Loop Markers
+			region  = (Region) descr.getProperty( AudioFileDescr.KEY_LOOP );
+			lp	= region != null;
+			raf.writeShort( lp ? 1 : 0 );					// No loop vs. loop forward
+			raf.writeInt( lp ? 0x00010002 : 0 );			// Sustain-Loop Markers
 			raf.writeShort( 0 );							// No release loop
 			raf.writeInt( 0 );
 
-			markers  = (List) afd.getProperty( AudioFileDescr.KEY_MARKERS );
+			markers  = (List) descr.getProperty( AudioFileDescr.KEY_MARKERS );
 			if( markers == null ) markers = new ArrayList();
 			// MARK Chunk
-			if( loop || !markers.isEmpty() ) {
+			if( lp || !markers.isEmpty() ) {
 				raf.writeInt( MARK_MAGIC );
 				pos = raf.getFilePointer();
 				raf.writeInt( 0 );				// not known yet
-				i1	= markers.size() + (loop ? 2 : 0);
+				i1	= markers.size() + (lp ? 2 : 0);
 				raf.writeShort( i1 );
 				i2	= 1;					// ascending marker ID
-				if( loop ) {
+				if( lp ) {
 					raf.writeShort( i2++ );						// loop start ID
 					raf.writeInt( (int) region.span.getStart() );	// sample offset
 					raf.writeLong( 0x06626567206C7000L );		// Pascal style String: "beg lp"
@@ -1636,7 +1636,7 @@ commentLp:			for( i = 0; !comment && (i < i1); i++ ) {
 			}
 
 			// COMT Chunk
-			str = (String) afd.getProperty( AudioFileDescr.KEY_COMMENT );
+			str = (String) descr.getProperty( AudioFileDescr.KEY_COMMENT );
 			if( (str != null) && (str.length() > 0) ) {
 				raf.writeInt( COMT_MAGIC );
 				raf.writeInt( (11 + str.length()) & ~1 );
@@ -1653,11 +1653,11 @@ commentLp:			for( i = 0; !comment && (i < i1); i++ ) {
 			}
 
 			// APPL Chunk
-			strBuf	= (byte[]) afd.getProperty( AudioFileDescr.KEY_APPCODE );
-			if( (afd.appCode != null) && (strBuf != null) ) {
+			strBuf	= (byte[]) descr.getProperty( AudioFileDescr.KEY_APPCODE );
+			if( (descr.appCode != null) && (strBuf != null) ) {
 				raf.writeInt( APPL_MAGIC );
 				raf.writeInt( 4 + strBuf.length );
-				raf.write( afd.appCode.getBytes(), 0, 4 );
+				raf.write( descr.appCode.getBytes(), 0, 4 );
 				raf.write( strBuf );
 			}
 			
@@ -1669,10 +1669,10 @@ commentLp:			for( i = 0; !comment && (i < i1); i++ ) {
 			raf.writeInt( 0 );		// block size (?!)
 			sampleDataOffset = raf.getFilePointer();
 			
-			updateHeader( afd );
+			updateHeader( descr );
 		}
 		
-		protected void updateHeader( AudioFileDescr afd )
+		protected void updateHeader( AudioFileDescr descr )
 		throws IOException
 		{
 			final long oldPos	= raf.getFilePointer();
@@ -1685,7 +1685,7 @@ commentLp:			for( i = 0; !comment && (i < i1); i++ ) {
 			}
 			if( len >= commSmpNumOffset + 4 ) {
 				raf.seek( commSmpNumOffset );
-				raf.writeInt( (int) afd.length );								// COMM: Sample-Num
+				raf.writeInt( (int) descr.length );								// COMM: Sample-Num
 			}
 			if( len >= ssndLengthOffset + 4 ) {
 				raf.seek( ssndLengthOffset );
@@ -1824,10 +1824,10 @@ commentLp:			for( i = 0; !comment && (i < i1); i++ ) {
 
 		protected WAVEHeader() { /* empty */ }
 		
-		protected void readHeader( AudioFileDescr afd )
+		protected void readHeader( AudioFileDescr descr )
 		throws IOException
 		{
-			int		i, i1, i2, i3, chunkLen, essentials, magic, dataLen = 0, bytesPerFrame = 0;
+			int		i, i1, i2, i3, chunkLen, essentials, magic, dataLen = 0, bpf = 0;
 			long	len;
 
 			raf.readInt();		// RIFF
@@ -1849,28 +1849,28 @@ len	= raf.length() - 8;
 				case FMT_MAGIC:
 					essentials--;
 					i					= readLittleUShort();		// format
-					afd.channels		= readLittleUShort();		// # of channels
+					descr.channels		= readLittleUShort();		// # of channels
 					i1					= readLittleInt();			// sample rate (integer)
-					afd.rate			= i1;
+					descr.rate			= i1;
 					i2					= readLittleInt();			// bytes per frame and second (=#chan * #bits/8 * rate)
-					bytesPerFrame		= readLittleUShort();		// bytes per frame (=#chan * #bits/8)
-					afd.bitsPerSample	= readLittleUShort();		// # of bits per sample
-					if( ((afd.bitsPerSample & 0x07) != 0) ||
-						((afd.bitsPerSample >> 3) * afd.channels != bytesPerFrame) ||
-						((afd.bitsPerSample >> 3) * afd.channels * i1 != i2) ) {
+					bpf		= readLittleUShort();		// bytes per frame (=#chan * #bits/8)
+					descr.bitsPerSample	= readLittleUShort();		// # of bits per sample
+					if( ((descr.bitsPerSample & 0x07) != 0) ||
+						((descr.bitsPerSample >> 3) * descr.channels != bpf) ||
+						((descr.bitsPerSample >> 3) * descr.channels * i1 != i2) ) {
 											
 						throw new IOException( getResourceString( "errAudioFileEncoding" ));
 					}
-					unsignedPCM			= bytesPerFrame == 1;
+					unsignedPCM			= bpf == 1;
 
 					chunkLen -= 16;
 
 					switch( i ) {
 					case FORMAT_PCM:
-						afd.sampleFormat = AudioFileDescr.FORMAT_INT;
+						descr.sampleFormat = AudioFileDescr.FORMAT_INT;
 						break;
 					case FORMAT_FLOAT:
-						afd.sampleFormat = AudioFileDescr.FORMAT_FLOAT;
+						descr.sampleFormat = AudioFileDescr.FORMAT_FLOAT;
 						break;
 					case FORMAT_EXT:
 						if( chunkLen < 24 ) throw new IOException( getResourceString( "errAudioFileIncomplete" ));
@@ -1879,10 +1879,10 @@ len	= raf.length() - 8;
 						i2 = readLittleUShort();	// # valid bits per sample
 						raf.readInt();				// channel mask, ignore
 						i3 = readLittleUShort();	// GUID first two bytes
-						if( (i2 != afd.bitsPerSample) ||
+						if( (i2 != descr.bitsPerSample) ||
 							((i3 != FORMAT_PCM) &&
 							(i3 != FORMAT_FLOAT)) ) throw new IOException( getResourceString( "errAudioFileEncoding" ));
-						afd.sampleFormat = i3 == FORMAT_PCM ? AudioFileDescr.FORMAT_INT : AudioFileDescr.FORMAT_FLOAT;
+						descr.sampleFormat = i3 == FORMAT_PCM ? AudioFileDescr.FORMAT_INT : AudioFileDescr.FORMAT_FLOAT;
 						chunkLen -= 10;
 						break;
 					default:
@@ -1917,7 +1917,7 @@ len	= raf.length() - 8;
 				case INST_MAGIC:
 					raf.readShort();	// skip UnshiftedNode, FineTune
 					i = raf.readByte();	// gain (dB)
-					if( i != 0 ) afd.setProperty( AudioFileDescr.KEY_GAIN, new Float( Math.exp(
+					if( i != 0 ) descr.setProperty( AudioFileDescr.KEY_GAIN, new Float( Math.exp(
 						(double) i / 20 * Math.log( 10 ))));
 					chunkLen -= 3;
 					break;
@@ -1928,10 +1928,10 @@ len	= raf.length() - 8;
 			} // for( essentials = 2; (len > 0) && (essentials > 0); )
 			if( essentials > 0 ) throw new IOException( getResourceString( "errAudioFileIncomplete" ));
 			
-			afd.length	= dataLen / bytesPerFrame;
+			descr.length	= dataLen / bpf;
 		}
 		
-		protected void writeHeader( AudioFileDescr afd )
+		protected void writeHeader( AudioFileDescr descr )
 		throws IOException
 		{
 			int				i, i1, i2, i3;
@@ -1942,7 +1942,7 @@ len	= raf.length() - 8;
 			long			pos, pos2;
 			Object			o;
 
-			isFloat = afd.sampleFormat == AudioFileDescr.FORMAT_FLOAT;	// floating point requires FACT extension
+			isFloat = descr.sampleFormat == AudioFileDescr.FORMAT_FLOAT;	// floating point requires FACT extension
 			raf.writeInt( RIFF_MAGIC );
 			raf.writeInt( 0 );				// Laenge ohne RIFF-Header (Dateilaenge minus 8); unknown now
 			raf.writeInt( WAVE_MAGIC );
@@ -1951,13 +1951,13 @@ len	= raf.length() - 8;
 			raf.writeInt( FMT_MAGIC );
 			writeLittleInt( isFloat ? 18 : 16 );	// FORMAT_FLOAT has extension of size 0
 			writeLittleShort( isFloat ? FORMAT_FLOAT : FORMAT_PCM );
-			writeLittleShort( afd.channels );
-			i1 = (int) (afd.rate + 0.5);
+			writeLittleShort( descr.channels );
+			i1 = (int) (descr.rate + 0.5);
 			writeLittleInt( i1 );
-			i2 = (afd.bitsPerSample >> 3) * afd.channels;
+			i2 = (descr.bitsPerSample >> 3) * descr.channels;
 			writeLittleInt( i1 * i2 );
 			writeLittleShort( i2 );
-			writeLittleShort( afd.bitsPerSample );
+			writeLittleShort( descr.bitsPerSample );
 			
 			if( isFloat ) raf.writeShort( 0 );
 
@@ -1970,8 +1970,8 @@ len	= raf.length() - 8;
 			}
 			
 			// cue Chunk
-			markers  = (List) afd.getProperty( AudioFileDescr.KEY_MARKERS );
-			regions  = (List) afd.getProperty( AudioFileDescr.KEY_REGIONS );
+			markers  = (List) descr.getProperty( AudioFileDescr.KEY_MARKERS );
+			regions  = (List) descr.getProperty( AudioFileDescr.KEY_REGIONS );
 			if( ((markers != null) && !markers.isEmpty()) || ((regions != null) && !regions.isEmpty()) ) {
 				if( markers == null ) markers = new ArrayList();
 				if( regions == null ) regions = new ArrayList();
@@ -2047,12 +2047,12 @@ len	= raf.length() - 8;
 			} // if marker or region list not empty
 
 			// smpl Chunk
-			region  = (Region) afd.getProperty( AudioFileDescr.KEY_LOOP );
+			region  = (Region) descr.getProperty( AudioFileDescr.KEY_LOOP );
 			if( region != null ) {
 				raf.writeInt( SMPL_MAGIC );
 				writeLittleInt( 36 + 24 );
 				raf.writeLong( 0 );		// dwManufacturer, dwProduct
-				writeLittleInt( (int) (1.0e9 / afd.rate + 0.5) );	// dwSamplePeriod
+				writeLittleInt( (int) (1.0e9 / descr.rate + 0.5) );	// dwSamplePeriod
 				writeLittleInt( 69 );	// dwMIDIUnityNote
 				raf.writeInt( 0 );		// dwMIDIPitchFraction
 				raf.writeLong( 0 );		// dwSMPTEFormat, dwSMPTEOffset
@@ -2067,7 +2067,7 @@ len	= raf.length() - 8;
 			}
 
 			// inst Chunk
-			o = afd.getProperty( AudioFileDescr.KEY_GAIN );
+			o = descr.getProperty( AudioFileDescr.KEY_GAIN );
 			if( o != null ) {
 				i1	= Math.max( -64, Math.min( 63, (int) (20 * Math.log( ((Float) o).floatValue() ) / Math.log( 10 ) + 0.5) ));
 				raf.writeInt( INST_MAGIC );
@@ -2084,10 +2084,10 @@ len	= raf.length() - 8;
 			raf.writeInt( 0 );
 			sampleDataOffset = raf.getFilePointer();
 			
-			updateHeader( afd );
+			updateHeader( descr );
 		}
 		
-		protected void updateHeader( AudioFileDescr afd )
+		protected void updateHeader( AudioFileDescr descr )
 		throws IOException
 		{
 			long oldPos	= raf.getFilePointer();
@@ -2100,7 +2100,7 @@ len	= raf.length() - 8;
 			}
 			if( isFloat && (len >= factSmpNumOffset + 4) ) {
 				raf.seek( factSmpNumOffset );
-				writeLittleInt( (int) (afd.length * afd.channels) );			// fact: Sample-Num XXX check multich.!
+				writeLittleInt( (int) (descr.length * descr.channels) );			// fact: Sample-Num XXX check multich.!
 			}
 			if( len >= dataLengthOffset + 4 ) {
 				raf.seek( dataLengthOffset );
@@ -2267,7 +2267,7 @@ len	= raf.length() - 8;
 		
 		protected SNDHeader() { /* empty */ }
 		
-		protected void readHeader( AudioFileDescr afd )
+		protected void readHeader( AudioFileDescr descr )
 		throws IOException
 		{
 			int		i1, i2;
@@ -2277,63 +2277,63 @@ len	= raf.length() - 8;
 			sampleDataOffset= raf.readInt();
 			i2				= raf.readInt();
 			i1				= raf.readInt();
-			afd.rate		= raf.readInt();
-			afd.channels	= raf.readInt();
+			descr.rate		= raf.readInt();
+			descr.channels	= raf.readInt();
 			str				= readNullTermString();
 			
-			if( str.length() > 0 ) afd.setProperty( AudioFileDescr.KEY_COMMENT, str );
+			if( str.length() > 0 ) descr.setProperty( AudioFileDescr.KEY_COMMENT, str );
 
 			switch( i1 ) {
 			case 2:	// 8 bit linear
-				afd.bitsPerSample	= 8;
-				afd.sampleFormat	= AudioFileDescr.FORMAT_INT;
+				descr.bitsPerSample	= 8;
+				descr.sampleFormat	= AudioFileDescr.FORMAT_INT;
 				break;
 			case 3:	// 16 bit linear
-				afd.bitsPerSample	= 16;
-				afd.sampleFormat	= AudioFileDescr.FORMAT_INT;
+				descr.bitsPerSample	= 16;
+				descr.sampleFormat	= AudioFileDescr.FORMAT_INT;
 				break;
 			case 4:	// 24 bit linear
-				afd.bitsPerSample	= 24;
-				afd.sampleFormat	= AudioFileDescr.FORMAT_INT;
+				descr.bitsPerSample	= 24;
+				descr.sampleFormat	= AudioFileDescr.FORMAT_INT;
 				break;
 			case 5:	// 32 bit linear
-				afd.bitsPerSample	= 32;
-				afd.sampleFormat	= AudioFileDescr.FORMAT_INT;
+				descr.bitsPerSample	= 32;
+				descr.sampleFormat	= AudioFileDescr.FORMAT_INT;
 				break;
 			case 6:	// 32 bit float
-				afd.bitsPerSample	= 32;
-				afd.sampleFormat	= AudioFileDescr.FORMAT_FLOAT;
+				descr.bitsPerSample	= 32;
+				descr.sampleFormat	= AudioFileDescr.FORMAT_FLOAT;
 				break;
 			case 7:	// 64 bit float
-				afd.bitsPerSample	= 64;
-				afd.sampleFormat	= AudioFileDescr.FORMAT_FLOAT;
+				descr.bitsPerSample	= 64;
+				descr.sampleFormat	= AudioFileDescr.FORMAT_FLOAT;
 				break;
 			default:
 				throw new IOException( getResourceString( "errAudioFileEncoding" ));
 			}
 
-			afd.length	= i2 / (((afd.bitsPerSample + 7) >> 3) * afd.channels);
+			descr.length	= i2 / (((descr.bitsPerSample + 7) >> 3) * descr.channels);
 		}
 		
-		protected void writeHeader( AudioFileDescr afd )
+		protected void writeHeader( AudioFileDescr descr )
 		throws IOException
 		{
 			String str;
 		
-			str					= (String) afd.getProperty( AudioFileDescr.KEY_COMMENT );
+			str					= (String) descr.getProperty( AudioFileDescr.KEY_COMMENT );
 			sampleDataOffset	= str == null ? 28L : (long) ((28 + str.length()) & ~3);
 			raf.writeInt( SND_MAGIC );
 			raf.writeInt( (int) sampleDataOffset );
 //			raf.writeInt( stream.samples * frameLength );	// len
 			raf.writeInt( 0 );
 
-			if( afd.sampleFormat == AudioFileDescr.FORMAT_INT ) {
-				raf.writeInt( (afd.bitsPerSample >> 3) + 1 );
+			if( descr.sampleFormat == AudioFileDescr.FORMAT_INT ) {
+				raf.writeInt( (descr.bitsPerSample >> 3) + 1 );
 			} else {
-				raf.writeInt( (afd.bitsPerSample >> 5) + 5 );
+				raf.writeInt( (descr.bitsPerSample >> 5) + 5 );
 			}
-			raf.writeInt( (int) (afd.rate + 0.5) );
-			raf.writeInt( afd.channels );
+			raf.writeInt( (int) (descr.rate + 0.5) );
+			raf.writeInt( descr.channels );
 			
 			// comment
 			if( str == null ) {
@@ -2360,7 +2360,7 @@ len	= raf.length() - 8;
 //			updateHeader( afd );
 		}
 		
-		protected void updateHeader( AudioFileDescr afd )
+		protected void updateHeader( AudioFileDescr descr )
 		throws IOException
 		{
 			long oldPos;
@@ -2408,7 +2408,7 @@ len	= raf.length() - 8;
 
 		protected IRCAMHeader() { /* empty */ }
 		
-		protected void readHeader( AudioFileDescr afd )
+		protected void readHeader( AudioFileDescr descr )
 		throws IOException
 		{
 			int				i1, i2, i3;
@@ -2418,34 +2418,34 @@ len	= raf.length() - 8;
 			List			regions		= new ArrayList();
 		
 			raf.readInt();		// IRCAM magic
-			afd.rate		= raf.readFloat();
-			afd.channels	= raf.readInt();
+			descr.rate		= raf.readFloat();
+			descr.channels	= raf.readInt();
 			i1				= raf.readInt();
 
 			switch( i1 ) {
 			case 1:	// 8 bit linear
-				afd.bitsPerSample	= 8;
-				afd.sampleFormat	= AudioFileDescr.FORMAT_INT;
+				descr.bitsPerSample	= 8;
+				descr.sampleFormat	= AudioFileDescr.FORMAT_INT;
 				break;
 			case 2:	// 16 bit linear
-				afd.bitsPerSample	= 16;
-				afd.sampleFormat	= AudioFileDescr.FORMAT_INT;
+				descr.bitsPerSample	= 16;
+				descr.sampleFormat	= AudioFileDescr.FORMAT_INT;
 				break;
 			case 3:	// 24 bit linear; existiert dieser wert offiziell?
-				afd.bitsPerSample	= 24;
-				afd.sampleFormat	= AudioFileDescr.FORMAT_INT;
+				descr.bitsPerSample	= 24;
+				descr.sampleFormat	= AudioFileDescr.FORMAT_INT;
 				break;
 			case 0x40004:	// 32 bit linear
-				afd.bitsPerSample	= 32;
-				afd.sampleFormat	= AudioFileDescr.FORMAT_INT;
+				descr.bitsPerSample	= 32;
+				descr.sampleFormat	= AudioFileDescr.FORMAT_INT;
 				break;
 			case 4:	// 32 bit float
-				afd.bitsPerSample	= 32;
-				afd.sampleFormat	= AudioFileDescr.FORMAT_FLOAT;
+				descr.bitsPerSample	= 32;
+				descr.sampleFormat	= AudioFileDescr.FORMAT_FLOAT;
 				break;
 			case 8:	// 64 bit float
-				afd.bitsPerSample	= 64;
-				afd.sampleFormat	= AudioFileDescr.FORMAT_FLOAT;
+				descr.bitsPerSample	= 64;
+				descr.sampleFormat	= AudioFileDescr.FORMAT_FLOAT;
 				break;
 			default:
 				throw new IOException( getResourceString( "errAudioFileEncoding" ));
@@ -2477,7 +2477,7 @@ len	= raf.length() - 8;
 				case BICSF_COMMENT:
 					strBuf2	= new byte[ i2 ];
 					raf.readFully( strBuf2 );
-					afd.setProperty( AudioFileDescr.KEY_COMMENT, new String( strBuf2 ));
+					descr.setProperty( AudioFileDescr.KEY_COMMENT, new String( strBuf2 ));
 					break;
 				
 				default:
@@ -2487,16 +2487,16 @@ len	= raf.length() - 8;
 			} while( i1 != BICSF_END );
 			
 			if( !regions.isEmpty() ) {
-				afd.setProperty( AudioFileDescr.KEY_REGIONS, regions );
+				descr.setProperty( AudioFileDescr.KEY_REGIONS, regions );
 			}
 			
 			l1				= raf.getFilePointer();
 			sampleDataOffset= (l1 + 1023L) & ~1023L;			// aufgerundet auf ganze kilobyte
 			l1				= raf.length() - sampleDataOffset;  // dataLen in bytes
-			afd.length		= l1 / (((afd.bitsPerSample + 7) >> 3) * afd.channels);
+			descr.length		= l1 / (((descr.bitsPerSample + 7) >> 3) * descr.channels);
 		}
 		
-		protected void writeHeader( AudioFileDescr afd )
+		protected void writeHeader( AudioFileDescr descr )
 		throws IOException
 		{
 			int				i1, i2;
@@ -2507,18 +2507,18 @@ len	= raf.length() - 8;
 			String			str;
 		
 			raf.writeInt( IRCAM_VAXBE_MAGIC );
-			raf.writeFloat( (float) afd.rate );
-			raf.writeInt( afd.channels );
+			raf.writeFloat( (float) descr.rate );
+			raf.writeInt( descr.channels );
 
-			if( (afd.sampleFormat == AudioFileDescr.FORMAT_INT) && (afd.bitsPerSample == 32) ) {
+			if( (descr.sampleFormat == AudioFileDescr.FORMAT_INT) && (descr.bitsPerSample == 32) ) {
 				i1 = 0x40004;
 			} else {
-				i1	= afd.bitsPerSample >> 3;		// 1 = 8bit int, 2 = 16bit lin; 3 = 24 bit, 4 = 32bit float, 8 = 64bit float
+				i1	= descr.bitsPerSample >> 3;		// 1 = 8bit int, 2 = 16bit lin; 3 = 24 bit, 4 = 32bit float, 8 = 64bit float
 			}
 			raf.writeInt( i1 );
 
 			// markers + regions, loop
-			regions  = (List) afd.getProperty( AudioFileDescr.KEY_REGIONS );
+			regions  = (List) descr.getProperty( AudioFileDescr.KEY_REGIONS );
 			if( regions != null && !regions.isEmpty() ) {
 				i1		= (BICSF_CUECODE << 16) + 72;		// short cue-code, short sizeof-cuepoint (64 + 4 + 4)
 				strBuf	= new byte[ 64 ];
@@ -2538,7 +2538,7 @@ len	= raf.length() - 8;
 			}
 			
 			// comment
-			str	= (String) afd.getProperty( AudioFileDescr.KEY_COMMENT );
+			str	= (String) descr.getProperty( AudioFileDescr.KEY_COMMENT );
 			if( str != null ) {
 				i1		= (BICSF_COMMENT << 16) | str.length();
 				raf.writeInt( i1 );
@@ -2552,7 +2552,7 @@ len	= raf.length() - 8;
 			raf.write( strBuf );							// pad until sample offset
 		}
 		
-		protected void updateHeader( AudioFileDescr afd )
+		protected void updateHeader( AudioFileDescr descr )
 		throws IOException
 		{
 			// not necessary
@@ -2576,16 +2576,16 @@ len	= raf.length() - 8;
 		
 		// this never get's called because
 		// retrieveType will never say it's a raw file
-		protected void readHeader( AudioFileDescr afd )
+		protected void readHeader( AudioFileDescr descr )
 		throws IOException
 		{ /* empty */ }
 		
 		// naturally a raw file doesn't have a header
-		protected void writeHeader( AudioFileDescr afd )
+		protected void writeHeader( AudioFileDescr descr )
 		throws IOException
 		{ /* empty */ }
 		
-		protected void updateHeader( AudioFileDescr afd )
+		protected void updateHeader( AudioFileDescr descr )
 		throws IOException
 		{ /* empty */ }
 		

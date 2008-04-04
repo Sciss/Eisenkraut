@@ -83,6 +83,7 @@ implements SessionObject, XMLRepresentation, MapManager.Listener
 
 	public void dispose()
 	{
+		/* empty */ 
 	}
 
 // ---------------- SessionObject interface ---------------- 
@@ -114,10 +115,12 @@ implements SessionObject, XMLRepresentation, MapManager.Listener
 
 	public void mapChanged( MapManager.Event e )
 	{
+		/* empty */ 
 	}
 
 	public void mapOwnerModified( MapManager.Event e )
 	{
+		/* empty */ 
 	}
 
 // ---------------- XMLRepresentation interface ---------------- 

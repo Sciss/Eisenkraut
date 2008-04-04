@@ -94,9 +94,9 @@ extends BasicEvent
 	public boolean incorporate( BasicEvent oldEvent )
 	{
 		if( (oldEvent instanceof DocumentEvent) &&
-			(this.getSource() == oldEvent.getSource()) &&
-			(this.getID() == oldEvent.getID()) &&
-			(this.getDocument() == ((DocumentEvent) oldEvent).getDocument()) ) {
+			(getSource() == oldEvent.getSource()) &&
+			(getID() == oldEvent.getID()) &&
+			(getDocument() == ((DocumentEvent) oldEvent).getDocument()) ) {
 			
 			return true;
 

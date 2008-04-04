@@ -78,8 +78,8 @@ extends BasicUndoableEdit
 		this.source			= source;
 		this.map			= map;
 		this.key			= key;
-		this.newValue		= value;
-		this.oldValue		= map.getValue( key );
+		newValue			= value;
+		oldValue			= map.getValue( key );
 		this.name			= name;
 	}
 
@@ -92,7 +92,7 @@ extends BasicUndoableEdit
 	public PerformableEdit perform()
 	{
 		map.putValue( source, key, newValue );
-		this.source			= this;
+		source			= this;
 		return this;
 	}
 

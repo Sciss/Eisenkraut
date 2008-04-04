@@ -74,7 +74,7 @@ extends AudioStake
 	
 	public void cleanUp()
 	{
-		try { close(); } catch( IOException e1 ) {}
+		try { close(); } catch( IOException e1 ) { /* ignore */ }
 	}
 	
 	private static String getFileName( InterleavedStreamFile f )

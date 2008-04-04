@@ -80,7 +80,7 @@ implements EventManager.Processor, OSCRouter
     private Span						visibleSpan;		// what's being viewed in the TimelineFrame
     private Span						selectionSpan;
 	
-	private final Session				doc;
+    protected final Session				doc;
 
 	/**
 	 *	Name attribute of the object
@@ -94,10 +94,10 @@ implements EventManager.Processor, OSCRouter
 
 	// --- actions ---
 
-	private final actionSelToPosClass	actionPosToSelBeginC	= new actionSelToPosClass( 0.0f, true );
-	private final actionSelToPosClass	actionPosToSelEndC		= new actionSelToPosClass( 1.0f, true );
-	private final actionSelToPosClass	actionPosToSelBegin		= new actionSelToPosClass( 0.0f, false );
-	private final actionSelToPosClass	actionPosToSelEnd		= new actionSelToPosClass( 1.0f, false );
+	private final ActionSelToPos	actionPosToSelBeginC	= new ActionSelToPos( 0.0f, true );
+	private final ActionSelToPos	actionPosToSelEndC		= new ActionSelToPos( 1.0f, true );
+	private final ActionSelToPos	actionPosToSelBegin		= new ActionSelToPos( 0.0f, false );
+	private final ActionSelToPos	actionPosToSelEnd		= new ActionSelToPos( 1.0f, false );
 	
 	private static final String			OSC_TIMELINE			= "timeline";
 	
@@ -571,13 +571,13 @@ implements EventManager.Processor, OSCRouter
 	 *				there were quantization errors. with double seems
 	 *				to be fine. haven't checked with really long files!!
 	 */
-	private class actionSelToPosClass
+	private class ActionSelToPos
 	extends AbstractAction
 	{
 		private final double	weight;
 		private final boolean	deselect;
 	
-		private actionSelToPosClass( double weight, boolean deselect )
+		protected ActionSelToPos( double weight, boolean deselect )
 		{
 			super();
 			

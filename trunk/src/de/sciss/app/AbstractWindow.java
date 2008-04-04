@@ -122,15 +122,15 @@ public interface AbstractWindow
 	public static class Adapter
 	implements Listener
 	{
-		public void windowOpened( Event e ) {}
-		public void windowClosing( Event e ) {}
-		public void windowClosed( Event e ) {}
-		public void windowIconified( Event e ) {}
-		public void windowDeiconified( Event e ) {}
-		public void windowActivated( Event e ) {}
-		public void windowDeactivated( Event e ) {}
-//		public void windowGainedFocus( Event e ) {}
-//		public void windowLostFocus( Event e ) {}
+		public void windowOpened( Event e ) { /* empty */ }
+		public void windowClosing( Event e ) { /* empty */ }
+		public void windowClosed( Event e ) { /* empty */ }
+		public void windowIconified( Event e ) { /* empty */ }
+		public void windowDeiconified( Event e ) { /* empty */ }
+		public void windowActivated( Event e ) { /* empty */ }
+		public void windowDeactivated( Event e ) { /* empty */ }
+//		public void windowGainedFocus( Event e ) { /* empty */ }
+//		public void windowLostFocus( Event e ) { /* empty */ }
 	}
 	
 	public static class Event

@@ -99,7 +99,7 @@ extends AbstractWindowHandler
 
 	private final FloatingPaletteHandler	fph;
 	private final boolean					internalFrames, floating;
-	private final JDesktopPane				desktop;
+	protected final JDesktopPane			desktop;
 	private final MasterFrame				masterFrame;
 //	private final Window					hiddenTopWindow;
 	
@@ -144,7 +144,7 @@ extends AbstractWindowHandler
 //			}
 		}
 		
-		actionCollect	= new actionCollectClass( root.getResourceString( "menuCollectWindows" ));
+		actionCollect	= new ActionCollect( root.getResourceString( "menuCollectWindows" ));
 
 //		MenuGroup	mg;
 //
@@ -399,16 +399,16 @@ extends AbstractWindowHandler
 	{
 		private JMenuBar bar = null;
 		
-		private MasterFrame()
+		protected MasterFrame()
 		{
 			super();
 			
 			setBounds( GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds() );
 		}
 		
-		public void init() {}
+		public void init() { /* empty */ }
 		
-		private void setDefaultMenuBar( JMenuBar m )
+		protected void setDefaultMenuBar( JMenuBar m )
 		{
 			bar = m;
 			setJMenuBar( null );
@@ -424,7 +424,7 @@ extends AbstractWindowHandler
 			getRootPane().revalidate();
 		}
 		
-		public void setDirty( boolean b ) {}
+		public void setDirty( boolean b ) { /* empty */ }
 		
 		public ActionMap getActionMap()
 		{
@@ -457,10 +457,10 @@ extends AbstractWindowHandler
 		}
 	}
 	
-	private class actionCollectClass
+	private class ActionCollect
 	extends AbstractAction
 	{
-		private actionCollectClass( String text )
+		protected ActionCollect( String text )
 		{
 			super( text );
 		}

@@ -65,7 +65,7 @@ implements  DynamicListening, PreferenceChangeListener,
 	private Param							defaultValue	= null;
 
 	private boolean							readPrefs		= true;
-	private boolean							writePrefs		= true;
+	protected boolean						writePrefs		= true;
 
 	/**
 	 *  Constructs a new <code>PrefParamField</code>.

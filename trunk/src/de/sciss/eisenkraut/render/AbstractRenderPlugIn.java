@@ -96,9 +96,9 @@ implements RenderPlugIn
 	/**
 	 *	Sub-classes should call super.init() !
 	 */
-	public void init( Preferences prefs )
+	public void init( Preferences p )
 	{
-		this.prefs	= prefs;
+		this.prefs	= p;
 	}
 
 	/**
@@ -106,6 +106,7 @@ implements RenderPlugIn
 	 */
 	public void dispose()
 	{
+		/* empty */ 
 	}
 	
 	/**
@@ -166,20 +167,20 @@ implements RenderPlugIn
 
 	private void deleteAllTempFiles()
 	{
-		if( collTempFiles != null ) {
-			while( !collTempFiles.isEmpty() ) {
-				deleteTempFile( (AudioFile) collTempFiles.get( 0 ));
+		if( this.collTempFiles != null ) {
+			while( !this.collTempFiles.isEmpty() ) {
+				deleteTempFile( (AudioFile) this.collTempFiles.get( 0 ));
 			}
 		}
 	}
 
 	protected void deleteTempFile( InterleavedStreamFile f )
 	{
-		if( collTempFiles != null ) collTempFiles.remove( f );
+		if( this.collTempFiles != null ) this.collTempFiles.remove( f );
 		try {
 			f.close();
 		}
-		catch( IOException e1 ) {}
+		catch( IOException e1 ) { /* ignore */ }
 		f.getFile().delete();
 	}
 
@@ -197,10 +198,10 @@ implements RenderPlugIn
 		afd.file			= IOUtil.createTempFile( "fsc", ".aif" );
 		af					= AudioFile.openAsWrite( afd );
 		
-		if( collTempFiles == null ) {
-			collTempFiles	= new ArrayList();
+		if( this.collTempFiles == null ) {
+			this.collTempFiles	= new ArrayList();
 		}
-		collTempFiles.add( af );
+		this.collTempFiles.add( af );
 		return af;
 	}
 
@@ -228,7 +229,7 @@ implements RenderPlugIn
 		}
 	}
 
-	protected static void multiply( float[] buf, int off, int len, float value )
+	public static void multiply( float[] buf, int off, int len, float value )
 	{
 		for( int i = off + len; off < i; ) {
 			buf[ off++ ] *= value;
@@ -248,7 +249,7 @@ implements RenderPlugIn
 		}
 	}
 
-	protected static void add( float[] bufA, int offA, float[] bufB, int offB, int len )
+	public static void add( float[] bufA, int offA, float[] bufB, int offB, int len )
 	{
 		for( int i = offA + len; offA < i; ) {
 			bufA[ offA++ ] += bufB[ offB++ ];

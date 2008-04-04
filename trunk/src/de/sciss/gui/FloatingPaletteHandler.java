@@ -66,9 +66,9 @@ implements ActionListener
 	private static final int		TIMEOUT			= 100;
 
     private final Set				palettes		= new HashSet();
-    private final Set				frames			= new HashSet();
+    protected final Set				frames			= new HashSet();
     private final Set				hiddenPalettes	= new HashSet();
-    private final Timer				timer;	// when executed, no frame has gotten focus since current window lost focus
+    protected final Timer			timer;	// when executed, no frame has gotten focus since current window lost focus
     private AbstractWindow			focusedWindow	= null;
 	
 	private static final Map		instances		= new HashMap();	// apps to instances
@@ -313,7 +313,7 @@ timer.restart();
 	
 //    boolean DEBUG_ENTERED = false;
     
-    private void setFocusedWindow( AbstractWindow w )
+    protected void setFocusedWindow( AbstractWindow w )
 	{
 //if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
 //    	System.err.println( "setFocusedWindow " + w );

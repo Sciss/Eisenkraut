@@ -146,9 +146,9 @@ implements DynamicListening, ActionListener
 	public void paintComponent( Graphics g )
 	{
 		final Icon		icn;
-		final Window	win	= SwingUtilities.getWindowAncestor( this );
+		final Window	w	= SwingUtilities.getWindowAncestor( this );
 	
-		if( (win != null) && win.isActive() ) {
+		if( (w != null) && w.isActive() ) {
 			if( getModel().isPressed() ) {
 				icn = icnPressed;
 			} else {

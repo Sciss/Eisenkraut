@@ -51,13 +51,13 @@ extends JPanel
 	
 	public void setTopBorder( boolean b )
 	{
-		this.topBorder	= b;
+		topBorder	= b;
 		repaint();
 	}
 
 	public void setBottomBorder( boolean b )
 	{
-		this.bottomBorder	= b;
+		bottomBorder	= b;
 		repaint();
 	}
 	

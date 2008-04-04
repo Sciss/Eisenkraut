@@ -761,7 +761,7 @@ maxH = Math.max( maxH, (int) r.getHeight() );
 		final int[] valign = new int[] { SwingConstants.TOP, SwingConstants.CENTER, SwingConstants.BOTTOM };
 		MultiStateButton b;
 		final Icon i = new Icon() {
-			public void paintIcon( java.awt.Component c, Graphics g, int x, int y )
+			public void paintIcon( java.awt.Component comp, Graphics g, int x, int y )
 			{
 				g.setColor( Color.red );
 				g.drawRect( x, y, 39, 39 );

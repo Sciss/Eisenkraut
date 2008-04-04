@@ -43,6 +43,7 @@ import java.awt.geom.Point2D;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 
 import de.sciss.app.AbstractApplication;
@@ -84,7 +85,7 @@ import de.sciss.util.ParamSpace;
 public class ObserverPalette
 extends AppWindow
 implements	ParamField.Listener, TimelineListener, DynamicListening, DocumentListener,
-			ActionListener
+			ActionListener, SwingConstants
 {
 	private Session						doc					= null;
 	
@@ -147,7 +148,7 @@ implements	ParamField.Listener, TimelineListener, DynamicListening, DocumentList
 		timeTrans		= new DefaultUnitTranslator();
 		
 		p				= new SpringPanel( 4, 2, 4, 2 );
-		lb				= new JLabel( app.getResourceString( "observerStart" ), JLabel.RIGHT );
+		lb				= new JLabel( app.getResourceString( "observerStart" ), RIGHT );
 		p.gridAdd( lb, 1, 0 );
 		ggTimelineStart	= new ParamField( timeTrans );
 		ggTimelineStart.addSpace( ParamSpace.spcTimeHHMMSS );
@@ -161,7 +162,7 @@ implements	ParamField.Listener, TimelineListener, DynamicListening, DocumentList
 		ggLockStop		= new LockButton( true );
 		ggLockStop.addActionListener( this );
 		p.gridAdd( ggLockStop, 0, 1 );
-		lb				= new JLabel( app.getResourceString( "observerStop" ), JLabel.RIGHT );
+		lb				= new JLabel( app.getResourceString( "observerStop" ), RIGHT );
 		p.gridAdd( lb, 1, 1 );
 		ggTimelineStop	= new ParamField( timeTrans );
 		ggTimelineStop.addSpace( ParamSpace.spcTimeHHMMSS );
@@ -175,7 +176,7 @@ implements	ParamField.Listener, TimelineListener, DynamicListening, DocumentList
 		ggLockLen		= new LockButton( true );
 		ggLockLen.addActionListener( this );
 		p.gridAdd( ggLockLen, 0, 2 );
-		lb				= new JLabel( app.getResourceString( "observerLen" ), JLabel.RIGHT );
+		lb				= new JLabel( app.getResourceString( "observerLen" ), RIGHT );
 		p.gridAdd( lb, 1, 2 );
 		ggTimelineLen	= new ParamField( timeTrans );
 		ggTimelineLen.addSpace( ParamSpace.spcTimeHHMMSS );
@@ -464,8 +465,8 @@ implements	ParamField.Listener, TimelineListener, DynamicListening, DocumentList
 		updateTimeline();
 	}
     
-	public void timelinePositioned( TimelineEvent e ) {}
-    public void timelineScrolled( TimelineEvent e ) {}
+	public void timelinePositioned( TimelineEvent e ) { /* ignored */ }
+    public void timelineScrolled( TimelineEvent e ) { /* ignored */ }
 
 // ---------------- DocumentListener interface ---------------- 
 
@@ -482,8 +483,8 @@ implements	ParamField.Listener, TimelineListener, DynamicListening, DocumentList
 		updateTimeline();
 	}
 
-	public void documentAdded( de.sciss.app.DocumentEvent e ) {}
-	public void documentRemoved( de.sciss.app.DocumentEvent e ) {}
+	public void documentAdded( de.sciss.app.DocumentEvent e ) { /* ignore */ }
+	public void documentRemoved( de.sciss.app.DocumentEvent e ) { /* ignore */ }
 
 // ---------------- internal classes ---------------- 
 

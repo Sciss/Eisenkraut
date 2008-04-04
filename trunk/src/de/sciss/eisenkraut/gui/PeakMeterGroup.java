@@ -217,8 +217,8 @@ implements SwingConstants
 
 	public boolean meterUpdate( float[] peakRMSPairs )
 	{
-		final PeakMeter[]	meters		= this.meters;	// = easy synchronization
-		final int			numMeters	= Math.min( meters.length, peakRMSPairs.length >> 1 );
+		final PeakMeter[]	metersCopy	= meters;	// = easy synchronization
+		final int			numMeters	= Math.min( metersCopy.length, peakRMSPairs.length >> 1 );
 		final long			now			= System.currentTimeMillis();
 		int					dirty		= 0;
 
@@ -227,7 +227,7 @@ implements SwingConstants
 //		synchronized( sync ) {
 			for( int i = 0, j = 0; i < numMeters; i++ ) {
 //				System.out.println( "  " + peakRMSPairs[ j ]);
-				if( meters[ i ].setPeakAndRMS( peakRMSPairs[ j++ ], peakRMSPairs[ j++ ], now )) dirty++;
+				if( metersCopy[ i ].setPeakAndRMS( peakRMSPairs[ j++ ], peakRMSPairs[ j++ ], now )) dirty++;
 			}
 //		}
 		
@@ -256,7 +256,7 @@ implements SwingConstants
 	{
 		removeAll();
 		
-		final PeakMeter[]	meters;
+		final PeakMeter[]	newMeters;
 		final Border		b1		= caption == null ? null : BorderFactory.createEmptyBorder( caption.getAscent(), 1, caption.getDescent(), 1 );
 		final Border		b2		= caption == null ? BorderFactory.createEmptyBorder( 1, 1, 1, 0 ) : BorderFactory.createEmptyBorder( caption.getAscent(), 1, caption.getDescent(), 0 );
 		final int			schnuck1, schnuck2;
@@ -264,20 +264,20 @@ implements SwingConstants
 		schnuck1 = (!border || (captionVisible && (captionPosition == RIGHT))) ? numChannels - 1 : -1;
 		schnuck2 = (captionVisible && (captionPosition == CENTER)) ? (numChannels >> 1) : -1;
 		
-		meters	= new PeakMeter[ numChannels ];
+		newMeters	= new PeakMeter[ numChannels ];
 		for( int ch = 0; ch < numChannels; ch++ ) {
-			meters[ ch ] = new PeakMeter();
+			newMeters[ ch ] = new PeakMeter();
 //			meters[ ch ].setSync( sync );
-			meters[ ch ].setRefreshParent( true );
-			meters[ ch ].setRMSPainted( rmsPainted );
-			meters[ ch ].setHoldPainted( holdPainted );
+			newMeters[ ch ].setRefreshParent( true );
+			newMeters[ ch ].setRMSPainted( rmsPainted );
+			newMeters[ ch ].setHoldPainted( holdPainted );
 			if( (ch == schnuck1) || (ch == schnuck2) ) {
-				if( b1 != null ) meters[ ch ].setBorder( b1 );
+				if( b1 != null ) newMeters[ ch ].setBorder( b1 );
 			} else {
-				meters[ ch ].setBorder( b2 );
+				newMeters[ ch ].setBorder( b2 );
 			}
-			meters[ ch ].setTicks( 101 );
-			add( meters[ ch ]);
+			newMeters[ ch ].setTicks( 101 );
+			add( newMeters[ ch ]);
 		}
 		if( caption != null ) {
 			switch( captionPosition ) {
@@ -294,7 +294,7 @@ implements SwingConstants
 				assert false : captionPosition;
 			}
 		}
-		this.meters = meters;
+		meters = newMeters;
 //		lmm.setMeters( masterMeters );
 		revalidate();
 		repaint();

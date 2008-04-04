@@ -35,6 +35,7 @@ import java.awt.Container;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -62,6 +63,7 @@ import javax.swing.JRootPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
 import javax.swing.Timer;
 
 import de.sciss.jcollider.Buffer;
@@ -87,6 +89,7 @@ import de.sciss.app.Application;
 import de.sciss.app.DynamicAncestorAdapter;
 import de.sciss.app.DynamicPrefChangeManager;
 import de.sciss.app.GraphicsHandler;
+import de.sciss.common.BasicMenuFactory;
 import de.sciss.gui.CoverGrowBox;
 import de.sciss.gui.DoClickAction;
 import de.sciss.gui.GUIUtil;
@@ -129,29 +132,29 @@ implements Constants, ServerListener, NodeListener, OSCRouter,
 
 	private RoutingConfig					rCfg;
 //	private float							volume				= 1.0f;
-	private final Server					server;
-	private final SuperColliderPlayer		player;
+	protected final Server					server;
+	protected final SuperColliderPlayer		player;
 	
 //	private final List						collMeters			= new ArrayList();
 //	private float[]							meterValues			= new float[ 0 ];
-	private final actionRecordClass			actionRecord;
-	private final actionStopClass			actionStop;
-	private final actionAbortClass			actionAbort;
-	private final actionCloseClass			actionClose;
-	private Context							ct					= null;
+	protected final ActionRecord			actionRecord;
+	private final ActionStop				actionStop;
+	private final ActionAbort				actionAbort;
+	private final ActionClose				actionClose;
+	protected Context						ct					= null;
 	private final javax.swing.Timer			meterTimer;
-	private final RecorderDialog			enc_this			= this;
+	protected final RecorderDialog			enc_this			= this;
 //	private final OSCListener				cSetNRespBody;
-	private NodeWatcher						nw;
+	protected NodeWatcher					nw;
 //	private final AudioFileFormatPane		affp;
-	private final TimeoutTimer				timeoutTimer		= new TimeoutTimer( 4000 );
+	protected final TimeoutTimer			timeoutTimer		= new TimeoutTimer( 4000 );
 	private final RecLenTimer				recLenTimer;
-	private boolean							isRecording			= false;
+	protected boolean						isRecording			= false;
 
 //	private final Session					doc;
-	private final DocumentFrame				docFrame;
+	protected final DocumentFrame			docFrame;
 	private final int						numChannels;
-	private final String					encodingString;
+	protected final String					encodingString;
 		
 	private File							result				= null;
 	private boolean							stopCommit			= false;	// true to close dlg after stop
@@ -161,15 +164,15 @@ implements Constants, ServerListener, NodeListener, OSCRouter,
 	
 	private final SuperColliderClient		superCollider;
 	
-	private boolean							clipped				= false;
-	private final JLabel					lbPeak;
+	protected boolean						clipped				= false;
+	protected final JLabel					lbPeak;
 	
 	private static final String				OSC_RECORDER		= "recorder";
 	private final OSCRouterWrapper			osc;
 	
 	private final MutableLong				recFrames			= new MutableLong( 0 );
 	private final JToggleButton				ggMonitoring;
-	private final actionPeakResetClass		actionPeakReset;
+	private final ActionPeakReset			actionPeakReset;
 
 	/**
 	 *	@throws	IOException	if the server isn't running or no valid input routing config exists
@@ -182,7 +185,7 @@ implements Constants, ServerListener, NodeListener, OSCRouter,
 			   true ); // modal
 
 //		this.doc		= doc;
-		this.docFrame	= doc.getFrame();
+		docFrame	= doc.getFrame();
 		superCollider	= SuperColliderClient.getInstance();
 		numChannels		= doc.getAudioTrail().getChannelNum();
 		
@@ -204,8 +207,8 @@ implements Constants, ServerListener, NodeListener, OSCRouter,
 		final InputMap				imap			= rp.getInputMap( JComponent.WHEN_IN_FOCUSED_WINDOW );
 		final ActionMap				amap			= rp.getActionMap();
 		final JButton				ggAbort, ggRecord, ggStop, ggClose;
-		final int					myMeta			= MenuFactory.MENU_SHORTCUT == KeyEvent.CTRL_MASK ?
-			KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK : MenuFactory.MENU_SHORTCUT;	// META on Mac, CTRL+SHIFT on PC
+		final int					myMeta			= BasicMenuFactory.MENU_SHORTCUT == InputEvent.CTRL_MASK ?
+			InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK : BasicMenuFactory.MENU_SHORTCUT;	// META on Mac, CTRL+SHIFT on PC
 
 		// use same encoding as parent document
 		encodingString = (displayAFD.sampleFormat == AudioFileDescr.FORMAT_INT ? "int" : "float") +
@@ -222,20 +225,20 @@ implements Constants, ServerListener, NodeListener, OSCRouter,
 		ggRecordConfig	= new PrefComboBox();
 		ggRecordConfig.setFocusable( false );
 		lbPeak			= new JLabel();
-		actionPeakReset	= new actionPeakResetClass();
+		actionPeakReset	= new ActionPeakReset();
 		ggPeakReset		= new JButton( actionPeakReset );
 		ggPeakReset.setFocusable( false );
 		lbTime			= new TimeLabel();
 		tbMonitoring	= new JToolBar();
 		tbMonitoring.setFloatable( false );
-		ggMonitoring	= new JToggleButton( new actionMonitoringClass() );
+		ggMonitoring	= new JToggleButton( new ActionMonitoring() );
 		ggMonitoring.setFocusable( false );
 		tbMonitoring.add( ggMonitoring );
 		recPane.gridAdd( lbTime, 1, 0, -2, 1 );
-		recPane.gridAdd( new JLabel( getResourceString( "labelRecInputs" ), JLabel.RIGHT ), 0, 1 );
+		recPane.gridAdd( new JLabel( getResourceString( "labelRecInputs" ), SwingConstants.RIGHT ), 0, 1 );
 		recPane.gridAdd( ggRecordConfig, 1, 1, -1, 1 );
 		recPane.gridAdd( tbMonitoring, 2, 1 );
-		recPane.gridAdd( new JLabel( getResourceString( "labelHeadroom" ) + " :", JLabel.RIGHT ), 0, 2 );
+		recPane.gridAdd( new JLabel( getResourceString( "labelHeadroom" ) + " :", SwingConstants.RIGHT ), 0, 2 );
 		recPane.gridAdd( lbPeak, 1, 2 );
 //		recPane.gridAdd( new JLabel( getResourceString( "labelDB" ), JLabel.RIGHT ), 2, 1 );
 		recPane.gridAdd( ggPeakReset, 2, 2, -1, 1 );
@@ -249,10 +252,10 @@ implements Constants, ServerListener, NodeListener, OSCRouter,
 
 		butPane				= new JPanel(); // new FlowLayout( FlowLayout.TRAILING ));
 		butPane.setLayout( new BoxLayout( butPane, BoxLayout.X_AXIS ));
-		actionRecord		= new actionRecordClass();
-		actionStop			= new actionStopClass();
-		actionAbort			= new actionAbortClass();
-		actionClose			= new actionCloseClass();
+		actionRecord		= new ActionRecord();
+		actionStop			= new ActionStop();
+		actionAbort			= new ActionAbort();
+		actionClose			= new ActionClose();
 		butPane.add( new HelpButton( "RecorderDialog" ));
 		butPane.add( Box.createHorizontalGlue() );
 		ggAbort				= new JButton( actionAbort );
@@ -362,7 +365,7 @@ implements Constants, ServerListener, NodeListener, OSCRouter,
 				}
 			}
 		};
-		this.addWindowListener( winListener );
+		addWindowListener( winListener );
 				
 		superCollider.addServerListener( this );
 //		player.addMeterListener( this );
@@ -435,22 +438,22 @@ GUIUtil.setInitialDialogFocus( rp );	// necessary to get keyboard shortcuts work
 	{
 		final String cfgName	= classPrefs.get( KEY_CONFIG, null );
 
-		RoutingConfig rCfg		= null;
+		RoutingConfig newRCfg	= null;
 
 		try {
 			if( cfgName != null && audioPrefs.node( NODE_CONF ).nodeExists( cfgName )) {
-				rCfg	= new RoutingConfig( audioPrefs.node( NODE_CONF ).node( cfgName ));
+				newRCfg	= new RoutingConfig( audioPrefs.node( NODE_CONF ).node( cfgName ));
 			}
 		}
 		catch( BackingStoreException e1 ) {
 			printError( "createRecordConfig", e1 );
 		}
 		
-		if( (rCfg != null) && (rCfg.numChannels == this.numChannels) ) {
-			this.rCfg	= rCfg;
+		if( (newRCfg != null) && (newRCfg.numChannels == numChannels) ) {
+			rCfg	= newRCfg;
 			actionRecord.setEnabled( true );
 		} else {
-			this.rCfg	= null;
+			rCfg	= null;
 			actionRecord.setEnabled( false );
 		}
 		rebuildSynths();
@@ -523,7 +526,7 @@ GUIUtil.setInitialDialogFocus( rp );	// necessary to get keyboard shortcuts work
 		Server.getPrintStream().println( AbstractApplication.getApplication().getResourceString( "errOSCTimeOut" ));
 	}
 
-	private void disposeRecorder()
+	protected void disposeRecorder()
 	{
 		osc.remove();
 		meterTimer.stop();
@@ -562,7 +565,7 @@ GUIUtil.setInitialDialogFocus( rp );	// necessary to get keyboard shortcuts work
 //			ggRecordConfig.removeAllItems();
 //			for( int i = 0; i < cfgNames.length; i++ ) {
 //				rCfg	= new RoutingConfig( audioPrefs.node( NODE_CONF ).node( cfgNames[ i ]));
-//				if( rCfg.numChannels == this.numChannels ) {
+//				if( rCfg.numChannels == numChannels ) {
 //					ggRecordConfig.addItem( cfgNames[ i ]);
 //				}
 //			}
@@ -584,7 +587,7 @@ GUIUtil.setInitialDialogFocus( rp );	// necessary to get keyboard shortcuts work
 			ggRecordConfig.removeAllItems();
 			for( int i = 0; i < cfgIDs.length; i++ ) {
 				cfgPrefs	= childPrefs.node( cfgIDs[ i ]);
-				if( cfgPrefs.getInt( RoutingConfig.KEY_RC_NUMCHANNELS, -1 ) == this.numChannels ) {
+				if( cfgPrefs.getInt( RoutingConfig.KEY_RC_NUMCHANNELS, -1 ) == numChannels ) {
 					ggRecordConfig.addItem( new StringItem( cfgIDs[ i ], cfgPrefs.get( RoutingConfig.KEY_NAME, cfgIDs[ i ])));
 				}
 			}
@@ -594,12 +597,12 @@ GUIUtil.setInitialDialogFocus( rp );	// necessary to get keyboard shortcuts work
 		}
 	}
 
-	private static void printError( String name, Throwable t )
+	protected static void printError( String name, Throwable t )
 	{
 		System.err.println( name + " : " + t.getClass().getName() + " : " + t.getLocalizedMessage() );
 	}
 
-	private String getResourceString( String key )
+	protected String getResourceString( String key )
 	{
 		return AbstractApplication.getApplication().getResourceString( key );
 	}
@@ -634,7 +637,7 @@ GUIUtil.setInitialDialogFocus( rp );	// necessary to get keyboard shortcuts work
 //		actionClose.setEnabled( true );
 //	}
 
-	private void stopRecording( boolean commit )
+	protected void stopRecording( boolean commit )
 	{
 		recLenTimer.stop();
 
@@ -803,23 +806,23 @@ disposeRecorder();
 	private class Context
 	{
 //		private OSCResponderNode	cSetNResp	= null;
-		private Group				grpRoot		= null;
-		private final Synth			synthDiskOut;	// one multi-channel disk out synth
-		private final Synth[]		synthsRoute;	// for each config channel one route
+		protected Group				grpRoot		= null;
+		protected final Synth		synthDiskOut;	// one multi-channel disk out synth
+		protected final Synth[]		synthsRoute;	// for each config channel one route
 //		private final Synth[]		synthsMeter;	// for each config channel a meter control
-		private Buffer				bufDisk		= null;
-		private Bus					busInternal	= null;		// reference from SuperColliderPlayer!
+		protected Buffer			bufDisk		= null;
+		protected Bus				busInternal	= null;		// reference from SuperColliderPlayer!
 //		private Bus					busMeter	= null;		// control rate, two channels per channel
 			
 //		private final OSCMessage	meterBangMsg;	// /c_getn for the meter values
 
-		private File				recFile		= null;
+		protected File				recFile		= null;
 	
 		/*
 		 *	@throws	IOException	if the server ran out of busses
 		 *						or buffers
 		 */
-		private Context( int numConfigChannels, Bus busInternal )
+		protected Context( int numConfigChannels, Bus busInternal )
 		throws IOException
 		{
 this.busInternal = busInternal;
@@ -862,7 +865,7 @@ this.busInternal = busInternal;
 			}
 		}
 
-		private void forgetFile( boolean keep )
+		protected void forgetFile( boolean keep )
 		{
 			if( (recFile != null) && !keep ) {
 				if( !recFile.delete() ) {
@@ -872,14 +875,14 @@ this.busInternal = busInternal;
 			recFile = null;
 		}
 		
-		private void recreateFile()
+		protected void recreateFile()
 		throws IOException
 		{
 			forgetFile( false );
 			recFile	= IOUtil.createTempFile();
 		}
 
-		private void dispose()
+		protected void dispose()
 		throws IOException
 		{
 			IOException e11 = null;
@@ -911,10 +914,10 @@ this.busInternal = busInternal;
 		}
 	}
 	
-	private class actionPeakResetClass
+	private class ActionPeakReset
 	extends AbstractAction
 	{
-		private actionPeakResetClass()
+		protected ActionPeakReset()
 		{
 			super( getResourceString( "buttonReset" ));
 		}
@@ -924,7 +927,7 @@ this.busInternal = busInternal;
 			perform();
 		}
 		
-		private void perform()
+		protected void perform()
 		{
 //			maxPeak = 0.0f;
 //			runPeakUpdate.run();			
@@ -934,10 +937,10 @@ this.busInternal = busInternal;
 		}
 	}
 
-	private class actionMonitoringClass
+	private class ActionMonitoring
 	extends AbstractAction
 	{
-		private actionMonitoringClass()
+		protected ActionMonitoring()
 		{
 			super( getResourceString( "buttonMonitoring" ));
 		}
@@ -950,10 +953,10 @@ this.busInternal = busInternal;
 		}
 	}
 
-	private class actionRecordClass
+	private class ActionRecord
 	extends AbstractAction
 	{
-		private actionRecordClass()
+		protected ActionRecord()
 		{
 			super( getResourceString( "buttonRecord" ));
 			setEnabled( false );
@@ -1003,10 +1006,10 @@ this.busInternal = busInternal;
 		}
 	}
 
-	private class actionStopClass
+	private class ActionStop
 	extends AbstractAction
 	{
-		private actionStopClass()
+		protected ActionStop()
 		{
 			super( getResourceString( "buttonStop" ));
 			setEnabled( false );
@@ -1018,10 +1021,10 @@ this.busInternal = busInternal;
 		}
 	}
 
-	private class actionAbortClass
+	private class ActionAbort
 	extends AbstractAction
 	{
-		private actionAbortClass()
+		protected ActionAbort()
 		{
 			super( getResourceString( "buttonAbort" ));
 			setEnabled( false );
@@ -1034,10 +1037,10 @@ this.busInternal = busInternal;
 		}
 	}
 	
-	private class actionCloseClass
+	private class ActionClose
 	extends AbstractAction
 	{
-		private actionCloseClass()
+		protected ActionClose()
 		{
 			super( getResourceString( "buttonClose" ));
 //			putValue( ACCELERATOR_KEY, KeyStroke.getKeyStroke( KeyEvent.VK_ESCAPE, 0 ));
@@ -1058,19 +1061,19 @@ this.busInternal = busInternal;
 		private String		errorMsg;
 		private Action[]	actions;
 	
-		private TimeoutTimer( int timeOutMillis )
+		protected TimeoutTimer( int timeOutMillis )
 		{
 			super( timeOutMillis, null );
 			addActionListener( this );
 			setRepeats( false );
 		}
 		
-		private void setMessage( String errorMsg )
+		protected void setMessage( String errorMsg )
 		{
 			this.errorMsg = errorMsg;
 		}
 		
-		private void setActions( Action[] actions )
+		protected void setActions( Action[] actions )
 		{
 			this.actions	= actions;
 		}
@@ -1081,7 +1084,7 @@ this.busInternal = busInternal;
 			enable( true );
 		}
 		
-		private void enable( boolean onOff )
+		protected void enable( boolean onOff )
 		{
 			for( int i = 0; i < actions.length; i++ ) {
 				actions[ i ].setEnabled( onOff );
@@ -1098,7 +1101,7 @@ this.busInternal = busInternal;
 		private long				startTime;
 		private final double		sampleRate;
 	
-		private RecLenTimer( TimeLabel lbTime, MutableLong frames, double sampleRate )
+		protected RecLenTimer( TimeLabel lbTime, MutableLong frames, double sampleRate )
 		{
 			super( 66, null );
 			this.lbTime		= lbTime;

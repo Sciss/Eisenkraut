@@ -67,7 +67,7 @@ implements  DynamicListening, PreferenceChangeListener,
 	private boolean					comboGate		= true;
 
 	private boolean					readPrefs		= true;
-	private boolean					writePrefs		= true;
+	protected boolean				writePrefs		= true;
 	
 	/**
 	 *  Creates a new empty <code>PrefTextField</code>

@@ -51,7 +51,7 @@ public class MathUtil
 	 */
 	public static final double LN10 = Math.log( 10 );
 
-	private MathUtil() {}
+	private MathUtil() { /* empty */ }
 
 	/**
 	 *  Decibel-to-Linear conversion.

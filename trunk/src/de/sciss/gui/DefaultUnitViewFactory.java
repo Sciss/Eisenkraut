@@ -144,6 +144,8 @@ implements ParamField.UnitViewFactory
 		private static final Stroke	strkZeiger	= new BasicStroke( 0.5f );
 		private static final Color	colrOutline	= new Color( 0, 0, 0, 0xC0 );
 	
+		protected ClockIcon() { /* empty */ }
+		
 		public int getIconWidth()
 		{
 			return 16;

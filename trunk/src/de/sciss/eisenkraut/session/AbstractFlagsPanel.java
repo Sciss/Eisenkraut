@@ -54,8 +54,6 @@ extends JPanel
 	public static final int FLAGS_SOLOSAFE		= 0x04;
 	public static final int FLAGS_VIRTUALMUTE	= 0x08;
 
-	private final AbstractFlagsPanel enc_panel = this;
-
 	private final FlagAction actionSolo, actionMute;
 	
 	public AbstractFlagsPanel()
@@ -67,16 +65,16 @@ extends JPanel
 		actionSolo	= new FlagAction( GraphicsUtil.ICON_SOLO, FLAGS_SOLO, FLAGS_SOLOSAFE );
 		actionMute	= new FlagAction( GraphicsUtil.ICON_MUTE, FLAGS_MUTE, FLAGS_VIRTUALMUTE );
 
-		this.add( actionSolo.getButton() );
-		this.add( actionMute.getButton() );
+		add( actionSolo.getButton() );
+		add( actionMute.getButton() );
 	}
 
 	protected void updateButtons( int flags )
 	{
 //		boolean practicallyMuted;
 	
-		actionSolo.setFlags( flags );
-		actionMute.setFlags( flags );
+		actionSolo.set( flags );
+		actionMute.set( flags );
 //		if( (flags & SessionObject.FLAGS_SOLO) == 0 && (flags & SessionObject.FLAGS_SOLOSAFE) == 0 ) {
 //			practicallyMuted = isAny( SessionObject.FLAGS_SOLO, true );
 //		} else {
@@ -99,7 +97,7 @@ extends JPanel
 		private boolean					isNormal	= true;
 		private final	Icon[]			icns;
 	
-		private TriStateAction( int iconID, int normalID, int thirdID )
+		protected TriStateAction( int iconID, int normalID, int thirdID )
 		{
 			super();
 			
@@ -112,8 +110,8 @@ extends JPanel
 			ab.setFocusable( false );
 			GraphicsUtil.setToolIcons( ab, icns );
 			
-			this.normalState	= icns[ normalID ];
-			this.thirdState		= icns[ thirdID ];
+			normalState	= icns[ normalID ];
+			thirdState		= icns[ thirdID ];
 		}
 		
 		protected AbstractButton getButton()
@@ -150,16 +148,16 @@ extends JPanel
 		private int				flags;
 		private final boolean	isSolo;
 	
-		private FlagAction( int iconID, int normalMask, int thirdMask )
+		protected FlagAction( int iconID, int normalMask, int thirdMask )
 		{
 			super( iconID, 0, 2 );
 			
 			this.normalMask = normalMask;
 			this.thirdMask	= thirdMask;
-			isSolo			= iconID == GraphicsUtil.ICON_SOLO;
+			isSolo		= iconID == GraphicsUtil.ICON_SOLO;
 		}
 
-		private void setFlags( int flags )
+		protected void set( int flags )
 		{
 			this.flags = flags;
 //			if( thirdMask != 0 ) {
@@ -176,9 +174,9 @@ extends JPanel
 			boolean		set		= alt && isSolo ? !isAny( mask, true ) : (flags & mask) == 0;
 				
 			if( alt ) {
-				enc_panel.broadcastFlags( mask, set );
+				broadcastFlags( mask, set );
 			} else {
-				enc_panel.setFlags( mask, set );
+				setFlags( mask, set );
 			}
 		}
 	}

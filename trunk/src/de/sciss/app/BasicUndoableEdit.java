@@ -54,7 +54,7 @@ implements PerformableEdit
 //		final StringBuffer strBuf = new StringBuffer( nest << 1 );
 //		for( int i = 0; i < nest; i++ ) strBuf.append( "  " );
 //		System.err.print( strBuf.toString() );
-		System.err.println( this.toString() );
+		System.err.println( toString() );
 	}
 	
 	public String toString()

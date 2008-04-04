@@ -125,7 +125,7 @@ extends JComponent
 		al = AWTEventMulticaster.remove( al, l);
 	}
 	
-	private void fireActionPerformed()
+	protected void fireActionPerformed()
 	{
         final ActionListener l = al;
 		if( l != null ) {

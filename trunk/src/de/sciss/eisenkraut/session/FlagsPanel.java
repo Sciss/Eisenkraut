@@ -196,7 +196,7 @@ implements DynamicListening, SessionCollection.Listener
 		updateButtons();
 	}
 	
-	public void sessionObjectChanged( SessionCollection.Event e ) {}
+	public void sessionObjectChanged( SessionCollection.Event e ) { /* ignore */ }
 	
 	public void sessionObjectMapChanged( SessionCollection.Event e )
 	{

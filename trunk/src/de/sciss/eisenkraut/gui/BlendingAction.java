@@ -122,7 +122,7 @@ extends AbstractAction
 	public static final String					KEY_DURATION	= "duration";
 	private static final String					NODE_RECENT		= "recent";
 
-	private static final Param					DEFAULT_DUR		=
+	protected static final Param				DEFAULT_DUR		=
 		new Param( 100.0, ParamSpace.ABS | ParamSpace.TIME | ParamSpace.MILLI | ParamSpace.SECS );
 
 
@@ -130,15 +130,15 @@ extends AbstractAction
 //	private PrefComboBoxModel					pcbm			= null;
 	
 //	private final JToggleButton					b;
-	private final MultiStateButton				b;
-	private final Preferences					prefs;
-	private PrefParamField						ggBlendTime;
-	private CurvePanel							ggCurvePanel;
+	protected final MultiStateButton			b;
+	protected final Preferences					prefs;
+	protected PrefParamField					ggBlendTime;
+	protected CurvePanel						ggCurvePanel;
 	private SpringPanel							ggSettingsPane;
 	private JComponent							bottomPanel;
 //	private JDialog								dlg				= null;
 	private	static final DefaultUnitTranslator	ut				= new DefaultUnitTranslator();
-	private	static final DefaultUnitViewFactory	uvf				= new DefaultUnitViewFactory();
+	protected static final DefaultUnitViewFactory uvf			= new DefaultUnitViewFactory();
 	
 	private final CurvePanel.Icon				curveIcon;
 
@@ -155,7 +155,7 @@ extends AbstractAction
 	
 //	private List								collListeners	= new ArrayList();
 	
-	private final Settings						current;
+	protected final Settings					current;
 
 	/**
 	 *	Creates a new instance of an action
@@ -189,7 +189,7 @@ extends AbstractAction
 
 		popMon = new PopupTriggerMonitor( b );
 		popMon.addListener( new PopupTriggerMonitor.Listener() {
-			public void componentClicked( PopupTriggerMonitor m ) {}
+			public void componentClicked( PopupTriggerMonitor m ) { /* empty */ }
 			
 			public void popupTriggered( PopupTriggerMonitor m )
 			{
@@ -330,13 +330,13 @@ extends AbstractAction
 				stopAndDispose();
 			}
 			
-			public void popupMenuWillBecomeInvisible( PopupMenuEvent e ) {}
-			public void popupMenuWillBecomeVisible( PopupMenuEvent e ) {}
+			public void popupMenuWillBecomeInvisible( PopupMenuEvent e ) { /* empty */ }
+			public void popupMenuWillBecomeVisible( PopupMenuEvent e ) { /* empty */ }
 		});
 //popup.setCursor( new java.awt.Cursor( java.awt.Cursor.CROSSHAIR_CURSOR ));
 	}
 	
-	private void stopAndDispose()
+	protected void stopAndDispose()
 	{
 		// XXX this is necessary unfortunately
 		// coz the DynamicAncestorAdapter doesn't seem
@@ -369,7 +369,7 @@ extends AbstractAction
 		popup = null;
 	}
 
-	private static CubicCurve2D[] createBasicCurves()
+	protected static CubicCurve2D[] createBasicCurves()
 	{
 		return new CubicCurve2D[] {
 			new CubicCurve2D.Double( 0.0, 1.0, 0.5, 0.0, 0.5, 0.0, 1.0, 0.0 ),
@@ -391,7 +391,7 @@ extends AbstractAction
 	
 	public JComboBox getComboBox()
 	{
-		final ComboBoxModel		pcbm			= getComboBoxModel();
+		final ComboBoxModel		model			= getComboBoxModel();
 		final ComboBoxModel		emptyCBM		= new DefaultComboBoxModel();
 		final MultiStateButton	button			= b;
 		final JComboBox			ggBlend			= new JComboBox(); // ( pcbm );
@@ -412,9 +412,9 @@ extends AbstractAction
 			}
 			
 			public Object getItem() { return current; }
-			public void selectAll() { }
-			public void addActionListener(ActionListener l) { }
-			public void removeActionListener(ActionListener l) { }
+			public void selectAll() { /* ignore */ }
+			public void addActionListener(ActionListener l) { /* ignore */ }
+			public void removeActionListener(ActionListener l) { /* ignore */ }
 		});
 		ggBlend.setRenderer( blendRenderer );
 		button.setFocusable( false );
@@ -428,7 +428,7 @@ extends AbstractAction
 		new DynamicAncestorAdapter( new DynamicListening() {
 			public void startListening()
 			{
-				ggBlend.setModel( pcbm );
+				ggBlend.setModel( model );
 			}
 			
 			public void stopListening()
@@ -447,14 +447,14 @@ extends AbstractAction
 		b.setSelectedIndex( active ? 1 : 0 );
 	}
 	
-	private void updateButton()
+	protected void updateButton()
 	{
 		updateButtonState();
 		updateButtonText();
 		updateButtonIcon();
 	}
 
-	private void updateButtonText()
+	protected void updateButtonText()
 	{
 //		final Param		p;
 		final Param		p		= current.duration;
@@ -477,7 +477,7 @@ extends AbstractAction
 		}
 	}
 
-	private void updateButtonIcon()
+	protected void updateButtonIcon()
 	{
 		curveIcon.update( current.ctrlPt[ 0 ], current.ctrlPt[ 1 ]);
 		if( ggCurvePanel != null ) ggCurvePanel.setControlPoints( current.ctrlPt[ 0 ], current.ctrlPt[ 1 ]);
@@ -486,18 +486,18 @@ extends AbstractAction
 
 	private JComponent createBottomPanel( int flags )
 	{
-		final JPanel	bottomPanel;
+		final JPanel	panel;
 		final JButton	ggClose;
 
-		bottomPanel		= new JPanel( new FlowLayout( FlowLayout.TRAILING, 4, 2 ));
-		ggClose			= new JButton( new CloseAction( getResourceString( "buttonClose" )));
+		panel		= new JPanel( new FlowLayout( FlowLayout.TRAILING, 4, 2 ));
+		ggClose		= new JButton( new CloseAction( getResourceString( "buttonClose" )));
 		GUIUtil.createKeyAction( ggClose, KeyStroke.getKeyStroke( KeyEvent.VK_ESCAPE, 0 ));
 		ggClose.setFocusable( false );
-		bottomPanel.add( ggClose );
-		bottomPanel.add( new HelpButton( "Blending" ));
-		bottomPanel.add( CoverGrowBox.create() );
+		panel.add( ggClose );
+		panel.add( new HelpButton( "Blending" ));
+		panel.add( CoverGrowBox.create() );
 
-		return bottomPanel;
+		return panel;
 	}
 
 	private String getResourceString( String key )
@@ -570,7 +570,7 @@ extends AbstractAction
 		return new BlendCBRenderer();
 	}
 	
-	private void storeRecent()
+	protected void storeRecent()
 	{
 		if( pcbm == null ) return;
 		
@@ -742,24 +742,24 @@ extends AbstractAction
 	
 	private static class Settings
 	{
-		private Param			duration;
-		private final Point2D[]	ctrlPt	= new Point2D[] { new Point2D.Double(), new Point2D.Double() };
+		protected Param				duration;
+		protected final Point2D[]	ctrlPt	= new Point2D[] { new Point2D.Double(), new Point2D.Double() };
 		
-		private Settings() {}
+		private Settings() { /* empty */ }
 		
 		private Settings( Settings orig )
 		{
 			setFrom( orig );
 		}
 		
-		private void setFrom( Settings orig )
+		protected void setFrom( Settings orig )
 		{
-			this.duration = orig.duration;
-			this.ctrlPt[ 0 ].setLocation( orig.ctrlPt[ 0 ]);
-			this.ctrlPt[ 1 ].setLocation( orig.ctrlPt[ 1 ]);
+			duration = orig.duration;
+			ctrlPt[ 0 ].setLocation( orig.ctrlPt[ 0 ]);
+			ctrlPt[ 1 ].setLocation( orig.ctrlPt[ 1 ]);
 		}
 		
-		private static Settings fromPrefs( Preferences node )
+		protected static Settings fromPrefs( Preferences node )
 		{
 			final Settings s = new Settings();
 			s.duration = Param.fromPrefs( node, KEY_DURATION, DEFAULT_DUR );
@@ -769,12 +769,12 @@ extends AbstractAction
 			return s;
 		}
 		
-		private Settings duplicate()
+		protected Settings duplicate()
 		{
 			return new Settings( this );
 		}
 		
-		private void toPrefs( Preferences node )
+		protected void toPrefs( Preferences node )
 		{
 			node.put( KEY_DURATION, duration.toString() );
 			CurvePanel.toPrefs( ctrlPt, node );
@@ -793,7 +793,7 @@ extends AbstractAction
 		private final Color bgNorm, bgSel, fgNorm, fgSel;
 		final CurvePanel.Icon curveIcon;
 	
-		private BlendCBRenderer()
+		protected BlendCBRenderer()
 		{
 			super();
 			setOpaque( true );
@@ -827,7 +827,7 @@ extends AbstractAction
 	private class CloseAction
 	extends AbstractAction
 	{
-		private CloseAction( String text )
+		protected CloseAction( String text )
 		{
 			super( text );
 		}

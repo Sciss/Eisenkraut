@@ -80,12 +80,13 @@ implements Trail, EventManager.Processor
 	private EventManager				elm					= null;		// lazy creation
 	private List						dependants			= null;		// lazy creation
 
-	private final BasicTrail			enc_this			= this;
+//	protected final BasicTrail			enc_this			= this;
 
 	// Element : Trail
 	
 	public BasicTrail()
 	{
+		/* empty */ 
 	}
 	
 	public double getRate()
@@ -496,7 +497,7 @@ System.err.println( "BasicTrail.insert, touchmode resize : not tested" );
 
 		if( (source != null) && (modSpan != null) ) {
 			if( ce != null ) {
-				ce.addPerform( new Edit( modSpan ));
+				ce.addPerform( new Edit( this, modSpan ));
 			} else {
 				dispatchModification( source, modSpan );
 			}
@@ -666,7 +667,7 @@ if( DEBUG ) {
 
 		if( (source != null) && !(collToRemove.isEmpty() && collToAdd.isEmpty()) ) {
 			if( ce != null ) {
-				ce.addPerform( new Edit( modSpan ));
+				ce.addPerform( new Edit( this, modSpan ));
 			} else {
 				dispatchModification( source, modSpan );
 			}
@@ -786,7 +787,7 @@ if( DEBUG ) {
 
 		if( (source != null) && (modSpan != null) ) {
 			if( ce != null ) {
-				ce.addPerform( new Edit( modSpan ));
+				ce.addPerform( new Edit( this, modSpan ));
 			} else {
 				dispatchModification( source, modSpan );
 			}
@@ -1118,7 +1119,7 @@ if( DEBUG ) {
 
 		if( (source != null) && (span != null) ) {
 			if( ce != null ) {
-				ce.addPerform( new Edit( span ));
+				ce.addPerform( new Edit( this, span ));
 			} else {
 				dispatchModification( source, span );
 			}
@@ -1131,6 +1132,7 @@ if( DEBUG ) {
 	protected void addAllDep( Object source, List stakes, AbstractCompoundEdit ce, Span span )
 	throws IOException
 	{
+		/* empty */ 
 	}
 
 	private Span addAllPr( List stakes, AbstractCompoundEdit ce )
@@ -1149,7 +1151,7 @@ if( DEBUG ) {
 			stop	= Math.max( stop, stake.getSpan().stop );
 		}
 		span		= new Span( start, stop );
-		if( ce != null ) ce.addPerform( new Edit( stakes, span, EDIT_ADD ));
+		if( ce != null ) ce.addPerform( new Edit( this, stakes, span, EDIT_ADD ));
 
 		return span;
 	}
@@ -1194,7 +1196,7 @@ if( DEBUG ) {
 
 		if( (source != null) && (span != null) ) {
 			if( ce != null ) {
-				ce.addPerform( new Edit( span ));
+				ce.addPerform( new Edit( this, span ));
 			} else {
 				dispatchModification( source, span );
 			}
@@ -1207,6 +1209,7 @@ if( DEBUG ) {
 	protected void removeAllDep( Object source, List stakes, AbstractCompoundEdit ce, Span span )
 	throws IOException
 	{
+		/* empty */
 	}
 
 	private Span removeAllPr( List stakes, AbstractCompoundEdit ce )
@@ -1226,14 +1229,15 @@ if( DEBUG ) {
 			if( ce == null ) stake.dispose();
 		}
 		span		= new Span( start, stop );
-		if( ce != null ) ce.addPerform( new Edit( stakes, span, EDIT_REMOVE ));
+		if( ce != null ) ce.addPerform( new Edit( this, stakes, span, EDIT_REMOVE ));
 
 		return span;
 	}
 
     public void debugDump()
 	{
-	}
+    	/* empty */ 
+    }
     
     public void debugVerifyContiguity()
     {
@@ -1268,7 +1272,7 @@ if( DEBUG ) {
 		sortAddStake( stake, null );
 	}
 
-	private void sortAddStake( Stake stake, AbstractCompoundEdit ce)
+	protected void sortAddStake( Stake stake, AbstractCompoundEdit ce)
 	{
 		final List	collByStart, collByStop;
 		int						idx;
@@ -1292,7 +1296,7 @@ if( DEBUG ) {
 		stake.setTrail( this );	// ???
 	}
 	
-	private void sortRemoveStake( Stake stake, AbstractCompoundEdit ce )
+	protected void sortRemoveStake( Stake stake, AbstractCompoundEdit ce )
 	{
 		final List	collByStart, collByStop;
 		int						idx;
@@ -1366,7 +1370,7 @@ if( DEBUG ) {
 		}
 	}
 	
-	private void dispatchModification( Object source, Span span )
+	protected void dispatchModification( Object source, Span span )
 	{
 		if( elm != null ) {
 			elm.dispatchEvent( new Trail.Event( this, source, span ));
@@ -1448,11 +1452,11 @@ if( DEBUG ) {
 	private static final int EDIT_REMOVE	= 1;
 	private static final int EDIT_DISPATCH	= 2;
 
-	private static final String[] EDIT_NAMES = { "Add", "Remove", "Dispatch" };
+	protected static final String[] EDIT_NAMES = { "Add", "Remove", "Dispatch" };
 
 	// @todo	disposal is wrong (leaks?) when edit is not performed (e.g. EDIT_ADD not performed)
 	// @todo	dispatch should not be a separate edit but one that is sucked and collapsed through multiple EDIT_ADD / EDIT_REMOVE stages
-	private class Edit
+	private static class Edit
 	extends BasicUndoableEdit
 	{
 		private final int				cmd;
@@ -1463,23 +1467,23 @@ if( DEBUG ) {
 		private boolean					disposeWhenDying;
 		private Span					span;
 		
-		private Edit( Span span )
+		protected Edit( BasicTrail t, Span span )
 		{
-			this( null, span, EDIT_DISPATCH, "editChangeTrail" );
+			this( t, null, span, EDIT_DISPATCH, "editChangeTrail" );
 		}
 	
-		private Edit( List stakes, Span span, int cmd )
+		protected Edit( BasicTrail t, List stakes, Span span, int cmd )
 		{
-			this( stakes, span, cmd, "editChangeTrail" );
+			this( t, stakes, span, cmd, "editChangeTrail" );
 		}
 
-		private Edit( List stakes, Span span, int cmd, String key )
+		private Edit( BasicTrail t, List stakes, Span span, int cmd, String key )
 		{
 			this.stakes	= stakes;
 			this.cmd	= cmd;
 			this.key	= key;
 			this.span	= span;
-			this.trail	= enc_this;
+			this.trail	= t;
 //			removed		= false;
 			disposeWhenDying = stakes != null;
 		}
@@ -1487,7 +1491,7 @@ if( DEBUG ) {
 		private void addAll()
 		{
 			for( int i = 0; i < stakes.size(); i++ ) {
-				sortAddStake( (Stake) stakes.get( i ), null );
+				trail.sortAddStake( (Stake) stakes.get( i ), null );
 			}
 //			removed		= false;
 			disposeWhenDying	= false;
@@ -1496,7 +1500,7 @@ if( DEBUG ) {
 		private void removeAll()
 		{
 			for( int i = 0; i < stakes.size(); i++ ) {
-				sortRemoveStake( (Stake) stakes.get( i ), null );
+				trail.sortRemoveStake( (Stake) stakes.get( i ), null );
 			}
 //			removed		= true;
 			disposeWhenDying	= true;
@@ -1521,7 +1525,7 @@ if( DEBUG ) {
 				addAll();
 				break;
 			case EDIT_DISPATCH:
-				dispatchModification( trail, span );
+				trail.dispatchModification( trail, span );
 				break;
 			default:
 				assert false : cmd;
@@ -1544,7 +1548,7 @@ if( DEBUG ) {
 				removeAll();
 				break;
 			case EDIT_DISPATCH:
-				dispatchModification( trail, span );
+				trail.dispatchModification( trail, span );
 				break;
 			default:
 				assert false : cmd;
@@ -1623,6 +1627,8 @@ if( DEBUG ) {
 	private static class StartComparator
 	implements Comparator
 	{
+		protected StartComparator() { /* empty */ }
+		
 		public int compare( Object o1, Object o2 )
 		{			
 			if( o1 instanceof Stake ) o1 = ((Stake) o1).getSpan();
@@ -1640,6 +1646,8 @@ if( DEBUG ) {
 	private static class StopComparator
 	implements Comparator
 	{
+		protected StopComparator() { /* empty */ }
+
 		public int compare( Object o1, Object o2 )
 		{
 			if( o1 instanceof Stake ) o1 = ((Stake) o1).getSpan();

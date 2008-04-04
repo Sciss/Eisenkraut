@@ -81,12 +81,12 @@ extends AbstractRenderPlugIn
 	public boolean producerBegin( RenderSource source )
 	throws IOException
 	{
-		prConsumer	= source.context.getConsumer();
+		prConsumer		= source.context.getConsumer();
 		prTotalSpan	= source.context.getTimeSpan();
 		
 //		prBlend		= new BlendContext( prTotalSpan.getLength(), CurvePanel.getControlPoints( prefs ));
 		prBlend		= new BlendContext( prTotalSpan.getLength(), 0, CurvePanel.getControlPoints( prefs ));
-		prBuf		= new float[ source.numAudioChannels ][];
+		prBuf			= new float[ source.numAudioChannels ][];
 
 		return prConsumer.consumerBegin( source );
 	}
@@ -100,10 +100,10 @@ extends AbstractRenderPlugIn
 		
 		if( isFadeIn ) {
 			prBlend.fadeIn( source.blockSpan.start - prTotalSpan.start, prBuf,
-							source.audioBlockBufOff, prBuf, source.audioBlockBufOff, source.audioBlockBufLen );
+			                     source.audioBlockBufOff, prBuf, source.audioBlockBufOff, source.audioBlockBufLen );
 		} else {
 			prBlend.fadeOut( source.blockSpan.start - prTotalSpan.start, prBuf,
-							 source.audioBlockBufOff, prBuf, source.audioBlockBufOff, source.audioBlockBufLen );
+			                      source.audioBlockBufOff, prBuf, source.audioBlockBufOff, source.audioBlockBufLen );
 		}
 		return prConsumer.consumerRender( source );
 	}

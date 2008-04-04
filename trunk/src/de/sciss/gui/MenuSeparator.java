@@ -47,7 +47,7 @@ extends MenuItem
 		super( "_" + String.valueOf( uniqueID++ ), (Action) null );
 	}
 
-	public void setEnabled( boolean b ) {}
+	public void setEnabled( boolean b ) { /* ignore */ }
 	
 	protected JComponent createComponent( Action a )
 	{

@@ -38,6 +38,7 @@ import java.util.Map;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.SwingConstants;
 
 /**
  *  @author		Hanns Holger Rutz
@@ -87,6 +88,7 @@ extends ComponentAdapter
 	
 	public ComponentBoundsRestrictor()
 	{
+		/* empty */ 
 	}
 	
 	public void add( Component c )
@@ -296,7 +298,7 @@ extends ComponentAdapter
 	public static void test()
 	{
 		final JFrame					f	= new JFrame( "Test" );
-		final JLabel					lb	= new JLabel( "", JLabel.CENTER );
+		final JLabel					lb	= new JLabel( "", SwingConstants.CENTER );
 		final Rectangle					r	= new Rectangle();
 		final ComponentBoundsRestrictor	cbr = new ComponentBoundsRestrictor();
 		f.getContentPane().add( lb );

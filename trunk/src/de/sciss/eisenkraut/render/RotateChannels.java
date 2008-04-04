@@ -35,6 +35,7 @@ import java.io.IOException;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 
 import de.sciss.app.AbstractApplication;
 import de.sciss.app.Application;
@@ -75,9 +76,9 @@ extends AbstractRenderPlugIn
 		
 		ggNimRod.addSpace( new ParamSpace( Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, 1, 0, 0, 1 ));
 		ggNimRod.setValueAndSpace( DEFAULT_NUMROT );
-		ggNimRod.setPreferences( this.prefs, KEY_NUMROT );
+		ggNimRod.setPreferences( prefs, KEY_NUMROT );
 
-		p.add( new JLabel( app.getResourceString( "plugInChanShift" ), JLabel.RIGHT ), BorderLayout.WEST );
+		p.add( new JLabel( app.getResourceString( "plugInChanShift" ), SwingConstants.RIGHT ), BorderLayout.WEST );
 		p.add( ggNimRod, BorderLayout.CENTER );
 		return p;
 	}

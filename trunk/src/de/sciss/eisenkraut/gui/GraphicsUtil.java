@@ -192,7 +192,7 @@ public class GraphicsUtil
 		pntBarGradient = new TexturePaint( img, new Rectangle( 0, 0, 1, 15 ));
 	}
 	
-	private GraphicsUtil() {}
+	private GraphicsUtil() { /* empty */ }
 	
 	/**
 	 *  Creates an array of icons which display

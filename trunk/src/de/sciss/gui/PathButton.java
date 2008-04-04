@@ -78,7 +78,7 @@ implements EventManager.Processor
 	private String						dlgTxt;
 	private final EventManager	elm		= new EventManager( this );
 
-	private static final DataFlavor[] supportedFlavors = {
+	protected static final DataFlavor[] supportedFlavors = {
 		DataFlavor.javaFileListFlavor, DataFlavor.stringFlavor
 	};
 	
@@ -166,7 +166,7 @@ implements EventManager.Processor
 	 *
 	 *  @param  path	the new path for the button and the event
 	 */
-	private void setPathAndDispatchEvent( File path )
+	protected void setPathAndDispatchEvent( File path )
 	{
 		setPath( path );
 		elm.dispatchEvent( new PathEvent( this, PathEvent.CHANGED, System.currentTimeMillis(), path ));
@@ -230,9 +230,9 @@ implements EventManager.Processor
 		} // for( i = 0; i < elm.countListeners(); i++ )
 	}
 
-	private void showFileChooser()
+	protected void showFileChooser()
 	{
-		File		path;
+		File		p;
 		FileDialog	fDlg;
 		String		fDir, fFile; // , fPath;
 //		int			i;
@@ -243,7 +243,7 @@ implements EventManager.Processor
 			if( win == null ) return;
 		}
 
-		path = getPath();
+		p = getPath();
 		switch( type & PathField.TYPE_BASICMASK ) {
 		case PathField.TYPE_INPUTFILE:
 			fDlg = new FileDialog( (Frame) win, dlgTxt, FileDialog.LOAD );
@@ -259,9 +259,9 @@ implements EventManager.Processor
 			assert false : (type & PathField.TYPE_BASICMASK);
 			break;
 		}
-		if( path != null ) {
-			fDlg.setFile( path.getName() );
-			fDlg.setDirectory( path.getParent() );
+		if( p != null ) {
+			fDlg.setFile( p.getName() );
+			fDlg.setDirectory( p.getParent() );
 		}
 		fDlg.setVisible( true );
 		fDir	= fDlg.getDirectory();
@@ -274,11 +274,11 @@ implements EventManager.Processor
 		if( (fFile != null) && (fDir != null) ) {
 
 			if( (type & PathField.TYPE_BASICMASK) == PathField.TYPE_FOLDER ) {
-				path = new File( fDir );
+				p = new File( fDir );
 			} else {
-				path = new File( fDir + fFile );
+				p = new File( fDir + fFile );
 			}
-			setPathAndDispatchEvent( path );
+			setPathAndDispatchEvent( p );
 		}
 
 		fDlg.dispose();
@@ -289,7 +289,7 @@ implements EventManager.Processor
 	private class PathTransferHandler
 	extends TransferHandler
 	{
-		private PathTransferHandler() {}
+		protected PathTransferHandler() { /* empty */ }
 
 		/**
 		 * Overridden to import a Pathname (Fileliste or String) if it is available.
@@ -298,7 +298,7 @@ implements EventManager.Processor
 		{
 			Object		o;
 			List		fileList;
-			File		path	= null;
+			File		newPath	= null;
 		
 			try {
 				if( t.isDataFlavorSupported( DataFlavor.javaFileListFlavor )) {
@@ -308,22 +308,22 @@ implements EventManager.Processor
 						if( !fileList.isEmpty() ) {
 							o  =  fileList.get( 0 );
 							if( o instanceof File ) {
-								path = (File) o;
+								newPath = (File) o;
 							} else {
-								path = new File( o.toString() );
+								newPath = new File( o.toString() );
 							}
 						}
 					}
 				} else if( t.isDataFlavorSupported( DataFlavor.stringFlavor )) {
-					path = new File( (String) t.getTransferData( DataFlavor.stringFlavor ));
+					newPath = new File( (String) t.getTransferData( DataFlavor.stringFlavor ));
 				}
-				if( path != null ) {
-					setPathAndDispatchEvent( path );
+				if( newPath != null ) {
+					setPathAndDispatchEvent( newPath );
 					return true;
 				}
 			}
-			catch( UnsupportedFlavorException e1 ) {}
-			catch( IOException e2 ) {}
+			catch( UnsupportedFlavorException e1 ) { e1.printStackTrace(); }
+			catch( IOException e2 ) { e2.printStackTrace(); }
 
 			return false;
 		}
@@ -368,7 +368,7 @@ implements EventManager.Processor
 	{
 		private final File f;
 		
-		private PathTransferable( File f )
+		protected PathTransferable( File f )
 		{
 			this.f	= f;
 		}

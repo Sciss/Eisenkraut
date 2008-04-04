@@ -86,7 +86,7 @@ implements  DynamicListening, PreferenceChangeListener,
 	private boolean							defaultValue;
 
 	private boolean							readPrefs		= true;
-	private boolean							writePrefs		= true;
+	protected boolean						writePrefs		= true;
 
 	/**
 	 *  Constructs a new <code>PrefCheckBox</code>

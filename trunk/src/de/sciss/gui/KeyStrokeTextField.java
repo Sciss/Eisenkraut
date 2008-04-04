@@ -63,11 +63,11 @@ implements  DynamicListening, PreferenceChangeListener,
 	private final LaterInvocationManager lim		= new LaterInvocationManager( this );
 //	private ActionListener listener;
 	
-	private KeyStroke				guiStroke		= null;
+	protected KeyStroke				guiStroke		= null;
 	private KeyStroke				defaultValue	= null;
 
 	private boolean					readPrefs		= true;
-	private boolean					writePrefs		= true;
+	protected boolean				writePrefs		= true;
 	
 	/**
 	 *  Creates a new empty <code>KeyStrokeTextField</code>
@@ -137,7 +137,7 @@ implements  DynamicListening, PreferenceChangeListener,
 			prefsStroke = KeyStroke.getKeyStroke( Integer.parseInt( prefsValue.substring( i+1 )),
 												  Integer.parseInt( prefsValue.substring( 0, i )));
 		}
-		catch( NumberFormatException e1 ) {}
+		catch( NumberFormatException e1 ) { e1.printStackTrace(); }
 
 		return prefsStroke;
 	}

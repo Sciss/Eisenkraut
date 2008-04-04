@@ -67,6 +67,6 @@ public interface MenuNode
 			if( stroke != null ) putValue( ACCELERATOR_KEY, stroke );
 		}
 		
-		public void actionPerformed( ActionEvent e ) {}
+		public void actionPerformed( ActionEvent e ) { /* ignore */ }
 	}
 }

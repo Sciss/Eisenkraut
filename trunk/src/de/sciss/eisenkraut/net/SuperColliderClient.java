@@ -90,19 +90,19 @@ public class SuperColliderClient
 implements OSCRouter, Constants, ServerListener, DocumentListener
 {
 	private ServerOptions			so;
-	private Server					server				= null;
+	protected Server				server				= null;
 	private boolean					serverIsReady		= false;	// = running + defs have been loaded
-	private NodeWatcher				nw					= null;
+	protected NodeWatcher			nw					= null;
 	private final Preferences		audioPrefs;
 
 	private static final int		DEFAULT_PORT		= 57109;	// our default server udp port
 
 	private final List				collListeners		= new ArrayList();
 	
-	private final List				collPlayers			= new ArrayList();
+	protected final List			collPlayers			= new ArrayList();
 	private final Map				mapDocsToPlayers	= new HashMap();
 	
-	private RoutingConfig			oCfg				= null;
+	protected RoutingConfig			oCfg				= null;
 	private Group					grpMaster;
 	private Group					grpGain;
 	private Group					grpLimiter;
@@ -128,10 +128,10 @@ implements OSCRouter, Constants, ServerListener, DocumentListener
 	
 	private final MeterManager		meterManager;
 	
-	private EventManager			elmClient					= null;
+	protected EventManager			elmClient					= null;
 //	private final EventManager		elmServer;
 	
-	private static SuperColliderClient instance;
+	protected static SuperColliderClient instance;
 
 	public SuperColliderClient()
 	{
@@ -315,7 +315,7 @@ implements OSCRouter, Constants, ServerListener, DocumentListener
 		return limiter;
 	}
 	
-	private void setOutputConfig()
+	protected void setOutputConfig()
 	{
 		if( !serverIsReady || (oCfg == null) ) return;
 	
@@ -564,7 +564,7 @@ implements OSCRouter, Constants, ServerListener, DocumentListener
 		return false;
 	}
 	
-	private void createOutputConfig()
+	protected void createOutputConfig()
 	{
 		final String cfgName	= audioPrefs.get( PrefsUtil.KEY_OUTPUTCONFIG, null );
 
@@ -580,7 +580,7 @@ implements OSCRouter, Constants, ServerListener, DocumentListener
 		}
 	}
 	
-	private static void printError( String name, Throwable t )
+	protected static void printError( String name, Throwable t )
 	{
 //System.err.print( name + " : " );
 //t.printStackTrace();
@@ -589,17 +589,17 @@ implements OSCRouter, Constants, ServerListener, DocumentListener
 
 	public Action getDebugLoadDefsAction()
 	{
-		return new actionLoadDefsClass();
+		return new ActionLoadDefs();
 	}
 	
 	public Action getDebugNodeTreeAction()
 	{
-		return new actionNodeTreeClass();
+		return new ActionNodeTree();
 	}
 
 	public Action getDebugKillAllAction()
 	{
-		return new actionKillAllClass();
+		return new ActionKillAll();
 	}
 	
 	protected OSCMessage loadDefsMsg()
@@ -653,7 +653,7 @@ implements OSCRouter, Constants, ServerListener, DocumentListener
 	 *  This is called by the EventManager
 	 *  if new events are to be processed.
 	 */
-	private void clientAction( Event e )
+	protected void clientAction( Event e )
 	{
 		Listener listener;
 		
@@ -944,7 +944,7 @@ implements OSCRouter, Constants, ServerListener, DocumentListener
 		disposePlayer( (Session) e.getDocument() );
 	}
 
-	public void documentFocussed( de.sciss.app.DocumentEvent e ) {}
+	public void documentFocussed( de.sciss.app.DocumentEvent e ) { /* ignored */ }
 
 // -------------- internal classes --------------
 
@@ -958,7 +958,7 @@ implements OSCRouter, Constants, ServerListener, DocumentListener
 		
 		private final SuperColliderClient client;
 
-		private Event( Object source, int id, long when, SuperColliderClient client )
+		protected Event( Object source, int id, long when, SuperColliderClient client )
 		{
 			super( source, id, when );
 		
@@ -985,10 +985,10 @@ implements OSCRouter, Constants, ServerListener, DocumentListener
 		}
 	}
 
-	private class actionLoadDefsClass
+	private class ActionLoadDefs
 	extends AbstractAction
 	{
-		public actionLoadDefsClass()
+		public ActionLoadDefs()
 		{
 			super( "Reload Synth Defs" );
 		}
@@ -1007,10 +1007,10 @@ implements OSCRouter, Constants, ServerListener, DocumentListener
 		}
 	}
 
-	private class actionKillAllClass
+	private class ActionKillAll
 	extends AbstractAction
 	{
-		public actionKillAllClass()
+		public ActionKillAll()
 		{
 			super( "killall scsynth" );
 		}
@@ -1026,10 +1026,10 @@ implements OSCRouter, Constants, ServerListener, DocumentListener
 		}
 	}
 
-	private class actionNodeTreeClass
+	private class ActionNodeTree
 	extends AbstractAction
 	{
-		public actionNodeTreeClass()
+		public ActionNodeTree()
 		{
 			super( "View Node Graph" );
 		}

@@ -22,7 +22,7 @@ implements Disposable
 {
 	private final AbstractWindow			w;
 	private final AbstractWindow.Listener	l;
-	private boolean							disposed	= false;
+	protected boolean						disposed	= false;
 
 	public ShowWindowAction( AbstractWindow w )
 	{

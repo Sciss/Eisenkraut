@@ -261,7 +261,7 @@ implements OSCRouter // ProgressComponent // , PreferenceChangeListener
 		// ---- listeners ----
 
 		quitAfterSaveListener = new ProcessingThread.Listener() {
-			public void processStarted( ProcessingThread.Event e ) {}
+			public void processStarted( ProcessingThread.Event e ) { /* empty */ }
 
 			// if the saving was successfull, we will call closeAll again
 			public void processStopped( ProcessingThread.Event e )
@@ -376,7 +376,7 @@ implements OSCRouter // ProgressComponent // , PreferenceChangeListener
 	public void forceQuit()
 	{
 		forcedQuit = true;
-		this.quit();
+		quit();
 	}
 
     private void lookAndFeelUpdate( String className )

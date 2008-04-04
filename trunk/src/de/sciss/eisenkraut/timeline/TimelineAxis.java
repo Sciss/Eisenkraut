@@ -212,8 +212,6 @@ implements	TimelineListener, MouseListener, MouseMotionListener,
 //		if( isEnabled() ) dispatchMouseMove( e );
 	}
 	
-	public void mouseExited( MouseEvent e ) {}
-
 	public void mousePressed( MouseEvent e )
 	{
 		shiftDrag		= e.isShiftDown();
@@ -222,13 +220,14 @@ implements	TimelineListener, MouseListener, MouseMotionListener,
 		dragTimelinePosition( e );
 	}
 
-	public void mouseReleased( MouseEvent e ) {}
-	public void mouseClicked( MouseEvent e ) {}
+	public void mouseExited( MouseEvent e ) { /* ignore */ }
+	public void mouseReleased( MouseEvent e ) { /* ignore */ }
+	public void mouseClicked( MouseEvent e ) { /* ignore */ }
 
 // ---------------- MouseMotionListener interface ---------------- 
 // we're listening to ourselves
 
-    public void mouseMoved( MouseEvent e ) {}
+    public void mouseMoved( MouseEvent e ) { /* ignore */ }
 
 	public void mouseDragged( MouseEvent e )
 	{
@@ -237,8 +236,8 @@ implements	TimelineListener, MouseListener, MouseMotionListener,
 
 // ---------------- TimelineListener interface ---------------- 
   
-   	public void timelineSelected( TimelineEvent e ) {}
-	public void timelinePositioned( TimelineEvent e ) {}
+   	public void timelineSelected( TimelineEvent e ) { /* ignore */ }
+	public void timelinePositioned( TimelineEvent e ) { /* ignore */ }
 
 	public void timelineChanged( TimelineEvent e )
 	{

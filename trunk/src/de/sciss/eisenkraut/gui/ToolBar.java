@@ -211,7 +211,7 @@ implements EventManager.Processor
 	}
 
 	// utility function to create and dispatch a ToolActionEvent
-	private void dispatchChange( Object source, ToolAction action )
+	protected void dispatchChange( Object source, ToolAction action )
 	{
 		ToolActionEvent e = new ToolActionEvent( source, ToolActionEvent.CHANGED,
 												 System.currentTimeMillis(), action );
@@ -224,7 +224,9 @@ implements EventManager.Processor
 		private int				mode	= DESELECTION_AUTO;
 		private final ArrayList	buttons = new ArrayList();
 
-		private void addToggleButton( AbstractButton button )
+		protected ToggleGroup() { /* empty */ }
+
+		protected void addToggleButton( AbstractButton button )
 		{
 			button.addActionListener( this );
 			buttons.add( button );
@@ -236,7 +238,7 @@ implements EventManager.Processor
 //			buttons.remove( button );
 //		}
 		
-		private void setGroupMode( int mode )
+		protected void setGroupMode( int mode )
 		{
 			this.mode	= mode;
 		}

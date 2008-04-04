@@ -20,6 +20,7 @@
  *
  *	Changelog:
  *		02-Dec-05	created from TableSorter class by milne et al.
+ *		03-Apr-08	removed synthetic accessor method creations
  */
 
 package de.sciss.gui;
@@ -46,6 +47,7 @@ import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.SwingConstants;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
@@ -112,7 +114,7 @@ import javax.swing.table.TableModel;
 public class SortedTableModel
 extends AbstractTableModel
 {
-	private TableModel tableModel;
+	protected TableModel tableModel;
 
 	public static final int DESCENDING	= -1;
 	public static final int NOT_SORTED	= 0;
@@ -160,7 +162,7 @@ extends AbstractTableModel
 	// model index maps to view index. this is null if table model
 	// changes and will be re-calculated automatically when calling
 	// getModelToView()
-	private int[] modelToView;
+	protected int[] modelToView;
 
 	private JTableHeader				tableHeader;
 	private final MouseListener			mouseListener;
@@ -169,9 +171,9 @@ extends AbstractTableModel
 	private Map							mapComparators		= new HashMap();
 	// elements: Directive describing the sorted column
 	//	; hierarchy is top-down (first element is highest priority sorting)
-	private List						collSorted			= new ArrayList();
+	protected List						collSorted			= new ArrayList();
 	// elements: Integer( columnIndex ) for all columns which shall not be sortable
-	private Set							setDisallowedColumns= new HashSet();
+	protected Set						setDisallowedColumns= new HashSet();
 
 	// the icon for the three states DESCENDING, NOT_SORTED, ASCENDING
 	// ; note that even not sorted columns have an icon (although clear)
@@ -425,12 +427,12 @@ extends AbstractTableModel
 	 *	@param	column	the column index to check for sorting
 	 *	@return	<code>true</code> if the table is sorted by the given column
 	 */
-	private int getSortingStatus( int column )
+	protected int getSortingStatus( int column )
 	{
 		return( getDirective( column ).direction );
 	}
 	
-	private void setSortingStatus( int column, int status )
+	protected void setSortingStatus( int column, int status )
 	{
 		final Directive directive = getDirective( column );
 		if( directive != EMPTY_DIRECTIVE ) {
@@ -442,12 +444,12 @@ extends AbstractTableModel
 		sortingStatusChanged();
 	}
 
-	private Icon getHeaderRendererIcon( int column )
+	protected Icon getHeaderRendererIcon( int column )
 	{
 		return icnArrow[ getDirective( column ).direction + 1 ];
 	}
 
-	private Comparator getComparator( int column )
+	protected Comparator getComparator( int column )
 	{
 		final Class			columnType = tableModel.getColumnClass( column );
 		final Comparator	comparator = (Comparator) mapComparators.get( columnType );
@@ -461,7 +463,7 @@ extends AbstractTableModel
 		return STRING_COMPARATOR;
 	}
 
-	private void clearSortingState()
+	protected void clearSortingState()
 	{
 		viewToModel = null;
 		modelToView = null;
@@ -505,7 +507,7 @@ extends AbstractTableModel
 		return viewToModel;
 	}
 
-	private int[] getModelToView()
+	protected int[] getModelToView()
 	{
 		if( modelToView == null ) {
 			final int n = getViewToModel().length;
@@ -559,7 +561,7 @@ extends AbstractTableModel
 	private class Row
 	implements Comparable
 	{
-		private int modelIndex;
+		protected int modelIndex;
 
 		public Row( int index )
 		{
@@ -603,6 +605,8 @@ extends AbstractTableModel
 	private class TableModelHandler
 	implements TableModelListener
 	{
+		protected TableModelHandler() { /* empty */ }
+
 		public void tableChanged( TableModelEvent e )
 		{
 			int column, viewIndex;
@@ -664,6 +668,8 @@ extends AbstractTableModel
 	private class MouseHandler
 	extends MouseAdapter
 	{
+		protected MouseHandler() { /* empty */ }
+
 		public void mouseClicked( MouseEvent e )
 		{
 			final JTableHeader		h			= (JTableHeader) e.getSource();
@@ -756,7 +762,7 @@ extends AbstractTableModel
 	private class SortableHeaderRenderer
 	implements TableCellRenderer
 	{
-		private final TableCellRenderer tableCellRenderer;
+		protected final TableCellRenderer tableCellRenderer;
 
 		public SortableHeaderRenderer( TableCellRenderer tableCellRenderer )
 		{
@@ -774,7 +780,7 @@ extends AbstractTableModel
 			if( c instanceof JLabel ) {
 				l			= (JLabel) c;
 				modelColumn = table.convertColumnIndexToModel( column );
-				l.setHorizontalTextPosition( JLabel.LEFT );
+				l.setHorizontalTextPosition( SwingConstants.LEFT );
 				l.setIcon( getHeaderRendererIcon( modelColumn ));
 			}
 			return c;
@@ -783,8 +789,8 @@ extends AbstractTableModel
 
 	private static class Directive
 	{
-		private final int column;
-		private final int direction;
+		protected final int column;
+		protected final int direction;
 
 		public Directive( int column, int direction )
 		{

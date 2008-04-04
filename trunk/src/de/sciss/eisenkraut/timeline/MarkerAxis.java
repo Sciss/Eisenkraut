@@ -111,7 +111,7 @@ extends JComponent
 implements	TimelineListener, MouseListener, MouseMotionListener, KeyListener,
 			DynamicListening, Trail.Listener, Disposable
 {
-    private final Session		doc;
+	protected final Session		doc;
 
 	private final Font			fntLabel; //		= new Font( "Helvetica", Font.ITALIC, 10 );
 
@@ -159,9 +159,9 @@ implements	TimelineListener, MouseListener, MouseMotionListener, KeyListener,
 	private JPanel					editMarkerPane	= null;
 	private Object[]				editOptions		= null;
 	private ParamField				ggMarkPos;
-	private JTextField				ggMarkName;
+	protected JTextField			ggMarkName;
 	private JButton					ggEditPrev, ggEditNext;
-	private int						editIdx			= -1;
+	protected int					editIdx			= -1;
 	private DefaultUnitTranslator	timeTrans;
 	
 	// ---- dnd ----
@@ -478,7 +478,7 @@ implements	TimelineListener, MouseListener, MouseMotionListener, KeyListener,
 // XXX DOESN'T WORK ;-(
 //			ggMarkName.getInputMap().remove( ks );
 			imap.put( ks, "prev" );
-			a				= new actionEditPrevClass();
+			a				= new ActionEditPrev();
 //			amap.put( "prev", a );
 			ggEditPrev		= new JButton( a );
 			amap.put( "prev", new DoClickAction( ggEditPrev ));
@@ -486,7 +486,7 @@ implements	TimelineListener, MouseListener, MouseMotionListener, KeyListener,
 // XXX DOESN'T WORK ;-(
 //			ggMarkName.getInputMap().remove( ks );
 			imap.put( ks, "next" );
-			a				= new actionEditNextClass();
+			a				= new ActionEditNext();
 //			amap.put( "next", a );
 			ggEditNext		= new JButton( a );
 			amap.put( "next", new DoClickAction( ggEditNext ));
@@ -510,7 +510,7 @@ implements	TimelineListener, MouseListener, MouseMotionListener, KeyListener,
 		}
 	}
 	
-	private void updateEditMarker()
+	protected void updateEditMarker()
 	{
 		final MarkerStake mark = doc.markers.get( editIdx );
 		if( mark == null ) return;
@@ -525,7 +525,7 @@ implements	TimelineListener, MouseListener, MouseMotionListener, KeyListener,
 		ggMarkName.selectAll();
 	}
 	
-	private void commitEditMarker()
+	protected void commitEditMarker()
 	{
 		final MarkerStake mark = doc.markers.get( editIdx );
 		if( mark == null ) return;
@@ -640,7 +640,7 @@ implements	TimelineListener, MouseListener, MouseMotionListener, KeyListener,
 //		if( isEnabled() ) dispatchMouseMove( e );
 	}
 	
-	public void mouseExited( MouseEvent e ) {}
+	public void mouseExited( MouseEvent e ) { /* ignore */ }
 
 	public void mousePressed( MouseEvent e )
     {
@@ -714,12 +714,12 @@ implements	TimelineListener, MouseListener, MouseMotionListener, KeyListener,
 		}
 	}
 	
-	public void mouseClicked( MouseEvent e ) {}
+	public void mouseClicked( MouseEvent e ) { /* ignored */ }
 
 // ---------------- MouseMotionListener interface ---------------- 
 // we're listening to ourselves
 
-    public void mouseMoved( MouseEvent e ) {}
+    public void mouseMoved( MouseEvent e ) { /* ignore */ }
 
 	public void mouseDragged( MouseEvent e )
 	{
@@ -756,13 +756,13 @@ implements	TimelineListener, MouseListener, MouseMotionListener, KeyListener,
 		}
 	}
 	
-    public void keyReleased( KeyEvent e ) {}
-    public void keyTyped( KeyEvent e ) {}
+    public void keyReleased( KeyEvent e ) { /* ignored */ }
+    public void keyTyped( KeyEvent e ) { /* ignored */ }
 	
 // ---------------- TimelineListener interface ---------------- 
   
-   	public void timelineSelected( TimelineEvent e ) {}
-	public void timelinePositioned( TimelineEvent e ) {}
+   	public void timelineSelected( TimelineEvent e ) { /* ignored */ }
+	public void timelinePositioned( TimelineEvent e ) { /* ignored */ }
 
 	public void timelineChanged( TimelineEvent e )
 	{
@@ -785,10 +785,10 @@ implements	TimelineListener, MouseListener, MouseMotionListener, KeyListener,
 
 // ---------------- internal classes ----------------
 
-	private class actionEditPrevClass
+	private class ActionEditPrev
 	extends MenuAction
 	{
-		private actionEditPrevClass()
+		protected ActionEditPrev()
 		{
 //			super( "\u21E0", KeyStroke.getKeyStroke( KeyEvent.VK_LEFT, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() ));
 			super( "\u21E0" );
@@ -804,10 +804,10 @@ implements	TimelineListener, MouseListener, MouseMotionListener, KeyListener,
 		}
 	}
 
-	private class actionEditNextClass
+	private class ActionEditNext
 	extends MenuAction
 	{
-		private actionEditNextClass()
+		protected ActionEditNext()
 		{
 			super( "\u21E2", KeyStroke.getKeyStroke( KeyEvent.VK_RIGHT, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() ));
 		}

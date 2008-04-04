@@ -38,6 +38,7 @@ import java.awt.Paint;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -96,32 +97,32 @@ implements ActionListener, PathListener, EventManager.Processor
 
 // -------- private Variablen --------
 
-	private static PathList		userPaths			= null;
+	protected static PathList	userPaths			= null;
 	private static final int	USERPATHS_NUM		= 9;		// userPaths capacity
 	private static final int	ABBR_LENGTH			= 12;		// constants for abbreviate
 //	private static final int	DEFAULT_COLUMN_NUM  = 32;		// constants for IOTextField
 
-	private final IOTextField	ggPath;
+	protected final IOTextField	ggPath;
 	private final PathButton	ggChoose;
 	private final JLabel		lbWarn;
-	private ColouredTextField	ggFormat	= null;
+	protected ColouredTextField	ggFormat	= null;
 	
 	private static final Color  COLOR_ERR   = new Color( 0xFF, 0x00, 0x00, 0x2F );
 	private static final Color  COLOR_EXISTS= new Color( 0x00, 0x00, 0xFF, 0x2F );
-	private static final Color  COLOR_PROPSET=new Color( 0x00, 0xFF, 0x00, 0x2F );
+	protected static final Color COLOR_PROPSET=new Color( 0x00, 0xFF, 0x00, 0x2F );
 
 	private final int		type;
 //	private final String	dlgTxt;
-	private String			scheme;
-	private String			protoScheme;
+	protected String		scheme;
+	protected String		protoScheme;
 	private PathField		superPaths[];
 
 	private final List				collChildren	= new ArrayList();
 	private final EventManager		elm				= new EventManager( this );
 
 	private static final int		MENU_SHORTCUT	= Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
-	private static final int		myMeta			= MENU_SHORTCUT == KeyEvent.CTRL_MASK ?
-				KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK : MENU_SHORTCUT;	// META on Mac, CTRL+SHIFT on PC
+	protected static final int		myMeta			= MENU_SHORTCUT == InputEvent.CTRL_MASK ?
+		InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK : MENU_SHORTCUT;	// META on Mac, CTRL+SHIFT on PC
 
 	private static Icon				icnAlertStop	= null;
 	
@@ -365,18 +366,18 @@ implements ActionListener, PathListener, EventManager.Processor
 	 *  The user can abbreviate or extend filenames by pressing the appropriate
 	 *  key; in this case the $F and $B tags are exchanged in the scheme.
 	 *
-	 *  @param  superPaths  array of mother path fields to listen to
-	 *  @param  scheme		automatic formatting scheme which can incorporate
-	 *						placeholders for the mother fields' paths.
+	 *  @param  sp 		array of mother path fields to listen to
+	 *  @param  s		automatic formatting scheme which can incorporate
+	 *					placeholders for the mother fields' paths.
 	 */
-	public void deriveFrom( PathField[] superPaths, String scheme )
+	public void deriveFrom( PathField[] sp, String s )
 	{
-		this.superPaths = superPaths;
-		this.scheme		= scheme;
-		protoScheme		= scheme;
+		this.superPaths 	= sp;
+		this.scheme			= s;
+		this.protoScheme	= s;
 
-		for( int i = 0; i < superPaths.length; i++ ) {
-			superPaths[ i ].addChildPathField( this );
+		for( int i = 0; i < sp.length; i++ ) {
+			sp[ i ].addChildPathField( this );
 		}
 	}
 	
@@ -466,7 +467,7 @@ implements ActionListener, PathListener, EventManager.Processor
 				wp			= parentExists && 
 					((exists && !path.canWrite()) || (!exists && !parent.canWrite()));
 			}
-		} catch( SecurityException e ) {}
+		} catch( SecurityException e ) { /* ignore */ }
 
 		if( errWhenWriteProtected && (wp || !parentExists) ) {
 			c	= COLOR_ERR;
@@ -499,24 +500,24 @@ implements ActionListener, PathListener, EventManager.Processor
 	/*
 	 *	Tags: $Dx = Directory of superPath x; $Fx = Filename; $E = Extension; $Bx = Brief filename
 	 */
-	private String evalScheme( String scheme )
+	protected String evalScheme( String s )
 	{
 		String	txt2;
 		int		i, j, k;
 
-		for( i = scheme.indexOf( "$D" ); (i >= 0) && (i < scheme.length() - 2); i = scheme.indexOf( "$D", i )) {
-			j		= scheme.charAt( i + 2 ) - 48;
+		for( i = s.indexOf( "$D" ); (i >= 0) && (i < s.length() - 2); i = s.indexOf( "$D", i )) {
+			j		= s.charAt( i + 2 ) - 48;
 			try {
 				txt2 = superPaths[ j ].getPath().getPath();
 			} catch( ArrayIndexOutOfBoundsException e1 ) {
 				txt2 = "";
 			}
 			// sucky java 1.1 stringbuffer is impotent
-			scheme	= scheme.substring( 0, i ) + txt2.substring( 0, txt2.lastIndexOf( File.separatorChar ) + 1 ) +
-					  scheme.substring( i + 3 );
+			s	= s.substring( 0, i ) + txt2.substring( 0, txt2.lastIndexOf( File.separatorChar ) + 1 ) +
+					  s.substring( i + 3 );
 		}
-		for( i = scheme.indexOf( "$F" ); (i >= 0) && (i < scheme.length() - 2); i = scheme.indexOf( "$F", i )) {
-			j		= scheme.charAt( i + 2 ) - 48;
+		for( i = s.indexOf( "$F" ); (i >= 0) && (i < s.length() - 2); i = s.indexOf( "$F", i )) {
+			j		= s.charAt( i + 2 ) - 48;
 			try {
 				txt2 = superPaths[ j ].getPath().getPath();
 			} catch( ArrayIndexOutOfBoundsException e1 ) {
@@ -524,11 +525,11 @@ implements ActionListener, PathListener, EventManager.Processor
 			}
 			txt2	= txt2.substring( txt2.lastIndexOf( File.separatorChar ) + 1 );
 			k		= txt2.lastIndexOf( '.' );
-			scheme	= scheme.substring( 0, i ) + ((k > 0) ? txt2.substring( 0, k ) : txt2 ) +
-					  scheme.substring( i + 3 );
+			s	= s.substring( 0, i ) + ((k > 0) ? txt2.substring( 0, k ) : txt2 ) +
+					  s.substring( i + 3 );
 		}
-		for( i = scheme.indexOf( "$X" ); (i >= 0) && (i < scheme.length() - 2); i = scheme.indexOf( "$X", i )) {
-			j		= scheme.charAt( i + 2 ) - 48;
+		for( i = s.indexOf( "$X" ); (i >= 0) && (i < s.length() - 2); i = s.indexOf( "$X", i )) {
+			j		= s.charAt( i + 2 ) - 48;
 			try {
 				txt2 = superPaths[ j ].getPath().getPath();
 			} catch( ArrayIndexOutOfBoundsException e1 ) {
@@ -536,11 +537,11 @@ implements ActionListener, PathListener, EventManager.Processor
 			}
 			txt2	= txt2.substring( txt2.lastIndexOf( File.separatorChar ) + 1 );
 			k		= txt2.lastIndexOf( '.' );
-			scheme	= scheme.substring( 0, i ) + ((k > 0) ? txt2.substring( k ) : "" ) +
-					  scheme.substring( i + 3 );
+			s	= s.substring( 0, i ) + ((k > 0) ? txt2.substring( k ) : "" ) +
+					  s.substring( i + 3 );
 		}
-		for( i = scheme.indexOf( "$B" ); (i >= 0) && (i < scheme.length() - 2); i = scheme.indexOf( "$B", i )) {
-			j		= scheme.charAt( i + 2 ) - 48;
+		for( i = s.indexOf( "$B" ); (i >= 0) && (i < s.length() - 2); i = s.indexOf( "$B", i )) {
+			j		= s.charAt( i + 2 ) - 48;
 			try {
 				txt2 = superPaths[ j ].getPath().getPath();
 			} catch( ArrayIndexOutOfBoundsException e1 ) {
@@ -549,7 +550,7 @@ implements ActionListener, PathListener, EventManager.Processor
 			txt2	= txt2.substring( txt2.lastIndexOf( File.separatorChar ) + 1 );
 			k		= txt2.lastIndexOf( '.' );
 			txt2	= abbreviate( (k > 0) ? txt2.substring( 0, k ) : txt2 );
-			scheme 	= scheme.substring( 0, i ) + txt2 + scheme.substring( i + 3 );
+			s 	= s.substring( 0, i ) + txt2 + s.substring( i + 3 );
 		}
 // XXXX
 //		for( i = scheme.indexOf( "$E" ); i >= 0; i = scheme.indexOf( "$E", i )) {
@@ -557,7 +558,7 @@ implements ActionListener, PathListener, EventManager.Processor
 //			scheme	= scheme.substring( 0, i ) + GenericFile.getExtStr( j ) + scheme.substring( i + 2 );
 //		}
 
-		return scheme;
+		return s;
 	}
 
 	/*
@@ -670,7 +671,7 @@ implements ActionListener, PathListener, EventManager.Processor
 		return applied;
 	}
 
-	private String abbrScheme( String orig )
+	protected String abbrScheme( String orig )
 	{
 		int i = orig.lastIndexOf( "$F" );
 		if( i >= 0 ) {
@@ -680,7 +681,7 @@ implements ActionListener, PathListener, EventManager.Processor
 		}
 	}
 
-	private String expandScheme( String orig )
+	protected String expandScheme( String orig )
 	{
 		int i = orig.indexOf( "$B" );
 		if( i >= 0 ) {
@@ -690,7 +691,7 @@ implements ActionListener, PathListener, EventManager.Processor
 		}
 	}
 
-	private String udirScheme( String orig, int idx )
+	protected String udirScheme( String orig, int idx )
 	{
 		int		i;
 		File	udir = userPaths.getPath( idx );
@@ -735,7 +736,7 @@ implements ActionListener, PathListener, EventManager.Processor
 	private class IOTextField
 	extends ColouredTextField
 	{
-		private IOTextField()
+		protected IOTextField()
 		{
 			super( 32 );
 			
@@ -744,7 +745,7 @@ implements ActionListener, PathListener, EventManager.Processor
 			final IOTextField	enc_this	= this;
 			String				s;
 			
-			inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LEFT, myMeta + KeyEvent.ALT_MASK ), "abbr" );
+			inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LEFT, myMeta + InputEvent.ALT_MASK ), "abbr" );
 			actionMap.put( "abbr", new AbstractAction() {
 				public void actionPerformed( ActionEvent e )
 				{
@@ -752,7 +753,7 @@ implements ActionListener, PathListener, EventManager.Processor
 					setPathAndDispatchEvent( new File( evalScheme( scheme )));
 				}
 			});
-			inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_RIGHT, myMeta + KeyEvent.ALT_MASK ), "expd" );
+			inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_RIGHT, myMeta + InputEvent.ALT_MASK ), "expd" );
 			actionMap.put( "expd", new AbstractAction() {
 				public void actionPerformed( ActionEvent e )
 				{
@@ -778,7 +779,7 @@ implements ActionListener, PathListener, EventManager.Processor
 			});
 			for( int i = 0; i < USERPATHS_NUM; i++ ) {
 				s = "sudir" + i;
-				inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_NUMPAD1 + i, myMeta + KeyEvent.ALT_MASK ), s );
+				inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_NUMPAD1 + i, myMeta + InputEvent.ALT_MASK ), s );
 				actionMap.put( s, new SetUserDirAction( i ));
 				s = "rudir" + i;
 				inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_NUMPAD1 + i, myMeta ), s );
@@ -793,7 +794,7 @@ implements ActionListener, PathListener, EventManager.Processor
 			private javax.swing.Timer visualFeedback;
 			private Paint oldPaint = null;
 		
-			private SetUserDirAction( int idx )
+			protected SetUserDirAction( int idx )
 			{
 				this.idx		= idx;
 				visualFeedback  = new javax.swing.Timer( 250, this );
@@ -825,7 +826,7 @@ implements ActionListener, PathListener, EventManager.Processor
 		{
 			private int idx;
 		
-			private RecallUserDirAction( int idx )
+			protected RecallUserDirAction( int idx )
 			{
 				this.idx = idx;
 			}

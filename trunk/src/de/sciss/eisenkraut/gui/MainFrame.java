@@ -87,12 +87,12 @@ implements de.sciss.jcollider.Constants, ServerListener
 	
 //	private boolean						keepScRunning;
 //	private ProcessingThread			pt				= null;
-	private boolean						booted			= false;
+	protected boolean					booted			= false;
 	
-	private final actionBootClass		actionBoot;
+	private final ActionBoot			actionBoot;
 
 //	private final JCheckBox				ggDumpOSC;
-	private final MultiStateButton		ggDumpOSC;
+	protected final MultiStateButton	ggDumpOSC;
 	private final JLabel				lbStatus1;
 	private final JLabel				lbStatus2;
 
@@ -102,14 +102,14 @@ implements de.sciss.jcollider.Constants, ServerListener
 	private final MessageFormat			msgStatus2;
 	private final Object[]				argsStatus		= new Object[ 5 ];
 	private final String				unknownStatus;
-	private final Box					boxStatus2;
+	protected final Box					boxStatus2;
 
 	private final LogTextArea			lta;
-	private final MultiStateButton		ggBoot;
+	protected final MultiStateButton	ggBoot;
 
 	private final Font					fntMonoSpaced;
 	
-	private final SuperColliderClient	superCollider;
+	protected final SuperColliderClient	superCollider;
 
 	public MainFrame()
 	{
@@ -143,7 +143,7 @@ implements de.sciss.jcollider.Constants, ServerListener
 		ggScroll		= lta.placeMeInAPane();
 		lta.makeSystemOutput();
 		
-		actionBoot		= new actionBootClass();
+		actionBoot		= new ActionBoot();
 //		ggBoot			= new JButton( actionBoot );
 		ggBoot			= new MultiStateButton();
 		ggBoot.setFocusable( false );	// prevent user from accidentally starting/stopping server
@@ -352,10 +352,10 @@ ggDumpOSC.addItem( getResourceString( "labelDumpHex" ), null, new Color( 0xFF, 0
 
 // ------------- interne klassen -------------
 
-	private class actionBootClass
+	private class ActionBoot
 	extends AbstractAction
 	{
-		private actionBootClass()
+		protected ActionBoot()
 		{
 			super();
 //			super( getResourceString( "buttonBoot" ));
@@ -371,14 +371,14 @@ ggDumpOSC.addItem( getResourceString( "labelDumpHex" ), null, new Color( 0xFF, 0
 			}
 		}
 		
-		private void terminated()
+		protected void terminated()
 		{
 			booted = false;
 //			putValue( NAME, getResourceString( "buttonBoot" ));
 			ggBoot.setSelectedIndex( 0 );
 		}
 
-		private void booted()
+		protected void booted()
 		{
 			booted = true;
 //			putValue( NAME, getResourceString( "buttonTerminate" ));

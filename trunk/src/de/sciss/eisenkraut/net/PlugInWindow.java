@@ -84,12 +84,12 @@ extends AppWindow
 			throw new IllegalStateException();
 		}
 
-		final JPanel topView = new JPanel();
+		final JPanel tempView = new JPanel();
 		final Container c = getContentPane();
-		c.add( topView );
-		topView.setPreferredSize( cocoaBounds.getSize() );
+		c.add( tempView );
+		tempView.setPreferredSize( cocoaBounds.getSize() );
 		pack();	// frame is made displayable
-		c.remove( topView );
+		c.remove( tempView );
 		final Rectangle screenBounds = getWindow().getGraphicsConfiguration().getBounds();
 		final Insets insets = getInsets();
 		setLocation( new Point(
@@ -142,7 +142,7 @@ extends AppWindow
 		super.dispose();
 	}
 	
-	private WindowEvent windowEvent( Event e )
+	protected WindowEvent windowEvent( Event e )
 	{
 //		return new WindowEvent( e.getWindow(), e.getID() );
 // THROWS NULL SOURCE:

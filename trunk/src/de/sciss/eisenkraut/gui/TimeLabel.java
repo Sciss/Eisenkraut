@@ -59,12 +59,12 @@ implements Disposable
 {
 //	private long				resetWhen;
 	private final TimeFormat	frmt;
-	private String				text;
+	protected String			text;
 //	private Color				colr			= Color.black;
 
-	private static final Font	fntMono;
-	private boolean				dimsKnown		= false;
-	private int					textWidth, textHeight, textAscent;
+	protected static final Font	fntMono;
+	protected boolean			dimsKnown		= false;
+	protected int				textWidth, textHeight, textAscent;
 
 //	private static final Color		colrTime		= new Color( 0xD6, 0xDB, 0xBF );
 	private static final Color		colrTime		= new Color( 0xF1, 0xFA, 0xCA );
@@ -202,6 +202,8 @@ implements Disposable
 	{
 		private Image img;
 	
+		protected Label() { /* empty */ }
+
 //		private void createImage( FontMetrics fm )
 //		{
 //			final int			w2		= fm.stringWidth( "00" ) + 2;

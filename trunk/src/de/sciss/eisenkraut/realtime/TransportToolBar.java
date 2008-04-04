@@ -37,6 +37,7 @@ package de.sciss.eisenkraut.realtime;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -52,6 +53,7 @@ import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
 import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -103,27 +105,27 @@ extends Box
 implements  TimelineListener, TransportListener,	// RealtimeConsumer,
 			DynamicListening, Disposable
 {
-	private final Session			doc;
-	private final Transport			transport;
+	protected final Session			doc;
+	protected final Transport		transport;
     
-	private final JButton			ggPlay, ggStop;
+	protected final JButton			ggPlay, ggStop;
 	private final JToggleButton		ggLoop;
-	private final ActionLoop	actionLoop;
+	private final ActionLoop		actionLoop;
 
 	private final ToolBar			toolBar;
-	private final TimeLabel			lbTime;
+	protected final TimeLabel		lbTime;
 	
-	private double					rate;
+	protected double				rate;
 	private int						customGroup		= 3;
 
 //	private static final MessageFormat   msgFormat =
 //		new MessageFormat( "{0,number,integer}:{1,number,00.000}", Locale.US );		// XXX US locale
 
 	// forward / rewind cueing
-	private boolean					isCueing		= false;
-	private int						cueStep;
-	private final Timer				cueTimer;
-	private long					cuePos;
+	protected boolean				isCueing		= false;
+	protected int					cueStep;
+	protected final Timer			cueTimer;
+	protected long					cuePos;
 	
 	private final Timer				playTimer;
 
@@ -147,7 +149,7 @@ implements  TimelineListener, TransportListener,	// RealtimeConsumer,
 		final InputMap			imap		= this.getInputMap( JComponent.WHEN_IN_FOCUSED_WINDOW );
 		final ActionMap			amap		= this.getActionMap();
 
-		toolBar			= new ToolBar( ToolBar.HORIZONTAL );
+		toolBar			= new ToolBar( SwingConstants.HORIZONTAL );
 
         ggRewind		= new JButton();
 		GraphicsUtil.setToolIcons( ggRewind, GraphicsUtil.createToolIcons( GraphicsUtil.ICON_REWIND ));
@@ -166,11 +168,11 @@ implements  TimelineListener, TransportListener,	// RealtimeConsumer,
 		GraphicsUtil.setToolIcons( ggPlay, GraphicsUtil.createToolIcons( GraphicsUtil.ICON_PLAY ));
 
 		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_SPACE, 0 ), "playstop" );
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_SPACE, KeyEvent.SHIFT_MASK ), "playstop" );
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_SPACE, KeyEvent.SHIFT_MASK | KeyEvent.ALT_MASK ), "playstop" );
+		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_SPACE, InputEvent.SHIFT_MASK ), "playstop" );
+		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_SPACE, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK ), "playstop" );
 		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_NUMPAD0, 0 ), "playstop" );
 		amap.put( "playstop", new ActionTogglePlayStop() );
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_SPACE, KeyEvent.CTRL_MASK ), "playsel" );
+		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_SPACE, InputEvent.CTRL_MASK ), "playsel" );
 		amap.put( "playsel", new ActionPlaySelection() );
 
         ggFFwd			= new JButton();
@@ -343,7 +345,7 @@ this.add( Box.createHorizontalStrut( 4 ));
 //		}
 	}
 	
-    public void timelineScrolled( TimelineEvent e ) {}
+    public void timelineScrolled( TimelineEvent e ) { /* ignore */ }
 
 	public void timelinePositioned( TimelineEvent e )
 	{
@@ -355,7 +357,7 @@ this.add( Box.createHorizontalStrut( 4 ));
 
 // ---------------- TransportListener interface ---------------- 
 
-	public void transportStop( Transport transport, long pos )
+	public void transportStop( Transport t, long pos )
 	{
 		ggPlay.setSelected( false );
 		if( isCueing ) {
@@ -365,21 +367,21 @@ this.add( Box.createHorizontalStrut( 4 ));
 		playTimer.stop();
 	}
 	
-	public void transportPlay( Transport transport, long pos, double rate )
+	public void transportPlay( Transport t, long pos, double pRate )
 	{
 		ggPlay.setSelected( true );
 		cueTimer.stop();
 		playTimer.restart();
 	}
 	
-	public void transportQuit( Transport transport )
+	public void transportQuit( Transport t )
 	{
 		cueTimer.stop();
 		playTimer.stop();
 	}
 	
-	public void transportPosition( Transport transport, long pos, double rate ) {}
-	public void transportReadjust( Transport transport, long pos, double rate ) {}
+	public void transportPosition( Transport t, long pos, double pRate ) { /* ignore */ }
+	public void transportReadjust( Transport t, long pos, double pRate ) { /* ignore */ }
 
 // ---------------- Disposable interface ---------------- 
 
@@ -397,6 +399,8 @@ this.add( Box.createHorizontalStrut( 4 ));
 		private Param		value	= null;
 		private ParamSpace	space	= null;
 	
+		protected ActionGoToTime() { /* empty */ }
+
 		public void actionPerformed( ActionEvent e )
 		{
 			final int					result;
@@ -438,7 +442,7 @@ ggCurrent.setFocusable( false );
 //b.add( lbArrow );
 //b.add( ggCurrent );
 ggCurrent.addActionListener( new ActionListener() {
-	public void actionPerformed( ActionEvent e )
+	public void actionPerformed( ActionEvent ae )
 	{
 		final long pos = transport.isRunning() ? transport.getCurrentFrame() : doc.timeline.getPosition();
 		ggPosition.setValue( new Param( pos, ParamSpace.TIME | ParamSpace.SMPS ));	// XXX sync
@@ -475,6 +479,8 @@ msgPane.add( ggCurrent );
 //	extends KeyedAction
 	extends AbstractAction
 	{
+		protected ActionTogglePlayStop() { /* empty */ }
+
 //		private actionTogglePlayStopClass( KeyStroke stroke )
 //		{
 //			super( stroke );
@@ -495,6 +501,8 @@ msgPane.add( ggCurrent );
 	private class ActionPlaySelection
 	extends AbstractAction
 	{
+		protected ActionPlaySelection() { /* empty */ }
+
 		public void actionPerformed( ActionEvent e )
 		{
 			final Span span;
@@ -517,7 +525,7 @@ msgPane.add( ggCurrent );
 		private final boolean			onOff;
 		private final AbstractButton	b;
 	
-		private ActionCue( AbstractButton b, boolean onOff )
+		protected ActionCue( AbstractButton b, boolean onOff )
 		{
 			this.onOff	= onOff;
 			this.b		= b;
@@ -534,7 +542,7 @@ msgPane.add( ggCurrent );
 	private class ActionLoop
 	extends AbstractAction
 	{	
-		private ActionLoop()
+		protected ActionLoop()
 		{
 			super();
 		}
@@ -557,7 +565,7 @@ msgPane.add( ggCurrent );
 			}
         }
 		
-		private void updateLoop()
+		protected void updateLoop()
 		{
 			Span span;
 
@@ -580,7 +588,7 @@ msgPane.add( ggCurrent );
 		private final int			step;
 	
 		// step = in millisecs, > 0 = fwd, < = rwd
-		private CueListener( AbstractButton b, int step )
+		protected CueListener( AbstractButton b, int step )
 		{
 			bm			= b.getModel();
 			this.step	= step;

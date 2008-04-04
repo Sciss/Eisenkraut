@@ -48,7 +48,7 @@ import de.sciss.gui.MenuRoot;
 public abstract class BasicApplication
 extends AbstractApplication
 {
-	private final actionQuitClass		actionQuit;
+	private final ActionQuit		actionQuit;
 	private BasicWindowHandler			wh;
 	private DocumentHandler				dh;
 	private GraphicsHandler				gh;
@@ -58,7 +58,7 @@ extends AbstractApplication
 	{
 		super( c, name );
 
-		actionQuit			= new actionQuitClass( getResourceString( "menuQuit" ),
+		actionQuit			= new ActionQuit( getResourceString( "menuQuit" ),
 												   KeyStroke.getKeyStroke( KeyEvent.VK_Q,
 												   BasicMenuFactory.MENU_SHORTCUT ));
 	}
@@ -117,7 +117,7 @@ extends AbstractApplication
 		return actionQuit;
 	}
 
-	private void handleOpenFile( ApplicationEvent e )
+	protected void handleOpenFile( ApplicationEvent e )
 	{
 		mf.openDocument( e.getFile() );
 	}
@@ -125,12 +125,12 @@ extends AbstractApplication
 // ---------------- internal classes ---------------- 
 
 	// action for Application-Quit menu item
-	private class actionQuitClass
+	private class ActionQuit
 	extends MenuAction
 	{
 //		private String text;
 	
-		private actionQuitClass( String text, KeyStroke shortcut )
+		protected ActionQuit( String text, KeyStroke shortcut )
 		{
 			super( text, shortcut );
 			

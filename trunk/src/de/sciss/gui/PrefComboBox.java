@@ -86,7 +86,7 @@ implements  DynamicListening, PreferenceChangeListener,
 	private Object							defaultValue	= null;
 
 	private boolean							readPrefs		= true;
-	private boolean							writePrefs		= true;
+	protected boolean						writePrefs		= true;
 
 	/**
 	 *  Creates a new <code>PrefComboBox</code>

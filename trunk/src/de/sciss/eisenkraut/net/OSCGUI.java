@@ -211,7 +211,7 @@ implements OSCRouter, Disposable
 		private final MenuRoot			mr;
 		private final Map				mapNodes		= new HashMap();
 
-		private MenuBuilder( OSCRouter superRouter )
+		protected MenuBuilder( OSCRouter superRouter )
 		{
 //			this.gui	= gui;
 			osc			= new OSCRouterWrapper( superRouter, this );
@@ -354,12 +354,12 @@ implements OSCRouter, Disposable
 			}
 		}
 
-		private void reply( OSCMenuNode n )
+		protected void reply( OSCMenuNode n )
 		{
 			reply( n, null );
 		}
 
-		private void reply( OSCMenuNode n, Object[] extraArgs )
+		protected void reply( OSCMenuNode n, Object[] extraArgs )
 		{
 			final OSCRoot server	= OSCRoot.getInstance();
 			
@@ -401,7 +401,7 @@ implements OSCRouter, Disposable
 		private final SocketAddress	addr;
 		protected MenuNode			n;
 	
-		private OSCMenuItem( MenuBuilder mb, int id, SocketAddress addr, MenuGroup parent, String text, KeyStroke stroke )
+		protected OSCMenuItem( MenuBuilder mb, int id, SocketAddress addr, MenuGroup parent, String text, KeyStroke stroke )
 		{
 			super( text, stroke );
 			this.mb		= mb;
@@ -445,7 +445,7 @@ implements OSCRouter, Disposable
 	private static class OSCMenuGroup
 	extends OSCMenuItem
 	{
-		private OSCMenuGroup( MenuBuilder mb, int id, SocketAddress addr, MenuGroup parent, String text, KeyStroke stroke )
+		protected OSCMenuGroup( MenuBuilder mb, int id, SocketAddress addr, MenuGroup parent, String text, KeyStroke stroke )
 		{
 			super( mb, id, addr, parent, text, stroke );
 		}
@@ -467,7 +467,7 @@ implements OSCRouter, Disposable
 		private final MenuGroup		parent;
 		private MenuNode			n;
 	
-		private OSCMenuSeparator( MenuBuilder mb, int id, SocketAddress addr, MenuGroup parent )
+		protected OSCMenuSeparator( MenuBuilder mb, int id, SocketAddress addr, MenuGroup parent )
 		{
 //			this.mb		= mb;
 			this.id		= id;
@@ -513,7 +513,7 @@ implements OSCRouter, Disposable
 		private final MenuGroup		parent;
 		private final SocketAddress	addr;
 	
-		private OSCMenuCheck( MenuBuilder mb, int id, SocketAddress addr, MenuGroup parent, String text, KeyStroke stroke )
+		protected OSCMenuCheck( MenuBuilder mb, int id, SocketAddress addr, MenuGroup parent, String text, KeyStroke stroke )
 		{
 			super( text, stroke );
 			this.mb		= mb;

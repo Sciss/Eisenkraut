@@ -85,13 +85,13 @@ extends AbstractCompoundEdit
 	/**
 	 *  Does nothing
 	 */
-	protected void undoDone() {}
+	protected void undoDone() { /* empty */ }
 	/**
 	 *  Does nothing
 	 */
-	protected void redoDone() {}
+	protected void redoDone() { /* empty */ }
 	/**
 	 *  Does nothing
 	 */
-	protected void cancelDone() {}
+	protected void cancelDone() { /* empty */ }
 }

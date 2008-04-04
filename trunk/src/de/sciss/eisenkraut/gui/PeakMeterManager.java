@@ -93,7 +93,7 @@ implements MeterListener, Disposable, DynamicListening, GroupSync.Slave
 //		for( int i = 0; i < meters.length; i++ ) meters[ i ].setSync( sync );
 //	}
 	
-	private void checkStopTasking()
+	protected void checkStopTasking()
 	{
 		if( added && !task ) {
 			mm.setListenerTask( this, false, null );
@@ -123,13 +123,13 @@ implements MeterListener, Disposable, DynamicListening, GroupSync.Slave
 	
 	public void setInputs( Bus b )
 	{
-		final int[] channels = new int[ b.getNumChannels() ];
+		final int[] newChannels = new int[ b.getNumChannels() ];
 	
-		for( int i = 0, j = b.getIndex(); i < channels.length; ) {
-			channels[ i++ ] = j++;
+		for( int i = 0, j = b.getIndex(); i < newChannels.length; ) {
+			newChannels[ i++ ] = j++;
 		}
 		
-		setInputs( b.getServer(), channels );
+		setInputs( b.getServer(), newChannels );
 	}
 
 	public void setInputs( Server s, int[] channels )
@@ -257,14 +257,14 @@ implements MeterListener, Disposable, DynamicListening, GroupSync.Slave
 
 	public void meterUpdate( float[] peakRMSPairs )
 	{
-		final PeakMeter[]	meters		= this.meters;	// = easy synchronization
-		final int			numMeters	= Math.min( meters.length, peakRMSPairs.length >> 1 );
+		final PeakMeter[]	metersCopy	= meters;	// = easy synchronization
+		final int			numMeters	= Math.min( metersCopy.length, peakRMSPairs.length >> 1 );
 		final long			now			= System.currentTimeMillis();
 		int					dirty		= 0;
 
 //		synchronized( sync ) {
 			for( int i = 0, j = 0; i < numMeters; i++ ) {
-				if( meters[ i ].setPeakAndRMS( peakRMSPairs[ j++ ], peakRMSPairs[ j++ ], now )) dirty++;
+				if( metersCopy[ i ].setPeakAndRMS( peakRMSPairs[ j++ ], peakRMSPairs[ j++ ], now )) dirty++;
 			}
 //		}
 		

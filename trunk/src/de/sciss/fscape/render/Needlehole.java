@@ -397,7 +397,7 @@ implements RandomAccessRequester
 		final double[][]	dcMem;
 		final int			winSizeM1;
 	
-		public StdDevFilter( int winSize, int channels )
+		protected StdDevFilter( int winSize, int channels )
 		{
 			this.winSize	= winSize;
 			this.channels   = channels;
@@ -456,7 +456,7 @@ implements RandomAccessRequester
 		final int			channels;
 		final int			winSizeM1;
 	
-		public MinimumFilter( int winSize, int channels )
+		protected MinimumFilter( int winSize, int channels )
 		{
 			this.winSize	= winSize;
 			this.channels   = channels;
@@ -509,7 +509,7 @@ implements RandomAccessRequester
 		final float[][] buf;
 		final int[][]	idxBuf;
 	
-		private MedianFilter( int winSize, int channels )
+		protected MedianFilter( int winSize, int channels )
 		{
 			this.winSize	= winSize;
 			this.channels   = channels;
@@ -632,7 +632,7 @@ implements RandomAccessRequester
 		private static final float	HISTOSIZEM05	= HISTOSIZE - 0.5f;
 		private static final int	HISTOSIZEH		= HISTOSIZE >> 1;
 		
-		public CenterClippingFilter( int winSize, int channels, double threshAmp )
+		protected CenterClippingFilter( int winSize, int channels, double threshAmp )
 		{
 //			this.winSize	= winSize;
 			this.channels   = channels;
@@ -715,7 +715,7 @@ implements RandomAccessRequester
 		final int			winSizeM1;
 		final double[][]	dcMem;
 	
-		public Minimum2Filter( int winSize, int channels )
+		protected Minimum2Filter( int winSize, int channels )
 		{
 			this.winSize	= winSize;
 			this.channels   = channels;
@@ -785,7 +785,7 @@ implements RandomAccessRequester
 		final int			fftSize;
 		final int			fftSizeP2;
 	
-		public AutoCorrelationFilter( int winSize, int channels )
+		protected AutoCorrelationFilter( int winSize, int channels )
 		{
 			this.winSize	= winSize;
 			this.channels   = channels;
@@ -868,7 +868,7 @@ implements RandomAccessRequester
 		final float[][]		procBuf;
 		int					procBufOff	= 0;
 	
-		public AutoCorrelation2Filter( int winSize, int channels )
+		protected AutoCorrelation2Filter( int winSize, int channels )
 		{
 			this.winSize	= winSize >> 1;
 			this.channels   = channels;
@@ -965,7 +965,7 @@ inOff += winSize;
 		final float			gain;
 		int					winBufIdx	= 0;
 	
-		public MinimumPhaseFilter( int winSize, int channels )
+		protected MinimumPhaseFilter( int winSize, int channels )
 		{
 			this.winSize	= winSize;
 			this.channels   = channels;

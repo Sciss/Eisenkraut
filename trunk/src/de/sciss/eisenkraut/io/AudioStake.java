@@ -106,7 +106,7 @@ extends BasicStake
 	public abstract long copyFrames( InterleavedStreamFile target, Span readSpan ) throws IOException;
 	public abstract int getChannelNum();
 	public abstract void flush() throws IOException;
-	public abstract void addBufferReadMessages( OSCBundle bndl, Span span, Buffer[] bufs, int bufOff );
+	public abstract void addBufferReadMessages( OSCBundle bndl, Span s, Buffer[] bufs, int bufOff );
 
 	public abstract void debugDump();
 	
@@ -128,13 +128,13 @@ extends BasicStake
 	
 	public static Action getDebugDumpAction()
 	{
-		return new actionDebugDump();
+		return new ActionDebugDump();
 	}
 	
-	private static class actionDebugDump
+	private static class ActionDebugDump
 	extends AbstractAction
 	{
-		private actionDebugDump()
+		protected ActionDebugDump()
 		{
 			super( "Dump Undisposed Audio Stakes" );
 		}

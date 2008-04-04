@@ -46,14 +46,14 @@ public class MenuItem
 implements MenuNode
 {
 	private final String	id;
-	private final Action	a;
+	private final Action	action;
 	private final Map		mapWindowActions	= new HashMap();	// key = AbstractWindow; value = Action
 	protected final Map		mapRealized			= new HashMap();
 
 	public MenuItem( String id, Action a )
 	{
-		this.id	= id;
-		this.a	= a;
+		this.id		= id;
+		this.action	= a;
 	}
 
 	public MenuItem( String id, String text )
@@ -70,7 +70,7 @@ implements MenuNode
 
 	public void setEnabled( boolean b )
 	{
-		a.setEnabled( b );
+		action.setEnabled( b );
 	}
 	
 	public String getID()
@@ -90,13 +90,13 @@ implements MenuNode
 	
 	public Action getAction()
 	{
-		return a;
+		return action;
 	}
 	
 	public Action getAction( AbstractWindow w )
 	{
 		final Action wa = (Action) mapWindowActions.get( w );
-		return( wa == null ? a : wa );
+		return( wa == null ? action : wa );
 	}
 
 	public JComponent create( AbstractWindow w )
@@ -124,7 +124,7 @@ implements MenuNode
 		protected final AbstractWindow	w;
 		protected final JComponent		c;
 	
-		private Realized( AbstractWindow w, JComponent c )
+		protected Realized( AbstractWindow w, JComponent c )
 		{
 			this.w	= w;
 			this.c	= c;

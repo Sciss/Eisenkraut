@@ -60,7 +60,7 @@ implements  DynamicListening, PreferenceChangeListener,
 	private PathListener					listener;
 	private File							defaultValue	= null;
 	private boolean							readPrefs		= true;
-	private boolean							writePrefs		= true;
+	protected boolean						writePrefs		= true;
 
 	/**
 	 *  Constructs a new <code>PrefPathField</code>.

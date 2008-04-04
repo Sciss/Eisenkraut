@@ -73,7 +73,7 @@ implements Disposable
 	private final Preferences					audioPrefs;
 	private final SessionCollection				tracks;
 
-	private PanoramaPanel						pan				= null;
+	protected PanoramaPanel						pan				= null;
 	private AppWindow							palette			= null;
 	private JPopupMenu							popup			= null;
 	
@@ -120,7 +120,7 @@ implements Disposable
 				}
 			}
 
-			public void sessionObjectChanged( SessionCollection.Event e ) {}
+			public void sessionObjectChanged( SessionCollection.Event e ) { /* empty */ }
 		};
 		
 		prefListener = new PreferenceChangeListener() {
@@ -175,8 +175,8 @@ implements Disposable
 				dispose();
 			}
 			
-			public void popupMenuWillBecomeInvisible( PopupMenuEvent e ) {}
-			public void popupMenuWillBecomeVisible( PopupMenuEvent e ) {}
+			public void popupMenuWillBecomeInvisible( PopupMenuEvent e ) { /* empty */ }
+			public void popupMenuWillBecomeVisible( PopupMenuEvent e ) { /* empty */ }
 		});
 //popup.setCursor( new java.awt.Cursor( java.awt.Cursor.CROSSHAIR_CURSOR ));
 	}
@@ -239,7 +239,7 @@ implements Disposable
 		popup = null;
 	}
 
-	private void destroyPanPan()
+	protected void destroyPanPan()
 	{
 		if( pan == null ) return;
 
@@ -248,7 +248,7 @@ implements Disposable
 		pan = null;
 	}
 
-	private void createPanPan()
+	protected void createPanPan()
 	{
 		final String		cfgName		= audioPrefs.get( PrefsUtil.KEY_OUTPUTCONFIG, null );
 		RoutingConfig		oCfg		= null;
@@ -275,7 +275,7 @@ implements Disposable
 		}
 	}
 
-	private void setAzimuthAndSpread()
+	protected void setAzimuthAndSpread()
 	{
 		final double	azi, spread;
 		Object			o;

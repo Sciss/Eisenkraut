@@ -65,21 +65,21 @@ implements OSCRouter
 	{
 		super( true );	// we are multi-document aware
 		this.root	= root;
-		osc			= new OSCRouterWrapper( OSCRoot.getInstance(), this );
+		this.osc	= new OSCRouterWrapper( OSCRoot.getInstance(), this );
 	}
 	
 	public void addDocument( Object source, Document doc )
 	{
-		synchronized( sync ) {
+		synchronized( this.sync ) {
 			super.addDocument( source, doc );
-			mapIDs.put( new Integer( ((Session) doc).getNodeID() ), doc );
+			this.mapIDs.put( new Integer( ((Session) doc).getNodeID() ), doc );
 		}
 	}
 
 	public void removeDocument( Object source, Document doc )
 	{
-		synchronized( sync ) {
-			mapIDs.remove( new Integer( ((Session) doc).getNodeID() ));
+		synchronized( this.sync ) {
+			this.mapIDs.remove( new Integer( ((Session) doc).getNodeID() ));
 			super.removeDocument( source, doc );
 		}
 	}
@@ -113,8 +113,8 @@ implements OSCRouter
 			} else if( subPath.equals( OSC_ID )) {
 				rom = rom.next();
 				final Integer id = new Integer( rom.getPathComponent() );
-				synchronized( sync ) {
-					doc = (Document) mapIDs.get( id );
+				synchronized( this.sync ) {
+					doc = (Document) this.mapIDs.get( id );
 				}
 			} else if( subPath.equals( OSC_INDEX )) {
 				rom = rom.next();

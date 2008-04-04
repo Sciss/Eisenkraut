@@ -100,10 +100,10 @@ public class AquaWindowBar
 extends JPanel
 implements Disposable, SwingConstants, WindowConstants
 {
-	private static final int	WIDTH		= 22;
-	private static final int	WIDTHS		= 16;
-	private static final int	PNTWIDTH	= 20;
-	private static final int	PNTWIDTHS	= 15;
+	private static final int	BAR_WIDTH		= 22;
+	private static final int	BAR_WIDTH_SM	= 16;
+	private static final int	PNT_WIDTH		= 20;
+	private static final int	PNT_WIDTH_SM	= 15;
 //	private static final int[]	bgPixels	= { 0xFFCACACA, 0xFFCCCCCC, 0xFFCFCFCF, 0xFFD1D1D1, 0xFFD3D3D3, 0xFFD6D6D6,
 //												0xFFD7D7D7, 0xFFD9D9D9, 0xFFDBDBDB, 0xFFDDDDDD, 0xFFDFDFDF, 0xFFE0E0E0,
 //												0xFFE2E2E2, 0xFFE3E3E3, 0xFFE4E4E4, 0xFFE6E6E6, 0xFFE6E6E6, 0xFFE6E6E6,
@@ -140,11 +140,11 @@ implements Disposable, SwingConstants, WindowConstants
 	private final int			pntExtent;
 	private boolean				alwaysOnTop			= false;
 	
-	private final TripletButton[]	ggTriplet			= new TripletButton[ 3 ];
+	protected final TripletButton[]	ggTriplet			= new TripletButton[ 3 ];
 	private int tripletX;
 	private final MouseAdapter tripletML;
 	
-	private static TiledImage	imgTriplet			= null;	// lazy creation
+	protected static TiledImage	imgTriplet			= null;	// lazy creation
 	
 	// ------------- Flags -------------
 	public static final int		CLOSEGADGET			= 0x01;
@@ -152,9 +152,9 @@ implements Disposable, SwingConstants, WindowConstants
 	public static final int		MAXGADGET			= 0x04;
 	public static final int		TRIPLET				= CLOSEGADGET | MINGADGET | MAXGADGET;
 	
-	private int dco = HIDE_ON_CLOSE;
+	protected int dco = HIDE_ON_CLOSE;
 
-	private final boolean	isMac;
+	protected final boolean	isMac;
 	
 	private TempFocusTracker	tft					= null;
 				
@@ -195,8 +195,8 @@ implements Disposable, SwingConstants, WindowConstants
 		this.small		= small;
 		this.vertical	= orient == VERTICAL;
 		this.flags		= flags;
-		width			= small ? WIDTHS : WIDTH;
-		pntExtent		= small ? PNTWIDTHS : PNTWIDTH;
+		width			= small ? BAR_WIDTH_SM : BAR_WIDTH;
+		pntExtent		= small ? PNT_WIDTH_SM : PNT_WIDTH;
 		isMac			= System.getProperty( "os.name" ).indexOf( "Mac OS" ) >= 0;
 				
 		if( vertical ) {
@@ -499,7 +499,7 @@ implements Disposable, SwingConstants, WindowConstants
 	{
 		private final Icon icnNormal, icnDisabled, icnOver, icnPressed;
 
-		private TripletButton( int id )
+		protected TripletButton( int id )
 		{
 			this( imgTriplet.createIcon( id, 0 ), imgTriplet.createIcon( id, 1 ),
 				  imgTriplet.createIcon( id, 2 ), imgTriplet.createIcon( id, 3 ));
@@ -528,7 +528,7 @@ implements Disposable, SwingConstants, WindowConstants
 			setFocusable( false );
 		}
 
-		private void setGaps( int gapH, int gapV )
+		protected void setGaps( int gapH, int gapV )
 		{
 			final int		width	= icnNormal.getIconWidth();
 			final int		height	= icnNormal.getIconHeight();
@@ -542,7 +542,7 @@ implements Disposable, SwingConstants, WindowConstants
 			setSize( d );
 		}
 		
-		private void setArmed( boolean b )
+		protected void setArmed( boolean b )
 		{
 			final ButtonModel	m = getModel();
 			m.setArmed( b );
@@ -582,7 +582,7 @@ implements Disposable, SwingConstants, WindowConstants
 		private final JFrame	jf;
 		private Component		currentFocus	= null;
 		
-		private TempFocusTracker( JFrame jf )
+		protected TempFocusTracker( JFrame jf )
 		{
 			this.jf	= jf;
 //			addContainer( jf.getContentPane() );
@@ -686,10 +686,10 @@ implements Disposable, SwingConstants, WindowConstants
 			currentFocus = c;
 		}
 		
-		public void mouseClicked( MouseEvent e ) {}
-		public void mouseEntered( MouseEvent e ) {}
-		public void mouseExited( MouseEvent e ) {}
-		public void mouseReleased( MouseEvent e ) {}
+		public void mouseClicked( MouseEvent e ) { /* ignored */ }
+		public void mouseEntered( MouseEvent e ) { /* ignored */ }
+		public void mouseExited( MouseEvent e ) { /* ignored */ }
+		public void mouseReleased( MouseEvent e ) { /* ignored */ }
 
 		public void focusLost( FocusEvent e )
 		{
@@ -716,6 +716,6 @@ implements Disposable, SwingConstants, WindowConstants
 			removeContainer( jf.getContentPane() );
 		}
 		
-		public void ancestorMoved( AncestorEvent e ) {}
+		public void ancestorMoved( AncestorEvent e ) { /* ignored */ }
 	}
 }

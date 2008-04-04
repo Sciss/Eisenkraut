@@ -72,6 +72,8 @@ import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
@@ -123,18 +125,19 @@ import de.sciss.util.ParamSpace;
  */
 public class PrefsFrame
 extends AppWindow
+implements SwingConstants
 {
 	private static final ParamSpace	spcIntegerFromZero = new ParamSpace( 0, Double.POSITIVE_INFINITY, 1, 0, 0, 0 );
 	private static final ParamSpace	spcIntegerFromOne  = new ParamSpace( 1, Double.POSITIVE_INFINITY, 1, 0, 0, 1 );
 
 	private final Preferences		audioPrefs;
-	private final Preferences		abPrefs;
+	protected final Preferences		abPrefs;
 	
 	// audio box config
-	private final List				collAudioBoxConfigs	= new ArrayList();
+	protected final List			collAudioBoxConfigs	= new ArrayList();
 	private final Set				setAudioBoxIDs		= new HashSet();
-	private final Set				setAudioBoxNames	= new HashSet();
-	private static final String[]	audioBoxColNames	= { "prefsAudioDevice", "prefsAudioInputChannels", "prefsAudioOutputChannels", "prefsAudioDeviceActive" };
+	protected final Set				setAudioBoxNames	= new HashSet();
+	protected static final String[]	audioBoxColNames	= { "prefsAudioDevice", "prefsAudioInputChannels", "prefsAudioOutputChannels", "prefsAudioDeviceActive" };
 	
 //	private final PrefsFrame		enc_this			= this;
 
@@ -147,7 +150,7 @@ extends AppWindow
 		new StringItem( new Param( 96000, ParamSpace.FREQ | ParamSpace.HERTZ ).toString(), "96 kHz" )
 	};
 
-	private AudioBoxTableModel	abtm;
+	protected AudioBoxTableModel	abtm;
 
 	/**
 	 *  Creates a new preferences frame
@@ -199,7 +202,7 @@ extends AppWindow
 		prefs   = IOUtil.getUserPrefs();
 		key		= IOUtil.KEY_TEMPDIR;
 		key2	= "prefsTmpDir";
-		lb		= new JLabel( getResourceString( key2 ), JLabel.TRAILING );
+		lb		= new JLabel( getResourceString( key2 ), TRAILING );
 		tab.gridAdd( lb, 0, row );
 		ggPath	= new PrefPathField( PathField.TYPE_FOLDER, getResourceString( key2 ));
 		ggPath.setPreferences( prefs, key );
@@ -210,7 +213,7 @@ extends AppWindow
 		prefs   = cm.getPreferences();
 		key		= PrefCacheManager.KEY_ACTIVE;
 		key2	= "prefsCache";
-		lb		= new JLabel( getResourceString( key2 ), JLabel.TRAILING );
+		lb		= new JLabel( getResourceString( key2 ), TRAILING );
 		tab.gridAdd( lb, 0, row );
 		ggCheckBox = new PrefCheckBox( getResourceString( "prefsCacheActive" ));
 		ggCheckBox.setPreferences( prefs, key );
@@ -222,7 +225,7 @@ extends AppWindow
 		key		= PrefCacheManager.KEY_CAPACITY;
 		key2	= "prefsCacheCapacity";
 		lb		= new JLabel( getResourceString( key2 ) + " [" +
-							  getResourceString( "labelMegaBytes" ) + "]", JLabel.TRAILING );
+							  getResourceString( "labelMegaBytes" ) + "]", TRAILING );
 //		tab.gridAdd( lb, 0, row );
 		b.add( Box.createHorizontalStrut( 16 ));
 		b.add( lb );
@@ -236,7 +239,7 @@ extends AppWindow
 		row++;		
 		key		= PrefCacheManager.KEY_FOLDER;
 		key2	= "prefsCacheFolder";
-		lb		= new JLabel( getResourceString( key2 ), JLabel.TRAILING );
+		lb		= new JLabel( getResourceString( key2 ), TRAILING );
 		tab.gridAdd( lb, 0, row );
 		ggPath	= new PrefPathField( PathField.TYPE_FOLDER, getResourceString( key2 ));
 		ggPath.setPreferences( prefs, key );
@@ -248,7 +251,7 @@ extends AppWindow
 		key		= OSCRoot.KEY_ACTIVE;
 //		key2	= "prefsOSCActive";
 		key2	= "prefsOSCServer";
-		lb		= new JLabel( getResourceString( key2 ), JLabel.TRAILING );
+		lb		= new JLabel( getResourceString( key2 ), TRAILING );
 		tab.gridAdd( lb, 0, row );
 		b		= Box.createHorizontalBox();
 		ggCheckBox = new PrefCheckBox( getResourceString( "prefsOSCActive" ));
@@ -258,7 +261,7 @@ extends AppWindow
 
 		key		= OSCRoot.KEY_PROTOCOL;
 		key2	= "prefsOSCProtocol";
-		lb		= new JLabel( getResourceString( key2 ), JLabel.TRAILING );
+		lb		= new JLabel( getResourceString( key2 ), TRAILING );
 //		tab.gridAdd( lb, 2, row );
 		b.add( Box.createHorizontalStrut( 16 ));
 		b.add( lb );
@@ -271,7 +274,7 @@ extends AppWindow
 
 		key		= OSCRoot.KEY_PORT;
 		key2	= "prefsOSCPort";
-		lb		= new JLabel( getResourceString( key2 ), JLabel.TRAILING );
+		lb		= new JLabel( getResourceString( key2 ), TRAILING );
 //		tab.gridAdd( lb, 4, row );
 		b.add( Box.createHorizontalStrut( 16 ));
 		b.add( lb );
@@ -287,7 +290,7 @@ extends AppWindow
         key     = PrefsUtil.KEY_LOOKANDFEEL;
 		key2	= "prefsLookAndFeel";
 		title	= getResourceString( key2 );
-		lb		= new JLabel( title, JLabel.TRAILING );
+		lb		= new JLabel( title, TRAILING );
 		tab.gridAdd( lb, 0, row );
 		ggChoice = new PrefComboBox();
 		lafInfos = UIManager.getInstalledLookAndFeels();
@@ -369,7 +372,7 @@ extends AppWindow
 		row		= 0;
 		key		= PrefsUtil.KEY_SUPERCOLLIDERAPP;
 		key2	= "prefsSuperColliderApp";
-		lb		= new JLabel( getResourceString( key2 ), JLabel.TRAILING );
+		lb		= new JLabel( getResourceString( key2 ), TRAILING );
 		tab.gridAdd( lb, 0, row );
 		ggPath = new PrefPathField( PathField.TYPE_INPUTFILE, getResourceString( key2 ));
 		ggPath.setPreferences( prefs, key );
@@ -396,7 +399,7 @@ extends AppWindow
 		tab.gridAdd( ggCheckBox, 1, row, -1, 1 );
 
 		row++;
-		lb		= new JLabel( getResourceString( "labelAudioIFs" ), JLabel.TRAILING );
+		lb		= new JLabel( getResourceString( "labelAudioIFs" ), TRAILING );
 		tab.gridAdd( lb, 0, row );
 		tab.gridAdd( createAudioBoxGUI(), 1, row, 1, -1 );
 
@@ -434,7 +437,7 @@ extends AppWindow
 		row++;
 		key		= PrefsUtil.KEY_AUDIORATE;
 		key2	= "prefsAudioRate";
-		lb		= new JLabel( getResourceString( key2 ), JLabel.TRAILING );
+		lb		= new JLabel( getResourceString( key2 ), TRAILING );
 		tab.gridAdd( lb, 0, row );
 		ggParam  = new PrefParamField();
 		ggParam.addSpace( ParamSpace.spcFreqHertz );
@@ -463,13 +466,13 @@ extends AppWindow
 
 		row++;
 		key2	= "prefsSuperColliderOSC";
-		lb		= new JLabel( getResourceString( key2 ), JLabel.TRAILING );
+		lb		= new JLabel( getResourceString( key2 ), TRAILING );
 		lb.setVisible( false );
 		collAudioAdvanced.add( lb );
 		tab.gridAdd( lb, 0, row );
 		key		= PrefsUtil.KEY_SCPROTOCOL;
 		key2	= "prefsOSCProtocol";
-		lb		= new JLabel( getResourceString( key2 ), JLabel.TRAILING );
+		lb		= new JLabel( getResourceString( key2 ), TRAILING );
 //		tab.gridAdd( lb, 2, row );
 		b		= Box.createHorizontalBox();
 		b.add( Box.createHorizontalStrut( 4 ));
@@ -483,7 +486,7 @@ extends AppWindow
 
 		key		= PrefsUtil.KEY_SCPORT;
 		key2	= "prefsOSCPort";
-		lb		= new JLabel( getResourceString( key2 ), JLabel.TRAILING );
+		lb		= new JLabel( getResourceString( key2 ), TRAILING );
 //		tab.gridAdd( lb, 4, row );
 		b.add( Box.createHorizontalStrut( 16 ));
 		b.add( lb );
@@ -499,7 +502,7 @@ extends AppWindow
 		row++;
 		key		= PrefsUtil.KEY_SCBLOCKSIZE;
 		key2	= "prefsSCBlockSize";
-		lb		= new JLabel( getResourceString( key2 ), JLabel.TRAILING );
+		lb		= new JLabel( getResourceString( key2 ), TRAILING );
 		lb.setVisible( false );
 		collAudioAdvanced.add( lb );
 		tab.gridAdd( lb, 0, row );
@@ -513,7 +516,7 @@ extends AppWindow
 		row++;
 		key		= PrefsUtil.KEY_AUDIOBUSSES;
 		key2	= "prefsAudioBusses";
-		lb		= new JLabel( getResourceString( key2 ), JLabel.TRAILING );
+		lb		= new JLabel( getResourceString( key2 ), TRAILING );
 		lb.setVisible( false );
 		collAudioAdvanced.add( lb );
 		tab.gridAdd( lb, 0, row );
@@ -529,7 +532,7 @@ extends AppWindow
 		row++;
 		key		= PrefsUtil.KEY_SCMEMSIZE;
 		key2	= "prefsSCMemSize";
-		lb		= new JLabel( getResourceString( key2 ), JLabel.TRAILING );
+		lb		= new JLabel( getResourceString( key2 ), TRAILING );
 		lb.setVisible( false );
 		collAudioAdvanced.add( lb );
 		tab.gridAdd( lb, 0, row );
@@ -623,7 +626,7 @@ final SpringPanel tabAudio = tab;
 		super.dispose();
 	}
 
-	private static String getResourceString( String key )
+	protected static String getResourceString( String key )
 	{
 		return AbstractApplication.getApplication().getResourceString( key );
 	}
@@ -661,8 +664,8 @@ final SpringPanel tabAudio = tab;
 
 		stm.setSortedColumn( 0, SortedTableModel.ASCENDING );
 
-		ggScroll	= new JScrollPane( table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-											  JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
+		ggScroll	= new JScrollPane( table, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+		        	                   		  ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER );
 		
 		b			= Box.createHorizontalBox();
 		ggPlus		= new ModificationButton( ModificationButton.SHAPE_PLUS );
@@ -738,13 +741,13 @@ final SpringPanel tabAudio = tab;
 		return p;
 	}
 	
-	private void triggerCtrlRoomRefill()
+	protected void triggerCtrlRoomRefill()
 	{
 		final ControlRoomFrame f = (ControlRoomFrame) AbstractApplication.getApplication().getComponent( Main.COMP_CTRLROOM );
 		if( f != null ) f.refillAudioBoxes();
 	}
 	
-	private void addAudioBox( AudioBoxConfig cfg )
+	protected void addAudioBox( AudioBoxConfig cfg )
 //	throws BackingStoreException
 	{
 		collAudioBoxConfigs.add( cfg );
@@ -753,7 +756,7 @@ final SpringPanel tabAudio = tab;
 		setAudioBoxNames.add( cfg.name );
 	}
 	
-	private void removeAudioBox( AudioBoxConfig cfg )
+	protected void removeAudioBox( AudioBoxConfig cfg )
 	throws BackingStoreException
 	{
 		abPrefs.node( cfg.id ).removeNode();
@@ -799,7 +802,7 @@ final SpringPanel tabAudio = tab;
 //		return cfg.changeChannels( numIns, numOuts );
 //	}
 	
-	private void showAudioBoxAssistent()
+	protected void showAudioBoxAssistent()
 	{
 		final String				scsynthPath;
 		final Flag					keepThreadRunning	= new Flag( true );
@@ -855,7 +858,7 @@ final SpringPanel tabAudio = tab;
 		ggScroll = new JScrollPane( ggListAdd );
 		pane2.gridAdd( new JLabel( "Detected new devices:" ), 0, row++, 2, 1 );
 		pane2.gridAdd( ggScroll, 0, row++, 2, 1 );
-		pane2.gridAdd( new JLabel( "Action:", JLabel.RIGHT ), 0, row );
+		pane2.gridAdd( new JLabel( "Action:", RIGHT ), 0, row );
 		ggComboAdd = new JComboBox( new Object[] { "Ignore", "Add to list" });
 		pane2.gridAdd( ggComboAdd, 1, row++ );
 		pane2.gridAdd( createVSep(), 0, row++, 2, 1 );
@@ -864,7 +867,7 @@ final SpringPanel tabAudio = tab;
 		ggScroll = new JScrollPane( ggListActivate );
 		pane2.gridAdd( new JLabel( "Detected deactivated devices:" ), 0, row++, 2, 1 );
 		pane2.gridAdd( ggScroll, 0, row++, 2, 1 );
-		pane2.gridAdd( new JLabel( "Action:", JLabel.RIGHT ), 0, row );
+		pane2.gridAdd( new JLabel( "Action:", RIGHT ), 0, row );
 		ggComboActivate = new JComboBox( new Object[] { "Ignore", "Make active" });
 		pane2.gridAdd( ggComboActivate, 1, row++ );
 		pane2.gridAdd( createVSep(), 0, row++, 2, 1 );
@@ -876,7 +879,7 @@ final SpringPanel tabAudio = tab;
 		ggScroll = new JScrollPane( ggListRemove );
 		pane2.gridAdd( new JLabel( "Devices not found:" ), 0, row++, 2, 1 );
 		pane2.gridAdd( ggScroll, 0, row++, 2, 1 );
-		pane2.gridAdd( new JLabel( "Action:", JLabel.RIGHT ), 0, row );
+		pane2.gridAdd( new JLabel( "Action:", RIGHT ), 0, row );
 		ggComboRemove = new JComboBox( new Object[] { "Ignore", "Make inactive", "Remove from list" });		
 		pane2.gridAdd( ggComboRemove, 1, row++ );
 		pane2.setVisible( false );
@@ -891,24 +894,24 @@ final SpringPanel tabAudio = tab;
 			public void run()
 			{
 //				String			name;
-				AudioBoxConfig	cfg, cfg2;
+				AudioBoxConfig	cfg3, cfg2;
 
 				for( Iterator iter = collDetected.iterator(); iter.hasNext(); ) {
 					cfg2 = (AudioBoxConfig) iter.next();
 					if( !setAudioBoxNames.contains( cfg2.name )) {
 						collAdd.add( cfg2 );
 					} else {
-						cfg = boxForName( cfg2.name );
-						if( (cfg != null) && !cfg.active ) collActivate.add( cfg );
+						cfg3 = boxForName( cfg2.name );
+						if( (cfg3 != null) && !cfg3.active ) collActivate.add( cfg3 );
 					}
 				}
 iterRemove:		for( Iterator iter = collAudioBoxConfigs.iterator(); iter.hasNext(); ) {
-					cfg = (AudioBoxConfig) iter.next();
+					cfg3 = (AudioBoxConfig) iter.next();
 					for( Iterator iter2 = collDetected.iterator(); iter2.hasNext(); ) {
 						cfg2 = (AudioBoxConfig) iter2.next();
-						if( cfg2.name.equals( cfg.name )) continue iterRemove;
+						if( cfg2.name.equals( cfg3.name )) continue iterRemove;
 					}
-					collRemove.add( cfg );
+					collRemove.add( cfg3 );
 				}
 				
 				Collections.sort( collAdd );
@@ -976,7 +979,7 @@ iterRemove:		for( Iterator iter = collAudioBoxConfigs.iterator(); iter.hasNext()
 						try {
 							Thread.sleep( 250 );   // a kind of cheesy way to wait for the program to end
 						}
-						catch( InterruptedException e5 ) {}
+						catch( InterruptedException e5 ) { /* ignore */ }
 	
 						if( inStream.available() > 0 ) {
 							try {
@@ -986,7 +989,7 @@ iterRemove:		for( Iterator iter = collAudioBoxConfigs.iterator(); iter.hasNext()
 									baos.write( inBuf, 0, len );
 								}
 							}
-							catch( IOException e1 ) {}	// ignore for now XXX
+							catch( IOException e1 ) { /* ignore for now XXX */ }
 							
 							m1.reset( baos.toString() );
 							if( m1.find() ) {
@@ -1019,7 +1022,7 @@ iterRemove:		for( Iterator iter = collAudioBoxConfigs.iterator(); iter.hasNext()
 //							printStream.println( "scsynth terminated (" + resultCode +")" );
 						}
 						// gets thrown if we call exitValue() while sc still running
-						catch( IllegalThreadStateException e1 ) {}
+						catch( IllegalThreadStateException e1 ) { /* ignore */ }
 					} // while( keepThreadRunning && pRunning )
 				}
 				catch( IOException e3 ) {
@@ -1060,7 +1063,7 @@ iterRemove:		for( Iterator iter = collAudioBoxConfigs.iterator(); iter.hasNext()
 				try {
 					threadRunning.wait();
 				}
-				catch( InterruptedException e1 ) {}
+				catch( InterruptedException e1 ) { /* ignore */ }
 				return;
 			}
 		}
@@ -1131,7 +1134,7 @@ iterRemove:		for( Iterator iter = collAudioBoxConfigs.iterator(); iter.hasNext()
 		return b;
 	}
 	
-	private AudioBoxConfig boxForName( String name )
+	protected AudioBoxConfig boxForName( String name )
 	{
 		AudioBoxConfig cfg;
 //System.err.println( "box for name '" + name + "'" );
@@ -1152,7 +1155,7 @@ iterRemove:		for( Iterator iter = collAudioBoxConfigs.iterator(); iter.hasNext()
 		return id;
 	}
 	
-	private AudioBoxConfig createUniqueAudioBox()
+	protected AudioBoxConfig createUniqueAudioBox()
 	{
 		final String test = getResourceString( "labelUntitled" );
 		String name = test;
@@ -1205,7 +1208,7 @@ iterRemove:		for( Iterator iter = collAudioBoxConfigs.iterator(); iter.hasNext()
 		private final String				title;
 		private final String				initialValue;
 	
-		private WarnPrefsChange( PreferenceEntrySync pes, Component c, Flag haveWarned, String text, String title )
+		protected WarnPrefsChange( PreferenceEntrySync pes, Component c, Flag haveWarned, String text, String title )
 		{
 			this.pes		= pes;
 			this.c			= c;
@@ -1230,6 +1233,8 @@ iterRemove:		for( Iterator iter = collAudioBoxConfigs.iterator(); iter.hasNext()
 	private class AudioBoxTableModel
 	extends AbstractTableModel
 	{
+		protected AudioBoxTableModel() { /* empty */ }
+		
 		public String getColumnName( int col )
 		{
 			if( col < audioBoxColNames.length ) {

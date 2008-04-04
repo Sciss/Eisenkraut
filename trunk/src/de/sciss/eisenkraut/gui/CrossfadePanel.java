@@ -130,23 +130,23 @@ implements ActionListener
 	/**
 	 *	Performs an animated crossfade.
 	 *
-	 *	@param	fade						target value between 0 (component A only) and 1 (component B only)
+	 *	@param	target						target value between 0 (component A only) and 1 (component B only)
 	 *	@param	initialDelay				milliseconds to wait before the fade starts
 	 *	@param	fadeTime					fade duration in milliseconds
 	 *	@throws	IllegalArgumentException	if fade < 0 or fade > 1 or initialDelay < 0 or fadeTime < 0
 	 */
-	public void performFade( float fade, int initialDelay, int fadeTime )
+	public void performFade( float target, int initialDelay, int fadeTime )
 	{
 		timer.stop();
 		
-		if( (fade < 0f) || (fade > 1f) || (initialDelay < 0) || (fadeTime < 0) ) {
+		if( (target < 0f) || (target > 1f) || (initialDelay < 0) || (fadeTime < 0) ) {
 			throw new IllegalArgumentException();
 		}
 		
-		sourceFade	= this.fade;
-		targetFade	= fade;
-		fadeStart	= System.currentTimeMillis() + initialDelay;
-		fadeWeight	= 1.0f / (Math.max( 1, fadeTime ));
+		sourceFade		= fade;
+		targetFade		= target;
+		fadeStart		= System.currentTimeMillis() + initialDelay;
+		fadeWeight		= 1.0f / (Math.max( 1, fadeTime ));
 		
 		if( sourceFade != targetFade ) {
 			timer.setInitialDelay( initialDelay );

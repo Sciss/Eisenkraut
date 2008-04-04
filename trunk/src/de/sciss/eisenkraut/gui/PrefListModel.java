@@ -66,6 +66,7 @@ implements PreferenceNodeSync, Disposable
 	
 	public PrefListModel()
 	{
+		 /* empty */ 
 	}
 	
 	public void dispose()

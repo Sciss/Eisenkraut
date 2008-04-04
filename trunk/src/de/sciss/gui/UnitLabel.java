@@ -86,16 +86,16 @@ implements Icon, PropertyChangeListener
 	private final Color				colrLab		= null;
 	private final Color				colrLabD	= new Color( 0x00, 0x00, 0x00, 0x7F );
 
-	private final UnitLabel			enc_this	= this;
-	private final JPopupMenu		pop			= new JPopupMenu();
+	protected final UnitLabel		enc_this	= this;
+	protected final JPopupMenu		pop			= new JPopupMenu();
 	private final ButtonGroup		bg			= new ButtonGroup();
 
-	private final List				units		= new ArrayList();
+	protected final List			units		= new ArrayList();
 
 	private	ActionListener			al			= null;
-	private int						selectedIdx	= -1;
+	protected int					selectedIdx	= -1;
 	
-	private boolean					cycle		= false;
+	protected boolean				cycle		= false;
 
 	/**
 	 *	Creates a new empty label.
@@ -291,7 +291,7 @@ implements Icon, PropertyChangeListener
 		}
 	}
 	
-	private void fireUnitChanged()
+	protected void fireUnitChanged()
 	{
         final ActionListener l = al;
 		if( l != null ) {
@@ -377,14 +377,14 @@ implements Icon, PropertyChangeListener
 		private final String	name;
 		private final Icon		icon;
 	
-		private UnitAction( String name )
+		protected UnitAction( String name )
 		{
 			super( name );
 			this.name	= name;
 			this.icon	= new CompoundIcon( null, enc_this, enc_this.getIconTextGap() );
 		}
 
-		private UnitAction( Icon icon )
+		protected UnitAction( Icon icon )
 		{
 			super();
 			putValue( SMALL_ICON, icon );
@@ -392,7 +392,7 @@ implements Icon, PropertyChangeListener
 			this.icon	= new CompoundIcon( icon, enc_this, enc_this.getIconTextGap() );
 		}
 
-		private UnitAction( String name, Icon icon )
+		protected UnitAction( String name, Icon icon )
 		{
 			super( name, icon );
 			this.name	= name;
@@ -404,7 +404,7 @@ implements Icon, PropertyChangeListener
 			setLabel();
 		}
 		
-		private void setLabel()
+		protected void setLabel()
 		{
 			enc_this.setText( name );
 			enc_this.setIcon( icon );
@@ -415,7 +415,7 @@ implements Icon, PropertyChangeListener
 			}
 		}
 		
-		private Dimension getPreferredSize( FontMetrics fntMetr )
+		protected Dimension getPreferredSize( FontMetrics fntMetr )
 		{
 			int w, h;
 			
@@ -437,7 +437,7 @@ implements Icon, PropertyChangeListener
 		private final Icon	iconWest, iconEast;
 		private final int	gap;
 	
-		private CompoundIcon( Icon iconWest, Icon iconEast, int gap )
+		protected CompoundIcon( Icon iconWest, Icon iconEast, int gap )
 		{
 			this.iconWest	= iconWest;
 			this.iconEast	= iconEast;

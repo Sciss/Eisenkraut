@@ -40,6 +40,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.ScrollPaneConstants;
 
 /**
  *  A <code>JTextArea</code> encompassing a <code>PrintWriter</code> that
@@ -61,10 +62,10 @@ import javax.swing.JTextArea;
 public class LogTextArea
 extends JTextArea
 {
-	private final boolean		useLogFile;
-	private final File			logFile;
+	protected final boolean		useLogFile;
+	protected final File		logFile;
 	private final PrintStream	outStream;
-	private FileWriter			logFileWriter   = null;
+	protected FileWriter		logFileWriter   = null;
 //	private final JTextArea		textArea		= this;
 	private int					totalLength		= 0;
 	private MenuAction			actionClear		= null;
@@ -140,7 +141,7 @@ extends JTextArea
 		try {
 			setCaretPosition( Math.max( 0, totalLength - 1 ));
 		}
-		catch( IllegalArgumentException e1 ) {}
+		catch( IllegalArgumentException e1 ) { /* ignore */ }
 	}
 	
 	/**
@@ -168,15 +169,15 @@ extends JTextArea
 	public MenuAction getClearAction()
 	{
 		if( actionClear == null ) {
-			actionClear = new actionClearClass();
+			actionClear = new ActionClear();
 		}
 		return actionClear;
 	}
 	
 	public JScrollPane placeMeInAPane()
 	{
-		return( new JScrollPane( this, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, // aqua hin aqua her. VERTICAL_SCROLLBAR_ALWAYS
-									   JScrollPane.HORIZONTAL_SCROLLBAR_NEVER ));
+		return( new JScrollPane( this, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, // aqua hin aqua her. VERTICAL_SCROLLBAR_ALWAYS
+		                         	   ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER ));
 	}
 	
 	public void makeSystemOutput()
@@ -201,7 +202,7 @@ extends JTextArea
 		private byte[] cheesy = new byte[1];
 //		private int totalLength = 0;
 	
-		private RedirectedStream()
+		protected RedirectedStream()
 		{
 			super();
 		}
@@ -254,9 +255,11 @@ extends JTextArea
 		}
 	}
 	
-	private class actionClearClass
+	private class ActionClear
 	extends MenuAction
 	{
+		protected ActionClear() { /* empty */ }
+		
 		public void actionPerformed( ActionEvent e )
 		{
 			setText( null );

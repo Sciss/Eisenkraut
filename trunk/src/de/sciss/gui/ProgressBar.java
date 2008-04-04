@@ -38,6 +38,7 @@ import java.awt.Paint;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import javax.swing.JProgressBar;
+import javax.swing.SwingConstants;
 
 /**
  *  A bit more sophisticated progression bar
@@ -56,14 +57,14 @@ extends JProgressBar
 {
 // -------- private Variablen --------
 
-	private float		p			= 0.0f;
+	protected float		p			= 0.0f;
 //	private Color		progColor;
 
 	private long		startTime;				// Zeitpunkt, an dem reset() aufgerufen wurde
 	private long		pauseTime;
 	private int			remain;
 	private byte		timeStr[];
-	private int			maximum		= 0;
+	protected int		maximum		= 0;
 
 	private String altString = null;
 
@@ -80,7 +81,7 @@ extends JProgressBar
 	 */
 	public ProgressBar()
 	{
-		super( JProgressBar.HORIZONTAL, 0, 0x1000 );
+		super( SwingConstants.HORIZONTAL, 0, 0x1000 );
 		
 		timeStr			= "00:00:00".getBytes();
 

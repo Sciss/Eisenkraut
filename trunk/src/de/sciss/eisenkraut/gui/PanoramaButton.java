@@ -62,11 +62,11 @@ implements Disposable
 	private static final Color			colrNormal		= new Color( 0x3C, 0x3C, 0x3C, 0xFF );
 	private static final Color			colrPressed		= new Color( 0x06, 0x06, 0x06, 0xFF );
 	private static final Color			colrDisabled	= new Color( 0x6C, 0x6C, 0x6C, 0x7F );
-	private static final Paint			pntCtrl			= new Color( 0x00, 0x00, 0x00, 0x7F );
+	protected static final Paint		pntCtrl			= new Color( 0x00, 0x00, 0x00, 0x7F );
 
-	private static final Shape			shpCtrl			= new Ellipse2D.Double( -2, -2, 5, 5 );
+	protected static final Shape		shpCtrl			= new Ellipse2D.Double( -2, -2, 5, 5 );
 
-	private AudioTrackPanorama			atPan			= null;
+	protected AudioTrackPanorama		atPan			= null;
 //	private Rectangle					atPanBounds		= null;
 	private final Point2D				ctrlPt			= new Point2D.Double();
 //	private JPopupMenu					pop				= null;
@@ -121,7 +121,7 @@ implements Disposable
 				};
 			}
 		
-			public void mapOwnerModified( MapManager.Event e ) {}
+			public void mapOwnerModified( MapManager.Event e ) { /* ignore */ }
 		});
 
 		popMon = new PopupTriggerMonitor( this );
@@ -156,7 +156,7 @@ implements Disposable
 		popMon.dispose();
 	}
 	
-	private void updateButtonState()
+	protected void updateButtonState()
 	{
 		Object	o;
 		o				= t.getMap().getValue( AudioTrack.MAP_KEY_PANAZIMUTH );
@@ -170,9 +170,9 @@ implements Disposable
 		if( isVisible() ) repaint();
 	}
 
-	private final static Stroke	strkInside	= new BasicStroke( 0.333f );
-	private final static Stroke	strkOutside	= new BasicStroke( 0.75f );
-	private final static Shape	shpLine		= new Line2D.Double( 0.5, 14.5, 28.5, 14.5 );
+	protected final static Stroke	strkInside	= new BasicStroke( 0.333f );
+	protected final static Stroke	strkOutside	= new BasicStroke( 0.75f );
+	protected final static Shape	shpLine		= new Line2D.Double( 0.5, 14.5, 28.5, 14.5 );
 
 	private static class PantaRei
 	implements Icon
@@ -180,7 +180,7 @@ implements Disposable
 		private final Color		color;
 		private Point2D			ctrlPt;
 		
-		private PantaRei( Color color )
+		protected PantaRei( Color color )
 		{
 			this.color	= color;
 		}
@@ -195,7 +195,7 @@ implements Disposable
 			return 31;
 		}
 		
-		private void setCtrlPoint( Point2D ctrlPt )
+		protected void setCtrlPoint( Point2D ctrlPt )
 		{
 			this.ctrlPt = ctrlPt;
 		}

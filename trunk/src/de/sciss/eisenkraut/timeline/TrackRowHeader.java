@@ -51,6 +51,7 @@ import de.sciss.eisenkraut.edit.EditSetSessionObjects;
 import de.sciss.eisenkraut.gui.GradientPanel;
 import de.sciss.eisenkraut.gui.GraphicsUtil;
 import de.sciss.eisenkraut.session.SessionCollection;
+import de.sciss.eisenkraut.session.SessionObject;
 import de.sciss.eisenkraut.util.MapManager;
 
 import de.sciss.app.AbstractApplication;
@@ -83,7 +84,7 @@ implements MouseListener, DynamicListening, Disposable
 	private final SessionCollection	selectedTracks;
 	private final UndoManager		undo;
 
-	private boolean					selected		= false;
+	protected boolean				selected		= false;
 
     private static final Color		colrSelected	= GraphicsUtil.colrSelection;
     private static final Color		colrUnselected	= new Color( 0x00, 0x00, 0x00, 0x20 );
@@ -148,11 +149,11 @@ implements MouseListener, DynamicListening, Disposable
 //		};
 
 		trackListener = new MapManager.Listener() {
-			public void mapChanged( MapManager.Event e ) {}
+			public void mapChanged( MapManager.Event e ) { /* ignore */ }
 		
 			public void mapOwnerModified( MapManager.Event e )
 			{
-				if( e.getOwnerModType() == Track.OWNER_RENAMED ) {
+				if( e.getOwnerModType() == SessionObject.OWNER_RENAMED ) {
 					checkTrackName();
 				}
 			}
@@ -169,8 +170,8 @@ implements MouseListener, DynamicListening, Disposable
 				}
 			}
 			
-			public void sessionObjectChanged( SessionCollection.Event e ) {}
-			public void sessionObjectMapChanged( SessionCollection.Event e ) {}
+			public void sessionObjectChanged( SessionCollection.Event e ) { /* ignore */ }
+			public void sessionObjectMapChanged( SessionCollection.Event e ) { /* ignore */ }
 		};
 	}
 	
@@ -235,7 +236,7 @@ implements MouseListener, DynamicListening, Disposable
 		g2.fillRect( 0, 0, w, 8 );
 	}
 
-	private void checkTrackName()
+	protected void checkTrackName()
 	{
 		if( !t.getName().equals( lbTrackName.getText() )) {
 			lbTrackName.setText( t.getName() );
@@ -270,8 +271,8 @@ implements MouseListener, DynamicListening, Disposable
 // ---------------- MouseListener interface ---------------- 
 // we're listening to the ourselves
 
-	public void mouseEntered( MouseEvent e ) {}
-	public void mouseExited( MouseEvent e ) {}
+	public void mouseEntered( MouseEvent e ) { /* ignore */ }
+	public void mouseExited( MouseEvent e ) { /* ignore */ }
 
 	/**
 	 *	Handle mouse presses.
@@ -326,6 +327,6 @@ implements MouseListener, DynamicListening, Disposable
 		repaint();
     }
 
-	public void mouseReleased( MouseEvent e ) {}
-	public void mouseClicked( MouseEvent e ) {}
+	public void mouseReleased( MouseEvent e ) { /* ignore */ }
+	public void mouseClicked( MouseEvent e ) { /* ignore */ }
 }

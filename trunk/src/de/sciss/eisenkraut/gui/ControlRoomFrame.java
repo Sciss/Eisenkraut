@@ -51,6 +51,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
+import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 //import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
@@ -108,7 +109,7 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
 	private final Preferences			audioPrefs;
 
 	private PeakMeter[]					masterMeters;
-	private final SuperColliderClient	superCollider;
+	protected final SuperColliderClient	superCollider;
 	private Group						grpMeters;
 //	private final Box					pMeters;
 	private final PeakMeterGroup		pmg;
@@ -116,7 +117,7 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
 	private RoutingConfig				oCfg;
 	
 	private final SpringPanel			b1;
-	private final JSlider				ggVolume;
+	protected final JSlider				ggVolume;
 	
 //	private final Set					allTransports		= new HashSet();	// element = (Transport)
 //	private final Set					transportsRunning	= new HashSet();
@@ -155,7 +156,7 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
 
 		b1				= new SpringPanel( 2, 4, 2, 4 );
 		lmm.setDynamicComponent( b1 );
-		ggVolume		= new JSlider( JSlider.VERTICAL, -72, 18, 0 );
+		ggVolume		= new JSlider( SwingConstants.VERTICAL, -72, 18, 0 );
 //ggVolume.putClientProperty( "JSlider.isFilled", Boolean.TRUE );
 		dictVolume		= ggVolume.createStandardLabels( 12 );
 //ggVolume.setUI( new TestSliderUI( ggVolume ));
@@ -323,7 +324,7 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 		super.dispose();
 	}
 	
-	private void updateVolumeInfo()
+	protected void updateVolumeInfo()
 	{
 		ggVolume.setToolTipText( String.valueOf( ggVolume.getValue() ));
 	}
@@ -582,7 +583,7 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 //		}
 	}
 
-	public void documentFocussed( de.sciss.app.DocumentEvent e ) {}
+	public void documentFocussed( de.sciss.app.DocumentEvent e ) { /* empty */ }
 
 // ---------------- DynamicListening interface ---------------- 
 
@@ -698,7 +699,7 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 //		return false;
 //	}
 
-	private String getResourceString( String key )
+	protected static String getResourceString( String key )
 	{
 		return AbstractApplication.getApplication().getResourceString( key );
 	}

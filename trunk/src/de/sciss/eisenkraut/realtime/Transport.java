@@ -82,7 +82,7 @@ import de.sciss.eisenkraut.util.PrefsUtil;
 public class Transport
 implements TimelineListener, OSCRouter, Disposable
 {
-    private final Session				doc;
+	protected final Session				doc;
 
     private	boolean						looping			= false;
 	private boolean						loopInPlay		= false;
@@ -106,13 +106,13 @@ implements TimelineListener, OSCRouter, Disposable
 				
 	// --- actions ---
 
-	private final ActionPlay		actionPlay;
-	private final ActionStop		actionStop;
+	private final ActionPlay			actionPlay;
+	private final ActionStop			actionStop;
 	
 	private static final String			OSC_TRANSPORT = "transport";
 	private final OSCRouter				osc;
 
-	private final Transport				enc_this		= this;
+	protected final Transport			enc_this		= this;
 
 	// sync : call in event thread!
 	/**
@@ -382,12 +382,12 @@ implements TimelineListener, OSCRouter, Disposable
 	 *
 	 *  @synchronization	To be called in the event thread.
 	 */
-    public void play( double rateScale )
+    public void play( double scale )
     {
-		playSpan( new Span( doc.timeline.getPosition(), doc.timeline.getLength() ), rateScale );	// XXX sync?
+		playSpan( new Span( doc.timeline.getPosition(), doc.timeline.getLength() ), scale );	// XXX sync?
     }
 
-    public void playSpan( Span span, double rateScale )
+    public void playSpan( Span span, double scale )
 	{
 		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
 
@@ -396,8 +396,8 @@ implements TimelineListener, OSCRouter, Disposable
 		startFrame		= span.start;
 		loopInPlay		= isLooping() && loopStop > startFrame;
 		stopFrame		= loopInPlay ? loopStop : span.stop;
-		this.rateScale	= rateScale;
-		frameFactor		= rateScale * rate / 1000;
+		this.rateScale	= scale;
+		frameFactor		= scale * rate / 1000;
 		currentFrame	= startFrame;
 		running			= true;
 		dispatchPlay( startFrame );
@@ -622,8 +622,8 @@ implements TimelineListener, OSCRouter, Disposable
 		frameFactor		= rateScale * rate / 1000;
 	}
 	
-	public void timelineSelected( TimelineEvent e ) {}
-    public void timelineScrolled( TimelineEvent e ) {}
+	public void timelineSelected( TimelineEvent e ) { /* ignored */ }
+    public void timelineScrolled( TimelineEvent e ) { /* ignored */ }
 
 // --------------- RealtimeHost interface ---------------
 
@@ -669,9 +669,9 @@ implements TimelineListener, OSCRouter, Disposable
 	public void oscCmd_play( RoutedOSCMessage rom )
 	{
 		try {
-			final float rate = rom.msg.getArgCount() == 1 ? 1.0f :
+			final float r = rom.msg.getArgCount() == 1 ? 1.0f :
 				Math.max( 0.25f, Math.min( 4f, ((Number) rom.msg.getArg( 1 )).floatValue() ));
-			actionPlay.perform( rate );
+			actionPlay.perform( r );
 		}
 		catch( ClassCastException e1 ) {
 			OSCRoot.failedArgType( rom, 1 );
@@ -688,7 +688,7 @@ implements TimelineListener, OSCRouter, Disposable
 	private class ActionPlay
 	extends AbstractAction
 	{
-		private ActionPlay()
+		protected ActionPlay()
 		{
 			super();
 		}
@@ -699,19 +699,19 @@ implements TimelineListener, OSCRouter, Disposable
 					    ((e.getModifiers() & ActionEvent.ALT_MASK) == 0 ? 0.5f : 2.0f) );
 		}
 		
-		private void perform( float rateScale )
+		protected void perform( float scale )
 		{
 			if( doc.timeline.getPosition() == doc.timeline.getLength() ) {
 				doc.timeline.editPosition( enc_this, 0 );
 			}
-			play( rateScale );
+			play( scale );
         }
 	} // class actionPlayClass
 
 	private class ActionStop
 	extends AbstractAction
 	{
-		private ActionStop()
+		protected ActionStop()
 		{
 			super();
 		}

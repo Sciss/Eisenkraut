@@ -116,7 +116,7 @@ implements AbstractWindow
 
 	// windows bounds get saved to a sub node inside the shared node
 	// the node's name is the class name's last part (omitting the package)
-	private Preferences						classPrefs	= null;
+	protected Preferences					classPrefs	= null;
 	
 	// fucking aliases
 	private final Component					c;
@@ -125,8 +125,8 @@ implements AbstractWindow
 	private final Dialog					d;
 	private final JComponent				jc;
 	private final JDialog					jd;
-	private final JFrame					jf;
-	private final JInternalFrame			jif;
+	protected final JFrame					jf;
+	protected final JInternalFrame			jif;
 	
 	private final AquaWindowBar				ggTitle;
 	
@@ -137,19 +137,19 @@ implements AbstractWindow
 	// palette	borrow			borrow (deleg)		---
 	
 	private boolean							floating;
-	private final boolean					ownMenuBar, borrowMenuBar;
-	private final BasicWindowHandler		wh;
-	private JMenuBar						bar			= null;
-	private AbstractWindow					barBorrower	= null;
-	private boolean							active		= false;
+	protected final boolean					ownMenuBar, borrowMenuBar;
+	protected final BasicWindowHandler		wh;
+	protected JMenuBar						bar			= null;
+	protected AbstractWindow				barBorrower	= null;
+	protected boolean						active		= false;
 	
 //	private final int						flags;
 	
-	private boolean							initialized	= false;
+	protected boolean						initialized	= false;
 	
-	private static final int		TEMPFLOAT_TIMEOUT	= 100;
-	private final boolean					tempFloating;
-	private Timer							tempFloatingTimer;
+	private static final int				TEMPFLOAT_TIMEOUT	= 100;
+	protected final boolean					tempFloating;
+	protected Timer							tempFloatingTimer;
 
 	public AppWindow( int flags )
 	{
@@ -162,51 +162,55 @@ implements AbstractWindow
 		case REGULAR:
 		case SUPPORT:
 			if( wh.usesInternalFrames() ) {
-				c = jc = jif	= new JInternalFrame( null, true, true, true, true );
-				w = f = jf		= null;
+				c = jc = jif	=
+					new JInternalFrame( null, true, true, true, true );
+				w = f = jf	= null;
 				d = jd			= null;
 				wh.getDesktop().add( jif );
-				ownMenuBar		= type == REGULAR;
+				ownMenuBar				= type == REGULAR;
 
 			} else {
-				c = w = f = jf	= new JFrame();
-				jc = jif		= null;
+				c = w = f = jf
+					= new JFrame();
+				jc = jif			= null;
 				d = jd			= null;
-				ownMenuBar		= wh.usesScreenMenuBar() || (type == REGULAR);
+				ownMenuBar				= wh.usesScreenMenuBar() || (type == REGULAR);
 			}
 //			floating			= false;
-			tempFloating		= (type == SUPPORT) && wh.usesFloating();
-floating						= tempFloating;
-			borrowMenuBar		= false;
-			ggTitle				= null;
+			tempFloating	= (type == SUPPORT) && wh.usesFloating();
+			floating		= tempFloating;
+			borrowMenuBar	= false;
+			ggTitle		= null;
 			break;
 			
 		case PALETTE:
-			floating			= wh.usesFloating();
-			tempFloating		= false;
-			ownMenuBar			= false;
+			floating		= wh.usesFloating();
+			tempFloating	= false;
+			ownMenuBar		= false;
 			
 			if( wh.usesInternalFrames() ) {
-				c = jc = jif	= new JInternalFrame( null, true, true, true, true );
-				w = f = jf		= null;
+				c = jc = jif =
+					new JInternalFrame( null, true, true, true, true );
+				w = f = jf	= null;
 				d = jd			= null;
-				borrowMenuBar	= true;
-				ggTitle			= null;
+				borrowMenuBar			= true;
+				ggTitle				= null;
 				
 				if( floating ) jif.putClientProperty( "JInternalFrame.isPalette", Boolean.TRUE );
 				wh.getDesktop().add( jif, floating ? JLayeredPane.PALETTE_LAYER : JLayeredPane.DEFAULT_LAYER );
 
 			} else {
 
-				c = w = f = jf	= new JFrame();
-				jc = jif		= null;
+				c = w = f = jf =
+					new JFrame();
+				jc = jif			= null;
 				d = jd			= null;
 //				borrowMenuBar	= wh.usesScreenMenuBar();
 				
 				if( floating ) {
 					ggTitle = new AquaWindowBar( this, true );
 					ggTitle.setAlwaysOnTop( true );
-borrowMenuBar = false;
+					borrowMenuBar = false;
 					jf.setUndecorated( true );
 					
 					final Container cp = jf.getContentPane();
@@ -224,7 +228,7 @@ borrowMenuBar = false;
 //						getContentPane().add( Box.createVerticalStrut( 16 ), BorderLayout.SOUTH );
 //					}
 				} else {
-borrowMenuBar = wh.usesScreenMenuBar();
+					borrowMenuBar	= wh.usesScreenMenuBar();
 					ggTitle		= null;
 				}
 			}
@@ -298,8 +302,8 @@ borrowMenuBar = wh.usesScreenMenuBar();
 				tok		= new StringTokenizer( value );
 				dim		= new Dimension( Integer.parseInt( tok.nextToken() ), Integer.parseInt( tok.nextToken() ));
 			}
-			catch( NoSuchElementException e1 ) {}
-			catch( NumberFormatException e2 ) {}
+			catch( NoSuchElementException e1 ) { e1.printStackTrace(); }
+			catch( NumberFormatException e2 ) { e2.printStackTrace(); }
 		}
 		return dim;
 	}
@@ -314,8 +318,8 @@ borrowMenuBar = wh.usesScreenMenuBar();
 				tok		= new StringTokenizer( value );
 				pt		= new Point( Integer.parseInt( tok.nextToken() ), Integer.parseInt( tok.nextToken() ));
 			}
-			catch( NoSuchElementException e1 ) {}
-			catch( NumberFormatException e2 ) {}
+			catch( NoSuchElementException e1 ) { e1.printStackTrace(); }
+			catch( NumberFormatException e2 ) { e2.printStackTrace(); }
 		}
 		return pt;
 	}
@@ -325,7 +329,7 @@ borrowMenuBar = wh.usesScreenMenuBar();
 		return( value != null ? (value.x + " " + value.y) : null );
 	}
 	
-	protected static String dimensionToString( Dimension value )
+	public static String dimensionToString( Dimension value )
 	{
 		return( value != null ? (value.width + " " + value.height) : null );
 	}
@@ -354,22 +358,22 @@ borrowMenuBar = wh.usesScreenMenuBar();
 		Rectangle   r		= c.getBounds();
 //		Insets		i		= getInsets();
 
-//System.err.println( "this "+this.getClass().getName()+ " visi = "+visiVal );
+//System.err.println( "this "+getClass().getName()+ " visi = "+visiVal );
 
-		Dimension d			= stringToDimension( sizeVal );
-		if( (d == null) || alwaysPackSize() ) {
+		Dimension dim		= stringToDimension( sizeVal );
+		if( (dim == null) || alwaysPackSize() ) {
 			pack();
-			d				= c.getSize();
+			dim				= c.getSize();
 		}
 
-		r.setSize( d );
+		r.setSize( dim );
 		Point p = stringToPoint( locVal );
 		if( p != null ) {
 			r.setLocation( p );
 			c.setBounds( r );
 		} else {
-			c.setSize( d );
-			final Point2D prefLoc = this.getPreferredLocation();
+			c.setSize( dim );
+			final Point2D prefLoc = getPreferredLocation();
 			wh.place( this, (float) prefLoc.getX(), (float) prefLoc.getY() );
 //			if( shouldBeCentered() ) setLocationRelativeTo( null );
 		}
@@ -377,7 +381,7 @@ borrowMenuBar = wh.usesScreenMenuBar();
 //		if( alwaysPackSize() ) {
 //			pack();
 //		} else {
-			c.validate();
+		c.validate();
 //		}
 //		lim.queue( this );
 		if( (visiVal != null) && restoreVisibility() ) {
@@ -546,7 +550,7 @@ borrowMenuBar = wh.usesScreenMenuBar();
 					}
 					if( tempFloating ) {
 						if( jif == null ) {
-//System.out.println( "activ " + enc_this.getClass().getName() );
+//System.out.println( "activ " + enc_getClass().getName() );
 ////							wh.removeWindow( enc_this, null );
 tempFloatingTimer.restart();
 //							GUIUtil.setAlwaysOnTop( getWindow(), true );
@@ -573,7 +577,7 @@ tempFloatingTimer.restart();
 
 			public void windowDeactivated( AbstractWindow.Event e )
 			{
-//System.out.println( "deac2 " + enc_this.getClass().getName() );
+//System.out.println( "deac2 " + enc_getClass().getName() );
 				try {
 					active = false;
 					if( wh.usesInternalFrames() && ownMenuBar ) {
@@ -586,7 +590,7 @@ tempFloatingTimer.restart();
 					}
 					if( tempFloating ) {
 						if( jif == null ) {
-//System.out.println( "deact " + enc_this.getClass().getName() );
+//System.out.println( "deact " + enc_getClass().getName() );
 //							wh.removeWindow( enc_this, null );
 							GUIUtil.setAlwaysOnTop( getWindow(), false );
 tempFloatingTimer.stop();
@@ -599,8 +603,8 @@ tempFloatingTimer.stop();
 EventQueue.invokeLater( new Runnable() {
 	public void run()
 	{
-		final AbstractWindow w = FloatingPaletteHandler.getInstance().getFocussedWindow();
-		if( w != null ) w.toFront();
+		final AbstractWindow fw = FloatingPaletteHandler.getInstance().getFocussedWindow();
+		if( fw != null ) fw.toFront();
 	}
 });
 						} else {
@@ -859,7 +863,7 @@ EventQueue.invokeLater( new Runnable() {
 			jif.toFront();
 			try {
 				jif.setSelected( true );
-			} catch( PropertyVetoException e ) {}
+			} catch( PropertyVetoException e ) { /* ignored */ }
 		} else {
 			throw new IllegalStateException();
 		}
@@ -990,14 +994,14 @@ EventQueue.invokeLater( new Runnable() {
 //		}
 	}
 	
-	protected void borrowMenuBar( AbstractWindow w )
+	protected void borrowMenuBar( AbstractWindow aw )
 	{
-		if( borrowMenuBar && (barBorrower != w) ) {
+		if( borrowMenuBar && (barBorrower != aw) ) {
 			if( (bar != null) && (barBorrower != null) ) {
 				barBorrower.setJMenuBar( bar );
 				bar = null;
 			}
-			barBorrower = w;
+			barBorrower = aw;
 			bar			= barBorrower == null ? null : barBorrower.getJMenuBar();
 //System.err.println( "setting bar " + bar + " for window " + this + "; active = "+active );
 			if( active ) {
@@ -1052,27 +1056,27 @@ EventQueue.invokeLater( new Runnable() {
 		}
 	}
 
-	public void setLocationRelativeTo( Component c )
+	public void setLocationRelativeTo( Component comp )
 	{
 		if( w != null ) {
-			w.setLocationRelativeTo( c );
+			w.setLocationRelativeTo( comp );
 		} else {
 //			throw new IllegalStateException();
 			final Point p;
-			if( c == null ) {
+			if( comp == null ) {
 				if( jif == null ) {
 					p = GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint();
 				} else {
-					c = wh.getMasterFrame().getWindow();
-					p = new Point( c.getWidth() >> 1, c.getHeight() >> 1 );
+					comp = wh.getMasterFrame().getWindow();
+					p = new Point( comp.getWidth() >> 1, comp.getHeight() >> 1 );
 				}
  			} else {
-				p = c.getLocation();
-				p.translate( c.getWidth() >> 1, c.getHeight() >> 1 );
+				p = comp.getLocation();
+				p.translate( comp.getWidth() >> 1, comp.getHeight() >> 1 );
 			}
-			final Point p2 = SwingUtilities.convertPoint( c, p, this.c );
-			p2.translate( -(this.c.getWidth() >> 1), -(this.c.getHeight() >> 1) );
-			this.c.setLocation( p2 );
+			final Point p2 = SwingUtilities.convertPoint( comp, p, c );
+			p2.translate( -(c.getWidth() >> 1), -(c.getHeight() >> 1) );
+			c.setLocation( p2 );
 		}
 	}
 	

@@ -33,6 +33,7 @@ package de.sciss.common;
 
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
@@ -115,11 +116,11 @@ implements DocumentListener
 	private MenuRadioGroup				mWindowRadioGroup;
 
 	// ---- recent files management ----
-	private MenuGroup					mgRecent;
-	private final PathList				openRecentPaths;
+	protected MenuGroup					mgRecent;
+	protected final PathList			openRecentPaths;
 
 	// ---- misc actions ----
-	private ActionOpenRecent			actionOpenRecent;
+	protected ActionOpenRecent			actionOpenRecent;
 	private Action						actionClearRecent;
 	private Action						actionCloseAll;
 
@@ -127,7 +128,7 @@ implements DocumentListener
 	
 //	private static final String			CLIENT_BG	= "de.sciss.gui.BG";	// radio button group
 
-	protected final BasicApplication	root;
+	private final BasicApplication	root;
 
 	/**
 	 *  The constructor is called only once by
@@ -139,7 +140,7 @@ implements DocumentListener
 	{
 		super();
 		
-		this.root		= app;
+		root		= app;
 	
 		openRecentPaths = new PathList( 8, root.getUserPrefs(), KEY_OPENRECENT );
 	}
@@ -152,6 +153,11 @@ implements DocumentListener
 		// ---- listeners -----
 		
 		root.getDocumentHandler().addDocumentListener( this );
+	}
+	
+	public BasicApplication getApplication()
+	{
+		return root;
 	}
 	
 	public ProcessingThread closeAll( boolean force, Flag confirmed )
@@ -237,7 +243,7 @@ implements DocumentListener
 //		mg.add( smg );
 //		mg.addSeparator();
 		mg.add( new MenuItem( "save", getResourceString( "menuSave" ), KeyStroke.getKeyStroke( KeyEvent.VK_S, MENU_SHORTCUT )));
-		mg.add( new MenuItem( "saveAs", getResourceString( "menuSaveAs" ), KeyStroke.getKeyStroke( KeyEvent.VK_S, MENU_SHORTCUT + KeyEvent.SHIFT_MASK )));
+		mg.add( new MenuItem( "saveAs", getResourceString( "menuSaveAs" ), KeyStroke.getKeyStroke( KeyEvent.VK_S, MENU_SHORTCUT + InputEvent.SHIFT_MASK )));
 		mg.add( new MenuItem( "saveCopyAs", getResourceString( "menuSaveCopyAs" )));
 //		mg.add( new MenuItem( "saveSelectionAs", getResourceString( "menuSaveSelectionAs" )));
 		if( QuitJMenuItem.isAutomaticallyPresent() ) {
@@ -246,12 +252,12 @@ implements DocumentListener
 			mg.addSeparator();
 			mg.add( new MenuItem( "quit", root.getQuitAction() ));
 		}
-		this.add( mg );
+		add( mg );
 
 		// --- edit menu ---
 		mg	= new MenuGroup( "edit", getResourceString( "menuEdit" ));
 		mg.add( new MenuItem( "undo", getResourceString( "menuUndo" ), KeyStroke.getKeyStroke( KeyEvent.VK_Z, MENU_SHORTCUT )));
-		mg.add( new MenuItem( "redo", getResourceString( "menuRedo" ), KeyStroke.getKeyStroke( KeyEvent.VK_Z, MENU_SHORTCUT + KeyEvent.SHIFT_MASK )));
+		mg.add( new MenuItem( "redo", getResourceString( "menuRedo" ), KeyStroke.getKeyStroke( KeyEvent.VK_Z, MENU_SHORTCUT + InputEvent.SHIFT_MASK )));
 		mg.addSeparator();
 		mg.add( new MenuItem( "cut", getResourceString( "menuCut" ), KeyStroke.getKeyStroke( KeyEvent.VK_X, MENU_SHORTCUT )));
 		mg.add( new MenuItem( "copy", getResourceString( "menuCopy" ), KeyStroke.getKeyStroke( KeyEvent.VK_C, MENU_SHORTCUT )));
@@ -266,7 +272,7 @@ implements DocumentListener
 			mg.addSeparator();
 			mg.add( new MenuItem( "preferences", a ));
 		}
-		this.add( mg );
+		add( mg );
 		
 		// --- window menu ---
 		mWindowRadioGroup = new MenuRadioGroup();
@@ -279,18 +285,18 @@ implements DocumentListener
 		mgWindow.addSeparator();
 		mgWindow.add( new MenuItem( "collect", ((BasicWindowHandler) root.getWindowHandler()).getCollectAction() ));
 		mgWindow.addSeparator();
-		this.add( mgWindow );
+		add( mgWindow );
 
 		// --- help menu ---
 		mg	= new MenuGroup( "help", getResourceString( "menuHelp" ));
 		// this is pretty weird, but it works at least on german keyboards: command+questionmark is defaut help shortcut
 		// on mac os x. KeyEvent.VK_QUESTION_MARK doesn't exist, plus apple's vm ignore german keyboard layout, therefore the
 		// the question mark becomes a minus. however it's wrongly displayed in the menu...
-		mg.add( new MenuItem( "manual", new ActionURLViewer( getResourceString( "menuHelpManual" ), KeyStroke.getKeyStroke( KeyEvent.VK_MINUS, MENU_SHORTCUT + KeyEvent.SHIFT_MASK ), "index", false )));
+		mg.add( new MenuItem( "manual", new ActionURLViewer( getResourceString( "menuHelpManual" ), KeyStroke.getKeyStroke( KeyEvent.VK_MINUS, MENU_SHORTCUT + InputEvent.SHIFT_MASK ), "index", false )));
 		mg.add( new MenuItem( "shortcuts", new ActionURLViewer( getResourceString( "menuHelpShortcuts" ), null, "Shortcuts", false )));
 		mg.addSeparator();
 		mg.add( new MenuItem( "website", new ActionURLViewer( getResourceString( "menuHelpWebsite" ), null, getResourceString( "appURL" ), true )));
-		a = new actionAboutClass( getResourceString( "menuAbout" ), null );
+		a = new ActionAbout( getResourceString( "menuAbout" ), null );
 		if( AboutJMenuItem.isAutomaticallyPresent() ) {
 			root.getAboutJMenuItem().setAction( a );
 		} else {
@@ -298,7 +304,7 @@ implements DocumentListener
 			mg.add( new MenuItem( "about", a ));
 		}
 
-		this.add( mg );
+		add( mg );
 		
 		addMenuItems();
 	}
@@ -336,7 +342,7 @@ implements DocumentListener
 		mgRecent.add( new MenuItem( String.valueOf( uniqueNumber++ ), createOpenRecentAction( null, path )), 0 );
 	}
 	
-	protected String getResourceString( String key )
+	public String getResourceString( String key )
 	{
 		return root.getResourceString( key );
 	}
@@ -377,7 +383,7 @@ implements DocumentListener
 		}
 	}
 
-	public void documentFocussed( de.sciss.app.DocumentEvent e ) {}
+	public void documentFocussed( de.sciss.app.DocumentEvent e ) { /* empty */ }
 
 // ---------------- Action objects for file (session) operations ---------------- 
 
@@ -419,7 +425,7 @@ implements DocumentListener
 	private class ActionClearRecent
 	extends MenuAction
 	{
-		private ActionClearRecent( String text, KeyStroke shortcut )
+		protected ActionClearRecent( String text, KeyStroke shortcut )
 		{
 			super( text, shortcut );
 			setEnabled( false );
@@ -441,7 +447,7 @@ implements DocumentListener
 	extends MenuAction
 	implements ProcessingThread.Listener
 	{
-		private ActionCloseAll( String text, KeyStroke shortcut )
+		protected ActionCloseAll( String text, KeyStroke shortcut )
 		{
 			super( text, shortcut );
 			setEnabled( false );	// initially no docs open
@@ -461,7 +467,7 @@ implements DocumentListener
 			}
 		}
 		
-		public void processStarted( ProcessingThread.Event e ) {}
+		public void processStarted( ProcessingThread.Event e ) { /* empty */ }
 
 		// if the saving was successfull, we will call closeAll again
 		public void processStopped( ProcessingThread.Event e )
@@ -481,7 +487,7 @@ implements DocumentListener
 	public class ActionPreferences
 	extends MenuAction
 	{
-		private ActionPreferences( String text, KeyStroke shortcut )
+		protected ActionPreferences( String text, KeyStroke shortcut )
 		{
 			super( text, shortcut );
 		}
@@ -503,10 +509,10 @@ implements DocumentListener
 // ---------------- Action objects for window operations ---------------- 
 
 	// action for the About menu item
-	private class actionAboutClass
+	private class ActionAbout
 	extends MenuAction
 	{
-		private actionAboutClass( String text, KeyStroke shortcut )
+		protected ActionAbout( String text, KeyStroke shortcut )
 		{
 			super( text, shortcut );
 		}
@@ -516,7 +522,7 @@ implements DocumentListener
 		 */
 		public void actionPerformed( ActionEvent e )
 		{
-			JFrame aboutBox = (JFrame) root.getComponent( AboutBox.COMP_ABOUTBOX );
+			JFrame aboutBox = (JFrame) getApplication().getComponent( AboutBox.COMP_ABOUTBOX );
 		
 			if( aboutBox == null ) {
 				aboutBox = new AboutBox();
@@ -554,7 +560,7 @@ implements DocumentListener
 		 */
 		public void actionPerformed( ActionEvent e )
 		{
-			AbstractWindow w = (AbstractWindow) root.getComponent( component );
+			AbstractWindow w = (AbstractWindow) getApplication().getComponent( component );
 			if( w != null ) {
 				w.setVisible( true );
 				w.toFront();
@@ -576,7 +582,7 @@ implements DocumentListener
 		//							that's the complete URL!
 		// @param   openWebBrowser	if true, use the default web browser,
 		//							if false use internal help viewer
-		private ActionURLViewer( String text, KeyStroke shortcut, String theURL, boolean openWebBrowser )
+		protected ActionURLViewer( String text, KeyStroke shortcut, String theURL, boolean openWebBrowser )
 		{
 			super( text, shortcut );
 			

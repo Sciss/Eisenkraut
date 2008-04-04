@@ -68,7 +68,7 @@ implements EventManager.Processor, XMLRepresentation
 	// ------- private -------
 	
 	private final Map			backingMap;
-	private final Object		owner;
+	protected final Object		owner;
 	private final Map			contextMap;
 	private final EventManager	elm				= new EventManager( this );
 
@@ -506,7 +506,7 @@ loop:	for( int i = 0; i < nl.getLength(); i++ ) {
 			this.defaultValue		= defaultValue;
 		}
 		
-		private Context( Context orig )
+		protected Context( Context orig )
 		{
 			this.flags				= orig.flags;
 			this.type				= orig.type;

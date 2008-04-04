@@ -96,7 +96,7 @@ extends AudioStake
 	public void cleanUp()
 	{
 		for( int i = 0; i < fs.length; i++ ) {
-			try { fs[ i ].close(); } catch( IOException e1 ) {}
+			try { fs[ i ].close(); } catch( IOException e1 ) { /* ignore */ }
 		}
 	}
 

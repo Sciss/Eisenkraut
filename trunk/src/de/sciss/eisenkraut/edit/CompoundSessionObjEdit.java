@@ -120,7 +120,7 @@ extends AbstractCompoundEdit
 		}
 	}
 
-	protected void cancelDone() {}
+	protected void cancelDone() { /* empty */ }
 	
 	/**
 	 *  Finishes the compound edit and calls

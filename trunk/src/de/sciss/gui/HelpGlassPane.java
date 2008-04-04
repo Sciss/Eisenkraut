@@ -172,7 +172,7 @@ implements PreferenceChangeListener
 			new String[] { KEY_KEYSTROKE_HELP }, this )).addTo( grass );
 	}
     
-    private void activateHelpMode()
+    protected void activateHelpMode()
     {
         Component recentGlassPane = f.getGlassPane();
         if( recentGlassPane == this || recentGlassPane.isVisible() ) return;
@@ -187,7 +187,7 @@ implements PreferenceChangeListener
 		this.requestFocus();
     }
 	
-    private void deactivateHelpMode()
+    protected void deactivateHelpMode()
     {
         if( f.getGlassPane() != this ) return;
 
@@ -223,7 +223,7 @@ implements PreferenceChangeListener
         g2.fill( focussedArea );
      }
 	
-	private void checkMousePressed( MouseEvent e )
+	protected void checkMousePressed( MouseEvent e )
 	{
         checkMouseMoved( e );
 		if( focussedHelpComponent != null ) {
@@ -233,7 +233,7 @@ implements PreferenceChangeListener
 		}
 	}
 
-	private void checkMouseMoved( MouseEvent e )
+	protected void checkMouseMoved( MouseEvent e )
 	{
         JComponent c = findHelpComponentAt( e.getPoint() );
 		if( c != focussedHelpComponent ) {

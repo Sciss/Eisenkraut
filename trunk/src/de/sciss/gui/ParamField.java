@@ -64,13 +64,13 @@ extends JPanel
 implements PropertyChangeListener, EventManager.Processor, ComboBoxEditor
 {
 	private final Jog						ggJog;
-	private final NumberField				ggNumber;
-	private final UnitLabel					lbUnit;
+	protected final NumberField				ggNumber;
+	protected final UnitLabel				lbUnit;
 	private static final UnitViewFactory	uvf				= new DefaultUnitViewFactory();
 	private ParamSpace.Translator			ut;
 
 	protected final List					collSpaces		= new ArrayList();
-	private ParamSpace						currentSpace	= null;
+	protected ParamSpace					currentSpace	= null;
 
 	private EventManager					elm				= null;	// lazy creation
 	
@@ -277,7 +277,7 @@ implements PropertyChangeListener, EventManager.Processor, ComboBoxEditor
 		this.ut	= ut;
 	}
 
-	private void selectSpace( int selectedIdx )
+	protected void selectSpace( int selectedIdx )
 	{
 		if( selectedIdx >= 0 && selectedIdx < collSpaces.size() ) {
 

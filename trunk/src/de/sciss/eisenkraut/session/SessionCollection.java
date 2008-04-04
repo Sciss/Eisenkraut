@@ -53,7 +53,7 @@ implements EventManager.Processor
 	protected final List			collObjects			= new ArrayList();
 	protected final MapManager.Listener	objectListener;
 
-	private static final Set EMPTY_SET					= new HashSet( 1 );
+	protected static final Set EMPTY_SET				= new HashSet( 1 );
 	
 //	private final Set	dynamicSet	= new HashSet();
 
@@ -567,7 +567,7 @@ implements EventManager.Processor
 		 *  @param  actionID	unused, must be zero at the moment
 		 *  @param  actionObj	currently unused (provide null)
 		 */
-		private Event( Object source, long when, List affectedColl, int type )
+		protected Event( Object source, long when, List affectedColl, int type )
 		{
 			super( source, COLLECTION_CHANGED, when );
 		
@@ -587,7 +587,7 @@ implements EventManager.Processor
 			this.affectedSet	= new HashSet( superEvent.affectedSet );
 		}
 		
-		private Event( Object source, long when, MapManager.Event e )
+		protected Event( Object source, long when, MapManager.Event e )
 		{
 			super( source, e.getID() == MapManager.Event.MAP_CHANGED ? MAP_CHANGED : OBJECT_CHANGED, when );
 

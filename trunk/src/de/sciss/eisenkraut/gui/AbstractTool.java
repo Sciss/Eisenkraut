@@ -56,11 +56,12 @@ import de.sciss.gui.TopPainter;
 public abstract class AbstractTool
 implements MouseListener, MouseMotionListener, TopPainter // KeyListener
 {
-	private Component c;
+	private Component comp;
 	private MenuAction actionCancel	= null;
 
 	protected AbstractTool()
 	{
+		/* empty */ 
 	}
 
 	/**
@@ -81,17 +82,17 @@ implements MouseListener, MouseMotionListener, TopPainter // KeyListener
 	 */
 	public void toolAcquired( Component c )
 	{
-		if( this.c != null ) throw new IllegalStateException();
+		if( comp != null ) throw new IllegalStateException();
 		if( c == null ) throw new IllegalArgumentException();
 
-		this.c = c;
+		comp = c;
 		c.addMouseListener( this );
 		c.addMouseMotionListener( this );
 //		c.addKeyListener( this );
 
-		if( this.c instanceof JComponent ) {
-			if( actionCancel == null ) actionCancel = new actionCancelClass();
-			actionCancel.installOn( (JComponent) this.c, JComponent.WHEN_IN_FOCUSED_WINDOW );
+		if( comp instanceof JComponent ) {
+			if( actionCancel == null ) actionCancel = new ActionCancel();
+			actionCancel.installOn( (JComponent) comp, JComponent.WHEN_IN_FOCUSED_WINDOW );
 		}
 	}
 
@@ -120,19 +121,19 @@ implements MouseListener, MouseMotionListener, TopPainter // KeyListener
 	 */
 	public void toolDismissed( Component c )
 	{
-		if( this.c == null ) throw new IllegalStateException();
-		if( c == null || c != this.c ) throw new IllegalArgumentException();
+		if( comp == null ) throw new IllegalStateException();
+		if( c == null || c != comp ) throw new IllegalArgumentException();
 	
 		c.removeMouseMotionListener( this );
 		c.removeMouseListener( this );
 //		c.removeKeyListener( this );
-		if( (actionCancel != null) && (this.c instanceof JComponent) ) {
-			actionCancel.deinstallFrom( (JComponent) this.c, JComponent.WHEN_IN_FOCUSED_WINDOW );
+		if( (actionCancel != null) && (comp instanceof JComponent) ) {
+			actionCancel.deinstallFrom( (JComponent) comp, JComponent.WHEN_IN_FOCUSED_WINDOW );
 		}
 		
 		cancelGesture();
 		
-		this.c = null;
+		comp = null;
 	}
 	
 	protected abstract void cancelGesture();
@@ -167,7 +168,7 @@ implements MouseListener, MouseMotionListener, TopPainter // KeyListener
 	 */
 	protected Component getComponent()
 	{
-		return c;
+		return comp;
 	}
 	
 	public void mousePressed( MouseEvent e )
@@ -179,15 +180,12 @@ implements MouseListener, MouseMotionListener, TopPainter // KeyListener
 //System.err.println( "requesting focus on "+e.getComponent().getClass().getName() );
 	}
 
-	public void mouseReleased( MouseEvent e )
-	{
-	}
-	
-	public void mouseClicked( MouseEvent e ) {}
-	public void mouseDragged( MouseEvent e ) {}
-	public void mouseEntered( MouseEvent e ) {}
-	public void mouseExited( MouseEvent e ) {}
-	public void mouseMoved( MouseEvent e ) {}
+	public void mouseReleased( MouseEvent e ) { /* empty */ }
+	public void mouseClicked( MouseEvent e ) { /* empty */ }
+	public void mouseDragged( MouseEvent e ) { /* empty */ }
+	public void mouseEntered( MouseEvent e ) { /* empty */ }
+	public void mouseExited( MouseEvent e ) { /* empty */ }
+	public void mouseMoved( MouseEvent e ) { /* empty */ }
 
 //	public void keyPressed( KeyEvent e )
 //	{
@@ -209,10 +207,10 @@ implements MouseListener, MouseMotionListener, TopPainter // KeyListener
 //	public void keyReleased( KeyEvent e ) {}
 //	public void keyTyped( KeyEvent e ) {}
 
-	private class actionCancelClass
+	private class ActionCancel
 	extends MenuAction
 	{
-		private actionCancelClass()
+		protected ActionCancel()
 		{
 			super( "tool-cancel", KeyStroke.getKeyStroke( KeyEvent.VK_ESCAPE, 0 ));
 		}

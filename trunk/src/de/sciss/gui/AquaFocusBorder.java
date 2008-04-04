@@ -90,13 +90,13 @@ extends AbstractBorder
 		return new Insets( insets.top, insets.left, insets.bottom, insets.right );
 	}
 	
-	public Insets getBorderInsets( Component c, Insets insets )
+	public Insets getBorderInsets( Component c, Insets i )
 	{
-		insets.top		= this.insets.top;
-		insets.left		= this.insets.left;
-		insets.bottom	= this.insets.bottom;
-		insets.right	= this.insets.right;
-		return insets;
+		i.top		= this.insets.top;
+		i.left		= this.insets.left;
+		i.bottom	= this.insets.bottom;
+		i.right	= this.insets.right;
+		return i;
 	}
 	
 	public void paintBorder( Component c, Graphics g, int x, int y, int width, int height )

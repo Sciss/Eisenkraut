@@ -84,29 +84,29 @@ implements	de.sciss.jcollider.Constants,
 	private static final boolean DEBUG_FOLD		= false;
 	
 	private static final int DISKBUF_PAD		= 4;	// be sure to match with phasor synth def!!
-	private final int DISKBUF_SIZE;
-	private final int DISKBUF_SIZE_H;
-	private final int DISKBUF_SIZE_HM;
+	protected final int DISKBUF_SIZE;
+	protected final int DISKBUF_SIZE_H;
+	protected final int DISKBUF_SIZE_HM;
 
 	private final int MIN_LOOP_LEN				= 4410;	// rather arbitrary ... we should better check that osc bundles don't overflow
 
-	private final Server			server;
+	protected final Server			server;
 	private final NodeWatcher		nw;
 	private final Session			doc;
-	private final Transport			transport;
+	protected final Transport		transport;
 	
 	private RoutingConfig			oCfg;
-	private volatile Context		ct	= null;
+	protected volatile Context		ct	= null;
 
 	private double					serverRate;
 	private double					sourceRate;
 	private double					srcFactor			= 1.0;
-	private long					playOffset; //			= -1;
-	private int						clock;
+	protected long					playOffset; //			= -1;
+	protected int					clock;
 	
 	private static final Span[]		emptySpans			= new Span[0];
 	
-	private Span[][]				lastBufSpans		= new Span[][] { emptySpans, emptySpans };
+	protected Span[][]				lastBufSpans		= new Span[][] { emptySpans, emptySpans };
 
 	private final Group				grpRoot;
 	private final Group				grpInput;
@@ -123,8 +123,8 @@ implements	de.sciss.jcollider.Constants,
 	private boolean					activeInput		= false;
 	private boolean					activeOutput	= false;
 	
-	private volatile int			trigNodeID		= -1;	// current synthPhasor ID or -1
-	private volatile OSCMessage		trigMsg			= null;	// most recently received /tr message
+	protected volatile int			trigNodeID		= -1;	// current synthPhasor ID or -1
+	protected volatile OSCMessage	trigMsg			= null;	// most recently received /tr message
 	
 	private static final String		OSC_SUPERCOLLIDER	= "sc";
 	private final OSCRouterWrapper	osc;
@@ -179,7 +179,7 @@ implements	de.sciss.jcollider.Constants,
 				final int				nodeID	= ((Number) msg.getArg( 0 )).intValue();
 				final int				nextClock, fill, bufOff;
 				final long				pos, start;
-				final OSCBundle			bndl;
+				final OSCBundle			bndl2;
 				final int				even;
 				final Span[]			bufSpans;
 				int						numCh;
@@ -189,7 +189,7 @@ implements	de.sciss.jcollider.Constants,
 //System.err.println( "clock = " + clock );
 					nextClock	= clock + 1;
 					even		= nextClock & 1; // == 0;
-					bndl		= new OSCBundle();
+					bndl2		= new OSCBundle();
 
 					if( (ct == null) || (ct.synthPhasor == null) || (nodeID != ct.synthPhasor.getNodeID()) ) return;
 					if( trigNodeID == -1 ) return;	// transport not running anymore
@@ -200,11 +200,11 @@ implements	de.sciss.jcollider.Constants,
 						if( fill > 0 ) {
 							for( int j = 0; j < ct.bufsDisk.length; j++ ) {
 								numCh = ct.bufsDisk[ j ].getNumChannels();
-								bndl.addPacket( ct.bufsDisk[ j ].fillMsg( bufOff * numCh, fill * numCh, 0.0f ));
+								bndl2.addPacket( ct.bufsDisk[ j ].fillMsg( bufOff * numCh, fill * numCh, 0.0f ));
 							}
 						}
 						bufSpans = transport.foldSpans( new Span( start, pos + DISKBUF_SIZE_H ), MIN_LOOP_LEN );
-						doc.getAudioTrail().addBufferReadMessages( bndl, bufSpans, ct.bufsDisk, bufOff + fill );
+						doc.getAudioTrail().addBufferReadMessages( bndl2, bufSpans, ct.bufsDisk, bufOff + fill );
 
 						lastBufSpans[ even ] = bufSpans;
 if( DEBUG_FOLD ) {
@@ -215,7 +215,7 @@ for( int k = 0, m = bufOff + fill; k < bufSpans.length; k++ ) {
 	}
 	System.out.println();
 }
-						if( !server.sync( bndl, TIMEOUT )) {
+						if( !server.sync( bndl2, TIMEOUT )) {
 							printTimeOutMsg( "bufUpdate" );
 					}
 				}
@@ -265,17 +265,17 @@ for( int k = 0, m = bufOff + fill; k < bufSpans.length; k++ ) {
 		osc			= new OSCRouterWrapper( doc, this );
 	}
 	
-	private SynthDef[] createInputDefs( int[][] channelMaps )
+	private SynthDef[] createInputDefs( int[][] chMaps )
 	{
-		final int[]			numInputChannels	= new int[ channelMaps.length ];
+		final int[]			numInCh		= new int[ chMaps.length ];
 		final SynthDef[]	defs;
-		int					numDefs				= 0;
+		int					numDefs		= 0;
 		
 numDefsLp:
-		for( int i = 0; i < channelMaps.length; i++ ) {
-			numInputChannels[ numDefs ] = channelMaps[ i ].length;
+		for( int i = 0; i < chMaps.length; i++ ) {
+			numInCh[ numDefs ] = chMaps[ i ].length;
 			for( int j = 0; j < numDefs; j++ ) {
-				if( numInputChannels[ j ] == numInputChannels[ numDefs ]) continue numDefsLp;
+				if( numInCh[ j ] == numInCh[ numDefs ]) continue numDefsLp;
 			}
 			numDefs++;
 		}
@@ -285,16 +285,16 @@ numDefsLp:
 			final Control		ctrlI	= Control.ir( new String[] { "i_aInBf", "i_aOtBs", "i_aPhBs", "i_intrp" }, new float[] { 0f, 0f, 0f, 1f });
 			final GraphElem		graph;
 			
-			if( numInputChannels[ i ] > 0 ) {
+			if( numInCh[ i ] > 0 ) {
 				final GraphElem	phase	= UGen.ar( "In", ctrlI.getChannel( "i_aPhBs" ));
-				final GraphElem	bufRd	= UGen.ar( "BufRd", numInputChannels[ i ], ctrlI.getChannel( "i_aInBf" ), phase, UGen.ir( 0f ), ctrlI.getChannel( "i_intrp" ));
+				final GraphElem	bufRd	= UGen.ar( "BufRd", numInCh[ i ], ctrlI.getChannel( "i_aInBf" ), phase, UGen.ir( 0f ), ctrlI.getChannel( "i_intrp" ));
 //				final GraphElem	out		= UGen.ar( "OffsetOut", ctrlI.getChannel( "i_aOtBs" ), bufRd );
 				final GraphElem	out		= UGen.ar( "Out", ctrlI.getChannel( "i_aOtBs" ), bufRd );
 				graph	= out;
 			} else {
 				graph	= ctrlI;
 			}
-			defs[ i ]	= new SynthDef( "eisk-input" + numInputChannels[ i ], graph );
+			defs[ i ]	= new SynthDef( "eisk-input" + numInCh[ i ], graph );
 		}
 		return defs;
 	}
@@ -566,7 +566,7 @@ numDefsLp:
 //		}
 //	}
 	
-	private static void printError( String name, Throwable t )
+	protected static void printError( String name, Throwable t )
 	{
 		System.err.println( name + " : " + t.getClass().getName() + " : " + t.getLocalizedMessage() );
 	}
@@ -609,7 +609,7 @@ numDefsLp:
 					bndl.addPacket( ct.bufsDisk[ i ].allocMsg() );
 				}
 
-				for( int ch = 0; ch < ct.numInputChannels; ch++ ) {
+				for( int ch = 0; ch < ct.numInChans; ch++ ) {
 //					bndl.addPacket( ct.synthsPan[ ch ].newMsg( grpOutput, new String[] {
 //						"i_aInBs",					   "i_aOtBs",		     "volume", "orient" }, new float[] {
 //						ct.busInternal.getIndex() + ch, ct.busPan.getIndex(), volume,   orient  }, kAddToTail ));
@@ -674,11 +674,11 @@ numDefsLp:
 	
 //		if( !doc.bird.attemptShared( Session.DOOR_TRACKS, 250 )) return;
 //		try {
-			if( doc.audioTracks.size() != ct.numInputChannels ) {
+			if( doc.audioTracks.size() != ct.numInChans ) {
 				Server.getPrintStream().println( "Input channel mismatch!" );
 				return;
 			}
-			for( int ch = 0; ch < ct.numInputChannels; ch++ ) {
+			for( int ch = 0; ch < ct.numInChans; ch++ ) {
 //				o = doc.audioTracks.get( ch ).getMap().getValue( SessionObject.MAP_KEY_FLAGS );
 //				if( (o != null) && (o instanceof Number) ) {
 //					muted = (((Number) o).intValue() & (SessionObject.FLAGS_MUTE | SessionObject.FLAGS_VIRTUALMUTE)) != 0;
@@ -705,11 +705,11 @@ numDefsLp:
 	
 //		if( !doc.bird.attemptShared( Session.DOOR_TRACKS, 250 )) return;
 //		try {
-			if( doc.audioTracks.size() != ct.numInputChannels ) {
+			if( doc.audioTracks.size() != ct.numInChans ) {
 				Server.getPrintStream().println( "Input channel mismatch!" );
 				return;
 			}
-			for( int ch = 0; ch < ct.numInputChannels; ch++ ) {
+			for( int ch = 0; ch < ct.numInChans; ch++ ) {
 				map	= doc.audioTracks.get( ch ).getMap();
 				o	= map.getValue( AudioTrack.MAP_KEY_PANAZIMUTH );
 				if( (o != null) && (o instanceof Number) ) {
@@ -738,12 +738,12 @@ numDefsLp:
 //		}
 	}
 
-	private void printTimeOutMsg( String loc )
+	protected void printTimeOutMsg( String loc )
 	{
 		Server.getPrintStream().println( getResourceString( "errOSCTimeOut" ) + " : " + loc );
 	}
 
-	private static String getResourceString( String key )
+	protected static String getResourceString( String key )
 	{
 		return AbstractApplication.getApplication().getResourceString( "errOSCTimeOut" );
 	}
@@ -833,26 +833,26 @@ numDefsLp:
 		final SynthDef[]		defs;
 		final Buffer[]			bufsDisk;
 		final Synth[]			synthsBufRd;
-		final Bus				busInternal, busPhasor;
+		final Bus				busInternal, busPh;
 		final Span				span				= doc.timeline.getSelectionSpan();
 		final AudioTrail		at					= doc.getAudioTrail();
-		final long				playOffset			= span.start;
+		final long				nrtPlayOffset		= span.start;
 		final Span[]			bufSpans			= new Span[ 1 ];
-		final Group				grpRoot, grpInput;
+		final Group				nrtGrpRoot, nrtGrpInput;
 		final Synth				synthPhasor;
 		final float				realRate;
 		final float				interpolation;
-		final double			serverRate;
+		final double			nrtServerRate;
 		final float				rate				= 1.0f;
-		Server					server				= null;
+		Server					nrtServer			= null;
 		NRTFile					f					= null;
 		int						argIdx				= 1;
 		int						audioBusOffset, bufferOffset; //, controlBusOffset;
 		OSCBundle				bndl;
 		double					time				= 0.0;
 		boolean					even;
-		int						clock;
-		long					pos					= playOffset;
+		int						nrtClock;
+		long					pos					= nrtPlayOffset;
 		
 		if( ct == null ) {
 //			rom.replyFailed( rom, new IOException( "No routing context" ));
@@ -873,13 +873,13 @@ numDefsLp:
 			argIdx++;
 			bufferOffset	= ((Number) rom.msg.getArg( argIdx )).intValue();
 			argIdx++;
-			serverRate		= ((Number) rom.msg.getArg( argIdx )).doubleValue();
+			nrtServerRate		= ((Number) rom.msg.getArg( argIdx )).doubleValue();
 			
-			server			= new Server( "nrt" );
+			nrtServer			= new Server( "nrt" );
 			
 			f.write( SuperColliderClient.getInstance().loadDefsMsg() );
 			
-			defs			= createInputDefs( ct.channelMaps ); // ct.numInputChannels
+			defs			= createInputDefs( ct.chanMaps ); // ct.numInputChannels
 			if( defs != null ) {
 				for( int i = 0; i < defs.length; i++ ) {
 					f.write( defs[ i ].recvMsg() );
@@ -888,36 +888,36 @@ numDefsLp:
 
 //			sourceRate			= doc.timeline.getRate();
 //			serverRate			= server.getSampleRate();
-			srcFactor			= sourceRate / serverRate;
+			srcFactor			= sourceRate / nrtServerRate;
 			realRate			= (float) (rate * srcFactor);
 			interpolation		= realRate == 1.0f ? 1f : 3f;
 		
-			grpRoot				= Group.basicNew( server );
-			f.write( grpRoot.addToHeadMsg( server.getDefaultGroup() ));
-			grpInput			= Group.basicNew( server );
-			f.write( grpInput.addToTailMsg( grpRoot ));
+			nrtGrpRoot				= Group.basicNew( nrtServer );
+			f.write( nrtGrpRoot.addToHeadMsg( nrtServer.getDefaultGroup() ));
+			nrtGrpInput			= Group.basicNew( nrtServer );
+			f.write( nrtGrpInput.addToTailMsg( nrtGrpRoot ));
 
 			synthsBufRd				= new Synth[ ct.numFiles ];
-			busInternal				= new Bus( server, kAudioRate, audioBusOffset, ct.numInputChannels );
+			busInternal				= new Bus( nrtServer, kAudioRate, audioBusOffset, ct.numInChans );
 			audioBusOffset		   += busInternal.getNumChannels();
-			busPhasor				= new Bus( server, kAudioRate, audioBusOffset );
-			audioBusOffset		   += busPhasor.getNumChannels();
+			busPh				= new Bus( nrtServer, kAudioRate, audioBusOffset );
+			audioBusOffset		   += busPh.getNumChannels();
 			bufsDisk				= new Buffer[ ct.numFiles ];
 			for( int i = 0; i < ct.numFiles; i++ ) {
-				bufsDisk[ i ]		= new Buffer( server, DISKBUF_SIZE, ct.channelMaps[ i ].length, bufferOffset++ );
+				bufsDisk[ i ]		= new Buffer( nrtServer, DISKBUF_SIZE, ct.chanMaps[ i ].length, bufferOffset++ );
 				f.write( bufsDisk[ i ].allocMsg() );
 			}
 
 			for( int i = 0; i < ct.numFiles; i++ ) {
-				synthsBufRd[ i ]	= Synth.basicNew( "eisk-input" + ct.channelMaps[ i ].length, server );
+				synthsBufRd[ i ]	= Synth.basicNew( "eisk-input" + ct.chanMaps[ i ].length, nrtServer );
 			}
-			synthPhasor	= Synth.basicNew( "eisk-phasor", server );
+			synthPhasor	= Synth.basicNew( "eisk-phasor", nrtServer );
 
-			for( clock = 0, even = true;; clock++, even = !even ) {
+			for( nrtClock = 0, even = true;; nrtClock++, even = !even ) {
 				if( even ) {
-					pos = clock * DISKBUF_SIZE_HM - DISKBUF_PAD + playOffset;
+					pos = nrtClock * DISKBUF_SIZE_HM - DISKBUF_PAD + nrtPlayOffset;
 				} else {
-					pos = clock * DISKBUF_SIZE_HM + playOffset;
+					pos = nrtClock * DISKBUF_SIZE_HM + nrtPlayOffset;
 				}
 				if( pos >= span.stop ) break;
 				f.setTime( time );
@@ -935,30 +935,30 @@ numDefsLp:
 				at.addBufferReadMessages( bndl, bufSpans, bufsDisk, even ? 0 : DISKBUF_SIZE_H );
 				f.write( bndl );
 				
-				if( clock == 0 ) {
+				if( nrtClock == 0 ) {
 					for( int i = 0, off = 0; i < ct.numFiles; i++ ) {
-						f.write( synthsBufRd[ i ].newMsg( grpInput, new String[] {
+						f.write( synthsBufRd[ i ].newMsg( nrtGrpInput, new String[] {
 							"i_aInBf",	               "i_aOtBs",                    "i_aPhBs",            "i_intrp" }, new float[] {
-							bufsDisk[ i ].getBufNum(), busInternal.getIndex() + off, busPhasor.getIndex(), interpolation }
+							bufsDisk[ i ].getBufNum(), busInternal.getIndex() + off, busPh.getIndex(), interpolation }
 						));
-						off += ct.channelMaps[ i ].length;
+						off += ct.chanMaps[ i ].length;
 					}
 
 					if( ct.numFiles > 0 ) {
-						f.write( synthPhasor.newMsg( grpInput, new String[] {
+						f.write( synthPhasor.newMsg( nrtGrpInput, new String[] {
 							"i_aInBf",				   "rate",   "i_aPhBs"          }, new float[] {
-							bufsDisk[ 0 ].getBufNum(), realRate, busPhasor.getIndex() }));
+							bufsDisk[ 0 ].getBufNum(), realRate, busPh.getIndex() }));
 					}
 					
 				} else {
-					time = (clock * DISKBUF_SIZE_HM / sourceRate) + 0.1;	// a bit beyond that spot to avoid rounding errors
+					time = (nrtClock * DISKBUF_SIZE_HM / sourceRate) + 0.1;	// a bit beyond that spot to avoid rounding errors
 				}
 			}
 			
 			time = span.getLength() / sourceRate;
 //System.err.println( "time = "+time );
 			f.setTime( time );
-			f.write( grpRoot.freeMsg() );
+			f.write( nrtGrpRoot.freeMsg() );
 			for( int i = 0; i < bufsDisk.length; i++ ) {
 				f.write( bufsDisk[ i ].freeMsg() );
 			}
@@ -991,7 +991,7 @@ numDefsLp:
 			}
 		}
 		finally {
-			if( server != null ) server.dispose();
+			if( nrtServer != null ) nrtServer.dispose();
 			if( f != null ) f.dispose();
 		}
 	}
@@ -1037,14 +1037,14 @@ numDefsLp:
 		}
 	}
 
-	public void timelineSelected( TimelineEvent e ) {}
-	public void timelinePositioned( TimelineEvent e ) {}
-	public void timelineScrolled( TimelineEvent e ) {}
+	public void timelineSelected( TimelineEvent e ) { /* ignored */ }
+	public void timelinePositioned( TimelineEvent e ) { /* ignored */ }
+	public void timelineScrolled( TimelineEvent e ) { /* ignored */ }
 
 // ------------- TransportListener interface -------------
 
 	// XXX sync
-	public void transportStop( Transport transport, long pos )
+	public void transportStop( Transport t, long pos )
 	{
 //		synchronized( sync ) {
 			trigNodeID	= -1;
@@ -1072,15 +1072,15 @@ numDefsLp:
 	}
 	
 	// XXX sync
-	public void transportPosition( Transport transport, long pos, double rate )
+	public void transportPosition( Transport t, long pos, double rate )
 	{
-		transportStop( transport, pos );
-		transportPlay( transport, pos, rate );
+		transportStop( t, pos );
+		transportPlay( t, pos, rate );
 	}
 	
 	// irgendwie noch nicht so 100% fertig, manchmal scheinen buffer updates
 	// nicht korrekt (aktuell spielende buffer haelfte -> anschliessend alles ok)
-	public void transportReadjust( Transport transport, long readjusted, double rate )
+	public void transportReadjust( Transport t, long readjusted, double rate )
 	{
 		final OSCBundle	bndl;
 		Span[]			bufSpans;
@@ -1100,7 +1100,7 @@ numDefsLp:
 				start	= Math.max( 0, pos );
 				fill	= (int) (start - pos);
 				bufOff	= even * DISKBUF_SIZE_H;
-				bufSpans = transport.foldSpans( new Span( start, pos + DISKBUF_SIZE_H ), MIN_LOOP_LEN );
+				bufSpans = t.foldSpans( new Span( start, pos + DISKBUF_SIZE_H ), MIN_LOOP_LEN );
 checkSpans:		if( bufSpans.length == lastBufSpans[ even ].length ) {
 					for( int j = 0; j < bufSpans.length; j++ ) {
 						if( !bufSpans[ j ].equals( lastBufSpans[ even ][ j ])) break checkSpans;
@@ -1138,7 +1138,7 @@ if( DEBUG_FOLD ) {
 	}
 	
 	// sync : shared on MTE
-	public void transportPlay( Transport transport, long pos, double rate )
+	public void transportPlay( Transport t, long pos, double rate )
 	{
 		final float			realRate;
 		final float			interpolation;
@@ -1177,7 +1177,7 @@ if( DEBUG_FOLD ) {
 						bndl.addPacket( ct.bufsDisk[ i ].fillMsg( 0, fill * ct.bufsDisk[ i ].getNumChannels(), 0.0f ));
 					}
 				}
-				bufSpans = transport.foldSpans( new Span( start, pos - DISKBUF_PAD + DISKBUF_SIZE ), MIN_LOOP_LEN );
+				bufSpans = t.foldSpans( new Span( start, pos - DISKBUF_PAD + DISKBUF_SIZE ), MIN_LOOP_LEN );
 				doc.getAudioTrail().addBufferReadMessages( bndl, bufSpans, ct.bufsDisk, fill );
 
 if( DEBUG_FOLD ) {
@@ -1211,7 +1211,7 @@ if( DEBUG_FOLD ) {
 					ct.bufsDisk[ i ].getBufNum(), ct.busInternal.getIndex() + off, busPhasor.getIndex(), interpolation }
 				));
 				nw.register( ct.synthsBufRd[ i ]);
-				off += ct.channelMaps[ i ].length;
+				off += ct.chanMaps[ i ].length;
 			}
 			if( ct.numFiles > 0 ) {
 				bndl.addPacket( ct.synthPhasor.newMsg( grpInput, new String[] {
@@ -1236,7 +1236,7 @@ if( DEBUG_FOLD ) {
 //		} // synchronized( sync )
 	}
 	
-	public void transportQuit( Transport transport )
+	public void transportQuit( Transport t )
 	{
 		trigNodeID	= -1;
 	}
@@ -1271,42 +1271,42 @@ if( DEBUG_FOLD ) {
 //		}
 	}
 
-	public void sessionCollectionChanged( SessionCollection.Event e ) {} // XXX should react (well realtime host does)
-	public void sessionObjectChanged( SessionCollection.Event e ) {}
+	public void sessionCollectionChanged( SessionCollection.Event e ) { /* XXX should react (well realtime host does) */ }
+	public void sessionObjectChanged( SessionCollection.Event e ) { /* ignored */ }
 
 // -------------- internal classes --------------
 
 	private class Context
 	{
-		private final Synth[]		synthsBufRd;	// buffer readers for all parallel files
-		private final Synth[]		synthsPan;		// for each input channel a pan synth with numOutputs output channels
-		private final Synth[]		synthsRoute;	// for each pan output one route to the audio interface channel
+		protected final Synth[]		synthsBufRd;	// buffer readers for all parallel files
+		protected final Synth[]		synthsPan;		// for each input channel a pan synth with numOutputs output channels
+		protected final Synth[]		synthsRoute;	// for each pan output one route to the audio interface channel
 //		private final Synth[]		synthsMeter;	// for each input channel a meter control
-		private Synth				synthPhasor;
-		private final Buffer[]		bufsDisk;
-		private final Bus			busInternal;	// the buffer-reader writes to this bus (numInputChannels)
-		private final Bus			busPan;
+		protected Synth				synthPhasor;
+		protected final Buffer[]	bufsDisk;
+		protected final Bus			busInternal;	// the buffer-reader writes to this bus (numInputChannels)
+		protected final Bus			busPan;
 //		private final Bus			busMeter;		// control rate, two channels per input channel
 		
-		private final int			numFiles;
-		private final int			numInputChannels;	// sum over all files
-		private final int[][]		channelMaps;	// re audio input files
+		protected final int			numFiles;
+		protected final int			numInChans;		// sum over all files
+		protected final int[][]		chanMaps;		// re audio input files
 		
 //		private final OSCBundle		meterBangBndl;	// /c_getn for the meter values, /n_set to re-trigger calc
 	
-		private boolean				bufsAllocated	= false;
+		protected boolean			bufsAllocated	= false;
 		private boolean				disposed		= false;
 		
 		/*
 		 *	@throws	IOException	if the server ran out of busses
 		 *						or buffers
 		 */
-		private Context( int[][] channelMaps, int numInputChannels, int numConfigOutputs )
+		protected Context( int[][] channelMaps, int numInputChannels, int numConfigOutputs )
 		throws IOException
 		{
-			this.channelMaps		= channelMaps;
+			this.chanMaps		= channelMaps;
 			numFiles				= channelMaps.length;
-			this.numInputChannels	= numInputChannels;
+			this.numInChans	= numInputChannels;
 		
 			synthsBufRd				= new Synth[ numFiles ];
 //			for( int i = 0; i < numFiles; i++ ) {
@@ -1353,15 +1353,15 @@ if( DEBUG_FOLD ) {
 //				new Integer( grpMeter.getNodeID() ), "t_trig", new Integer( 1 )}));
 		}
 		
-		private void newInputSynths()
+		protected void newInputSynths()
 		{
 			for( int i = 0; i < numFiles; i++ ) {
-				synthsBufRd[ i ]	= Synth.basicNew( "eisk-input" + channelMaps[ i ].length, server );
+				synthsBufRd[ i ]	= Synth.basicNew( "eisk-input" + chanMaps[ i ].length, server );
 			}
 			synthPhasor	= Synth.basicNew( "eisk-phasor", server );
 		}
 		
-		private void dispose()
+		protected void dispose()
 		throws IOException
 		{
 			if( disposed ) throw new IllegalStateException( "Double disposal" );

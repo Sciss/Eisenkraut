@@ -163,12 +163,12 @@ public class BlendContext
 	 */
 	public void fadeIn( long blendOff, float[][] sourceBuf, int sourceOff, float[][] targetBuf, int targetOff, int length )
 	{
-		fade( blendOff, wFact, sourceBuf, sourceOff, targetBuf, targetOff, length, yXInD, yXInB, yXInA, yIn0 );	// yX !!
+		fade( blendOff, sourceBuf, sourceOff, targetBuf, targetOff, length, yXInD, yXInB, yXInA, yIn0 );	// yX !!
 	}
 
 	public void fadeOut( long blendOff, float[][] sourceBuf, int sourceOff, float[][] targetBuf, int targetOff, int length )
 	{
-		fade( blendOff, wFact, sourceBuf, sourceOff, targetBuf, targetOff, length, yOutD, yOutB, yOutA, yOut0 );
+		fade( blendOff, sourceBuf, sourceOff, targetBuf, targetOff, length, yOutD, yOutB, yOutA, yOut0 );
 	}
 
 //	/**
@@ -179,7 +179,7 @@ public class BlendContext
 //		fade( blendOff, wFact, sourceBuf, sourceOff, targetBuf, targetOff, length, yOutD, yOutB, yOutA, yOut0 );
 //	}
 
-	private void fade( long blendOff, double wFact, float[][] sourceBuf, int sourceOff,
+	private void fade( long blendOff, float[][] sourceBuf, int sourceOff,
 					   float[][] targetBuf, int targetOff, int length, double yD, double yB, double yA, double y0 )
 	{
 		final int		numCh	= sourceBuf.length;

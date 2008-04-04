@@ -89,23 +89,23 @@ extends BasicTrail
 	// private static final int INPLACE_TIMEOUT = 2000;
 
 	private final int				modelChannels;
-	private final int				decimChannels;
-	private final int				fullChannels;
+	protected final int				decimChannels;
+	protected final int				fullChannels;
 	private final int				model;
 
 	private AudioFile[]				tempF					= null; // lazy
-	private final DecimationHelp[]	decimHelps;
-	private final AudioTrail		fullScale;
+	protected final DecimationHelp[] decimHelps;
+	protected final AudioTrail		fullScale;
 
 	private final int				SUBNUM;
 	private final int				MAXSHIFT;
-	private final int				MAXCOARSE;
+	protected final int				MAXCOARSE;
 	private final long				MAXMASK;
 	private final int				MAXCEILADD;
 
-	private float[][]				tmpBuf					= null; // lazy
+	protected float[][]				tmpBuf					= null; // lazy
 	private final int				tmpBufSize;
-	private float[][]				tmpBuf2					= null; // lazy
+	protected float[][]				tmpBuf2					= null; // lazy
 	private final int				tmpBufSize2;
 
 	private final Decimator			decimator;
@@ -128,16 +128,16 @@ extends BasicTrail
 			0xFFE6E6E6, 0xFFB2B2B2, 0xFFCACACA,
 			0xFFB1B1B1, 0xFFD5D5D5, 0xFFC0C0C0 };
 
-	private final Object			bufSync					= new Object();
+	protected final Object			bufSync					= new Object();
 	private final Object			fileSync				= new Object();
 
-	private final List				busyList				= new ArrayList();
+	private final List				drawBusyList			= new ArrayList();
 
-	private Thread					threadAsync				= null;
+	protected Thread				threadAsync				= null;
 	private AudioFile[]				tempFAsync				= null; // lazy
-	private volatile boolean		keepAsyncRunning		= false;
+	protected volatile boolean		keepAsyncRunning		= false;
 
-	private EventManager			asyncManager			= null;
+	protected EventManager			asyncManager			= null;
 
 	static {
 		final BufferedImage img = new BufferedImage( 3, 3, BufferedImage.TYPE_INT_ARGB );
@@ -402,7 +402,7 @@ extends BasicTrail
 		Rectangle				r;
 
 		try {
-			busyList.clear(); // "must be called in the event thread"
+			drawBusyList.clear(); // "must be called in the event thread"
 
 			synchronized( bufSync ) {
 				createBuffers();
@@ -434,7 +434,7 @@ extends BasicTrail
 						if( !toPCM ) decimator.decimatePCM( tmpBuf, tmpBuf2, 0, decimLen, info.inlineDecim );
 					} else {
 						chunkSpan = new Span( start, start + fullLen );
-						readFrames( info.idx, tmpBuf2, 0, busyList, chunkSpan, null);
+						readFrames( info.idx, tmpBuf2, 0, drawBusyList, chunkSpan, null);
 						if( info.inlineDecim > 1 ) decimator.decimate( tmpBuf2, tmpBuf2, 0, decimLen, info.inlineDecim );
 					}
 					if( toPCM ) {
@@ -480,11 +480,11 @@ extends BasicTrail
 				for (int ch = 0; ch < fullChannels; ch++) {
 					r = view.rectForChannel(ch);
 					g2.clipRect(r.x, r.y, r.width, r.height);
-					if (!busyList.isEmpty()) {
+					if (!drawBusyList.isEmpty()) {
 						// g2.setColor( Color.red );
 						g2.setPaint(pntBusy);
-						for (int i = 0; i < busyList.size(); i++) {
-							chunkSpan = (Span) busyList.get(i);
+						for (int i = 0; i < drawBusyList.size(); i++) {
+							chunkSpan = (Span) drawBusyList.get(i);
 							scaleX = r.width / (float) info.getTotalLength(); // (info.sublength
 																				// -
 																				// 1);
@@ -748,16 +748,16 @@ extends BasicTrail
 			asyncManager = new EventManager( new EventManager.Processor() {
 				public void processEvent( BasicEvent e ) {
 					final AsyncEvent	ae = (AsyncEvent) e;
-					AsyncListener		l;
+					AsyncListener		al;
 
 					for( int i = 0; i < asyncManager.countListeners(); i++ ) {
-						l = (AsyncListener) asyncManager.getListener( i );
+						al = (AsyncListener) asyncManager.getListener( i );
 						switch( e.getID() ) {
 						case AsyncEvent.UPDATE:
-							l.asyncUpdate( ae );
+							al.asyncUpdate( ae );
 							break;
 						case AsyncEvent.FINISHED:
-							l.asyncFinished( ae );
+							al.asyncFinished( ae );
 							break;
 						default:
 							assert false : e.getID();
@@ -841,12 +841,13 @@ extends BasicTrail
 		final Span					extSpan;
 		final long					fullrateStop, fullrateLen; // , insertLen;
 		final int					numFullBuf;
-		final Object				enc_this	= this;
+//		final Object				enc_this	= this;
 		// final CacheManager cm = CacheManager.getInstance();
 		final AbstractCompoundEdit	ce			= null; // XXX
 		final Object				source		= null; // XXX
 		final AudioStake			cacheReadAS;
 		final AudioStake			cacheWriteAS;
+		final DecimatedWaveTrail	enc_this	= this;
 
 		synchronized( fileSync ) {
 			das			= allocAsync( union );
@@ -1109,7 +1110,7 @@ extends BasicTrail
 
 	// ----------- private schnucki -----------
 
-	private File[] createCacheFileNames()
+	protected File[] createCacheFileNames()
 	{
 		final AudioFile[] audioFiles = fullScale.getAudioFiles();
 		if( (audioFiles.length == 0) || (audioFiles[0] == null) ) return null;
@@ -1150,7 +1151,7 @@ extends BasicTrail
 	/*
 	 * @returns the cached stake or null if no cache file is available
 	 */
-	private AudioStake openCacheForRead( int model )
+	private AudioStake openCacheForRead( int decimModel )
 	throws IOException
 	{
 		final File[]		f			= createCacheFileNames();
@@ -1188,7 +1189,7 @@ extends BasicTrail
 				if( ourCode.equals( afd.appCode ) && (appCode != null) ) {
 					infoA = AudioFileCacheInfo.decode( appCode );
 					if( infoA != null ) {
-						infoB = new AudioFileCacheInfo( audioFiles[ i ], model, audioFiles[ i ].getFrameNum() );
+						infoB = new AudioFileCacheInfo( audioFiles[ i ], decimModel, audioFiles[ i ].getFrameNum() );
 						if( !infoA.equals( infoB )) {
 							// System.err.println( "info mismatch!" );
 							return null;
@@ -1224,7 +1225,7 @@ extends BasicTrail
 		}
 	}
 
-	private AudioStake openCacheForWrite( int model, long decimFrameNum )
+	private AudioStake openCacheForWrite( int decimModel, long decimFrameNum )
 	throws IOException
 	{
 		final File[]			f			= createCacheFileNames();
@@ -1255,7 +1256,7 @@ extends BasicTrail
 				afd.channels	= channelMaps[ i ].length;
 				// System.out.println( "channels = " + afd.channels );
 				afd.file		= f[ i ];
-				info			= new AudioFileCacheInfo( audioFiles[ i ], model, audioFiles[ i ].getFrameNum() );
+				info			= new AudioFileCacheInfo( audioFiles[ i ], decimModel, audioFiles[ i ].getFrameNum() );
 				afd.setProperty( AudioFileDescr.KEY_APPCODE, info.encode() );
 				cacheAFs[ i ]	= AudioFile.openAsWrite( afd );
 				fileSpans[ i ]	= new Span( 0, decimFrameNum );
@@ -1361,7 +1362,7 @@ extends BasicTrail
 	private AudioFile[] createTempFiles() throws IOException {
 		// simply use an AIFC file with float format as temp file
 		final AudioFileDescr proto = new AudioFileDescr();
-		final AudioFile[] tempF = new AudioFile[SUBNUM];
+		final AudioFile[] tempFiles = new AudioFile[SUBNUM];
 		AudioFileDescr afd;
 		proto.type = AudioFileDescr.TYPE_AIFF;
 		proto.channels = decimChannels;
@@ -1374,23 +1375,23 @@ extends BasicTrail
 				afd = new AudioFileDescr(proto);
 				afd.file = IOUtil.createTempFile();
 				afd.rate = decimHelps[i].rate;
-				tempF[i] = AudioFile.openAsWrite(afd);
+				tempFiles[i] = AudioFile.openAsWrite(afd);
 			}
-			return tempF;
+			return tempFiles;
 		} catch (IOException e1) {
 			for (int i = 0; i < SUBNUM; i++) {
-				if (tempF[i] != null)
-					tempF[i].cleanUp();
+				if (tempFiles[i] != null)
+					tempFiles[i].cleanUp();
 			}
 			throw e1;
 		}
 	}
 
-	private void deleteTempFiles(AudioFile[] tempF) {
-		for (int i = 0; i < tempF.length; i++) {
-			if (tempF[i] != null) {
-				tempF[i].cleanUp();
-				tempF[i].getFile().delete();
+	private void deleteTempFiles( AudioFile[] tempFiles ) {
+		for( int i = 0; i < tempFiles.length; i++ ) {
+			if( tempFiles[i] != null ) {
+				tempFiles[i].cleanUp();
+				tempFiles[i].getFile().delete();
 			}
 		}
 	}
@@ -1405,8 +1406,8 @@ extends BasicTrail
 	 */
 	// private void subsampleWrite( float[][] inBuf, float[][] outBuf,
 	// DecimatedStake das, int len )
-	private void subsampleWrite( float[][] inBuf, float[][] outBuf, DecimatedWaveStake das,
-								 int len, AudioStake cacheAS, long cacheOff )
+	protected void subsampleWrite( float[][] inBuf, float[][] outBuf, DecimatedWaveStake das,
+								   int len, AudioStake cacheAS, long cacheOff )
 	throws IOException
 	{
 		int decim;
@@ -1428,7 +1429,7 @@ extends BasicTrail
 	}
 
 	// same as subsampleWrite but input is already at first decim stage
-	private void subsampleWrite2( float[][] buf, DecimatedWaveStake das, int len )
+	protected void subsampleWrite2( float[][] buf, DecimatedWaveStake das, int len )
 	throws IOException
 	{
 		int decim;
@@ -1454,10 +1455,10 @@ extends BasicTrail
 	public static class AsyncEvent
 	extends BasicEvent
 	{
-		private static final int UPDATE = 0;
-		private static final int FINISHED = 1;
+		protected static final int UPDATE = 0;
+		protected static final int FINISHED = 1;
 
-		private AsyncEvent( Object source, int id, long when ) {
+		protected AsyncEvent( Object source, int id, long when ) {
 			super( source, id, when );
 		}
 
@@ -1477,6 +1478,8 @@ extends BasicTrail
 
 	private abstract class Decimator
 	{
+		protected Decimator() { /* empty */ }
+		
 		protected abstract void decimate( float[][] inBuf, float[][] outBuf, int outOff, int len, int decim );
 		protected abstract void decimatePCM( float[][] inBuf, float[][] outBuf, int outOff, int len, int decim );
 		// protected abstract void decimatePCMFast( float[][] inBuf, float[][]
@@ -1489,6 +1492,8 @@ extends BasicTrail
 	private class HalfPeakRMSDecimator
 	extends Decimator
 	{
+		protected HalfPeakRMSDecimator() { /* empty */ }
+		
 		protected void decimate( float[][] inBuf, float[][] outBuf, int outOff, int len, int decim )
 		{
 System.out.println( "warning: HalfPeakRMSDecimator : not checked" );
@@ -1688,6 +1693,8 @@ System.out.println( "warning: HalfPeakRMSDecimator : not checked" );
 	private class MedianDecimator
 	extends Decimator
 	{
+		protected MedianDecimator() { /* empty */ }
+		
 		protected void decimate( float[][] inBuf, float[][] outBuf, int outOff, int len, int decim )
 		{
 			int		stop, j, k, ch;
@@ -1764,6 +1771,8 @@ System.out.println( "warning: HalfPeakRMSDecimator : not checked" );
 	private class FullPeakRMSDecimator
 	extends Decimator
 	{
+		protected FullPeakRMSDecimator() { /* empty */ }
+		
 		protected void decimate( float[][] inBuf, float[][] outBuf, int outOff, int len, int decim )
 		{
 			int 	stop, j, k, m, ch;

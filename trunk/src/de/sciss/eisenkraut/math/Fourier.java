@@ -56,7 +56,7 @@ public class Fourier
 
 // -------- public Methoden --------
 
-	private Fourier() {}
+	private Fourier() { /* empty */ }
 
 	/**
 	 *	One-dimensional discrete complex fourier transform

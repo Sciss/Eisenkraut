@@ -61,7 +61,7 @@ extends BasicUndoableEdit
 	{
 		super();
 		this.isf	= isf;
-		this.f		= isf.getFile();
+		f			= isf.getFile();
 	}
 
 	/**
@@ -70,7 +70,7 @@ extends BasicUndoableEdit
 	public EditDeleteFileWhenDying( File f )
 	{
 		super();
-		this.isf	= null;
+		isf			= null;
 		this.f		= f;
 	}
 	

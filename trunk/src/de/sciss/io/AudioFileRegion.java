@@ -98,27 +98,27 @@ implements Serializable, Cloneable, Transferable
 		return supportedFlavors;
 	}
 	
-	public boolean isDataFlavorSupported( DataFlavor flavor )
+	public boolean isDataFlavorSupported( DataFlavor aFlavor )
 	{
 		for( int i = 0; i < supportedFlavors.length; i++ ) {
-			if( supportedFlavors[ i ].equals( flavor )) return true;
+			if( supportedFlavors[ i ].equals( aFlavor )) return true;
 		}
 		return false;
 	}
 	
-	public Object getTransferData( DataFlavor flavor )
+	public Object getTransferData( DataFlavor aFlavor )
 	throws UnsupportedFlavorException, IOException
 	{
-		if( flavor.equals( AudioFileRegion.flavor )) {
+		if( aFlavor.equals( AudioFileRegion.flavor )) {
 			return this;
-		} else if( flavor.equals( DataFlavor.javaFileListFlavor )) {
+		} else if( aFlavor.equals( DataFlavor.javaFileListFlavor )) {
 			final List coll = new ArrayList( 1 );
 			coll.add( file );
 			return coll;
-		} else if( flavor.equals( DataFlavor.stringFlavor )) {
+		} else if( aFlavor.equals( DataFlavor.stringFlavor )) {
 			return region.name;
 		} else {
-			throw new UnsupportedFlavorException( flavor );
+			throw new UnsupportedFlavorException( aFlavor );
 		}
 	}
 }

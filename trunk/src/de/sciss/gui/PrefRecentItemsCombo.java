@@ -60,13 +60,13 @@ implements  DynamicListening, PreferenceChangeListener,
 	private String								key				= null;
 	private final LaterInvocationManager		lim				= new LaterInvocationManager( this );
 	
-	private final de.sciss.gui.ComboBoxEditor	editor;
-	private final int							maxItems;
+	protected final de.sciss.gui.ComboBoxEditor	editor;
+	protected final int							maxItems;
 	
 	private ActionListener						listener;
 
 	private boolean								readPrefs		= true;
-	private boolean								writePrefs		= true;
+	protected boolean							writePrefs		= true;
 
 	/**
 	 *  Creates a new <code>PrefRecentItemsCombo</code>
@@ -261,7 +261,7 @@ implements  DynamicListening, PreferenceChangeListener,
 		final Object			item;
 		final List				collItems	= new ArrayList();
 		int						k, m;
-		String					s, key;
+		String					s, key2;
 		Object					item2;
 		
 //System.err.println( "checking "+prefsValue );
@@ -269,7 +269,7 @@ implements  DynamicListening, PreferenceChangeListener,
 
 		try {
 			for( int i = 0; i < prefsValue.length(); ) {
-				key	= null;
+				key2	= null;
 				k	= prefsValue.indexOf( ';', i );
 				m	= Integer.parseInt( prefsValue.substring( i, k ));
 				i	= k + 1;
@@ -278,7 +278,7 @@ implements  DynamicListening, PreferenceChangeListener,
 				i	= k;
 				if( s.equals( "key=" )) {
 					k	= prefsValue.indexOf( ';', i );
-					key	= prefsValue.substring( i, k );
+					key2	= prefsValue.substring( i, k );
 					i	= k + 1;
 					k	= i + 4;
 					s	= prefsValue.substring( i, k );
@@ -290,10 +290,10 @@ implements  DynamicListening, PreferenceChangeListener,
 				}
 				s	= prefsValue.substring( i, i + m );
 				i	= i + m + 1;
-				if( key == null ) {
+				if( key2 == null ) {
 					collItems.add( s );
 				} else {
-					collItems.add( new StringItem( key, s ));
+					collItems.add( new StringItem( key2, s ));
 				}
 			}
 		}

@@ -37,10 +37,10 @@ public class URLClassLoaderManager
 		urls.add( url );
 	}
 	
-	public void addURLs( URL[] urls )
+	public void addURLs( URL[] u )
 	{
-		loader.addURLs( urls );
-		for( int i = 0; i < urls.length; i++ ) this.urls.add( urls[ i ]);
+		loader.addURLs( u );
+		for( int i = 0; i < u.length; i++ ) this.urls.add( u[ i ]);
 	}
 
 	public void removeURL( URL url )
@@ -48,10 +48,10 @@ public class URLClassLoaderManager
 		if( urls.remove( url )) makeLoader();
 	}
 	
-	public void removeURLs( URL[] urls )
+	public void removeURLs( URL[] u )
 	{
 		boolean changed = false;
-		for( int i = 0; i < urls.length; i++ ) changed |= this.urls.remove( urls[ i ]);
+		for( int i = 0; i < u.length; i++ ) changed |= this.urls.remove( u[ i ]);
 		if( changed ) makeLoader();
 	}
 

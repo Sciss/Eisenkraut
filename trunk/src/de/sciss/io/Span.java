@@ -278,10 +278,10 @@ implements Serializable, Cloneable
 	{
 		if( anotherSpan == null ) return null;
 		
-		final long start = Math.max( this.start, anotherSpan.start );
-		final long stop	 = Math.min( this.stop, anotherSpan.stop );
+		final long newStart = Math.max( start, anotherSpan.start );
+		final long newStop	= Math.min( stop, anotherSpan.stop );
 //		if( stop < start ) return null;
-		return new Span( start, stop );
+		return new Span( newStart, newStop );
 	}
 
 	public Span replaceStart( long newStart )

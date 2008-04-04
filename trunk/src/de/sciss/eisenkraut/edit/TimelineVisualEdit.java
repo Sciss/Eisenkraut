@@ -159,7 +159,7 @@ extends BasicUndoableEdit
 		if( (actionMask & ACTION_SELECT) != 0 ) {
 			doc.timeline.setSelectionSpan( source, newSel );
 		}
-		this.source	= this;
+		source	= this;
 		return this;
 	}
 
@@ -227,30 +227,30 @@ extends BasicUndoableEdit
 		if( anEdit instanceof TimelineVisualEdit ) {
 			final TimelineVisualEdit tve = (TimelineVisualEdit) anEdit;
 			if( (tve.actionMask & ACTION_POSITION) != 0 ) {
-				this.newPos		= tve.newPos;
-//System.err.println( "addEdit. taking newPos "+this.newPos );
-				if( (this.actionMask & ACTION_POSITION) == 0 ) {
-					this.oldPos = tve.oldPos;
-//System.err.println( "addEdit. taking oldPos "+this.oldPos );
+				newPos		= tve.newPos;
+//System.err.println( "addEdit. taking newPos "+newPos );
+				if( (actionMask & ACTION_POSITION) == 0 ) {
+					oldPos = tve.oldPos;
+//System.err.println( "addEdit. taking oldPos "+oldPos );
 				}
 			}
 			if( (tve.actionMask & ACTION_SCROLL) != 0 ) {
-				this.newVisi	= tve.newVisi;
-//System.err.println( "addEdit. taking newVisi "+this.newVisi );
-				if( (this.actionMask & ACTION_SCROLL) == 0 ) {
-					this.oldVisi = tve.oldVisi;
-//System.err.println( "addEdit. taking oldVisi "+this.oldVisi );
+				newVisi	= tve.newVisi;
+//System.err.println( "addEdit. taking newVisi "+newVisi );
+				if( (actionMask & ACTION_SCROLL) == 0 ) {
+					oldVisi = tve.oldVisi;
+//System.err.println( "addEdit. taking oldVisi "+oldVisi );
 				}
 			}
 			if( (tve.actionMask & ACTION_SELECT) != 0 ) {
-				this.newSel		= tve.newSel;
-//System.err.println( "addEdit. taking newSel "+this.newSel );
-				if( (this.actionMask & ACTION_SELECT) == 0 ) {
-					this.oldSel = tve.oldSel;
-//System.err.println( "addEdit. taking oldSel "+this.oldSel );
+				newSel		= tve.newSel;
+//System.err.println( "addEdit. taking newSel "+newSel );
+				if( (actionMask & ACTION_SELECT) == 0 ) {
+					oldSel = tve.oldSel;
+//System.err.println( "addEdit. taking oldSel "+oldSel );
 				}
 			}
-			this.actionMask |= tve.actionMask;
+			actionMask |= tve.actionMask;
 			anEdit.die();
 			return true;
 		} else {
@@ -270,24 +270,24 @@ extends BasicUndoableEdit
 		if( anEdit instanceof TimelineVisualEdit ) {
 			final TimelineVisualEdit tve = (TimelineVisualEdit) anEdit;
 			if( (tve.actionMask & ACTION_POSITION) != 0 ) {
-				this.oldPos		= tve.oldPos;
-				if( (this.actionMask & ACTION_POSITION) == 0 ) {
-					this.newPos	= tve.newPos;
+				oldPos		= tve.oldPos;
+				if( (actionMask & ACTION_POSITION) == 0 ) {
+					newPos	= tve.newPos;
 				}
 			}
 			if( (tve.actionMask & ACTION_SCROLL) != 0 ) {
-				this.oldVisi	= tve.oldVisi;
-				if( (this.actionMask & ACTION_SCROLL) == 0 ) {
-					this.newVisi = tve.newVisi;
+				oldVisi	= tve.oldVisi;
+				if( (actionMask & ACTION_SCROLL) == 0 ) {
+					newVisi = tve.newVisi;
 				}
 			}
 			if( (tve.actionMask & ACTION_SELECT) != 0 ) {
-				this.oldSel		= tve.oldSel;
-				if( (this.actionMask & ACTION_SELECT) == 0 ) {
-					this.newSel = tve.newSel;
+				oldSel		= tve.oldSel;
+				if( (actionMask & ACTION_SELECT) == 0 ) {
+					newSel = tve.newSel;
 				}
 			}
-			this.actionMask |= tve.actionMask;
+			actionMask |= tve.actionMask;
 			anEdit.die();
 			return true;
 		} else {

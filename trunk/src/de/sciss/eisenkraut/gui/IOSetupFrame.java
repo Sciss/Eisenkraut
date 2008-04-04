@@ -69,6 +69,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.TransferHandler;
 import javax.swing.WindowConstants;
 import javax.swing.event.ListSelectionEvent;
@@ -106,13 +107,13 @@ public class IOSetupFrame
 extends AppWindow
 {
 	private static final int		NUM_TABS		= 2;
-	private final List[]			collConfigs		= new List[] { new ArrayList(), new ArrayList() };
-	private final Set[]				setConfigIDs	= new Set[] { new HashSet(), new HashSet() };
-	private final Set[]				setConfigNames	= new Set[] { new HashSet(), new HashSet() };
+	protected final List[]			collConfigs		= new List[] { new ArrayList(), new ArrayList() };
+	protected final Set[]			setConfigIDs	= new Set[] { new HashSet(), new HashSet() };
+	protected final Set[]			setConfigNames	= new Set[] { new HashSet(), new HashSet() };
 	private final Preferences		audioPrefs;
-	private final int[]				audioHwChannels	= new int[ NUM_TABS ];
+	protected final int[]			audioHwChannels	= new int[ NUM_TABS ];
 	
-	private static final String[]	staticColNames	= { "ioConfig", "ioNumChannels", "ioStartAngle" };
+	protected static final String[]	staticColNames	= { "ioConfig", "ioNumChannels", "ioStartAngle" };
 	private static final int[]		staticColWidths	= { 160, 54, 54 };
 	private static final int		MAPPING_WIDTH	= 36;
 //	private static final Font		fnt				= GraphicsUtil.smallGUIFont;
@@ -127,10 +128,10 @@ extends AppWindow
 															0xFFA4ADB9, 0xFFAAB4BF, 0xFFAFB9C6, 0xFFB8C2CE,
 															0xFFBBC5D0, 0xFFBFCAD4, 0xFFC7D1DD };
 
-	private static final Paint pntMapNormal, pntMapSelected;
+	protected static final Paint pntMapNormal, pntMapSelected;
 
-	private static final DataFlavor	mapFlavor		= new DataFlavor( MapTransferable.class, "io_mapping" );
-	private static final DataFlavor[] mapFlavors	= { mapFlavor };
+	protected static final DataFlavor mapFlavor		= new DataFlavor( MapTransferable.class, "io_mapping" );
+	protected static final DataFlavor[] mapFlavors	= { mapFlavor };
 
 	private static final String[] KEY_INFOTEXT		= { "ioInputInfo", "ioOutputInfo" };
 	private static final String[] KEY_DEFAULTNAME	= { "ioDefaultInName", "ioDefaultOutName" };
@@ -178,7 +179,7 @@ extends AppWindow
 		// ---------- tabs ----------
 
 		for( int i = 0; i < NUM_TABS; i++ ) {	// input + output tabs
-			this.fromPrefs( i );
+			fromPrefs( i );
 			ggTabPane.addTab( app.getResourceString( i == 0 ? "labelInputs" : "labelOutputs" ), null,
 				createTab( i ), null );
 		}
@@ -285,8 +286,8 @@ extends AppWindow
 		tcr			= new MappingRenderer();
 		setColumnRenderersAndWidths( table, stm, tcr );
 
-		scroll		= new JScrollPane( table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-											  JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS );
+		scroll		= new JScrollPane( table, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+											  ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS );
 		
 		tab.add( scroll, BorderLayout.CENTER );
 		
@@ -352,7 +353,7 @@ extends AppWindow
 		return tab;
 	}
 	
-	private void disposeAndClose()
+	protected void disposeAndClose()
 	{
 		AbstractApplication.getApplication().removeComponent( Main.COMP_IOSETUP );	// needs to re-created each time!
 		setVisible( false );
@@ -393,7 +394,7 @@ extends AppWindow
 		}
 	}
 	
-	private boolean toPrefs( int ID )
+	protected boolean toPrefs( int ID )
 	{
 		final Preferences	ocPrefs		= audioPrefs.node( KEY_PREFSNODE[ ID ]);
 		final String[]		arrayNames;
@@ -425,7 +426,7 @@ extends AppWindow
 		return true;
 	}
 
-	private RoutingConfig createUniqueConfig( int ID )
+	protected RoutingConfig createUniqueConfig( int ID )
 	{
 		final String test = getResourceString( KEY_DEFAULTNAME[ ID ]);
 		String name = test;
@@ -460,7 +461,7 @@ extends AppWindow
 		}
 	}
 
-	private static String getResourceString( String key )
+	protected static String getResourceString( String key )
 	{
 		return AbstractApplication.getApplication().getResourceString( key );
 	}
@@ -470,11 +471,11 @@ extends AppWindow
 	private class MapTransferHandler
 	extends TransferHandler
 	{
-		private final int ID;
+		private final int id;
 
-		private MapTransferHandler( int ID )
+		protected MapTransferHandler( int id )
 		{
-			this.ID	= ID;
+			this.id	= id;
 		}
 
 		/**
@@ -494,7 +495,7 @@ extends AppWindow
 			try {
 				if( mapCh >= 0 && (row < table.getRowCount()) && t.isDataFlavorSupported( mapFlavor )) {
 					modelIndex	= stm.getModelIndex( row );
-					cfg			= (RoutingConfig) collConfigs[ ID ].get( modelIndex );
+					cfg			= (RoutingConfig) collConfigs[ id ].get( modelIndex );
 					mt			= (MapTransferable) t.getTransferData( mapFlavor );
 					// only allowed within same config
 					if( mt.cfg == cfg ) {
@@ -517,8 +518,8 @@ extends AppWindow
 					}
 				}
 			}
-			catch( UnsupportedFlavorException e1 ) {}
-			catch( IOException e2 ) {}
+			catch( UnsupportedFlavorException e1 ) { e1.printStackTrace(); }
+			catch( IOException e2 ) { e2.printStackTrace(); }
 
 			return false;
 		}
@@ -539,7 +540,7 @@ extends AppWindow
 			
 			if( mapCh >= 0 && (row < table.getRowCount()) ) {
 				modelIndex	= stm.getModelIndex( row );
-				cfg			= (RoutingConfig) collConfigs[ ID ].get( modelIndex );
+				cfg			= (RoutingConfig) collConfigs[ id ].get( modelIndex );
 				for( int i = 0; i < cfg.numChannels; i++ ) {
 					if( cfg.mapping[ i ] == mapCh ) {
 						return new MapTransferable( cfg, i );
@@ -570,10 +571,10 @@ extends AppWindow
 	private static class MapTransferable
 	implements Transferable
 	{
-		private final RoutingConfig	cfg;
-		private final int		idx;
+		protected final RoutingConfig	cfg;
+		protected final int				idx;
 	
-		private MapTransferable( RoutingConfig cfg, int idx )
+		protected MapTransferable( RoutingConfig cfg, int idx )
 		{
 			this.cfg	= cfg;
 			this.idx	= idx;
@@ -609,19 +610,19 @@ extends AppWindow
 		private Paint pnt		= pntMapNormal;
 		private String value	= null;
 	
-		private MappingRenderer()
+		protected MappingRenderer()
 		{
 			super();
 			setOpaque( true );
 			setFont( AbstractApplication.getApplication().getGraphicsHandler().getFont( GraphicsHandler.FONT_SYSTEM | GraphicsHandler.FONT_SMALL ));
 		}
 	
-		public Component getTableCellRendererComponent( JTable table, Object value,
+		public Component getTableCellRendererComponent( JTable table, Object v,
 														boolean isSelected, boolean hasFocus,
 														int row, int column )
 		{
 			pnt	= hasFocus ? pntMapSelected : pntMapNormal;
-			this.value = value == null ? null : value.toString();
+			value = v == null ? null : v.toString();
 			return this;
 		}
 		
@@ -647,11 +648,11 @@ extends AppWindow
 	private class TableModel
 	extends AbstractTableModel
 	{
-		private final int ID;
+		private final int id;
 
-		private TableModel( int ID )
+		protected TableModel( int id )
 		{
-			this.ID	= ID;
+			this.id	= id;
 		}
 
 		public String getColumnName( int col )
@@ -665,19 +666,19 @@ extends AppWindow
 		
 		public int getRowCount()
 		{
-			return collConfigs[ ID ].size();
+			return collConfigs[ id ].size();
 		}
 		
 		public int getColumnCount()
 		{
-			return audioHwChannels[ ID ] + staticColNames.length;
+			return audioHwChannels[ id ] + staticColNames.length;
 		}
 		
 		public Object getValueAt( int row, int col )
 		{
-			if( row > collConfigs[ ID ].size() ) return null;
+			if( row > collConfigs[ id ].size() ) return null;
 			
-			final RoutingConfig c = (RoutingConfig) collConfigs[ ID ].get( row );
+			final RoutingConfig c = (RoutingConfig) collConfigs[ id ].get( row );
 		
 			switch( col ) {
 			case 0:
@@ -716,9 +717,9 @@ extends AppWindow
 		
 		public void setValueAt( Object value, int row, int col )
 		{
-			if( (row > collConfigs[ ID ].size()) || (value == null) ) return;
+			if( (row > collConfigs[ id ].size()) || (value == null) ) return;
 
-			final RoutingConfig cfg				= (RoutingConfig) collConfigs[ ID ].get( row );
+			final RoutingConfig cfg				= (RoutingConfig) collConfigs[ id ].get( row );
 			final int			oldChannels		= cfg.numChannels;
 			int[]				newMapping;
 			String				name;
@@ -731,7 +732,7 @@ extends AppWindow
 				name = value.toString();
 //				if( (name.length() > 0) && (name.length() < Preferences.MAX_NAME_LENGTH) &&
 				if( (name.length() > 0) &&
-					!setConfigNames[ ID ].contains( name )) {
+					!setConfigNames[ id ].contains( name )) {
 
 					newCfg = new RoutingConfig( cfg.id, name, cfg.mapping, cfg.startAngle );
 				}
@@ -800,9 +801,9 @@ chanLp:					for( int ch = minCh; true; ch++ ) {
 			}
 			
 			if( newCfg != null ) {
-				collConfigs[ ID ].set( row, newCfg );
-				setConfigNames[ ID ].remove( cfg.name );
-				setConfigNames[ ID ].add( newCfg.name );
+				collConfigs[ id ].set( row, newCfg );
+				setConfigNames[ id ].remove( cfg.name );
+				setConfigNames[ id ].add( newCfg.name );
 			}
 			if( col <= 2 ) fireTableRowsUpdated( row, row );	// updates sorting!
 		}

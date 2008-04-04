@@ -117,7 +117,7 @@ extends AbstractSessionObject
 		public final int				numChannels;
 		public int						numTracks	= 0;
 	
-		private Info( Trail trail )
+		protected Info( Trail trail )
 		{
 			this.trail		= trail;
 			
@@ -141,18 +141,18 @@ extends AbstractSessionObject
 			return true;
 		}
 		
-		public int[] createChannelMap( int numChannels, int offset, boolean skipUnused )
+		public int[] createChannelMap( int numCh2, int offset, boolean skipUnused )
 		{
-			final int[] chanMap = new int[ numChannels ];
+			final int[] chanMap = new int[ numCh2 ];
 			int i, j;
-			for( i = 0, j = offset; (i < this.numChannels) && (j < numChannels); i++ ) {
+			for( i = 0, j = offset; (i < this.numChannels) && (j < numCh2); i++ ) {
 				if( trackMap[ i ]) {
 					chanMap[ j++ ] = i;
 				} else if( skipUnused ) {
 					chanMap[ j++ ] = -1;
 				}
 			}
-			while( j < numChannels ) {
+			while( j < numCh2 ) {
 				chanMap[ j++ ] = -1;
 			}
 			return chanMap;
