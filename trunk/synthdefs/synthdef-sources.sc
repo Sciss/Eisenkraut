@@ -119,6 +119,39 @@ SynthDef( "eisk-phasor", { arg i_aInBf, rate = 1.0, i_aPhBs;
 	Out.ar( i_aPhBs, phasor );
 }).writeDefFile( p );
 
+
+	////////////////////////////// DEBUGGING VERSION
+	SynthDef( "eisk-phasor", { arg i_aInBf, rate = 1.0, i_aPhBs, stopClock = 1.0e7, stopPhase = 1.0e7;
+		var phasorRate, halfPeriod, numFrames, phasor, phasorPad, phasorTrig, clockTrig, clock, stop;
+	
+		phasorRate 	= BufRateScale.kr( i_aInBf ) * rate;
+		halfPeriod	= BufDur.kr( i_aInBf ) / (2 * rate);
+		numFrames		= BufFrames.kr( i_aInBf );
+		// i can't remember why the ~pad is not included in phasor's start arg
+		// but added to the phasor output. i guess there was a good reason why i did this
+		phasor		= Phasor.ar( rate: phasorRate, start: 0, end: numFrames - (2 * ~pad) );
+		phasorPad		= phasor + ~pad;
+		phasorTrig	= Trig1.kr( A2K.kr( phasorPad ) - (numFrames / 2), 0.01 );
+		clockTrig		= phasorTrig + TDelay.kr( phasorTrig, halfPeriod );
+		clock		= PulseCount.kr( clockTrig );
+		
+	//	((clock >= stopClock) && (phasor >= stopPhase)).poll;
+		clock.poll( clockTrig, "clock" );
+		phasor.poll( 10, "phase" );
+	//	(InRange.kr( clock - stopClock, 0, 1.0e7 ) && InRange.kr( A2K.kr( phasor ) - stopPhase, 0, 1.0e7 )).poll( 10, "stop" );
+	stopClock=stopClock-1;
+		stop			= (InRange.kr( A2K.kr( phasor ) - stopPhase, 0, numFrames ) + (clock - stopClock).sign).clip( 0, 1 );
+	//	stop.poll( stop, "------------- stop" );
+	
+		SendTrig.kr( clockTrig, 0, clock );
+	//	OffsetOut.ar( i_aPhBs, phasorPad );	// OffsetOut is buggy!
+	
+	//	Out.ar( i_aPhBs, phasorPad );
+		Out.ar( i_aPhBs, phasorPad * (1 - stop) );
+	}).writeDefFile( p );
+
+
+
 // reads input from sound file
 // and writes it to an audio bus
 SynthDef( "eisk-route", {

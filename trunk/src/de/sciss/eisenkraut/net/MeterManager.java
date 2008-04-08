@@ -345,7 +345,7 @@ implements OSCListener, Constants, ServerListener, ActionListener
 				}
 				if( bndl.getPacketCount() > 0 ) {
 					try {
-						server.sendBundle( bndl );
+						if( server.isRunning() ) server.sendBundle( bndl );
 						resortClients();
 					}
 					catch( IOException e1 ) {
@@ -403,11 +403,12 @@ implements OSCListener, Constants, ServerListener, ActionListener
 		numCtrlChans	= off;
 		if( bndl.getPacketCount() > 0 ) {
 			try {
-				server.sendBundle( bndl );
+				if( server.isRunning() ) server.sendBundle( bndl );
 			}
 			catch( IOException e1 ) {
 				numCtrlChans	= 0;
 				printError( "resortClients", e1 );
+// e1.printStackTrace();
 			}
 		}
 		

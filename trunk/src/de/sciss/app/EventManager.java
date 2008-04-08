@@ -27,6 +27,7 @@
  *		20-May-05	created from from de.sciss.meloncillo.util.EventManager
  *		06-Aug-05	added dispose()
  *		19-Mar-07	collapsing calls to invokeLater
+ *		08-Apr-08	fixed potential locking issue in run
  */
 
 package de.sciss.app;
@@ -52,7 +53,7 @@ import java.util.ArrayList;
  *  predictable and easily synchronizable.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.17, 19-Mar-07
+ *  @version	0.18, 08-Apr-08
  */
 public class EventManager
 implements Runnable
@@ -65,6 +66,8 @@ implements Runnable
 	private volatile boolean	invoked			= false;
 	
 	protected EventManager.Processor eventProcessor;
+	
+	private Object[] events = new Object[ 2 ];
 
 	public EventManager( EventManager.Processor eventProcessor )
 	{
@@ -119,9 +122,9 @@ implements Runnable
 	{
 		if( listener != null ) {
 			synchronized( this ) {
-				// since methods excuted within the eventProcessor's run method
+				// since methods executed within the eventProcessor's run method
 				// are possible candidates for calling removeListener(), we postpone
-				// the adding so it is acertained that the getListener() calls
+				// the adding so it is ascertained that the getListener() calls
 				// in the eventProcessor's run method won't be disturbed!!
 				collQueue.add( new PostponedAction( listener, false ));
 				EventQueue.invokeLater( this );
@@ -138,8 +141,7 @@ implements Runnable
 	 */
 	public void run()
 	{
-		Object  o;
-		int		eventsInCycle;
+		final int numEvents;
 
 		synchronized( this ) {
 			invoked = false;
@@ -149,28 +151,35 @@ implements Runnable
 			// event processor or its listeners
 			// add new events they will be processed
 			// in the next later invocation
-			eventsInCycle = collQueue.size();
-//		}
+//			eventsInCycle = collQueue.size();
+			numEvents = collQueue.size();
+			events = collQueue.toArray( events );
+			collQueue.clear();
+		}
 
-		for( ; eventsInCycle > 0; eventsInCycle-- ) {
-//			synchronized( this ) {
-				o = collQueue.remove( 0 );
-//			}
-			if( o instanceof BasicEvent ) {
-				eventProcessor.processEvent( (BasicEvent) o );
-			} else if( o instanceof PostponedAction ) {
-				if( ((PostponedAction) o).state ) {
-					if( !collListeners.contains( ((PostponedAction) o).listener )) {
-						collListeners.add( ((PostponedAction) o).listener );
-					}
-				} else {
-					collListeners.remove( ((PostponedAction) o).listener );
+		for( int i = 0; i < numEvents; i++ ) {
+			if( events[ i ] instanceof BasicEvent ) {
+				try {
+					eventProcessor.processEvent( (BasicEvent) events[ i ]);
+				}
+				catch( Exception e ) {
+					e.printStackTrace();
 				}
 			} else {
-				assert false : o.getClass().getName();
+//				assert events[ i ] instanceof PostponedAction;
+				final PostponedAction pa = (PostponedAction) events[ i ];
+				if( pa.state ) {
+					if( !collListeners.contains( pa.listener )) {
+						collListeners.add( pa.listener );
+					}
+				} else {
+					collListeners.remove( pa.listener );
+				}
+//			} else {
+//				assert false : o.getClass().getName();
 			}
+			events[ i ] = null;
 		}
-		} // synchronized( this )
 	}
 
 	/**

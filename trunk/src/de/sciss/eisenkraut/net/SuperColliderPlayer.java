@@ -1043,7 +1043,51 @@ numDefsLp:
 
 // ------------- TransportListener interface -------------
 
+/*
 	// XXX sync
+	public void transportStop( Transport t, long pos )
+	{
+//		synchronized( sync ) {
+			trigNodeID	= -1;
+			if( !server.isRunning() || (ct == null) ) return;
+		
+			final long stopClock, stopPhase;
+			final long relPos;
+			final int even;
+//			final int even = nextClock & 1; // == 0;
+//			clock = (int) ((pos - playOffset + ((1 - even) * DISKBUF_PAD)) / DISKBUF_SIZE_HM);
+			relPos = pos - playOffset;
+			stopClock = relPos / DISKBUF_SIZE_HM;
+			even = (int) (stopClock & 1);
+			stopPhase = (relPos - (stopClock * DISKBUF_SIZE_HM)) + (even * DISKBUF_SIZE_HM);
+System.out.println( "stop. pos " + pos + ", playOffset " + playOffset + ", relPos " + relPos + ", clock " + stopClock + ", even " + even + ", phase " + stopPhase );
+			
+
+			try {
+				trigResp.remove();
+				final OSCBundle bndl = new OSCBundle();
+				
+bndl.addPacket( ct.synthPhasor.setMsg( new String[] { "stopClock", "stopPhase" },
+                                       new float[] { stopClock + 1, stopPhase }));
+				
+//				bndl.addPacket( grpInput.freeAllMsg() );
+				if( !activeOutput ) {
+//					bndl.addPacket( grpOutput.runMsg( false ));
+					syncOutput.deactivate( bndl );
+				}
+				if( !activeInput ) {
+					syncInput.deactivate( bndl );
+				}
+//if( bndl.getPacketCount() > 0 )
+				server.sendBundle( bndl );
+			}
+			catch( IOException e1 ) {
+				printError( "transportStop", e1 );
+			}
+//		}
+	}
+*/
+	
 	public void transportStop( Transport t, long pos )
 	{
 //		synchronized( sync ) {
