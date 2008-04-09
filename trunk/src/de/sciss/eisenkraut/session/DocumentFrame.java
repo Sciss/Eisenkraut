@@ -244,10 +244,10 @@ implements ProgressComponent, TimelineListener,
 											actionDebugDump, actionDebugVerify, actionInsertRec;
 	protected final ActionProcessAgain		actionProcessAgain;
 
-	private final ActionSpanWidth			actionIncWidth, actionDecWidth;
+	private final ActionSpanWidth			actionIncHoriz, actionDecHoriz;
 	protected final ActionScroll			actionZoomAllOut;
-	private final Action					actionIncVertical;
-	private final Action					actionDecVertical;
+	private final ActionVerticalZoom		actionIncVertMax, actionDecVertMax;
+	private final ActionVerticalZoom		actionIncVertMin, actionDecVertMin;
 
 	private final AbstractWindow.Adapter	winListener;
 
@@ -771,24 +771,30 @@ actionReverse.setEnabled( false ); // currently broken (re FilterDialog)
 		actionDebugDump		= new ActionDebugDump();
 		actionDebugVerify	= new ActionDebugVerify();
 
-		actionIncVertical	= new ActionVerticalZoom( 2.0f );
-		actionDecVertical	= new ActionVerticalZoom( 0.5f );
-		actionIncWidth		= new ActionSpanWidth( 2.0f );
-		actionDecWidth		= new ActionSpanWidth( 0.5f );
+		actionIncVertMax	= new ActionVerticalMax( 2.0f, 6f );
+		actionDecVertMax	= new ActionVerticalMax( 0.5f, -6f );
+		actionIncVertMin	= new ActionVerticalMin( 6f );
+		actionDecVertMin	= new ActionVerticalMin( -6f );
+		actionIncHoriz		= new ActionSpanWidth( 2.0f );
+		actionDecHoriz		= new ActionSpanWidth( 0.5f );
 		actionZoomAllOut	= new ActionScroll( SCROLL_ENTIRE_SESSION );
 
 		actionShowWindow	= new ShowWindowAction( this );
 
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_DOWN, InputEvent.CTRL_MASK ), "inch" );
-		amap.put( "inch", actionIncVertical );
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_UP, InputEvent.CTRL_MASK ), "dech" );
-		amap.put( "dech", actionDecVertical );
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LEFT, InputEvent.CTRL_MASK ), "incw" );
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_OPEN_BRACKET, BasicMenuFactory.MENU_SHORTCUT ), "incw" );
-		amap.put( "incw", actionIncWidth );
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_RIGHT, InputEvent.CTRL_MASK ), "decw" );
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_CLOSE_BRACKET, BasicMenuFactory.MENU_SHORTCUT ), "decw" );
-		amap.put( "decw", actionDecWidth );
+		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_DOWN, InputEvent.CTRL_MASK ), "incvmax" );
+		amap.put( "incvmax", actionIncVertMax );
+		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_UP, InputEvent.CTRL_MASK ), "decvmax" );
+		amap.put( "decvmax", actionDecVertMax );
+		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_DOWN, InputEvent.CTRL_MASK | InputEvent.ALT_MASK ), "incvmin" );
+		amap.put( "incvmin", actionIncVertMin );
+		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_UP, InputEvent.CTRL_MASK | InputEvent.ALT_MASK ), "decvmin" );
+		amap.put( "decvmin", actionDecVertMin );
+		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LEFT, InputEvent.CTRL_MASK ), "inch" );
+		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_OPEN_BRACKET, BasicMenuFactory.MENU_SHORTCUT ), "inch" );
+		amap.put( "inch", actionIncHoriz );
+		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_RIGHT, InputEvent.CTRL_MASK ), "dech" );
+		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_CLOSE_BRACKET, BasicMenuFactory.MENU_SHORTCUT ), "dech" );
+		amap.put( "dech", actionDecHoriz );
 		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_RIGHT, myMeta ), "samplvl" );
 		amap.put( "samplvl", new ActionSpanWidth( 0.0f ));
 		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_ENTER, 0 ), "retn" );
@@ -884,7 +890,7 @@ actionReverse.setEnabled( false ); // currently broken (re FilterDialog)
 //		new DynamicAncestorAdapter
 		addDynamicListening( new DynamicPrefChangeManager( app.getUserPrefs(), new String[] {
 			PrefsUtil.KEY_VIEWNULLLINIE, PrefsUtil.KEY_VIEWVERTICALRULERS, PrefsUtil.KEY_VIEWMARKERS,
-			PrefsUtil.KEY_TIMEUNITS, PrefsUtil.KEY_VIEWCHANMETERS },
+			PrefsUtil.KEY_TIMEUNITS, PrefsUtil.KEY_AMPSCALE, PrefsUtil.KEY_VIEWCHANMETERS },
 			this )); // .addTo( rp );
 
 		initBounds();	// be sure this is after documentUpdate!
@@ -1205,7 +1211,7 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 //System.err.println( "ADD "+ch );
 
 				chanRuler = new Axis( Axis.VERTICAL, Axis.FIXEDBOUNDS );
-				chanRuler.setSpace( VectorSpace.createLinSpace( 0.0, 1.0, -100.0, 100.0, null, null, null, null ));
+//				chanRuler.setSpace( VectorSpace.createLinSpace( 0.0, 1.0, -100.0, 100.0, null, null, null, null ));
 				collChannelRulers.add( chanRuler );
 				rulersPanel.add( chanRuler, ch );
 
@@ -2036,8 +2042,12 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 				markAxis.stopListening();
 			}
 		} else if( key == PrefsUtil.KEY_TIMEUNITS ) {
-			final int timeUnits = e.getNode().getInt( key, 0 );
-			msgCsr1.applyPattern( timeUnits == 0 ? smpPtrn : timePtrn );
+			final boolean timeSmps = e.getNode().getInt( key, PrefsUtil.TIME_SAMPLES ) == PrefsUtil.TIME_SAMPLES;
+			msgCsr1.applyPattern( timeSmps ? smpPtrn : timePtrn );
+		} else if( key == PrefsUtil.KEY_AMPSCALE) {
+			final boolean ampLog = e.getNode().getInt( key, PrefsUtil.AMP_LIN ) == PrefsUtil.AMP_LOG;
+			waveView.setLogarithmic( ampLog );
+			actionIncVertMax.updateRuler();
 		}
 	}
 	
@@ -2645,47 +2655,130 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 		}
 	}
 
-	/**
-	 *  Increase or decrease the height
-	 *  of the rows of the selected transmitters
-	 */
-	private class ActionVerticalZoom
+	private abstract class ActionVerticalZoom
 	extends AbstractAction
 	{
-		private final float factor;
+		protected ActionVerticalZoom() { /* empty */ }
+		
+		protected void updateRuler()
+		{
+			final VectorSpace	spc;
+			final float			min, max;
+			Axis				chanRuler;
+			
+			if( waveView.isLogarithmic() ) {
+				min = waveView.getLogMin();
+				max = waveView.getLogMax();
+			} else {
+				min = waveView.getLinearMin() * 100;
+				max = waveView.getLinearMax() * 100;
+			}
+
+			spc = VectorSpace.createLinSpace( 0.0, 1.0, min, max, null, null, null, null );
+
+			for( int i = 0; i < collChannelRulers.size(); i++ ) {
+				chanRuler	= (Axis) collChannelRulers.get( i );
+				chanRuler.setSpace( spc );
+			}
+		}
+	}
+	
+	/**
+	 *  Increase or decrease the vertical
+	 *  range of the waveform display
+	 */
+	private class ActionVerticalMax
+	extends ActionVerticalZoom
+	{
+		private final float linFactor;
+		private final float logOffset;
 		
 		/**
-		 *  @param  factor  factors > 1 increase the row height,
+		 *  @param  linFactor  factors > 1 increase the row height,
 		 *					factors < 1 decrease.
 		 */
-		protected ActionVerticalZoom( float factor )
+		protected ActionVerticalMax( float linFactor, float logOffset )
 		{
 			super();
-			this.factor = factor;
+			this.linFactor = linFactor;
+			this.logOffset = logOffset;
 		}
 		
 		public void actionPerformed( ActionEvent e )
 		{
-			float					min, max;
-			final VectorSpace		spc;
-			Axis					chanRuler;
-						
-			min = waveView.getMin();
-			max = waveView.getMax();
+			if( waveView.isLogarithmic() ) zoomLog(); else zoomLin();
+		}
+		
+		private void zoomLin()
+		{
+			float min, max;
 
-			if( ((factor >= 1.0f) && (min > -1.0e6f) && (max < 1.0e6f)) || (factor < 1.0f && (min < -1.0e-4f) && (max > 1.0e-4f)) ) {
-				min	   *= factor;
-				max	   *= factor;
-				waveView.setMinMax( min, max );
-				spc		= VectorSpace.createLinSpace( 0.0, 1.0, min * 100, max * 100, null, null, null, null );
+			min = waveView.getLinearMin();
+			max = waveView.getLinearMax();
 
-				for( int i = 0; i < collChannelRulers.size(); i++ ) {
-					chanRuler	= (Axis) collChannelRulers.get( i );
-					chanRuler.setSpace( spc );
-				}
+			if( ((linFactor >= 1.0f) && (min > -1.0e6f) && (max < 1.0e6f)) || (linFactor < 1.0f && (min < -1.0e-4f) && (max > 1.0e-4f)) ) {
+				min	   *= linFactor;
+				max	   *= linFactor;
+				waveView.setLinearMinMax( min, max );
+				updateRuler();
 			}
 		}
-	} // class actionVerticalZoomClass
+
+		private void zoomLog()
+		{
+			float min, max;
+
+			min = waveView.getLogMin();
+			max = waveView.getLogMax();
+
+			if( (max + logOffset - min >= 6f) &&
+				(((logOffset >= 0f) && (max < 60)) || (logOffset < 0f && (max > -160))) ) {
+//				min	   += logOffset;
+				max	   += logOffset;
+				waveView.setLogMinMax( min, max );
+				updateRuler();
+			}
+		}
+	} // class actionVerticalMax
+
+	/**
+	 *  Increase or decrease the vertical
+	 *  noisefloor of the waveform display (in log mode)
+	 */
+	private class ActionVerticalMin
+	extends ActionVerticalZoom
+	{
+		private final float logOffset;
+		
+		/**
+		 */
+		protected ActionVerticalMin( float logOffset )
+		{
+			super();
+			this.logOffset = logOffset;
+		}
+		
+		public void actionPerformed( ActionEvent e )
+		{
+			if( waveView.isLogarithmic() ) zoomLog();
+		}
+		
+		private void zoomLog()
+		{
+			float min, max;
+
+			min = waveView.getLogMin();
+			max = waveView.getLogMax();
+
+			if( (max - (min + logOffset) >= 6f) &&
+				(((logOffset >= 0f) && (min < 60)) || (logOffset < 0f && (max > -160))) ) {
+				min	   += logOffset;
+//				max	   += logOffset;
+				waveView.setLogMinMax( min, max );
+				updateRuler();
+			}
+		}
+	} // class actionVerticalMin
 
 	/**
 	 *  Increase or decrease the width

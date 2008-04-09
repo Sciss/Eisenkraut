@@ -75,8 +75,11 @@ implements Disposable
 	private static final Stroke	strkNull		= new BasicStroke( 1.0f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_BEVEL,
 													1.0f, new float[] { 4.0f, 4.0f }, 0.0f );
 
-	private float				min				= -1.0f;	// minimum vector value
-	private float				max				= 1.0f;		// maximum vector value
+	private boolean				logarithmic		= false;
+	private float				linearMin		= -1.0f;	// minimum vector value
+	private float				linearMax		= 1.0f;		// maximum vector value
+	private float				logMin			= -60f;
+	private float				logMax			= 0f;
 	private boolean				nullLinie		= false;
 
 	private final Session		doc;
@@ -111,7 +114,8 @@ implements Disposable
 	{
 		if( nullLinie != onOff ) {
 			nullLinie = onOff;
-			triggerRedisplay();
+//			if( !logarithmic )
+				triggerRedisplay();
 		}
 	}
 
@@ -119,15 +123,28 @@ implements Disposable
 	{
 		return nullLinie;
 	}
+	
+	public void setLogarithmic( boolean onOff )
+	{
+		if( logarithmic != onOff ) {
+			logarithmic = onOff;
+			triggerRedisplay();
+		}
+	}
+
+	public boolean isLogarithmic()
+	{
+		return logarithmic;
+	}
 
 	/**
 	 *  Gets the minimum allowed y value
 	 *
 	 *  @return		the minimum specified function value
 	 */
-	public float getMin()
+	public float getLinearMin()
 	{
-		return min;
+		return linearMin;
 	}
 
 	/**
@@ -135,11 +152,22 @@ implements Disposable
 	 *
 	 *  @return		the maximum specified function value
 	 */
-	public float getMax()
+	public float getLinearMax()
 	{
-		return max;
+		return linearMax;
 	}
 
+	public float getLogMin()
+	{
+		return logMin;
+	}
+
+
+	public float getLogMax()
+	{
+		return logMax;
+	}
+	
 	/**
 	 *  Changes the allowed range for vector values.
 	 *  Influences the graphics display such that
@@ -155,17 +183,27 @@ implements Disposable
 	 *				even if values lie outside the new
 	 *				allowed range.
 	 */
-	public void setMinMax( float min, float max )
+	public void setLinearMinMax( float min, float max )
 	{
-		if( this.min != min || this.max != max ) {
-			this.min	= min;
-			this.max	= max;
+		if( (this.linearMin != min) || (this.linearMax != max) ) {
+			this.linearMin	= min;
+			this.linearMax	= max;
 
-			triggerRedisplay();
+			if( !logarithmic ) triggerRedisplay();
 		}
 	}
 	
-//	public float[][] gimmeBaffa( int numCh, int len )
+	public void setLogMinMax( float min, float max )
+	{
+		if( (this.logMin != min) || (this.logMax != max) ) {
+			this.logMin	= min;
+			this.logMax	= max;
+
+			if( logarithmic ) triggerRedisplay();
+		}
+	}
+
+	//	public float[][] gimmeBaffa( int numCh, int len )
 //	{
 //		if( (buffer != null) && (buffer.length >= numCh) && (bufLen >= len) ) return buffer;
 //		
@@ -278,7 +316,7 @@ implements Disposable
 			g2.setStroke( strkNull );
 			for( int ch = 0; ch < fullChannels; ch++ ) {
 				cr = rectForChannel( ch );
-				y = cr.y + (cr.height >> 1);
+				y = cr.y + (logarithmic ? cr.height - 1 : (cr.height >> 1));
 				g2.drawLine( cr.x, y, cr.x + cr.width, y );
 			}
 		}

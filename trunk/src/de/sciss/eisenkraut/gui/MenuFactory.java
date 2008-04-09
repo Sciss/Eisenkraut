@@ -371,6 +371,18 @@ if( doc.getFrame() == null ) {
 		ia.setPreferences( prefs, PrefsUtil.KEY_TIMEUNITS );
 		mg.add( smg );
 
+		smg			= new MenuGroup( "amplitude", getResourceString( "menuAmpScale" ));
+		ia			= new IntPrefsMenuAction( getResourceString( "menuAmpScaleLin" ), null, PrefsUtil.TIME_SAMPLES );
+		rg			= new MenuRadioGroup();
+		smg.add( new MenuRadioItem( rg, "linear", ia ));	// crucial reihenfolge : erst item erzeugen, dann gruppe setzen, dann prefs
+		ia.setRadioGroup( rg );
+		ia.setPreferences( prefs, PrefsUtil.KEY_AMPSCALE );
+		ia			= new IntPrefsMenuAction( getResourceString( "menuAmpScaleLog" ), null, PrefsUtil.TIME_MINSECS );
+		smg.add( new MenuRadioItem( rg, "logarithmic", ia ));	// crucial reihenfolge : erst item erzeugen, dann gruppe setzen, dann prefs
+		ia.setRadioGroup( rg );
+		ia.setPreferences( prefs, PrefsUtil.KEY_AMPSCALE );
+		mg.add( smg );
+
 		ba			= new BooleanPrefsMenuAction( getResourceString( "menuViewNullLinie" ), null );
 		mci			= new MenuCheckItem( "nullLinie", ba );
 		ba.setCheckItem( mci );

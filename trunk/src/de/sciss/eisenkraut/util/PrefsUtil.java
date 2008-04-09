@@ -215,9 +215,18 @@ public class PrefsUtil
 	 *  Node: 
 	 */
 	public static final String KEY_TIMEUNITS	= "timeunits";		// integer (TIME_SAMPLES, TIME_MINSECS)
+	/**
+	 *  Value: Integer indicating the dislayed amplitude scaling.<br>
+	 *  Has default value: yes!<br>
+	 *  Node: 
+	 */
+	public static final String KEY_AMPSCALE		= "ampscale";		// integer (AMP_LIN, AMP_LOG)
 
 	public static final int TIME_SAMPLES	= 0;
 	public static final int TIME_MINSECS	= 1;
+
+	public static final int AMP_LIN			= 0;
+	public static final int AMP_LOG			= 1;
 
 	// ------------ audio node level ------------
 
@@ -370,6 +379,7 @@ public class PrefsUtil
 		putBooleanDontOverwrite( mainPrefs, KEY_VIEWMARKERS, false );
 		putBooleanDontOverwrite( mainPrefs, KEY_VIEWCHANMETERS, false );
 		
+		putIntDontOverwrite( mainPrefs, KEY_TIMEUNITS, TIME_MINSECS );
 		putIntDontOverwrite( mainPrefs, KEY_TIMEUNITS, TIME_MINSECS );
 
 		// audio

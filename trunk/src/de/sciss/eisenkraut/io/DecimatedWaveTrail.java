@@ -138,6 +138,9 @@ extends BasicTrail
 	protected volatile boolean		keepAsyncRunning		= false;
 
 	protected EventManager			asyncManager			= null;
+	
+	protected static final double	TWENTYBYLOG10			= 20 / Math.log( 10 ); // 8.685889638065;
+	protected static final double	TENBYLOG10				= 10 / Math.log( 10 );
 
 	static {
 		final BufferedImage img = new BufferedImage( 3, 3, BufferedImage.TYPE_INT_ARGB );
@@ -362,7 +365,6 @@ extends BasicTrail
 		return off;
 	}
 	
-	
 	/**
 	 * Speed measurements (feb 2006): for HalfwavePeakRMS, using g2.fillPolygon
 	 * is about twice as fast as using GeneralPath objects. The integer
@@ -380,6 +382,8 @@ extends BasicTrail
 		final long				maxLen			= toPCM ? tmpBufSize : (fromPCM ?
 				  Math.min( tmpBufSize, tmpBufSize2 * info.getDecimationFactor() )
 				: tmpBufSize2 << info.shift);
+//		final int				polySize		= view.isLogarithmic() ?
+//			((int) info.sublength + 2) : ((int) (info.sublength << 1));
 		final int				polySize		= (int) (info.sublength << 1);
 		final AffineTransform	atOrig			= g2.getTransform();
 		final Shape				clipOrig		= g2.getClip();
@@ -389,11 +393,12 @@ extends BasicTrail
 		final int[][]			rmsPolyX		= toPCM ? null : new int[ fullChannels ][ polySize ];
 		final int[][]			rmsPolyY		= toPCM ? null : new int[ fullChannels ][ polySize ];
 		final boolean[]			sampleAndHold	= toPCM ? new boolean[ fullChannels ] : null;
-		final float				deltaYN			= 4f / (view.getMin() - view.getMax());
+		final float				maxY, minY, minInpY, deltaY, deltaYN;
+		final float				offY;
 		final int[]				off				= new int[ fullChannels ];
 
 		float[]					sPeakP;
-		float					offX, scaleX, scaleY;
+		float					offX, scaleX, scaleY, f1;
 		long					start			= info.span.start;
 		long					totalLength		= info.getTotalLength();
 		Span					chunkSpan;
@@ -403,7 +408,22 @@ extends BasicTrail
 
 		try {
 			drawBusyList.clear(); // "must be called in the event thread"
+			
+			if( view.isLogarithmic() ) {
+				maxY	= view.getLogMax();
+				minY	= view.getLogMin();
+				minInpY = (float) Math.exp( minY / TWENTYBYLOG10 );
+			} else {
+				maxY	= view.getLinearMax();
+				minY	= view.getLinearMin();
+				minInpY	= 0;	// not used
+			}
+			deltaY	= maxY - minY;
+			deltaYN = -4 / deltaY;
+			offY	= maxY / deltaY;
 
+//System.out.println( "deltaY " + deltaY + "; deltaYN " + deltaYN + "; offY " + offY );
+			
 			synchronized( bufSync ) {
 				createBuffers();
 
@@ -438,6 +458,19 @@ extends BasicTrail
 						if( info.inlineDecim > 1 ) decimator.decimate( tmpBuf2, tmpBuf2, 0, decimLen, info.inlineDecim );
 					}
 					if( toPCM ) {
+						if( view.isLogarithmic() ) {
+							for( int ch = 0; ch < fullChannels; ch++ ) {
+								sPeakP = tmpBuf[ ch ];
+								for( int i = 0; i < decimLen; i++ ) {
+									f1 = Math.abs( sPeakP[ i ]);
+									if( f1 > minInpY ) {
+										sPeakP[ i ] = (float) (Math.log( f1 ) * TWENTYBYLOG10);
+									} else {
+										sPeakP[ i ] = minY;
+									}
+								}
+							}
+						}
 						for( int ch = 0; ch < fullChannels; ch++ ) {
 							sPeakP				= tmpBuf[ ch ];
 							r					= view.rectForChannel( ch );
@@ -445,13 +478,18 @@ extends BasicTrail
 							scaleY				= r.height * deltaYN;
 							offX				= scaleX * off[ ch ];
 							sampleAndHold[ch]	= scaleX > 16;
-
 							off[ch]				= drawPCM( sPeakP, decimLen, peakPolyX[ ch ],
-									peakPolyY[ ch ], off[ ch ], offX, scaleX, scaleY, sampleAndHold[ ch ]);
+								       			           peakPolyY[ ch ], off[ ch ], offX, scaleX, scaleY, sampleAndHold[ ch ]);
 						}
 					} else {
-						for( int ch = 0; ch < fullChannels; ch++ ) {
-							off[ ch ] = decimator.draw( info, ch, peakPolyX, peakPolyY, rmsPolyX, rmsPolyY, decimLen, view.rectForChannel( ch ), deltaYN, off[ ch ]);
+						if( view.isLogarithmic() ) {
+							for( int ch = 0; ch < fullChannels; ch++ ) {
+								off[ ch ] = decimator.drawLog( info, ch, peakPolyX, peakPolyY, rmsPolyX, rmsPolyY, decimLen, view.rectForChannel( ch ), deltaYN, off[ ch ], minY, minInpY );
+							}
+						} else {
+							for( int ch = 0; ch < fullChannels; ch++ ) {
+								off[ ch ] = decimator.draw( info, ch, peakPolyX, peakPolyY, rmsPolyX, rmsPolyY, decimLen, view.rectForChannel( ch ), deltaYN, off[ ch ]);
+							}
 						}
 					}
 					start += fullLen;
@@ -461,28 +499,28 @@ extends BasicTrail
 
 			// System.err.println( "busyList.size() = "+busyList.size() );
 
-			if (toPCM) {
+			if( toPCM ) {
 				final Stroke strkOrig = g2.getStroke();
-				g2.setStroke(strkLine);
-				g2.setPaint(pntLine);
-				for (int ch = 0; ch < fullChannels; ch++) {
-					r = view.rectForChannel(ch);
-					g2.clipRect(r.x, r.y, r.width, r.height);
-					g2.translate(r.x, r.y + r.height * 0.5f);
-					g2.scale(0.25f, 0.25f);
-					g2.drawPolyline(peakPolyX[ch], peakPolyY[ch], off[ch]);
-					g2.setTransform(atOrig);
-					g2.setClip(clipOrig);
+				g2.setStroke( strkLine );
+				g2.setPaint( pntLine );
+				for( int ch = 0; ch < fullChannels; ch++ ) {
+					r = view.rectForChannel( ch );
+					g2.clipRect( r.x, r.y, r.width, r.height );
+					g2.translate( r.x, r.y + r.height * offY );
+					g2.scale( 0.25f, 0.25f );
+					g2.drawPolyline( peakPolyX[ ch ], peakPolyY[ ch ], off[ ch ]);
+					g2.setTransform( atOrig );
+					g2.setClip( clipOrig );
 				}
-				g2.setStroke(strkOrig);
+				g2.setStroke( strkOrig );
 			} else {
 				// g2.setPaint( pntArea );
-				for (int ch = 0; ch < fullChannels; ch++) {
-					r = view.rectForChannel(ch);
-					g2.clipRect(r.x, r.y, r.width, r.height);
+				for( int ch = 0; ch < fullChannels; ch++ ) {
+					r = view.rectForChannel( ch );
+					g2.clipRect( r.x, r.y, r.width, r.height );
 					if (!drawBusyList.isEmpty()) {
 						// g2.setColor( Color.red );
-						g2.setPaint(pntBusy);
+						g2.setPaint( pntBusy );
 						for (int i = 0; i < drawBusyList.size(); i++) {
 							chunkSpan = (Span) drawBusyList.get(i);
 							scaleX = r.width / (float) info.getTotalLength(); // (info.sublength
@@ -495,25 +533,23 @@ extends BasicTrail
 							// r.x) + ", "+r.y+", "+((int)
 							// (chunkSpan.getLength() * scaleX))+", "+r.height
 							// );
-							g2
-									.fillRect(
-											(int) ((chunkSpan.start - info.span.start) * scaleX)
-													+ r.x,
-											r.y,
-											(int) (chunkSpan.getLength() * scaleX),
-											r.height);
+							g2.fillRect(
+							    (int) ((chunkSpan.start - info.span.start) * scaleX) + r.x,
+							    r.y,
+							    (int) (chunkSpan.getLength() * scaleX),
+							    r.height );
 						}
 					}
-					g2.translate(r.x, r.y + r.height * 0.5f);
-					g2.scale(0.25f, 0.25f);
-					g2.setColor(Color.gray);
+					g2.translate( r.x, r.y + r.height * offY );
+					g2.scale( 0.25f, 0.25f );
+					g2.setColor( Color.gray );
 					// g2.setColor( Color.black );
-					g2.fillPolygon(peakPolyX[ch], peakPolyY[ch], polySize);
-					g2.setColor(Color.black);
+					g2.fillPolygon( peakPolyX[ ch ], peakPolyY[ ch ], polySize );
+					g2.setColor( Color.black );
 					// g2.setColor( Color.gray );
-					g2.fillPolygon(rmsPolyX[ch], rmsPolyY[ch], polySize);
-					g2.setTransform(atOrig);
-					g2.setClip(clipOrig);
+					g2.fillPolygon( rmsPolyX[ ch ], rmsPolyY[ ch ], polySize );
+					g2.setTransform( atOrig );
+					g2.setClip( clipOrig );
 				}
 			}
 		} catch( IOException e1 ) {
@@ -1487,6 +1523,9 @@ extends BasicTrail
 		protected abstract int draw( DecimationInfo info, int ch, int[][] peakPolyX, int[][] peakPolyY,
 						  			 int[][] rmsPolyX, int[][] rmsPolyY, int decimLen,
 						  			 Rectangle r, float deltaYN, int off );
+		protected abstract int drawLog( DecimationInfo info, int ch, int[][] peakPolyX, int[][] peakPolyY,
+										int[][] rmsPolyX, int[][] rmsPolyY, int decimLen,
+										Rectangle r, float deltaYN, int off, float minY, float minInpY );
 	}
 
 	private class HalfPeakRMSDecimator
@@ -1666,6 +1705,13 @@ System.out.println( "warning: HalfPeakRMSDecimator : not checked" );
 									 	 scaleY ));
 		}
 
+		protected int drawLog( DecimationInfo info, int ch, int[][] peakPolyX, int[][] peakPolyY,
+ 			int[][] rmsPolyX, int[][] rmsPolyY, int decimLen,
+ 			Rectangle r, float deltaYN, int off, float minY, float minInpY )
+		{
+			throw new IllegalStateException( "HalfWavePeakRMS log drawing not yet working" );
+		}
+
 		private int drawHalfWavePeakRMS( float[] sPeakP, float[] sPeakN,
 				float[] sRMSP, float[] sRMSN, int len, int[] peakPolyX,
 				int[] peakPolyY, int[] rmsPolyX, int[] rmsPolyY, int off,
@@ -1766,6 +1812,13 @@ System.out.println( "warning: HalfPeakRMSDecimator : not checked" );
 			throw new IllegalStateException( "Median drawing not yet working" );
 		}
 
+		protected int drawLog( DecimationInfo info, int ch, int[][] peakPolyX, int[][] peakPolyY,
+	 			int[][] rmsPolyX, int[][] rmsPolyY, int decimLen,
+	 			Rectangle r, float deltaYN, int off, float minY, float minInpY )
+		{
+			throw new IllegalStateException( "Median drawing not yet working" );
+		}
+
 	} // class MedianDecimator
 
 	private class FullPeakRMSDecimator
@@ -1861,9 +1914,9 @@ System.out.println( "warning: HalfPeakRMSDecimator : not checked" );
 		}
 		
 		private int drawFullWavePeakRMS( float[] sPeakP, float[] sPeakN,
-				float[] sRMS, int len, int[] peakPolyX, int[] peakPolyY,
-				int[] rmsPolyX, int[] rmsPolyY, int off, float offX, float scaleX,
-				float scaleY )
+			float[] sRMS, int len, int[] peakPolyX, int[] peakPolyY,
+			int[] rmsPolyX, int[] rmsPolyY, int off, float offX, float scaleX,
+			float scaleY )
 		{
 			// final float scaleYN = -scaleY;
 			int		x;
@@ -1883,6 +1936,90 @@ System.out.println( "warning: HalfPeakRMSDecimator : not checked" );
 				rms					= (float) Math.sqrt( sRMS[ i ]); // / 2;
 				rmsPolyY[ off ]		= (int) (Math.min( peakP, rms ) * scaleY);
 				rmsPolyY[ k ]		= (int) (Math.max( peakN, -rms ) * scaleY);
+			}
+
+			return off;
+		}
+
+		protected int drawLog( DecimationInfo info, int ch,
+  			int[][] peakPolyX, int[][] peakPolyY,
+  			int[][] rmsPolyX, int[][] rmsPolyY, int decimLen,
+  			Rectangle r, float deltaYN, int off, float minY, float minInpY )
+		{
+			int			ch2;
+			float[]		sPeakP, sPeakN, sRMSP;
+			float		offX, scaleX, scaleY;
+
+			ch2		= ch * 3;
+			sPeakP	= tmpBuf2[ ch2++ ];
+			sPeakN	= tmpBuf2[ ch2++ ];
+			sRMSP	= tmpBuf2[ ch2 ];
+			scaleX	= 4 * r.width / (float) (info.sublength - 1);
+			scaleY	= r.height * deltaYN;
+			offX	= scaleX * off;
+
+			return drawFullWavePeakRMSLog( sPeakP, sPeakN,
+			                               sRMSP, decimLen, peakPolyX[ ch ],
+			                               peakPolyY[ ch ], rmsPolyX[ ch ],
+			                               rmsPolyY[ ch ], off, offX, scaleX,
+			                               scaleY, minY, minInpY );
+		}
+
+
+		private int drawFullWavePeakRMSLog( float[] sPeakP, float[] sPeakN,
+				float[] sRMS, int len, int[] peakPolyX, int[] peakPolyY,
+				int[] rmsPolyX, int[] rmsPolyY, int off, float offX, float scaleX,
+				float scaleY, float minY, float minInpY )
+		{
+			// final float scaleYN = -scaleY;
+			final int	minYPix		= (int) (minY * scaleY - 2);
+			final float minInpYSqr	= minInpY * minInpY;
+			int			x;
+//			int			botOff;
+			float		peak, rms;
+
+//			for( int k = peakPolyX.length >> 1; k < peakPolyX.length; k++ ) {
+//				peakPolyY[ k ]		= minYPix;
+//				rmsPolyY[ k ]		= minYPix;
+//				peakPolyX[ k ]		= x;
+//				rmsPolyX[ k ]		= minYPix;
+//			}
+			
+//			botOff					= peakPolyX.length - 1;
+//			x						= (int) offX;
+//			peakPolyX[ botOff ]		= x;
+//			peakPolyY[ botOff ]		= minYPix;
+//			rmsPolyX[ botOff ]		= x;
+//			rmsPolyY[ botOff ]		= minYPix;
+//			botOff--;
+//			x						= (int) ((len - 1) * scaleX + offX);
+//			peakPolyX[ botOff ]		= x;
+//			peakPolyY[ botOff ]		= minYPix;
+//			rmsPolyX[ botOff ]		= x;
+//			rmsPolyY[ botOff ]		= minYPix;
+
+			for( int i = 0, k = peakPolyX.length - 1 - off; i < len; i++, off++, k-- ) {
+				x					= (int) (i * scaleX + offX);
+				peakPolyX[ off ]	= x;
+				peakPolyX[ k ]		= x;
+				rmsPolyX[ off ]		= x;
+				rmsPolyX[ k ]		= x;
+				peak				= Math.max( Math.abs( sPeakP[ i ]), Math.abs( sPeakN[ i ]));
+				if( peak > minInpY ) {
+					peak			= (float) (Math.log( peak ) * TWENTYBYLOG10);
+				} else {
+					peak			= minY;
+				}
+				peakPolyY[ off ]	= (int) (peak * scaleY) + 2;
+				peakPolyY[ k ]		= minYPix;
+				rms					= sRMS[ i ];
+				if( rms > minInpYSqr ) {
+					rms				= (float) (Math.log( rms ) * TENBYLOG10);
+				} else {
+					rms				= minY;
+				}
+				rmsPolyY[ off ]		= (int) (Math.min( peak, rms ) * scaleY);
+				rmsPolyY[ k ]		= minYPix;
 			}
 
 			return off;
