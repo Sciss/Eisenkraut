@@ -33,34 +33,25 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.EventQueue;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
 import java.io.IOException;
-import java.util.Dictionary;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
-//import javax.swing.BorderFactory;
-//import javax.swing.Box;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JSlider;
-import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
-//import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import de.sciss.eisenkraut.Main;
 import de.sciss.eisenkraut.io.AudioBoxConfig;
 import de.sciss.eisenkraut.io.RoutingConfig;
-import de.sciss.eisenkraut.math.MathUtil;
+//import de.sciss.eisenkraut.math.MathUtil;
 import de.sciss.eisenkraut.net.SuperColliderClient;
 import de.sciss.eisenkraut.net.SuperColliderPlayer;
 import de.sciss.eisenkraut.session.Session;
@@ -73,12 +64,10 @@ import de.sciss.app.Document;
 import de.sciss.app.DocumentHandler;
 import de.sciss.app.DocumentListener;
 import de.sciss.app.DynamicListening;
-import de.sciss.app.GraphicsHandler;
 import de.sciss.common.AppWindow;
 import de.sciss.gui.AbstractWindowHandler;
 import de.sciss.gui.MultiStateButton;
 import de.sciss.gui.PeakMeter;
-//import de.sciss.gui.PeakMeterCaption;
 import de.sciss.gui.PrefComboBox;
 import de.sciss.gui.SpringPanel;
 import de.sciss.gui.StringItem;
@@ -94,7 +83,7 @@ import de.sciss.net.OSCBundle;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
+ *  @version	0.70, 10-Apr-08
  *
  *	@todo		could use an explicit GroupAnySync for lmm, which would go into SuperColliderClient
  *				so sc-client whould be able to pause master synths according to the sync
@@ -117,7 +106,7 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
 	private RoutingConfig				oCfg;
 	
 	private final SpringPanel			b1;
-	protected final JSlider				ggVolume;
+	protected final VolumeFader			ggVolume;
 	
 //	private final Set					allTransports		= new HashSet();	// element = (Transport)
 //	private final Set					transportsRunning	= new HashSet();
@@ -145,22 +134,15 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
 //		final JPanel			b1				= new JPanel( new BorderLayout( 0, 2 )); // Box.createVerticalBox();
 		final JPanel			b2				= new JPanel( new BorderLayout() ); // Box.createHorizontalBox();
 		final MultiStateButton	ggLimiter;
-		final Dictionary		dictVolume;
 		audioPrefs								= app.getUserPrefs().node( PrefsUtil.NODE_AUDIO );
 //		final Preferences		ocPrefs			= audioPrefs.node( PrefsUtil.NODE_OUTPUTCONFIGS );
 //		final Preferences		abPrefs			= audioPrefs.node( PrefsUtil.NODE_AUDIOBOXES );
 		final ControlRoomFrame	enc_this		= this;
 		final Object			comboProto		= "XXXXXXXX";
-		JLabel					lb;
-		Font					fnt;
 
 		b1				= new SpringPanel( 2, 4, 2, 4 );
 		lmm.setDynamicComponent( b1 );
-		ggVolume		= new JSlider( SwingConstants.VERTICAL, -72, 18, 0 );
-//ggVolume.putClientProperty( "JSlider.isFilled", Boolean.TRUE );
-		dictVolume		= ggVolume.createStandardLabels( 12 );
-//ggVolume.setUI( new TestSliderUI( ggVolume ));
-					
+		ggVolume		= new VolumeFader();
 		ggOutputConfig	= new PrefComboBox();
 		ggAudioBox		= new PrefComboBox();
 		ggOutputConfig.setPrototypeDisplayValue( comboProto );
@@ -187,24 +169,10 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
 			}
 		};
 		
-		ggVolume.setMinorTickSpacing( 3 );
-		ggVolume.setMajorTickSpacing( 12 );
-		fnt = app.getGraphicsHandler().getFont( GraphicsHandler.FONT_LABEL | GraphicsHandler.FONT_MINI );
-		for( Enumeration en = dictVolume.elements(); en.hasMoreElements(); ) {
-			lb = (JLabel) en.nextElement();
-			if( lb.getText().equals( "-72" )) lb.setText( "-\u221E" );
-			lb.setFont( fnt );
-		}
-		ggVolume.setLabelTable( dictVolume );
-		ggVolume.setPaintTicks( true );
-		ggVolume.setPaintLabels( true );
 		ggVolume.addChangeListener( new ChangeListener() {
 			public void stateChanged( ChangeEvent e ) {
-				final int	db		= ggVolume.getValue();
-//				final float	volume	= db == -72 ? 0f : (float) Math.pow( 10, (double) db / 20 );
-				final float	volume	= db == -72 ? 0f : (float) MathUtil.dBToLinear( db );
-				superCollider.setVolume( enc_this, volume );
-				updateVolumeInfo();
+				superCollider.setVolume( enc_this, ggVolume.getVolumeLinear() );
+//				updateVolumeInfo();
 			}
 		});
 
@@ -324,17 +292,15 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 		super.dispose();
 	}
 	
-	protected void updateVolumeInfo()
-	{
-		ggVolume.setToolTipText( String.valueOf( ggVolume.getValue() ));
-	}
+//	protected void updateVolumeInfo()
+//	{
+//		ggVolume.setToolTipText( String.valueOf( ggVolume.getVolumeDecibels() ));
+//	}
 
 	private void updateVolume()
 	{
-		final float volume = superCollider.getVolume();
-		final int	db		= volume == 0f ? -72 : Math.max( -72, Math.min( 18, (int) (MathUtil.linearToDB( volume ) + 0.5) ));
-		ggVolume.setValue( db );
-		updateVolumeInfo();
+		ggVolume.setVolumeLinear( superCollider.getVolume() );
+//		updateVolumeInfo();
 	}
 
 	private void startMeters()
