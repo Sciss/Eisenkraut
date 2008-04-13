@@ -103,7 +103,7 @@ implements OSCRouter
 	public final MarkerTrack				markerTrack;
 
 	private static final int[]				waveDecims		= { 8, 12, 16 };
-//	private static final int[]				sonaDecims		= { 0, 8, 16 };
+	private static final int[]				sonaDecims		= { 0, 8, 16 };
 
 //	/**
 //	 *  Use this <code>LockManager</code> to gain access to
@@ -441,6 +441,7 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 	{
 		return dst;
 	}
+	
 	public void setDescr( AudioFileDescr[] afds )
 	{
 		this.afds = afds;
@@ -519,8 +520,8 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 	private void createDecimatedSonaTrail()
 	throws IOException
 	{
-//		if( dst != null ) throw new IllegalStateException();
-//		dst	= new DecimatedSonaTrail( at, DecimatedSonaTrail.MODEL_SONA, sonaDecims );
+		if( dst != null ) throw new IllegalStateException();
+		dst	= new DecimatedSonaTrail( at, DecimatedSonaTrail.MODEL_SONA, sonaDecims );
 	}
 
 	public AudioFileDescr getDisplayDescr()

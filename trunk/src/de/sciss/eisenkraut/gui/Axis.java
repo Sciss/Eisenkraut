@@ -168,6 +168,11 @@ implements Disposable
 
 	private final ComponentHost	host;
 
+	public Axis( int orient )
+	{
+		this( orient, 0 );
+	}
+
 	/**
 	 *  @param	orient	either HORIZONTAL or VERTICAL
 	 */

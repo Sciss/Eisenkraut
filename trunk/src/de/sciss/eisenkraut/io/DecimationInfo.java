@@ -74,7 +74,7 @@ public class DecimationInfo
 	 *
 	 *  @param  idx			internal index for <code>MultirateTrackEditor</code>
 	 *  @param  span		the originally covered time span
-	 *  @param  sublength   the translated span length in deimated
+	 *  @param  sublength   the translated span length in decimated
 	 *						frames (rounded to integer)
 	 */
 	protected DecimationInfo( Span span, long sublength, int channels,

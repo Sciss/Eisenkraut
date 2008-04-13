@@ -260,7 +260,7 @@ implements Disposable
 	
 	public DecimationInfo getDecimationInfo() { return info; }
 
-	public void paintComponentGAGA( Graphics g )
+	public void paintComponent( Graphics g )
 	{
 		super.paintComponent( g );
 
@@ -291,7 +291,7 @@ implements Disposable
 		}
 	}
 
-	public void paintComponent( Graphics g )
+	public void paintComponentGAGA( Graphics g )
 	{
 		super.paintComponent( g );
 

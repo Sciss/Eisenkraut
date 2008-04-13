@@ -34,7 +34,7 @@ package de.sciss.eisenkraut.math;
  *  for common math operations and constants
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.62, 19-Nov-04
+ *  @version	0.70, 11-Apr-08
  */
 public class MathUtil
 {
@@ -64,7 +64,7 @@ public class MathUtil
 	{
 		return Math.exp( dB / 20 * LN10 );
 	}
-	
+		
 	/**
 	 *  Linear-to-Decibel conversion
 	 *
@@ -75,6 +75,17 @@ public class MathUtil
 	public static double linearToDB( double linear )
 	{
 		return Math.log( linear ) * 20 / LN10;
+	}
+
+	/**
+	 *  Calculate the logarithm with base 2.
+	 *
+	 *  @param  val	the input value
+	 *  @return the log2 of the value
+	 */
+	public static double log2( double val )
+	{
+		return Math.log(  val ) / LN2;
 	}
 
 	/**

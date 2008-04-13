@@ -31,15 +31,36 @@ package de.sciss.eisenkraut.io;
 
 import java.awt.Graphics2D;
 //import java.awt.Paint;
+import java.awt.BasicStroke;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Paint;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.Stroke;
 //import java.awt.TexturePaint;
+import java.awt.font.TextLayout;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+import java.util.Vector;
+
+import javax.swing.Box;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.undo.CompoundEdit;
 
 // import de.sciss.app.AbstractApplication;
@@ -47,9 +68,12 @@ import de.sciss.app.BasicEvent;
 import de.sciss.app.EventManager;
 import de.sciss.app.AbstractCompoundEdit;
 import de.sciss.common.ProcessingThread;
+import de.sciss.eisenkraut.gui.Axis;
 import de.sciss.eisenkraut.gui.WaveformView;
 import de.sciss.eisenkraut.math.Filter;
 import de.sciss.eisenkraut.math.Fourier;
+import de.sciss.eisenkraut.math.MathUtil;
+import de.sciss.gui.VectorSpace;
 import de.sciss.io.AudioFile;
 // import de.sciss.io.AudioFileCacheInfo;
 import de.sciss.io.AudioFileDescr;
@@ -126,11 +150,14 @@ extends BasicTrail
 
 	protected EventManager			asyncManager			= null;
 	
-	private final int				fftSize					= 1024;
-	private final int				numMag					= fftSize >> 1;
-	private final int				stepSize				= fftSize; // >> 1;
-	private final float[]			fftBuf					= new float[ fftSize + 2 ];
-	protected final float[] 		win;
+	protected int					fftSize; //				= 1024;
+//	protected final int				numMag;
+	protected final int				stepSize;
+	private float[]					fftBuf;
+	protected final float[] 		inpWin;
+	protected float[][]				cqKernels;
+	protected int[]					cqKernelOffs;
+	protected int					cqKernelNum;
 
 	private static final int[] 		colors = {  // from niklas werner's sonasound!
 		0x000000, 0x050101, 0x090203, 0x0E0304, 0x120406, 0x160507, 0x1A0608, 0x1D0609,
@@ -270,8 +297,8 @@ extends BasicTrail
 		0xFEFEFE
 	};
 	
-	protected final double LNKORR_MUL = 10 / Math.log( 10.0 );
-	protected final double LNKORR_ADD = -2 * Math.log( fftSize );
+	protected final double LNKORR_MUL = 10 / MathUtil.LN10;
+	protected final double LNKORR_ADD; // = -2 * Math.log( fftSize );
 
 //	static {
 //		final BufferedImage img = new BufferedImage( 3, 3, BufferedImage.TYPE_INT_ARGB );
@@ -297,11 +324,20 @@ extends BasicTrail
 			throw new IllegalArgumentException( "Model " + model );
 		}
 
-		win				= Filter.createFullWindow( fftSize, Filter.WIN_HANNING );
+		this.fullScale	= fullScale;
+		this.model		= model;
+
+		calcKernels();
+//		numMag			= fftSize >> 1;
+//		stepSize		= Math.min( fftSize, 256 );
+		// approx. 5 milliseconds resolution (for the high freqs)
+		stepSize		= Math.max( 64, Math.min( fftSize, (int) (0.005 * fullScale.getRate() + 0.5) & ~1 ));
+		LNKORR_ADD		= -2 * Math.log( fftSize );
+
+		inpWin			= Filter.createFullWindow( fftSize, Filter.WIN_HANNING );
 		
 		fullChannels	= fullScale.getChannelNum();
 //		decimChannels	= fullChannels * modelChannels;
-		this.model		= model;
 
 		SUBNUM			= decimations.length; // the first 'subsample' is actually fullrate
 		this.decimHelps	= new DecimationHelp[ SUBNUM ];
@@ -321,8 +357,7 @@ extends BasicTrail
 
 		// setRate( fullScale.getRate() / factor );
 		setRate( fullScale.getRate() );
-
-		this.fullScale	= fullScale;
+				
 		fullScale.addDependant( this );
 
 		// ok, the fullScale file might have already been populated
@@ -347,16 +382,16 @@ extends BasicTrail
 	 */
 	public void drawWaveform( DecimationInfo info, WaveformView view, Graphics2D g2 )
 	{
-		final boolean			fromPCM 		= info.idx == -1;
+		final boolean			fromPCM 		= false; // info.idx == -1;
 		final long				maxLen			= fromPCM ?
 				  Math.min( tmpBufSize, tmpBufSize2 * info.getDecimationFactor() )
 				: tmpBufSize2 << info.shift;
 
-		final int				imgW			= (int) info.sublength;
-		final BufferedImage		bufImg			= new BufferedImage( imgW, numMag, BufferedImage.TYPE_INT_RGB );
+		final int				imgW			= view.getWidth(); // (int) info.sublength;
+		final BufferedImage		bufImg			= new BufferedImage( imgW, cqKernelNum, BufferedImage.TYPE_INT_RGB );
 		final WritableRaster	raster			= bufImg.getRaster();
-		final int[]				data			= new int[ imgW * numMag ];
-		final int				dataStartOff	= imgW * (numMag - 1);
+		final int[]				data			= new int[ imgW * cqKernelNum ];
+		final int				dataStartOff	= imgW * (cqKernelNum - 1);
 
 		float[]					chanBuf;
 		long					start			= info.span.start;
@@ -365,9 +400,13 @@ extends BasicTrail
 		long					fullLen, fullStop;
 		int						chunkLen, decimLen;
 		Rectangle				r;
+		
+final float pixScale = 1072 / (view.getLogMax() - view.getLogMin());
+final float pixOff   = -view.getLogMin();
 
 		g2.setRenderingHint( RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR );
 		
+final Random rrr = new Random();
 		try {
 			drawBusyList.clear(); // "must be called in the event thread"
 
@@ -384,43 +423,62 @@ extends BasicTrail
 					
 //					System.out.println( "chunkLen " + chunkLen + "; decimLen " + decimLen + "; info.sublength " + info.sublength + "; fullLen " + fullLen );
 
-					if( fromPCM ) {
-						fullStop = fullScale.getSpan().stop;
-						if( start + fullLen <= fullStop ) {
-							chunkSpan = new Span( start, start + fullLen );
-							fullScale.readFrames( tmpBuf, 0, chunkSpan );
-						} else {
-							chunkSpan = new Span( start, fullStop );
-							fullScale.readFrames( tmpBuf, 0, chunkSpan );
-							// duplicate last frames
-//							for( int i = (int) chunkSpan.getLength(), j = i - 1; i < (int) fullLen; i++ ) {
-//								for( int ch = 0; ch < fullChannels; ch++ ) {
-//									sPeakP		= tmpBuf[ ch ];
-//									sPeakP[ i ]	= sPeakP[ j ];
-//								}
-//							}
-						}
-						decimator.decimatePCM( tmpBuf, tmpBuf2, fftBuf, 0, decimLen, info.inlineDecim );
-					} else {
-						chunkSpan = new Span( start, start + fullLen );
-						readFrames( info.idx, tmpBuf2, 0, drawBusyList, chunkSpan, null);
-						if( info.inlineDecim > 1 ) decimator.decimate( tmpBuf2, tmpBuf2, 0, decimLen, info.inlineDecim );
-					}
+//					if( fromPCM ) {
+//						fullStop = fullScale.getSpan().stop;
+//						if( start + fullLen <= fullStop ) {
+//							chunkSpan = new Span( start, start + fullLen );
+//							fullScale.readFrames( tmpBuf, 0, chunkSpan );
+//						} else {
+//							chunkSpan = new Span( start, fullStop );
+//							fullScale.readFrames( tmpBuf, 0, chunkSpan );
+//							// duplicate last frames
+////							for( int i = (int) chunkSpan.getLength(), j = i - 1; i < (int) fullLen; i++ ) {
+////								for( int ch = 0; ch < fullChannels; ch++ ) {
+////									sPeakP		= tmpBuf[ ch ];
+////									sPeakP[ i ]	= sPeakP[ j ];
+////								}
+////							}
+//						}
+//						decimator.decimatePCM( tmpBuf, tmpBuf2, fftBuf, 0, decimLen, info.inlineDecim );
+//					} else {
+////						chunkSpan = new Span( start, start + fullLen );
+//						chunkSpan = new Span( start, start + fullLen );
+//						readFrames( info.idx, tmpBuf2, 0, drawBusyList, chunkSpan, null);
+//						if( info.inlineDecim > 1 ) decimator.decimate( tmpBuf2, tmpBuf2, 0, decimLen, info.inlineDecim );
+//					}
+
+					if( tempFAsync == null || tempFAsync[0] == null ) break;
+					decimLen = imgW;
+					totalLength = 0;
+tempFAsync[0].seekFrame( Math.min( info.span.start / stepSize * cqKernelNum, tempFAsync[0].getFrameNum() ));
+					int gaga = (int) Math.min( decimLen * cqKernelNum, Math.min( tmpBufSize2, tempFAsync[0].getFrameNum() - tempFAsync[0].getFramePosition() ));
+System.out.println( "reading " + gaga + " frames / " + (gaga/cqKernelNum) + " columns ; file " + tempFAsync[0].getFile().getAbsolutePath() + "; has " + tempFAsync[0].getChannelNum() + " channels." );
+tempFAsync[0].readFrames( tmpBuf2, 0, gaga);
+//tempFAsync[0].flush();
+//for( int kkk = 0; kkk < tmpBuf2.length; kkk++ ) {
+//	System.out.println( "tmpBuf2[" + kkk + "] = " + tmpBuf2[kkk]);
+//}
+//for( int kkk = gaga; kkk >= Math.max( gaga - 20, 0 ); kkk--) {
+//	System.out.println( tmpBuf2[0][kkk] );
+//}
+					
 					for( int ch = 0; ch < fullChannels; ch++ ) {
 						r = view.rectForChannel( ch );
 						chanBuf = tmpBuf2[ ch ];
 						for( int x = 0, off = 0; x < decimLen; x++ ) {
-							for( int y = 0, off2 = x + dataStartOff; y < numMag; y++, off2 -= imgW, off++ ) {
+							for( int y = 0, off2 = x + dataStartOff; y < cqKernelNum; y++, off2 -= imgW, off++ ) {
 if( chanBuf.length <= off ) break;
-								data[ off2 ] = colors[ Math.max( 0, Math.min( 1072, (int) ((chanBuf[ off ] + 100) * 10) ))];
+//data[ off2 ] = colors[ Math.max( 0, Math.min( 1072, (int) ((chanBuf[ off ] + 100) * 10) ))];
+// data[ off2 ] = colors[ Math.max( 0, Math.min( 1072, (int) ((rrr.nextInt( 60 ) - 60 + pixOff) * pixScale) ))];
+								data[ off2 ] = colors[ Math.max( 0, Math.min( 1072, (int) ((chanBuf[ off ] + pixOff) * pixScale) ))];
 							}
 						}
-						raster.setDataElements( 0, 0, imgW, numMag, data );
+						raster.setDataElements( 0, 0, imgW, cqKernelNum, data );
 						g2.drawImage( bufImg, r.x, r.y, r.width, r.height, view );
 //						off[ ch ] = decimator.draw( info, ch, peakPolyX, peakPolyY, rmsPolyX, rmsPolyY, decimLen, view.rectForChannel( ch ), deltaYN, off[ ch ]);
 					}
 					start += fullLen;
-					totalLength -= fullLen;
+//					totalLength -= fullLen;
 				}
 			} // synchronized( bufSync )
 
@@ -494,18 +552,20 @@ if( chanBuf.length <= off ) break;
 		long					subLength, n;
 		int						idx, inlineDecim;
 
-		subLength = tag.getLength();
+		subLength = fullLength;
 		for( idx = 0; idx < SUBNUM; idx++ ) {
 			n = decimHelps[ idx ].fullrateToSubsample( fullLength );
 			if( n < minLen ) break;
 			subLength = n;
 		}
 		idx--;
+idx=0;
 		// had to change '>= minLen' to '> minLen' because minLen could be zero!
 		switch( model ) {
 		case MODEL_SONA:
-			for( inlineDecim = 2; subLength / inlineDecim > minLen; inlineDecim++ ) ;
-			inlineDecim--;
+//			for( inlineDecim = 2; subLength / inlineDecim > minLen; inlineDecim++ ) ;
+//			inlineDecim--;
+inlineDecim=1;
 			break;
 
 		default:
@@ -563,6 +623,257 @@ if( chanBuf.length <= off ) break;
 		}
 	}
 */
+	private void calcKernels()
+	{
+		final float		minFreq, maxFreq, fs, threshSqr, q, maxKernLen;
+		final int		bins, fftSizeC, fftSizeLimit;
+
+		int				kernelLen, kernelLenE, specStart, specStop;
+		float[]			win;
+		float			centerFreq, cos, sin, f1, f2, weight, theorKernLen;
+
+		System.out.println( "Calculating sparse kernel matrices" );
+		
+		fs			= (float) fullScale.getRate();
+		minFreq		= 27.5f; // 32f;
+		maxFreq		= fs/2;
+		bins		= 36; // 24;
+
+		q			= (float) (1 / (Math.pow( 2, 1.0/bins ) - 1));
+		cqKernelNum	= (int) Math.ceil( bins * MathUtil.log2( maxFreq / minFreq ));
+		cqKernels	= new float[ cqKernelNum ][];
+		cqKernelOffs= new int[ cqKernelNum ];
+		maxKernLen	= q * fs / minFreq;
+		
+//		System.out.println( "ceil " + ((int) Math.ceil( maxKernLen )) + "; nextPower " + (MathUtil.nextPowerOfTwo( (int) Math.ceil( maxKernLen )))) ;
+		
+		fftSizeLimit= 8192;
+		fftSize		= Math.min( fftSizeLimit,
+		    MathUtil.nextPowerOfTwo( (int) Math.ceil( maxKernLen )));
+		fftSizeC	= fftSize << 1;
+		fftBuf		= new float[ fftSizeC ];
+//		thresh		= 0.0054f / fftLen; // for Hamming window
+		// weird observation : lowering the threshold will _increase_ the
+		// spectral noise, not improve analysis! so the truncating of the
+		// kernel is essential for a clean analysis (why??). the 0.0054
+		// seems to be a good choice, so don't touch it.
+		threshSqr	= 2.916e-05f / (fftSize * fftSize); // for Hamming window (squared!)
+		// tempKernel= zeros(fftLen, 1); 
+//		sparKernel= [];
+		
+		System.out.println( "cqKernelNum = " + cqKernelNum + "; maxKernLen = " + maxKernLen + "; fftSize = " + fftSize + "; threshSqr " + threshSqr );
+		
+		for( int k = 0; k < cqKernelNum; k++ ) {
+			theorKernLen = maxKernLen * (float) Math.pow( 2, (double) -k / bins );
+			kernelLen	= Math.min( fftSize, (int) Math.ceil( theorKernLen ));
+			kernelLenE	= kernelLen & ~1;
+			win			= Filter.createFullWindow( kernelLen, Filter.WIN_HAMMING );
+//float[] winTest = Filter.createFullWindow( kernelLen - 1, Filter.WIN_HAMMING );
+//win = new float[ winTest.length + 1 ];
+//System.arraycopy( winTest, 0, win, 0, winTest.length );
+//win[ winTest.length ] = win[ 0 ];
+// XXX -2pi instead of 2pi because otherwise the spectrum only
+// appears in the negative frequencies. please don't ask me why,
+// maybe a bug in Fourier.complexTransform???
+
+// ist unsinn, weil zwar das hamming fenster auf ganze zahl von samples
+// gerundet werden muss, von dieser quantisierung sollte jedoch nicht
+// die center-frequenz betroffen sein!
+//			centerFreq	= (float) (-MathUtil.PI2 * q / kernelLen);
+//			
+//System.out.println( "old center freq " + centerFreq );
+			
+			centerFreq	= (float) (-MathUtil.PI2 * minFreq * Math.pow( 2, (float) k / bins ) / fs);
+
+//System.out.println( "new center freq " + centerFreq );
+
+//			weight		= 1.0f / (kernelLen * fftSize);
+			// this is a good approximation in the kernel len truncation case
+			// (tested with pink noise, where it will appear pretty much
+			// with the same brightness over all frequencies)
+			weight		= 2 / ((theorKernLen + kernelLen) * fftSize);
+			for( int m = kernelLenE, n = fftSizeC - kernelLenE; m < n; m++ ) {
+				fftBuf[ m ] = 0f;
+			}
+			
+//if( k == 1 ) System.out.println( "weight = " + weight );
+						
+			// note that we calculate the complex conjugation of
+			// the temporalKernal and reverse its time, so the resulting
+			// FFT can be immediately used for the convolution and does not
+			// need to be conjugated; this is due to the Fourier property
+			// h*(-x) <-> H*(f). time reversal is accomplished by
+			// having iteration variable j run....
+
+			// XXX NO! we don't take the reversed conjugate since
+			// there seems to be a bug with Fourier.complexTransform
+			// that already computes the conjugate spectrum (why??)
+//			for( int i = kernelLen - 1, j = fftSizeC - kernelLenE; i >= 0; i-- ) { ... }
+			for( int i = 0, j = fftSizeC - kernelLenE; i < kernelLen; i++ ) {
+				// complex exponential of a purely imaginary number
+				// is cos( imag( n )) + i sin( imag( n ))
+				f1			= centerFreq * i;
+				cos			= (float) Math.cos( f1 );
+				sin			= (float) Math.sin( f1 ); // Math.sqrt( 1 - cos*cos );
+				f1			= win[ i ] * weight;
+				fftBuf[ j++ ] = f1 * cos;
+//				fftBuf[ j++ ] = -f1 * sin;  // conj!
+				fftBuf[ j++ ] = f1 * sin;  // NORM!
+//if( k == 0 ) System.out.println( cos + "  " + sin + "i" );
+				if( j == fftSizeC ) j = 0;
+			}
+
+//if( k == 1 ) {
+//	for( int j = 0; j < fftSizeC; j+=2 ) {
+//		System.out.println( fftBuf[j] + " " + (fftBuf[j+1]>=0 ? "+ " : "- ") + Math.abs(fftBuf[j+1]) + "i" );
+//	}
+//}
+
+//float[] data = new float[ fftSize ];
+//for( int kkk = 0, jjj = 0; kkk < fftSize; kkk++ ) {
+//	f1 = fftBuf[ jjj++ ];
+//	f2 = fftBuf[ jjj++ ];
+//	data[ kkk ] = f1; // (float) Math.sqrt( f1 * f1 + f2 * f2 );
+//}
+//if( k == 0 || k == (cqKernelNum >> 1) || k == (cqKernelNum - 1) ) view( data, 0, fftSize, "k = " + k );
+			
+			// XXX to be honest, i don't get the point
+			// of calculating the fft here, since we
+			// have an analytic description of the kernel
+			// function, it should be possible to calculate
+			// the spectral coefficients directly
+			// (the fft of a hamming is a gaussian,
+			// isn't it?)
+			
+			Fourier.complexTransform( fftBuf, fftSize, Fourier.FORWARD );
+			// with a "high" threshold like 0.0054, the
+			// point it _not_ to create a sparse matrix by
+			// gating the values. in fact we can locate
+			// the kernal spectrally, so all we need to do
+			// is to find the lower and upper frequency
+			// of the transformed kernel! that makes things
+			// a lot easier anyway since we don't need
+			// to employ a special sparse matrix library.
+//			for( int m = 0; m < fftBuf.length; m += 2 ) {
+//				f1 = fftBuf[ m ];
+//				f2 = fftBuf[ m+1 ];
+//				if( (f1 * f1 + f2 * f2) <= threshSqr ) {
+//					fftBuf[ m ] = 0f;
+//					fftBuf[ m+1 ] = 0f;
+//				}
+//			}
+			for( specStart = 0; specStart <= fftSize; specStart += 2 ) {
+				f1 = fftBuf[ specStart ];
+				f2 = fftBuf[ specStart+1 ];
+//				if( k == 0 ) {
+//					System.out.println( "  kern["+(specStart>>1)+"] = " + Math.sqrt(f1 * f1 + f2 * f2 )) ;
+//				}
+				if( (f1 * f1 + f2 * f2) > threshSqr ) break;
+			}
+			// final matrix product:
+			// input chunk (fft'ed) is a row vector with n = fftSize
+			// kernel is a matrix mxn with m = fftSize, n = numKernels
+			// result is a row vector with = numKernels
+			// ; note that since the input is real and hence we
+			// calculate only the positive frequencies (up to pi),
+			// we might need to mirror the input spectrum to the
+			// negative frequencies. however it can be observed that
+			// for practically all kernels their frequency bounds
+			// lie in the positive side of the spectrum (only the
+			// high frequencies near nyquest blur accross the pi boundary,
+			// and we will cut the overlap off by limiting specStop
+			// to fftSize instead of fftSize<<1 ...).
+
+			for( specStop = specStart; specStop <= fftSize; specStop += 2 ) {
+				f1 = fftBuf[ specStop ];
+				f2 = fftBuf[ specStop+1 ];
+				if( (f1 * f1 + f2 * f2) <= threshSqr ) break;
+			}
+
+float lala = Float.NEGATIVE_INFINITY, lulu = Float.POSITIVE_INFINITY;
+float[] data = new float[ fftSize ];
+for( int kkk = 0, jjj = 0; kkk < fftSize; kkk++ ) {
+	f1 = fftBuf[ jjj++ ];
+	f2 = fftBuf[ jjj++ ];
+	data[ kkk ] = (float) Math.sqrt( f1 * f1 + f2 * f2 );
+	lala = Math.max( lala, data[ kkk ]);
+	lulu = Math.min( lulu, data[ kkk ]);
+}
+//if( ((k-1) % (cqKernelNum/10)) == 0 ) view( data, 0, fftSize, "k = " + k );
+//if( k == 1 ) System.out.println( "  k = " + k + "; kernelLen = " + kernelLen + "; specStart = " + specStart + "; specStop " + specStop );
+//if( k == 1 ) System.out.println( "  ... min " + lulu + " ; max " + lala );
+
+			cqKernels[ k ]		= new float[ specStop - specStart ];
+			cqKernelOffs[ k ]	= specStart;
+			System.arraycopy( fftBuf, specStart, cqKernels[ k ], 0, specStop - specStart );
+			
+//if( k == 20 ) {
+//	float[] data2 = new float[ cqKernels[k].length >> 1 ];
+//	float[] data3 = new float[ cqKernels[k].length >> 1 ];
+//	for( int mmmm = 0, nnnn = 0; mmmm < data2.length; mmmm++ ) {
+//		f1 = cqKernels[k][ nnnn++ ];
+//		f2 = cqKernels[k][ nnnn++ ];
+//		data2[ mmmm ] = (float) (Math.sqrt( f1 * f1 + f2 * f2 ) * 1.0e5);
+//		data3[ mmmm ] = (float) (Math.atan2( f2, f1 ) * 180 / Math.PI);
+//	}
+//	view( data2, 0, data2.length, "mag for k = " + k );
+//	view( data3, 0, data3.length, "phase for k = " + k );
+//}
+		}
+	}
+	
+	public static void view( float[] data, int off, int length, String descr )
+	{
+		final float[] dataCopy = new float[ length ];
+		
+		System.arraycopy( data, off, dataCopy, 0, length );
+		
+		int width = 256;
+		int decimF = Math.max( 1, 2 * length / width );
+		int decimLen = length / decimF;
+		
+		float[] decim = new float[ decimLen ];
+		float f1, f2, f3;
+		
+		f2 = Float.NEGATIVE_INFINITY;
+		f3 = Float.POSITIVE_INFINITY;
+		for( int i = 0, j = 0; i < decimLen; ) {
+			f1 = dataCopy[ j++ ];
+			for( int k = 1; k < decimF; k++ ) {
+				f1 = Math.max( f1, dataCopy[ j++ ]);
+			}
+			decim[ i++ ] = f1;
+			f2 = Math.max( f2, f1 );
+			f3 = Math.min( f3, f1 );
+		}
+		if( Float.isInfinite( f2 )) f2 = 1f;
+		if( Float.isInfinite( f3 )) f3 = 0f;
+
+		VectorDisplay ggVectorDisplay = new VectorDisplay( decim );
+		ggVectorDisplay.setMinMax( f3, f2 );
+//		ggVectorDisplay.addMouseListener( mia );
+//		ggVectorDisplay.addMouseMotionListener( mia );
+//		ggVectorDisplay.addTopPainter( tp );
+//		ggVectorDisplay.setPreferredSize( new Dimension( width, 256 )); // XXX
+		JPanel displayPane = new JPanel( new BorderLayout() );
+		displayPane.add( ggVectorDisplay, BorderLayout.CENTER );
+		Axis haxis			= new Axis( Axis.HORIZONTAL );
+		Axis vaxis			= new Axis( Axis.VERTICAL, Axis.FIXEDBOUNDS );
+final VectorSpace spc = VectorSpace.createLinSpace( 0, length - 1, f3, f2, null, null, null, null );
+haxis.setSpace( spc );
+vaxis.setSpace( spc );
+		Box box				= Box.createHorizontalBox();
+		box.add( Box.createHorizontalStrut( vaxis.getPreferredSize().width ));
+		box.add( haxis );
+		displayPane.add( box, BorderLayout.NORTH );
+		displayPane.add( vaxis, BorderLayout.WEST );
+		
+		JFrame f = new JFrame( descr );
+		f.setSize( width, 256 );
+		f.getContentPane().add( displayPane, BorderLayout.CENTER );
+		f.setVisible( true );
+	}
+
 	/*
 	 * Same as in <code>NondestructiveDecimatedSampledTrack</code> but with
 	 * automaic bias adjust.
@@ -1357,7 +1668,7 @@ if( chanBuf.length <= off ) break;
 		// calculate first decimation from fullrate PCM
 		assert len % fftSize == 0;
 //		len >>= decim;
-		len = (len / stepSize * numMag) >> decim;
+		len = (len / stepSize * cqKernelNum) >> decim;
 		if( inBuf != null ) {
 //			System.out.println( "decimator.decimatePCM( inBuf, outBuf, fftBuf, 0, " + len + ", " + (1 << decim) + " )" );
 			decimator.decimatePCM( inBuf, outBuf, fftBuf, 0, len, 1 << decim );
@@ -1459,7 +1770,7 @@ if( chanBuf.length <= off ) break;
 
 		protected void decimatePCM( float[][] inBuf, float[][] outBuf, float[] fBuf, int outOff, int len, int decim )
 		{
-			float[] inBufCh, outBufCh;
+			float[] inBufCh, outBufCh, kern;
 			float f1, f2;
 			final double w = LNKORR_MUL / decim;
 			
@@ -1467,29 +1778,49 @@ if( chanBuf.length <= off ) break;
 				for( int ch = 0; ch < fullChannels; ch++ ) {
 //					System.arraycopy( inBuf[ ch ], inOff, fftBuf, 0, fftSize );
 					inBufCh = inBuf[ ch ];
-					for( int i = 0, j = inOff; i < fftSize; i++, j++ ) {
-						fBuf[ i ] = inBufCh[ j ] * win[ i ];
+					for( int i = fftSize >> 1, j = inOff, k = 0; k < fftSize; k++, j++ ) {
+						fBuf[ i ] = inBufCh[ j ] * inpWin[ k ];
+						i++;
+						if( i == fftSize ) i = 0; 
 					}
+					// XXX evtl., wenn inpWin weggelassen werden kann,
+					// optimierte overlap-add fft
 					Fourier.realTransform( fBuf, fftSize, Fourier.FORWARD );
+					
 					outBufCh = outBuf[ ch ];
-					if( decimCnt == 0 ) {
-						for( int i = outOff, j = 0; j < fftSize; ) {
-							f1 = fBuf[ j++ ];
-							f2 = fBuf[ j++ ];
-							outBufCh[ i++ ] = (float) ((Math.log( f1 * f1 + f2 * f2 ) + LNKORR_ADD) * w);
-//							outBufCh[ i++ ] = (float) (Math.max( -160, Math.log( f1 * f1 + f2 * f2 ) * w));
+					for( int k = 0; k < cqKernelNum; k++ ) {
+						kern = cqKernels[ k ];
+						f1 = 0f;
+						f2 = 0f;
+						for( int i = cqKernelOffs[ k ], j = 0; j < kern.length; i += 2, j += 2 ) {
+							// complex mult: a * b =
+							// (re(a)re(b)-im(a)im(b))+i(re(a)im(b)+im(a)re(b))
+							// ; since we left out the conjugation of the kernel(!!)
+							// this becomes (assume a is input and b is kernel):
+							// (re(a)re(b)+im(a)im(b))+i(im(a)re(b)-re(a)im(b))
+							// ; in fact this conjugation is unimportant for the
+							// calculation of the magnitudes...
+							f1 += fBuf[ i ] * kern[ j ] - fBuf[ i+1 ] * kern[ j+1 ];
+							f2 += fBuf[ i ] * kern[ j+1 ] + fBuf[ i+1 ] * kern[ j ];
 						}
-					} else {
-						for( int i = outOff, j = 0; j < fftSize; ) {
-							f1 = fBuf[ j++ ];
-							f2 = fBuf[ j++ ];
-							outBufCh[ i++ ] += (float) ((Math.log( f1 * f1 + f2 * f2 ) + LNKORR_ADD) * w);
-//							outBufCh[ i++ ] += (float) (Math.max( -160, Math.log( f1 * f1 + f2 * f2 ) * w));
+//						cBuf[ k ] = ;  // squared magnitude
+						f1 = (float) ((Math.log( f1 * f1 + f2 * f2 ) + LNKORR_ADD) * w);
+f1 = Math.max( -160, f1 + 90 );
+						if( decimCnt == 0 ) {
+							outBufCh[ outOff + k ] = f1;
+						} else {
+							outBufCh[ outOff + k ] += f1;
 						}
 					}
+					
+//					for( int i = outOff, j = 0; j < fftSize; ) {
+//						f1 = fBuf[ j++ ];
+//						f2 = fBuf[ j++ ];
+//						outBufCh[ i++ ] = (float) ((Math.log( f1 * f1 + f2 * f2 ) + LNKORR_ADD) * w);
+//					}
 				}
 				decimCnt = (decimCnt + 1) % decim;
-				if( decimCnt == 0 ) outOff += numMag;
+				if( decimCnt == 0 ) outOff += cqKernelNum;
 			}
 		}
 		
@@ -1545,4 +1876,416 @@ if( chanBuf.length <= off ) break;
 			return off;
 		}
 	} // class FullPeakRMSDecimator
+
+	/**
+	 *  A <code>VectorDisplay</code> is a two dimensional
+	 *  panel which plots a sampled function (32bit float) and allows
+	 *  the user to edit this one dimensional data vector
+	 *  (or table, simply speaking). It implements
+	 *  the <code>EventManager.Processor</code> interface
+	 *  to handle custom <code>VectorDisplayEvent</code>s
+	 *  and implements the <code>VirtualSurface</code>
+	 *  interface to allow transitions between screen
+	 *  space and normalized virtual space.
+	 *  <p>
+	 *  Often it is convenient to attach a popup menu
+	 *  created by the static method in <code>VectorTransformer</code>.
+	 *  <p>
+	 *  Examples of using <code>VectorDisplay</code>s aer
+	 *  the <code>SigmaReceiverEditor</code> and the
+	 *  <code>SimpleTransmitterEditor</code>.
+	 *
+	 *  @author		Hanns Holger Rutz
+	 *  @version	0.65, 11-Aug-04
+	 *
+	 *  @see		de.sciss.meloncillo.math.VectorTransformer#createPopupMenu( VectorDisplay )
+	 *  @see		VectorDisplayListener
+	 *  @see		VectorDisplayEvent
+	 *  @see		de.sciss.meloncillo.receiver.SigmaReceiverEditor
+	 *  @see		de.sciss.meloncillo.transmitter.SimpleTransmitterEditor
+	 *
+	 *  @todo		a vertical (y) wrapping mode should be implemented
+	 *				similar to x-wrap, useful for circular value spaces like angles
+	 *  @todo		due to a bug in horizontal wrapping, the modified span
+	 *				information is wrong?
+	 */
+	public static class VectorDisplay
+	extends JComponent  // extends JPanel
+	// implements  
+	{
+		private float[]		vector;
+
+		private final GeneralPath   path		= new GeneralPath();
+		private Shape				pathTrns;
+		private TextLayout			txtLay		= null;
+		private Rectangle2D			txtBounds;
+		private Dimension			recentSize;
+		private Image				image		= null;
+
+		private static final Stroke	strkLine	= new BasicStroke( 0.5f );
+		private static final Paint	pntArea		= new Color( 0x42, 0x5E, 0x9D, 0x7F );
+		private static final Paint	pntLine		= Color.black;
+		private static final Paint	pntLabel	= new Color( 0x00, 0x00, 0x00, 0x3F );
+		
+		private final AffineTransform trnsScreenToVirtual  = new AffineTransform();
+		private final AffineTransform trnsVirtualToScreen  = new AffineTransform();
+
+		private float		min			= 0.0f;		// minimum vector value
+		private float		max			= 1.0f;		// maximum vector value
+		private boolean		fillArea	= true;		// fill area under the vector polyline
+		private String		label		= null;		// optional text label
+
+		// --- top painter ---
+
+		private final Vector collTopPainters = new Vector();
+		
+		/**
+		 *  Creates a new VectorDisplay with an empty vector.
+		 *  The defaults are wrapX = false, wrapY = false,
+		 *  min = 0, max = 1.0, fillArea = true, no label
+		 */
+		public VectorDisplay()
+		{
+			this( new float[0] );
+		}
+		
+		/**
+		 *  Creates a new VectorDisplay with an given initial vector.
+		 *  The defaults are wrapX = false, wrapY = false,
+		 *  min = 0, max = 1.0, fillArea = true, no label
+		 *
+		 *  @param  vector  the initial vector data
+		 */
+		public VectorDisplay( float[] vector )
+		{
+			setOpaque( false );
+			setMinimumSize( new Dimension( 64, 16 ));
+//			setPreferredSize( new Dimension( 288, 144 )); // XXX
+			recentSize  = getMinimumSize();
+			setVector( null, vector );
+//			addComponentListener( this );
+		}
+
+		/**
+		 *  Replaces the existing vector by another one.
+		 *  This dispatches a <code>VectorDisplayEvent</code>
+		 *  to registered listeners.
+		 *
+		 *  @param  source  the source in the <code>VectorDisplayEvent</code>.
+		 *					use <code>null</code> to prevent event dispatching.
+		 *  @param  vector  the new vector data
+		 */
+		public void setVector( Object source, float[] vector )
+		{
+			this.vector = vector;
+			
+			recalcPath();
+			repaint();
+		}
+		
+		/**
+		 *  Gets the current data array.
+		 *
+		 *  @return		the current vector data of the editor. valid data
+		 *				is from index 0 to the end of the array.
+		 *
+		 *  @warning			the returned array is not a copy and therefore
+		 *						any modifications are forbidden. this also implies
+		 *						that relevant data be copied by the listener
+		 *						immediately upon receiving the vector.
+		 *  @synchronization	should only be called in the event thread
+		 */
+		public float[] getVector()
+		{
+			return vector;
+		}
+
+		/**
+		 *  Changes the allowed range for vector values.
+		 *  Influences the graphics display such that
+		 *  the top margin of the panel corresponds to max
+		 *  and the bottom margin corresponds to min. Also
+		 *  user drawings are limited to these values unless
+		 *  wrapY is set to true (not yet implemented).
+		 *
+		 *  @param  min		new minimum y value
+		 *  @param  max		new maximum y value
+		 *
+		 *  @warning	the current vector is left untouched,
+		 *				even if values lie outside the new
+		 *				allowed range.
+		 */
+		public void setMinMax( float min, float max )
+		{
+			if( this.min != min || this.max != max ) {
+				this.min	= min;
+				this.max	= max;
+				repaint();
+			}
+		}
+
+		/**
+		 *  Gets the minimum allowed y value
+		 *
+		 *  @return		the minimum specified function value
+		 */
+		public float getMin()
+		{
+			return min;
+		}
+
+		/**
+		 *  Gets the maximum allowed y value
+		 *
+		 *  @return		the maximum specified function value
+		 */
+		public float getMax()
+		{
+			return max;
+		}
+
+		/**
+		 *  Set the graph display mode
+		 *
+		 *  @param  fillArea	if <code>false</code>, a hairline is
+		 *						drawn to connect the sample values. if
+		 *						<code>true</code>, the area below the
+		 *						curve is additionally filled with a
+		 *						translucent colour.
+		 */
+		public void setFillArea( boolean fillArea )
+		{
+			if( this.fillArea != fillArea ) {
+				this.fillArea   = fillArea;
+				repaint();
+			}
+		}
+
+		/**
+		 *  Select the allowed range for vector values.
+		 *  Influences the graphics display.
+		 */
+		public void setLabel( String label )
+		{
+			if( this.label == null || label == null || !this.label.equals( label )) {
+				txtLay		= null;
+				this.label  = label;
+				repaint();
+			}
+		}
+
+		public void paintComponent( Graphics g )
+		{
+			super.paintComponent( g );
+			
+			Dimension	d	= getSize();
+
+			if( d.width != recentSize.width || d.height != recentSize.height ) {
+				recentSize = d;
+				recalcTransforms();
+				recreateImage();
+				redrawImage();
+			} else if( pathTrns == null ) {
+				recalcTransforms();
+				recreateImage();	// XXX since we don't clear the background any more to preserve Aqua LAF
+				redrawImage();
+			}
+
+			if( image != null ) {
+				g.drawImage( image, 0, 0, this );
+			}
+
+			// --- invoke top painters ---
+			if( !collTopPainters.isEmpty() ) {
+				Graphics2D		g2			= (Graphics2D) g;
+//				AffineTransform	trnsOrig	= g2.getTransform();
+
+//				g2.transform( trnsVirtualToScreen );
+				g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+//				for( int i = 0; i < collTopPainters.size(); i++ ) {
+//					((TopPainter) collTopPainters.get( i )).paintOnTop( g2 );
+//				}
+//				g2.setTransform( trnsOrig );
+			}
+		}
+		
+		/**
+		 *  Registers a new top painter.
+		 *  If the top painter wants to paint
+		 *  a specific portion of the surface,
+		 *  it must make an appropriate repaint call!
+		 *
+		 *  @param  p   the painter to be added to the paint queue
+		 *
+		 *  @synchronization	this method must be called in the event thread
+		 */
+//		public void addTopPainter( TopPainter p )
+//		{
+//			if( !collTopPainters.contains( p )) {
+//				collTopPainters.add( p );
+//			}
+//		}
+
+		/**
+		 *  Removes a registered top painter.
+		 *
+		 *  @param  p   the painter to be removed from the paint queue
+		 *
+		 *  @synchronization	this method must be called in the event thread
+		 */
+//		public void removeTopPainter( TopPainter p )
+//		{
+//			collTopPainters.remove( p );
+//		}
+		
+		private void recreateImage()
+		{
+			if( image != null ) image.flush();
+			image = createImage( recentSize.width, recentSize.height );
+		}
+		
+		private void redrawImage()
+		{
+			if( image == null ) return;
+
+			Graphics2D g2 = (Graphics2D) image.getGraphics();
+//			g2.setColor( Color.white );
+//			g2.fillRect( 0, 0, recentSize.width, recentSize.height );
+			g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+//			g2.setRenderingHint( RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY );
+			if( fillArea ) {
+				g2.setPaint( pntArea );
+				g2.fill( pathTrns );
+			}
+			g2.setStroke( strkLine );
+			g2.setPaint( pntLine );
+			g2.draw( pathTrns );
+			if( label != null ) {
+				g2.setPaint( pntLabel );
+				if( txtLay == null ) {
+					txtLay		= new TextLayout( label, getFont(), g2.getFontRenderContext() );
+					txtBounds   = txtLay.getBounds();
+				}
+				txtLay.draw( g2, recentSize.width - (float) txtBounds.getWidth() - 4,
+								 recentSize.height - (float) txtBounds.getHeight() );
+			}
+			g2.dispose();
+		}
+
+		/*
+		 *  Recalculates a Java2D path from the vector
+		 *  that will be used for painting operations
+		 */
+		private void recalcPath()
+		{
+			int			i;
+			float		f1;
+			float		f2 = (min - max) / recentSize.height + min;
+			
+			path.reset();
+			if( vector.length > 0 ) {
+				f1  = 1.0f / vector.length;
+				path.moveTo( -0.01f, f2 );
+				path.lineTo( -0.01f, vector[0] );
+				for( i = 0; i < vector.length; i++ ) {
+					path.lineTo( i * f1, vector[i] );
+				}
+				path.lineTo( 1.01f, vector[vector.length-1] );
+				path.lineTo( 1.01f, f2 );
+				path.closePath();
+	// System.out.println( "recalced path" );
+			}
+			pathTrns = null;
+		}
+
+	// ---------------- VirtualSurface interface ---------------- 
+
+		/*
+		 *  Recalculates the transforms between
+		 *  screen and virtual space
+		 */
+		private void recalcTransforms()
+		{
+	// System.out.println( "recalc trns for "+recentSize.width+" x "+recentSize.height );
+
+			trnsVirtualToScreen.setToTranslation( 0.0, recentSize.height );
+			trnsVirtualToScreen.scale( recentSize.width,recentSize.height / (min - max) );
+			trnsVirtualToScreen.translate( 0.0, -min );
+			trnsScreenToVirtual.setToTranslation( 0.0, min );
+			trnsScreenToVirtual.scale( 1.0 / recentSize.width, (min - max) / recentSize.height );
+			trnsScreenToVirtual.translate( 0.0, -recentSize.height );
+
+			pathTrns = path.createTransformedShape( trnsVirtualToScreen );
+		}
+		
+		/**
+		 *  Converts a location on the screen
+		 *  into a point the virtual space.
+		 *  Neither input nor output point need to
+		 *  be limited to particular bounds
+		 *
+		 *  @param  screenPt		point in screen space
+		 *  @return the input point transformed to virtual space
+		 */
+		public Point2D screenToVirtual( Point2D screenPt )
+		{
+			return trnsScreenToVirtual.transform( screenPt, null );
+		}
+
+		/**
+		 *  Converts a shape in the screen space
+		 *  into a shape in the virtual space.
+		 *
+		 *  @param  screenShape		arbitrary shape in screen space
+		 *  @return the input shape transformed to virtual space
+		 */
+		public Shape screenToVirtual( Shape screenShape )
+		{
+			return trnsScreenToVirtual.createTransformedShape( screenShape );
+		}
+
+		/**
+		 *  Converts a point in the virtual space
+		 *  into a location on the screen.
+		 *
+		 *  @param  virtualPt   point in the virtual space whose
+		 *						visible bounds are (0, 0 ... 1, 1)
+		 *  @return				point in the display space
+		 */
+		public Point2D virtualToScreen( Point2D virtualPt )
+		{
+			return trnsVirtualToScreen.transform( virtualPt, null );
+		}
+
+		/**
+		 *  Converts a shape in the virtual space
+		 *  into a shape on the screen.
+		 *
+		 *  @param  virtualShape	arbitrary shape in virtual space
+		 *  @return the input shape transformed to screen space
+		 */
+		public Shape virtualToScreen( Shape virtualShape )
+		{
+			return trnsVirtualToScreen.createTransformedShape( virtualShape );
+		}
+
+		/**
+		 *  Converts a rectangle in the virtual space
+		 *  into a rectangle suitable for Graphics clipping
+		 *
+		 *  @param  virtualClip		a rectangle in virtual space
+		 *  @return the input rectangle transformed to screen space,
+		 *			suitable for graphics clipping operations
+		 */
+		public Rectangle virtualToScreenClip( Rectangle2D virtualClip )
+		{
+			Point2D screenPt1 = trnsVirtualToScreen.transform( new Point2D.Double( virtualClip.getMinX(),
+																				   virtualClip.getMinY() ), null );
+			Point2D screenPt2 = trnsVirtualToScreen.transform( new Point2D.Double( virtualClip.getMaxX(),
+																				   virtualClip.getMaxY() ), null );
+		
+			return new Rectangle( (int) Math.floor( screenPt1.getX() ), (int) Math.floor( screenPt1.getY() ),
+								  (int) Math.ceil( screenPt2.getX() ), (int) Math.ceil( screenPt2.getY() ));
+		}
+	}
 }

@@ -257,7 +257,7 @@ implements OSCRouter // ProgressComponent // , PreferenceChangeListener
 		superCollider		= new SuperColliderClient();
 
 		init();
-
+		
 		// ---- listeners ----
 
 		quitAfterSaveListener = new ProcessingThread.Listener() {
@@ -339,6 +339,34 @@ implements OSCRouter // ProgressComponent // , PreferenceChangeListener
 //		test5.add( new javax.swing.JLabel( "4444" ));
 //		test5.pack();
 //		test5.setVisible( true );
+
+//		java.util.Random rnd = new java.util.Random();
+//		long t1 = System.currentTimeMillis();
+//		for( int i = 0; i < 100000; i++ ) {
+//			final float x = rnd.nextFloat() * 3.1415925f;
+//			float a = (float) Math.cos( x );
+//			float b = (float) Math.sin( x );
+//		}
+//		long t2 = System.currentTimeMillis();
+//		for( int i = 0; i < 100000; i++ ) {
+//			final float x = rnd.nextFloat() * 3.1415925f;
+//			float a = (float) Math.cos( x );
+//			float b = (float) Math.sqrt( 1 - a * a );
+//		}
+//		long t3 = System.currentTimeMillis();
+//		System.out.println( "v1 took " + (t2-t1)+"; v2 took " + (t3-t2) );
+		
+//		final float[] fftBuf = {
+//			1.5477e-08f, -6.2643e-09f, 1.5654e-08f, -5.8078e-09f, 1.5818e-08f, -5.3462e-09f,
+//			1.5968e-08f, -4.8801e-09f, 1.6104e-08f, -4.4097e-09f, 1.6226e-08f, -3.9355e-09f,
+//			1.6335e-08f, -3.4580e-09f, 1.6429e-08f, -2.9775e-09f, 1.6509e-08f, -2.4944e-09f,
+//			1.6575e-08f, -2.0092e-09f, 1.6627e-08f, -1.5223e-09f, 1.6664e-08f, -1.0340e-09f,
+//			1.6687e-08f, -5.4489e-10f, 1.6696e-08f, -5.5293e-11f, 1.6691e-08f,  4.3435e-10f,
+//			1.6671e-08f,  9.2361e-10f };
+//		Fourier.complexTransform( fftBuf, fftBuf.length >> 1, Fourier.FORWARD );
+//		for( int j = 0; j < fftBuf.length; j += 2 ) {
+//			System.out.println( fftBuf[j] + " " + (fftBuf[j+1]>=0 ? "+ " : "- ") + Math.abs(fftBuf[j+1]) + "i" );
+//		}
 	}
 
 	protected BasicMenuFactory createMenuFactory()
