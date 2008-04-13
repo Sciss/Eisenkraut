@@ -520,6 +520,8 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 	private void createDecimatedSonaTrail()
 	throws IOException
 	{
+		if( true ) return;
+		
 		if( dst != null ) throw new IllegalStateException();
 		dst	= new DecimatedSonaTrail( at, DecimatedSonaTrail.MODEL_SONA, sonaDecims );
 	}

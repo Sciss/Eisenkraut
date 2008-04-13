@@ -54,7 +54,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+//import java.util.Random;
 import java.util.Vector;
 
 import javax.swing.Box;
@@ -81,7 +81,7 @@ import de.sciss.io.CacheManager;
 import de.sciss.io.IOUtil;
 import de.sciss.io.Span;
 import de.sciss.timebased.BasicTrail;
-import de.sciss.util.MutableInt;
+//import de.sciss.util.MutableInt;
 
 /**
  * 	Sonagram trail with automatic handling of subsampled versions.
@@ -396,8 +396,9 @@ extends BasicTrail
 		float[]					chanBuf;
 		long					start			= info.span.start;
 		long					totalLength		= info.getTotalLength();
-		Span					chunkSpan;
-		long					fullLen, fullStop;
+//		Span					chunkSpan;
+		long					fullLen;
+//		long					fullStop;
 		int						chunkLen, decimLen;
 		Rectangle				r;
 		
@@ -406,7 +407,7 @@ final float pixOff   = -view.getLogMin();
 
 		g2.setRenderingHint( RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR );
 		
-final Random rrr = new Random();
+//final Random rrr = new Random();
 		try {
 			drawBusyList.clear(); // "must be called in the event thread"
 
@@ -419,8 +420,8 @@ final Random rrr = new Random();
 					decimLen	= chunkLen / info.inlineDecim;
 					chunkLen	= decimLen * info.inlineDecim;
 					fullLen		= (long) chunkLen << info.shift;
-					chunkSpan	= new Span( start, start + fullLen );
-					
+//					chunkSpan	= new Span( start, start + fullLen );
+//					
 //					System.out.println( "chunkLen " + chunkLen + "; decimLen " + decimLen + "; info.sublength " + info.sublength + "; fullLen " + fullLen );
 
 //					if( fromPCM ) {
@@ -884,6 +885,7 @@ vaxis.setSpace( spc );
 	 * 
 	 * @see NondestructiveDecimatedSampledTrack#read( Span, float[][], int )
 	 */
+/*
 	private void readFrames( int sub, float[][] data, int dataOffset, List busyList,
 							 Span readSpan, AbstractCompoundEdit ce )
 	throws IOException
@@ -932,7 +934,7 @@ vaxis.setSpace( spc );
 			idx++;
 		}
 	}
-
+*/
 	public void debugDump()
 	{
 		for( int i = 0; i < getNumStakes(); i++ ) {
