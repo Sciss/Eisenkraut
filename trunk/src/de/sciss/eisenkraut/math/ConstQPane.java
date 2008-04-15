@@ -63,7 +63,7 @@ implements PreferenceNodeSync, SwingConstants
 		
 		ggMinFreq		= new PrefParamField();
 		ggMinFreq.addSpace( spcFreq );
-		ggMinFreq.setPreferences( prefs, "minfreq" );
+		ggMinFreq.setPreferences( prefs, ConstQ.KEY_MINFREQ );
 		ggMinFreq.addListener( new ParamField.Listener() {
 			public void paramSpaceChanged( ParamField.Event e ) { /* ignore */ }
 			public void paramValueChanged( ParamField.Event e )
@@ -75,7 +75,7 @@ implements PreferenceNodeSync, SwingConstants
 		});
 		ggMaxFreq		= new PrefParamField();
 		ggMaxFreq.addSpace( ParamSpace.spcFreqHertz );
-		ggMaxFreq.setPreferences( prefs, "maxfreq" );
+		ggMaxFreq.setPreferences( prefs, ConstQ.KEY_MAXFREQ );
 		ggMaxFreq.addListener( new ParamField.Listener() {
 			public void paramSpaceChanged( ParamField.Event e ) { /* ignore */ }
 			public void paramValueChanged( ParamField.Event e )
@@ -88,16 +88,16 @@ implements PreferenceNodeSync, SwingConstants
 		ggBandsPerOct	= new PrefParamField();
 //		ggBandsPerOct.setSpace( NumberSpace.createIntSpace( 1, 96 ));
 		ggBandsPerOct.addSpace( new ParamSpace( 1, 96, 1, 0, 0, 24 ));
-		ggBandsPerOct.setPreferences( prefs, "bandsperoct" );
+		ggBandsPerOct.setPreferences( prefs, ConstQ.KEY_BANDSPEROCT );
 		ggMaxTimeRes	= new PrefParamField();
 		ggMaxTimeRes.addSpace( spcTime );
-		ggMaxTimeRes.setPreferences( prefs, "maxtimeres" );
+		ggMaxTimeRes.setPreferences( prefs, ConstQ.KEY_MAXTIMERES );
 		ggMaxFFTSize	= new PrefComboBox();
 		for( int i = 256; i <= 32768; i <<= 1 ) {
 			final String s = String.valueOf( i );
 			ggMaxFFTSize.addItem( new StringItem( s, s ));
 		}
-		ggMaxFFTSize.setPreferences( prefs, "maxfftsize" );
+		ggMaxFFTSize.setPreferences( prefs, ConstQ.KEY_MAXFFTSIZE );
 		
 		gridAdd( new JLabel( getResourceString( "labelMinFreq" ), TRAILING ), 0, 0 );
 		gridAdd( ggMinFreq, 1, 0, -1, 1 );

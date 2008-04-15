@@ -263,61 +263,13 @@ if( doc.getFrame() == null ) {
 		smg.add( new MenuItem( "empty", actionNewEmpty ));
 		smg.add( new MenuItem( "fromSelection", getResourceString( "menuNewFromSelection" )));
 		mg.add( smg, 0 );
-//		mg.add( new MenuItem( "open", actionOpen ));
 		i	= mg.indexOf( "open" );
 		mg.add( new MenuItem( "openMultipleMono", actionOpenMM ), i + 1 );
-//		mgRecent = new MenuGroup( "openRecent", actionOpenRecent );
-//		if( openRecentPaths.getPathCount() > 0 ) {
-//			for( int i = 0; i < openRecentPaths.getPathCount(); i++ ) {
-//				mgRecent.add( new MenuItem( String.valueOf( uniqueNumber++ ), new actionOpenRecentClass( openRecentPaths.getPath( i ))));
-//			}
-//			actionOpenRecent.setPath( openRecentPaths.getPath( 0 ));
-//			actionOpenRecent.setEnabled( true );
-//			actionClearRecent.setEnabled( true );
-//		}
-//		mgRecent.addSeparator();
-//		mgRecent.add( new MenuItem( "clearRecent", actionClearRecent ));
-//		mg.add( mgRecent );
-//		mg.add( new MenuItem( "close", getResourceString( "menuClose" ), KeyStroke.getKeyStroke( KeyEvent.VK_W, MenuFactory.MENU_SHORTCUT )));
-//		mg.add( new MenuItem( "closeAll", actionCloseAll ));
-//		mg.add( new MenuSeparator() );
 		i	= mg.indexOf( "closeAll" );
-//		smg	= new MenuGroup( "import", getResourceString( "menuImport" ));
-//		smg.add( new MenuItem( "markers", getResourceString( "menuImportMarkers" )));
-//		mg.add( smg, i + 2 );
 		mg.add( new MenuSeparator(), i + 3 );
-//		mg.add( new MenuItem( "save", getResourceString( "menuSave" ), KeyStroke.getKeyStroke( KeyEvent.VK_S, MenuFactory.MENU_SHORTCUT )));
-//		mg.add( new MenuItem( "saveAs", getResourceString( "menuSaveAs" ), KeyStroke.getKeyStroke( KeyEvent.VK_S, MenuFactory.MENU_SHORTCUT + KeyEvent.SHIFT_MASK )));
-//		mg.add( new MenuItem( "saveCopyAs", getResourceString( "menuSaveCopyAs" )));
 		i = mg.indexOf( "saveCopyAs" );
 		mg.add( new MenuItem( "saveSelectionAs", getResourceString( "menuSaveSelectionAs" )), i + 1 );
-//		if( QuitJMenuItem.isAutomaticallyPresent() ) {
-//			root.getQuitJMenuItem().setAction( root.getQuitAction() );
-//		} else {
-//			mg.addSeparator();
-//			mg.add( new MenuItem( "quit", root.getQuitAction() ));
-//		}
-//		add( mg );
 
-//		// --- edit menu ---
-//		mg	= new MenuGroup( "edit", getResourceString( "menuEdit" ));
-//		mg.add( new MenuItem( "undo", getResourceString( "menuUndo" ), KeyStroke.getKeyStroke( KeyEvent.VK_Z, MENU_SHORTCUT )));
-//		mg.add( new MenuItem( "redo", getResourceString( "menuRedo" ), KeyStroke.getKeyStroke( KeyEvent.VK_Z, MENU_SHORTCUT + KeyEvent.SHIFT_MASK )));
-//		mg.addSeparator();
-//		mg.add( new MenuItem( "cut", getResourceString( "menuCut" ), KeyStroke.getKeyStroke( KeyEvent.VK_X, MENU_SHORTCUT )));
-//		mg.add( new MenuItem( "copy", getResourceString( "menuCopy" ), KeyStroke.getKeyStroke( KeyEvent.VK_C, MENU_SHORTCUT )));
-//		mg.add( new MenuItem( "paste", getResourceString( "menuPaste" ), KeyStroke.getKeyStroke( KeyEvent.VK_V, MENU_SHORTCUT )));
-//		mg.add( new MenuItem( "clear", getResourceString( "menuClear" ), KeyStroke.getKeyStroke( KeyEvent.VK_BACK_SPACE, 0 )));
-//		mg.addSeparator();
-//		mg.add( new MenuItem( "selectAll", getResourceString( "menuSelectAll" ), KeyStroke.getKeyStroke( KeyEvent.VK_A, MENU_SHORTCUT )));
-//		if( PreferencesJMenuItem.isAutomaticallyPresent() ) {
-//			root.getPreferencesJMenuItem().setAction( actionPreferences );
-//		} else {
-//			mg.addSeparator();
-//			mg.add( new MenuItem( "preferences", actionPreferences ));
-//		}
-//		add( mg );
-		
 		// --- timeline menu ---
 		i	= indexOf( "edit" );
 		mg	= new MenuGroup( "timeline", getResourceString( "menuTimeline" ));
@@ -372,16 +324,16 @@ if( doc.getFrame() == null ) {
 		mg.add( smg );
 
 		smg			= new MenuGroup( "vertscale", getResourceString( "menuVertScale" ));
-		ia			= new IntPrefsMenuAction( getResourceString( "menuVertScaleAmpLin" ), null, PrefsUtil.TIME_SAMPLES );
+		ia			= new IntPrefsMenuAction( getResourceString( "menuVertScaleAmpLin" ), null, PrefsUtil.VSCALE_AMP_LIN );
 		rg			= new MenuRadioGroup();
 		smg.add( new MenuRadioItem( rg, "amplin", ia ));	// crucial reihenfolge : erst item erzeugen, dann gruppe setzen, dann prefs
 		ia.setRadioGroup( rg );
 		ia.setPreferences( prefs, PrefsUtil.KEY_VERTSCALE );
-		ia			= new IntPrefsMenuAction( getResourceString( "menuVertScaleAmpLog" ), null, PrefsUtil.TIME_MINSECS );
+		ia			= new IntPrefsMenuAction( getResourceString( "menuVertScaleAmpLog" ), null, PrefsUtil.VSCALE_AMP_LOG );
 		smg.add( new MenuRadioItem( rg, "amplog", ia ));
 		ia.setRadioGroup( rg );
 		ia.setPreferences( prefs, PrefsUtil.KEY_VERTSCALE );
-		ia			= new IntPrefsMenuAction( getResourceString( "menuVertScaleFreqSpect" ), null, PrefsUtil.TIME_MINSECS );
+		ia			= new IntPrefsMenuAction( getResourceString( "menuVertScaleFreqSpect" ), null, PrefsUtil.VSCALE_FREQ_SPECT );
 		smg.add( new MenuRadioItem( rg, "freqspect", ia ));
 		ia.setRadioGroup( rg );
 		ia.setPreferences( prefs, PrefsUtil.KEY_VERTSCALE );
@@ -622,7 +574,7 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 			final Session doc;
 
 			try {
-				doc = Session.newEmpty( afd, true );
+				doc = Session.newEmpty( afd );
 				AbstractApplication.getApplication().getDocumentHandler().addDocument( this, doc );
 				doc.createFrame();
 				return doc;
@@ -703,7 +655,7 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 			}
 
 			try {
-				doc		= Session.newFrom( path, true );
+				doc		= Session.newFrom( path );
 				addRecent( doc.getDisplayDescr().file );
 				AbstractApplication.getApplication().getDocumentHandler().addDocument( this, doc );
 				doc.createFrame();	// must be performed after the doc was added

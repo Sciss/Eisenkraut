@@ -131,6 +131,7 @@ import de.sciss.eisenkraut.gui.ToolActionEvent;
 import de.sciss.eisenkraut.gui.ToolActionListener;
 import de.sciss.eisenkraut.gui.WaveformView;
 import de.sciss.eisenkraut.io.AudioTrail;
+import de.sciss.eisenkraut.io.DecimatedSonaTrail;
 import de.sciss.eisenkraut.io.DecimatedTrail;
 import de.sciss.eisenkraut.io.DecimatedWaveTrail;
 import de.sciss.eisenkraut.io.DecimationInfo;
@@ -301,7 +302,7 @@ implements ProgressComponent, TimelineListener,
 	};
 	protected int		vpZoomStrokeIdx			= 0;
 
-	protected boolean	waveExpanded			= true;
+	protected boolean	waveExpanded			= true;	// XXX should keep that in some prefs
 	protected boolean	markVisible;
 	private boolean		chanMeters				= false;
 	private boolean		forceMeters				= false;
@@ -557,22 +558,7 @@ bbb.add( markAxisHeader );
 					markAxisHeader.setVisible( false );
 					scroll.setVisible( false );
 					timeTB.setVisible( false );
-// System.err.println( "wavePanel.getPreferredSize : " +wavePanel.getPreferredSize() );
-//					waveHeaderView.makeCompactGrid();
 					actionZoomAllOut.perform();
-//					ggTrackPanel.revalidate();
-//ggTrackPanel.setSize( ggTrackPanel.getPreferredSize() );
-//Component gp = getRootPane().getGlassPane();
-//if( gp != null ) gp.setSize( 1, 1 ); // getRootPane().setGlassPane( null );
-//getRootPane().revalidate();
-//System.err.println( "ggTrackPanel.getSize() : " +ggTrackPanel.getPreferredSize() );
-//System.err.println( "getContentPane().getPreferredSize() : " +getContentPane().getPreferredSize() );
-//System.err.println( "getRootPane().getPreferredSize() : " +getRootPane().getPreferredSize() );
-//System.err.println( "getRootPane().getGlassPane() : " +getRootPane().getGlassPane() );
-//System.err.println( "getRootPane().getLayeredPane().getPreferredSize() : " +getRootPane().getLayeredPane().getPreferredSize() );
-//					pack();
-//System.err.println( "getRootPane().getPreferredSize() : " +getRootPane().getPreferredSize() );
-//if( gp != null ) getRootPane().setGlassPane( gp );
 
 					final int h = d.height - (waveView.getHeight() + scroll.getHeight() +
 					 	(markVisible ? markAxis.getHeight() : 0));
@@ -580,6 +566,8 @@ bbb.add( markAxisHeader );
 					cbr.setMinimumHeight( h );
 					cbr.setMaximumHeight( h );
 					cbr.add( getComponent() );
+					
+					checkDecimatedTrails();
 				}
 //				getRootPane().revalidate();
 			}
@@ -636,7 +624,8 @@ bbb.add( markAxisHeader );
 
 		doc.timeline.addTimelineListener( this );
 //		doc.addListener( this );
-		doc.getDecimatedWaveTrail().addAsyncListener( this );
+		
+		checkDecimatedTrails();
 
 		doc.audioTracks.addListener( new SessionCollection.Listener() {
 			public void sessionCollectionChanged( SessionCollection.Event e )
@@ -954,6 +943,37 @@ actionReverse.setEnabled( false ); // currently broken (re FilterDialog)
 				}
 			}
 		});
+	}
+	
+	protected void checkDecimatedTrails()
+	{
+		final DecimatedWaveTrail	dwt	= doc.getDecimatedWaveTrail();
+		final DecimatedSonaTrail	dst	= doc.getDecimatedSonaTrail();
+
+		if( dwt != null ) dwt.removeAsyncListener( this );
+		if( dst != null ) dst.removeAsyncListener( this );
+		
+		if( waveExpanded ) {
+			if( waveView.getVerticalScale() == PrefsUtil.VSCALE_FREQ_SPECT ) {
+				if( dst == null ) {
+					try {
+						doc.createDecimatedSonaTrail().addAsyncListener( this );
+					}
+					catch( IOException e1 ) {
+						e1.printStackTrace();
+					}
+				}
+			} else {
+				if( dwt == null ) {
+					try {
+						doc.createDecimatedWaveTrail().addAsyncListener( this );
+					}
+					catch( IOException e1 ) {
+						e1.printStackTrace();
+					}
+				}
+			}
+		}
 	}
 	
 	public void addCatchBypass() { scroll.addCatchBypass(); }
@@ -1707,13 +1727,13 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 
 // ------------- DecimatedTrail.AsyncListener interface -------------
 
-	public void asyncFinished( DecimatedWaveTrail.AsyncEvent e )
+	public void asyncFinished( DecimatedTrail.AsyncEvent e )
 	{
-		doc.getDecimatedWaveTrail().removeAsyncListener( this );
+		e.getDecimatedTrail().removeAsyncListener( this );
 		updateOverviews( false, true );
 	}
 
-	public void asyncUpdate( DecimatedWaveTrail.AsyncEvent e )
+	public void asyncUpdate( DecimatedTrail.AsyncEvent e )
 	{
 		updateOverviews( false, true );
 	}
@@ -2049,6 +2069,7 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 			final int vertScale = e.getNode().getInt( key, PrefsUtil.VSCALE_AMP_LIN );
 			waveView.setVerticalScale( vertScale );
 			actionIncVertMax.updateRuler();
+			checkDecimatedTrails();
 		}
 	}
 	
@@ -2419,7 +2440,7 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 			if( recFile != null ) {
 				try {
 //					if( true ) throw new IOException( "test" );
-					tmpDoc	= Session.newFrom( recFile, false, false, false );
+					tmpDoc	= Session.newFrom( recFile, false, false );
 				}
 				catch( IOException e1 ) {
 					GUIUtil.displayError( getWindow(), e1, getValue( NAME ).toString() );
@@ -3398,6 +3419,7 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 				
 			case DecimatedTrail.MODEL_FULLWAVE_PEAKRMS:
 				dt			= doc.getDecimatedWaveTrail();
+				if( dt == null ) return;
 				frame		= new float[ dt.getNumModelChannels() ];
 //				dt.readFrame( info.idx, pos, ch, frame );
 				try {

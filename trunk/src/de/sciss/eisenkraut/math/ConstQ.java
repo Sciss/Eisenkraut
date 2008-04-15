@@ -28,38 +28,134 @@
 
 package de.sciss.eisenkraut.math;
 
+import java.util.prefs.Preferences;
+
+import de.sciss.util.Param;
+
 /**
  *	@version	0.70, 15-Apr-08
  *	@author		Hanns Holger Rutz
  */
 public class ConstQ
 {
-//	private double		fs;
-	private Kernel[]	kernels;
+	public static final String KEY_MINFREQ		= "minfreq";	// Param (Hz)
+	public static final String KEY_MAXFREQ		= "maxfreq";	// Param (Hz)
+	public static final String KEY_BANDSPEROCT	= "bandsperoct";	// Param (none)
+	public static final String KEY_MAXTIMERES	= "maxtimeres" ;	// Param (ms)
+	public static final String KEY_MAXFFTSIZE	= "maxfftsize";	// Param (String fftSize)
 	
+	private Kernel[]	kernels;
+	private int			numKernels;
+	private int			fftSize;
+	private float[]		fftBuf;
+
+	private float		minFreq		= 27.5f;
+	private float		maxFreq		= 20000f;
+	private float		maxTimeRes	= 5f;
+	private int			bandsPerOct	= 24;
+	private int			maxFFTSize	= 8192;
+	
+	private double		fs;
+	
+	private double		LNKORR_ADD; // = -2 * Math.log( fftSize );
+
+	private static final double	TENBYLOG10				= 10 / MathUtil.LN10;
+
 	public ConstQ() { /* empty */ }
 	
 	public int getNumKernels()
 	{
-		return kernels.length;
+		return numKernels;
+	}
+
+	public int getFFTSize()
+	{
+		return fftSize;
+	}
+
+	public void setSampleRate( double fs )
+	{
+		this.fs = fs;
 	}
 	
-//	public double getSampleRate()
-//	{
-//		return fs;
-//	}
+	public double getSampleRate()
+	{
+		return fs;
+	}
+	
+	public void setMinFreq( float minFreq )
+	{
+		this.minFreq	= minFreq;
+	}
+	
+	public float getMinFreq()
+	{
+		return minFreq;
+	}
+	
+	public void setMaxFreq( float minFreq )
+	{
+		this.maxFreq	= minFreq;
+	}
+	
+	public float getMaxFreq()
+	{
+		return maxFreq;
+	}
+	
+	public void setMaxTimeRes( float maxTimeRes )
+	{
+		this.maxTimeRes	= maxTimeRes;
+	}
+	
+	public float getMaxTimeRes()
+	{
+		return maxTimeRes;
+	}
+	
+	public void setMaxFFTSize( int maxFFTSize )
+	{
+		this.maxFFTSize	= maxFFTSize;
+	}
+	
+	public float getMaxFFTSize()
+	{
+		return maxFFTSize;
+	}
+	
+	public void readPrefs( Preferences prefs )
+	{
+		Param p;
+		String s;
+		
+		p = Param.fromPrefs( prefs, KEY_MINFREQ, null );
+		if( p != null ) minFreq = Math.max( 1, (float) p.val );
+		p = Param.fromPrefs( prefs, KEY_MAXFREQ, null );
+		if( p != null ) maxFreq = Math.max( minFreq, (float) p.val );
+		p = Param.fromPrefs( prefs, KEY_BANDSPEROCT, null );
+		if( p != null ) bandsPerOct = Math.max( 1, (int) p.val );
+		p = Param.fromPrefs( prefs, KEY_MAXTIMERES, null );
+		if( p != null ) maxTimeRes = (float) p.val;
+		s = prefs.get( KEY_MAXFFTSIZE, null );
+		if( s != null ) {
+			try {
+				int i = Integer.parseInt( s );
+				for( maxFFTSize = 256; maxFFTSize < i; maxFFTSize <<= 1 );
+			}
+			catch( NumberFormatException e1 ) { /* ignore */ }
+		}
+	}
 
 	public float getFrequency( int kernel )
 	{
 		return kernels[ kernel ].freq;
 	}
 	
-	public void createKernels( float minFreq, float maxFreq, int binsPerOct, double fs )
+	public void createKernels()
 	{
 		final float		threshSqr, q;
 		final double	maxKernLen;
-		final int		fftSize, numKernels, fftSizeC, fftSizeLimit;
-		final float[]	fftBuf;
+		final int		fftSizeC;
 
 		int				kernelLen, kernelLenE, specStart, specStop;
 		float[]			win;
@@ -69,8 +165,8 @@ public class ConstQ
 //		System.out.println( "Calculating sparse kernel matrices" );
 		
 		maxFreq		= (float) Math.max( maxFreq, fs/2 );
-		q			= (float) (1 / (Math.pow( 2, 1.0/binsPerOct ) - 1));
-		numKernels	= (int) Math.ceil( binsPerOct * MathUtil.log2( maxFreq / minFreq ));
+		q			= (float) (1 / (Math.pow( 2, 1.0/bandsPerOct ) - 1));
+		numKernels	= (int) Math.ceil( bandsPerOct * MathUtil.log2( maxFreq / minFreq ));
 		kernels		= new Kernel[ numKernels ];
 //		cqKernels	= new float[ cqKernelNum ][];
 //		cqKernelOffs= new int[ cqKernelNum ];
@@ -78,9 +174,9 @@ public class ConstQ
 		
 //		System.out.println( "ceil " + ((int) Math.ceil( maxKernLen )) + "; nextPower " + (MathUtil.nextPowerOfTwo( (int) Math.ceil( maxKernLen )))) ;
 		
-		fftSizeLimit= 8192;
-		fftSize		= Math.min( fftSizeLimit,
+		fftSize		= Math.min( maxFFTSize,
 		    MathUtil.nextPowerOfTwo( (int) Math.ceil( maxKernLen )));
+		LNKORR_ADD	= -2 * Math.log( fftSize );
 		fftSizeC	= fftSize << 1;
 		fftBuf		= new float[ fftSizeC ];
 //		thresh		= 0.0054f / fftLen; // for Hamming window
@@ -95,12 +191,12 @@ public class ConstQ
 //		System.out.println( "cqKernelNum = " + cqKernelNum + "; maxKernLen = " + maxKernLen + "; fftSize = " + fftSize + "; threshSqr " + threshSqr );
 		
 		for( int k = 0; k < numKernels; k++ ) {
-			theorKernLen = maxKernLen * (float) Math.pow( 2, (double) -k / binsPerOct );
+			theorKernLen = maxKernLen * (float) Math.pow( 2, (double) -k / bandsPerOct );
 			kernelLen	= Math.min( fftSize, (int) Math.ceil( theorKernLen ));
 			kernelLenE	= kernelLen & ~1;
 			win			= Filter.createFullWindow( kernelLen, Filter.WIN_HAMMING );
 			
-			centerFreq	= (float) (-MathUtil.PI2 * minFreq * Math.pow( 2, (float) k / binsPerOct ) / fs);
+			centerFreq	= (float) (-MathUtil.PI2 * minFreq * Math.pow( 2, (float) k / bandsPerOct ) / fs);
 
 //			weight		= 1.0f / (kernelLen * fftSize);
 			// this is a good approximation in the kernel len truncation case
@@ -180,6 +276,62 @@ public class ConstQ
 			kernels[ k ] = new Kernel( specStart, new float[ specStop - specStart ], centerFreq );
 			System.arraycopy( fftBuf, specStart, kernels[ k ].data, 0, specStop - specStart );
 		}
+	}
+	
+	public float[] transform( float[] input, int inOff, int inLen, float output[], int outOff, boolean add, double gain )
+	{
+		if( output == null ) output = new float[ numKernels ];
+		
+		final int off, num, num2;
+		float[]	kern;
+		float	f1, f2;
+		
+		gain *= TENBYLOG10;
+		off = fftSize >> 1;
+		num = Math.min( fftSize - off, inLen );
+		
+//System.out.println( "inOff " + inOff + "; num  " + num + " ; inOff + num " + (inOff + num) + "; input.length " + input.length + "; fftBuf.length " + fftBuf.length );
+		
+		System.arraycopy( input, inOff, fftBuf, off, num );
+		for( int i = off + num; i < fftSize; i++ ) {
+			fftBuf[ i ] = 0f;
+		}
+		num2 = Math.min( fftSize - num, inLen - num );
+		System.arraycopy( input, inOff + num, fftBuf, 0, num2 );
+		for( int i = num2; i < off; i++ ) {
+			fftBuf[ i ] = 0f;
+		}
+		
+		// XXX evtl., wenn inpWin weggelassen werden kann,
+		// optimierte overlap-add fft
+		Fourier.realTransform( fftBuf, fftSize, Fourier.FORWARD );
+		
+		for( int k = 0; k < numKernels; k++, outOff++ ) {
+			kern = kernels[ k ].data;
+			f1 = 0f;
+			f2 = 0f;
+			for( int i = kernels[ k ].offset, j = 0; j < kern.length; i += 2, j += 2 ) {
+				// complex mult: a * b =
+				// (re(a)re(b)-im(a)im(b))+i(re(a)im(b)+im(a)re(b))
+				// ; since we left out the conjugation of the kernel(!!)
+				// this becomes (assume a is input and b is kernel):
+				// (re(a)re(b)+im(a)im(b))+i(im(a)re(b)-re(a)im(b))
+				// ; in fact this conjugation is unimportant for the
+				// calculation of the magnitudes...
+				f1 += fftBuf[ i ] * kern[ j ] - fftBuf[ i+1 ] * kern[ j+1 ];
+				f2 += fftBuf[ i ] * kern[ j+1 ] + fftBuf[ i+1 ] * kern[ j ];
+			}
+//			cBuf[ k ] = ;  // squared magnitude
+			f1 = (float) ((Math.log( f1 * f1 + f2 * f2 ) + LNKORR_ADD) * gain);
+f1 = Math.max( -160, f1 + 90 );	// XXX
+			if( add ) {
+				output[ outOff ] += f1;
+			} else {
+				output[ outOff ] = f1;
+			}
+		}
+		
+		return output;
 	}
 	
 	private static class Kernel

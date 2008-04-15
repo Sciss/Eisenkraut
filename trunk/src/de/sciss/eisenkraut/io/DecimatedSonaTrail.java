@@ -55,6 +55,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Vector;
+import java.util.prefs.Preferences;
 
 import javax.swing.Box;
 import javax.swing.JComponent;
@@ -62,20 +63,18 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.undo.CompoundEdit;
 
-import de.sciss.app.BasicEvent;
+import de.sciss.app.AbstractApplication;
 import de.sciss.app.AbstractCompoundEdit;
 import de.sciss.eisenkraut.gui.Axis;
 import de.sciss.eisenkraut.gui.WaveformView;
-import de.sciss.eisenkraut.math.Filter;
-import de.sciss.eisenkraut.math.Fourier;
-import de.sciss.eisenkraut.math.MathUtil;
+import de.sciss.eisenkraut.math.ConstQ;
+import de.sciss.eisenkraut.util.PrefsUtil;
 import de.sciss.gui.VectorSpace;
 import de.sciss.io.AudioFile;
 import de.sciss.io.AudioFileDescr;
 import de.sciss.io.CacheManager;
 import de.sciss.io.IOUtil;
 import de.sciss.io.Span;
-import de.sciss.timebased.BasicTrail;
 
 /**
  * 	Sonagram trail with automatic handling of subsampled versions.
@@ -100,10 +99,9 @@ extends DecimatedTrail
 	
 	protected int					fftSize; //				= 1024;
 	protected final int				stepSize;
-	private float[]					fftBuf;
-	protected final float[] 		inpWin;
-	protected float[][]				cqKernels;
-	protected int[]					cqKernelOffs;
+//	protected final float[] 		inpWin;
+	
+	protected final ConstQ			constQ;
 	protected int					cqKernelNum;
 
 	private static final int[] 		colors = {  // from niklas werner's sonasound!
@@ -243,20 +241,6 @@ extends DecimatedTrail
 		0xFBFBFF, 0xFCFCFF, 0xFCFCFF, 0xFCFCFF, 0xFCFCFF, 0xFDFDFF, 0xFDFDFF, 0xFDFDFF,
 		0xFEFEFE
 	};
-	
-	protected final double LNKORR_MUL = 10 / MathUtil.LN10;
-	protected final double LNKORR_ADD; // = -2 * Math.log( fftSize );
-
-//	static {
-//		final BufferedImage img = new BufferedImage( 3, 3, BufferedImage.TYPE_INT_ARGB );
-//		img.setRGB( 0, 0, 3, 3, busyPixels, 0, 3 );
-//		pntBusy = new TexturePaint( img, new Rectangle( 0, 0, 3, 3 ));
-//	}
-
-	protected BasicTrail createEmptyCopy()
-	{
-		throw new IllegalStateException( "Not allowed" );
-	}
 
 	public DecimatedSonaTrail( AudioTrail fullScale, int model, int[] decimations )
 	throws IOException
@@ -274,14 +258,24 @@ extends DecimatedTrail
 		this.fullScale	= fullScale;
 		this.model		= model;
 
-		calcKernels();
+		constQ			= new ConstQ();
+		
+		final Preferences cqPrefs = AbstractApplication.getApplication().getUserPrefs().node( PrefsUtil.NODE_VIEW ).node( PrefsUtil.NODE_SONAGRAM );
+		constQ.readPrefs( cqPrefs );
+		constQ.setSampleRate( fullScale.getRate() );
+		System.out.println( "Creating ConstQ Kernels..." );
+		constQ.createKernels();
+		fftSize = constQ.getFFTSize();
+		cqKernelNum	= constQ.getNumKernels();
+		System.out.println( "...done." );
+		
 //		numMag			= fftSize >> 1;
 //		stepSize		= Math.min( fftSize, 256 );
 		// approx. 5 milliseconds resolution (for the high freqs)
 		stepSize		= Math.max( 64, Math.min( fftSize, (int) (0.005 * fullScale.getRate() + 0.5) & ~1 ));
-		LNKORR_ADD		= -2 * Math.log( fftSize );
+//		LNKORR_ADD		= -2 * Math.log( fftSize );
 
-		inpWin			= Filter.createFullWindow( fftSize, Filter.WIN_HANNING );
+//		inpWin			= Filter.createFullWindow( fftSize, Filter.WIN_HANNING );
 		
 		fullChannels	= fullScale.getChannelNum();
 //		decimChannels	= fullChannels * modelChannels;
@@ -393,7 +387,7 @@ final float pixOff   = -view.getAmpLogMin();
 					totalLength = 0;
 tempFAsync[0].seekFrame( Math.min( info.span.start / stepSize * cqKernelNum, tempFAsync[0].getFrameNum() ));
 					int gaga = (int) Math.min( decimLen * cqKernelNum, Math.min( tmpBufSize2, tempFAsync[0].getFrameNum() - tempFAsync[0].getFramePosition() ));
-System.out.println( "reading " + gaga + " frames / " + (gaga/cqKernelNum) + " columns ; file " + tempFAsync[0].getFile().getAbsolutePath() + "; has " + tempFAsync[0].getChannelNum() + " channels." );
+//System.out.println( "reading " + gaga + " frames / " + (gaga/cqKernelNum) + " columns ; file " + tempFAsync[0].getFile().getAbsolutePath() + "; has " + tempFAsync[0].getChannelNum() + " channels." );
 tempFAsync[0].readFrames( tmpBuf2, 0, gaga);
 //tempFAsync[0].flush();
 //for( int kkk = 0; kkk < tmpBuf2.length; kkk++ ) {
@@ -564,205 +558,7 @@ inlineDecim=1;
 		}
 	}
 */
-	private void calcKernels()
-	{
-		final float		minFreq, maxFreq, fs, threshSqr, q, maxKernLen;
-		final int		bins, fftSizeC, fftSizeLimit;
 
-		int				kernelLen, kernelLenE, specStart, specStop;
-		float[]			win;
-		float			centerFreq, cos, sin, f1, f2, weight, theorKernLen;
-
-		System.out.println( "Calculating sparse kernel matrices" );
-		
-		fs			= (float) fullScale.getRate();
-		minFreq		= 27.5f; // 32f;
-		maxFreq		= fs/2;
-		bins		= 36; // 24;
-
-		q			= (float) (1 / (Math.pow( 2, 1.0/bins ) - 1));
-		cqKernelNum	= (int) Math.ceil( bins * MathUtil.log2( maxFreq / minFreq ));
-		cqKernels	= new float[ cqKernelNum ][];
-		cqKernelOffs= new int[ cqKernelNum ];
-		maxKernLen	= q * fs / minFreq;
-		
-//		System.out.println( "ceil " + ((int) Math.ceil( maxKernLen )) + "; nextPower " + (MathUtil.nextPowerOfTwo( (int) Math.ceil( maxKernLen )))) ;
-		
-		fftSizeLimit= 8192;
-		fftSize		= Math.min( fftSizeLimit,
-		    MathUtil.nextPowerOfTwo( (int) Math.ceil( maxKernLen )));
-		fftSizeC	= fftSize << 1;
-		fftBuf		= new float[ fftSizeC ];
-//		thresh		= 0.0054f / fftLen; // for Hamming window
-		// weird observation : lowering the threshold will _increase_ the
-		// spectral noise, not improve analysis! so the truncating of the
-		// kernel is essential for a clean analysis (why??). the 0.0054
-		// seems to be a good choice, so don't touch it.
-		threshSqr	= 2.916e-05f / (fftSize * fftSize); // for Hamming window (squared!)
-		// tempKernel= zeros(fftLen, 1); 
-//		sparKernel= [];
-		
-		System.out.println( "cqKernelNum = " + cqKernelNum + "; maxKernLen = " + maxKernLen + "; fftSize = " + fftSize + "; threshSqr " + threshSqr );
-		
-		for( int k = 0; k < cqKernelNum; k++ ) {
-			theorKernLen = maxKernLen * (float) Math.pow( 2, (double) -k / bins );
-			kernelLen	= Math.min( fftSize, (int) Math.ceil( theorKernLen ));
-			kernelLenE	= kernelLen & ~1;
-			win			= Filter.createFullWindow( kernelLen, Filter.WIN_HAMMING );
-//float[] winTest = Filter.createFullWindow( kernelLen - 1, Filter.WIN_HAMMING );
-//win = new float[ winTest.length + 1 ];
-//System.arraycopy( winTest, 0, win, 0, winTest.length );
-//win[ winTest.length ] = win[ 0 ];
-// XXX -2pi instead of 2pi because otherwise the spectrum only
-// appears in the negative frequencies. please don't ask me why,
-// maybe a bug in Fourier.complexTransform???
-
-// ist unsinn, weil zwar das hamming fenster auf ganze zahl von samples
-// gerundet werden muss, von dieser quantisierung sollte jedoch nicht
-// die center-frequenz betroffen sein!
-//			centerFreq	= (float) (-MathUtil.PI2 * q / kernelLen);
-//			
-//System.out.println( "old center freq " + centerFreq );
-			
-			centerFreq	= (float) (-MathUtil.PI2 * minFreq * Math.pow( 2, (float) k / bins ) / fs);
-
-//System.out.println( "new center freq " + centerFreq );
-
-//			weight		= 1.0f / (kernelLen * fftSize);
-			// this is a good approximation in the kernel len truncation case
-			// (tested with pink noise, where it will appear pretty much
-			// with the same brightness over all frequencies)
-			weight		= 2 / ((theorKernLen + kernelLen) * fftSize);
-			for( int m = kernelLenE, n = fftSizeC - kernelLenE; m < n; m++ ) {
-				fftBuf[ m ] = 0f;
-			}
-			
-//if( k == 1 ) System.out.println( "weight = " + weight );
-						
-			// note that we calculate the complex conjugation of
-			// the temporalKernal and reverse its time, so the resulting
-			// FFT can be immediately used for the convolution and does not
-			// need to be conjugated; this is due to the Fourier property
-			// h*(-x) <-> H*(f). time reversal is accomplished by
-			// having iteration variable j run....
-
-			// XXX NO! we don't take the reversed conjugate since
-			// there seems to be a bug with Fourier.complexTransform
-			// that already computes the conjugate spectrum (why??)
-//			for( int i = kernelLen - 1, j = fftSizeC - kernelLenE; i >= 0; i-- ) { ... }
-			for( int i = 0, j = fftSizeC - kernelLenE; i < kernelLen; i++ ) {
-				// complex exponential of a purely imaginary number
-				// is cos( imag( n )) + i sin( imag( n ))
-				f1			= centerFreq * i;
-				cos			= (float) Math.cos( f1 );
-				sin			= (float) Math.sin( f1 ); // Math.sqrt( 1 - cos*cos );
-				f1			= win[ i ] * weight;
-				fftBuf[ j++ ] = f1 * cos;
-//				fftBuf[ j++ ] = -f1 * sin;  // conj!
-				fftBuf[ j++ ] = f1 * sin;  // NORM!
-//if( k == 0 ) System.out.println( cos + "  " + sin + "i" );
-				if( j == fftSizeC ) j = 0;
-			}
-
-//if( k == 1 ) {
-//	for( int j = 0; j < fftSizeC; j+=2 ) {
-//		System.out.println( fftBuf[j] + " " + (fftBuf[j+1]>=0 ? "+ " : "- ") + Math.abs(fftBuf[j+1]) + "i" );
-//	}
-//}
-
-//float[] data = new float[ fftSize ];
-//for( int kkk = 0, jjj = 0; kkk < fftSize; kkk++ ) {
-//	f1 = fftBuf[ jjj++ ];
-//	f2 = fftBuf[ jjj++ ];
-//	data[ kkk ] = f1; // (float) Math.sqrt( f1 * f1 + f2 * f2 );
-//}
-//if( k == 0 || k == (cqKernelNum >> 1) || k == (cqKernelNum - 1) ) view( data, 0, fftSize, "k = " + k );
-			
-			// XXX to be honest, i don't get the point
-			// of calculating the fft here, since we
-			// have an analytic description of the kernel
-			// function, it should be possible to calculate
-			// the spectral coefficients directly
-			// (the fft of a hamming is a gaussian,
-			// isn't it?)
-			
-			Fourier.complexTransform( fftBuf, fftSize, Fourier.FORWARD );
-			// with a "high" threshold like 0.0054, the
-			// point it _not_ to create a sparse matrix by
-			// gating the values. in fact we can locate
-			// the kernal spectrally, so all we need to do
-			// is to find the lower and upper frequency
-			// of the transformed kernel! that makes things
-			// a lot easier anyway since we don't need
-			// to employ a special sparse matrix library.
-//			for( int m = 0; m < fftBuf.length; m += 2 ) {
-//				f1 = fftBuf[ m ];
-//				f2 = fftBuf[ m+1 ];
-//				if( (f1 * f1 + f2 * f2) <= threshSqr ) {
-//					fftBuf[ m ] = 0f;
-//					fftBuf[ m+1 ] = 0f;
-//				}
-//			}
-			for( specStart = 0; specStart <= fftSize; specStart += 2 ) {
-				f1 = fftBuf[ specStart ];
-				f2 = fftBuf[ specStart+1 ];
-//				if( k == 0 ) {
-//					System.out.println( "  kern["+(specStart>>1)+"] = " + Math.sqrt(f1 * f1 + f2 * f2 )) ;
-//				}
-				if( (f1 * f1 + f2 * f2) > threshSqr ) break;
-			}
-			// final matrix product:
-			// input chunk (fft'ed) is a row vector with n = fftSize
-			// kernel is a matrix mxn with m = fftSize, n = numKernels
-			// result is a row vector with = numKernels
-			// ; note that since the input is real and hence we
-			// calculate only the positive frequencies (up to pi),
-			// we might need to mirror the input spectrum to the
-			// negative frequencies. however it can be observed that
-			// for practically all kernels their frequency bounds
-			// lie in the positive side of the spectrum (only the
-			// high frequencies near nyquest blur accross the pi boundary,
-			// and we will cut the overlap off by limiting specStop
-			// to fftSize instead of fftSize<<1 ...).
-
-			for( specStop = specStart; specStop <= fftSize; specStop += 2 ) {
-				f1 = fftBuf[ specStop ];
-				f2 = fftBuf[ specStop+1 ];
-				if( (f1 * f1 + f2 * f2) <= threshSqr ) break;
-			}
-
-float lala = Float.NEGATIVE_INFINITY, lulu = Float.POSITIVE_INFINITY;
-float[] data = new float[ fftSize ];
-for( int kkk = 0, jjj = 0; kkk < fftSize; kkk++ ) {
-	f1 = fftBuf[ jjj++ ];
-	f2 = fftBuf[ jjj++ ];
-	data[ kkk ] = (float) Math.sqrt( f1 * f1 + f2 * f2 );
-	lala = Math.max( lala, data[ kkk ]);
-	lulu = Math.min( lulu, data[ kkk ]);
-}
-//if( ((k-1) % (cqKernelNum/10)) == 0 ) view( data, 0, fftSize, "k = " + k );
-//if( k == 1 ) System.out.println( "  k = " + k + "; kernelLen = " + kernelLen + "; specStart = " + specStart + "; specStop " + specStop );
-//if( k == 1 ) System.out.println( "  ... min " + lulu + " ; max " + lala );
-
-			cqKernels[ k ]		= new float[ specStop - specStart ];
-			cqKernelOffs[ k ]	= specStart;
-			System.arraycopy( fftBuf, specStart, cqKernels[ k ], 0, specStop - specStart );
-			
-//if( k == 20 ) {
-//	float[] data2 = new float[ cqKernels[k].length >> 1 ];
-//	float[] data3 = new float[ cqKernels[k].length >> 1 ];
-//	for( int mmmm = 0, nnnn = 0; mmmm < data2.length; mmmm++ ) {
-//		f1 = cqKernels[k][ nnnn++ ];
-//		f2 = cqKernels[k][ nnnn++ ];
-//		data2[ mmmm ] = (float) (Math.sqrt( f1 * f1 + f2 * f2 ) * 1.0e5);
-//		data3[ mmmm ] = (float) (Math.atan2( f2, f1 ) * 180 / Math.PI);
-//	}
-//	view( data2, 0, data2.length, "mag for k = " + k );
-//	view( data3, 0, data3.length, "phase for k = " + k );
-//}
-		}
-	}
-	
 	public static void view( float[] data, int off, int length, String descr )
 	{
 		final float[] dataCopy = new float[ length ];
@@ -1048,14 +844,14 @@ vaxis.setSpace( spc );
 							                cacheWriteAS, framesWrittenCache );
 							pos += MAXCOARSE;
 							framesWrittenCache += minCoarse;
-							System.out.println( "frame done" );
+//							System.out.println( "frame done" );
 						}
 						time = System.currentTimeMillis();
 						if( time >= nextTime ) {
 							nextTime = time + 2000;
 							if( asyncManager != null ) {
 								asyncManager.dispatchEvent( new AsyncEvent(
-									enc_this, AsyncEvent.UPDATE, time ));
+									enc_this, AsyncEvent.UPDATE, time, enc_this ));
 							}
 						}
 					}
@@ -1111,7 +907,7 @@ vaxis.setSpace( spc );
 
 					if( asyncManager != null ) {
 						asyncManager.dispatchEvent( new AsyncEvent( enc_this,
-							AsyncEvent.FINISHED, System.currentTimeMillis() ));
+							AsyncEvent.FINISHED, System.currentTimeMillis(), enc_this ));
 					}
 					synchronized( threadAsync ) {
 						threadAsync.notifyAll();
@@ -1543,7 +1339,7 @@ vaxis.setSpace( spc );
 		len = (len / stepSize * cqKernelNum) >> decim;
 		if( inBuf != null ) {
 //			System.out.println( "decimator.decimatePCM( inBuf, outBuf, fftBuf, 0, " + len + ", " + (1 << decim) + " )" );
-			decimator.decimatePCM( inBuf, outBuf, fftBuf, 0, len, 1 << decim );
+			decimator.decimatePCM( inBuf, outBuf, 0, len, 1 << decim );
 //			System.out.println( "doing" );
 			das.continueWrite( 0, outBuf, 0, len );
 			if( cacheAS != null ) {
@@ -1571,35 +1367,6 @@ vaxis.setSpace( spc );
 		} // for( SUBNUM )
 	}
 
-	// ---------------------- internal classes and interfaces ----------------------
-
-	public static interface AsyncListener {
-		public void asyncFinished( AsyncEvent e );
-		public void asyncUpdate( AsyncEvent e );
-	}
-
-	public static class AsyncEvent
-	extends BasicEvent
-	{
-		private static final int UPDATE = 0;
-		private static final int FINISHED = 1;
-
-		protected AsyncEvent( Object source, int id, long when ) {
-			super( source, id, when );
-		}
-
-		public boolean incorporate( BasicEvent oldEvent )
-		{
-			if( (oldEvent instanceof AsyncEvent) &&
-				(this.getSource() == oldEvent.getSource()) &&
-				(this.getID() == oldEvent.getID()) ) {
-
-				return true;
-			} else
-				return false;
-		}
-	}
-
 	// ---------------------- decimation subclasses ----------------------
 
 	private abstract class Decimator
@@ -1607,7 +1374,7 @@ vaxis.setSpace( spc );
 		protected Decimator() { /* empty */ }
 		
 		protected abstract void decimate( float[][] inBuf, float[][] outBuf, int outOff, int len, int decim );
-		protected abstract void decimatePCM( float[][] inBuf, float[][] outBuf, float[] fBuf, int outOff, int len, int decim );
+		protected abstract void decimatePCM( float[][] inBuf, float[][] outBuf, int outOff, int len, int decim );
 		// protected abstract void decimatePCMFast( float[][] inBuf, float[][]
 		// outBuf, int outOff, int len, int decim );
 		protected abstract int draw( DecimationInfo info, int ch, int[][] peakPolyX, int[][] peakPolyY,
@@ -1640,56 +1407,13 @@ vaxis.setSpace( spc );
 			}
 		}
 
-		protected void decimatePCM( float[][] inBuf, float[][] outBuf, float[] fBuf, int outOff, int len, int decim )
+		protected void decimatePCM( float[][] inBuf, float[][] outBuf, int outOff, int len, int decim )
 		{
-			float[] inBufCh, outBufCh, kern;
-			float f1, f2;
-			final double w = LNKORR_MUL / decim;
+			final double w = 1.0 / decim;
 			
 			for( int inOff = 0, stop = outOff + len, decimCnt = 0; outOff < stop; inOff += stepSize ) {
 				for( int ch = 0; ch < fullChannels; ch++ ) {
-//					System.arraycopy( inBuf[ ch ], inOff, fftBuf, 0, fftSize );
-					inBufCh = inBuf[ ch ];
-					for( int i = fftSize >> 1, j = inOff, k = 0; k < fftSize; k++, j++ ) {
-						fBuf[ i ] = inBufCh[ j ] * inpWin[ k ];
-						i++;
-						if( i == fftSize ) i = 0; 
-					}
-					// XXX evtl., wenn inpWin weggelassen werden kann,
-					// optimierte overlap-add fft
-					Fourier.realTransform( fBuf, fftSize, Fourier.FORWARD );
-					
-					outBufCh = outBuf[ ch ];
-					for( int k = 0; k < cqKernelNum; k++ ) {
-						kern = cqKernels[ k ];
-						f1 = 0f;
-						f2 = 0f;
-						for( int i = cqKernelOffs[ k ], j = 0; j < kern.length; i += 2, j += 2 ) {
-							// complex mult: a * b =
-							// (re(a)re(b)-im(a)im(b))+i(re(a)im(b)+im(a)re(b))
-							// ; since we left out the conjugation of the kernel(!!)
-							// this becomes (assume a is input and b is kernel):
-							// (re(a)re(b)+im(a)im(b))+i(im(a)re(b)-re(a)im(b))
-							// ; in fact this conjugation is unimportant for the
-							// calculation of the magnitudes...
-							f1 += fBuf[ i ] * kern[ j ] - fBuf[ i+1 ] * kern[ j+1 ];
-							f2 += fBuf[ i ] * kern[ j+1 ] + fBuf[ i+1 ] * kern[ j ];
-						}
-//						cBuf[ k ] = ;  // squared magnitude
-						f1 = (float) ((Math.log( f1 * f1 + f2 * f2 ) + LNKORR_ADD) * w);
-f1 = Math.max( -160, f1 + 90 );
-						if( decimCnt == 0 ) {
-							outBufCh[ outOff + k ] = f1;
-						} else {
-							outBufCh[ outOff + k ] += f1;
-						}
-					}
-					
-//					for( int i = outOff, j = 0; j < fftSize; ) {
-//						f1 = fBuf[ j++ ];
-//						f2 = fBuf[ j++ ];
-//						outBufCh[ i++ ] = (float) ((Math.log( f1 * f1 + f2 * f2 ) + LNKORR_ADD) * w);
-//					}
+					constQ.transform( inBuf[ ch ], inOff, Math.max( 0, inBuf[ ch ].length - inOff ), outBuf[ ch ], outOff, decimCnt > 0, w );
 				}
 				decimCnt = (decimCnt + 1) % decim;
 				if( decimCnt == 0 ) outOff += cqKernelNum;

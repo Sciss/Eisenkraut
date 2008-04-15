@@ -817,7 +817,7 @@ extends DecimatedTrail
 							nextTime = time + 2000;
 							if( asyncManager != null ) {
 								asyncManager.dispatchEvent( new AsyncEvent(
-										enc_this, AsyncEvent.UPDATE, time ));
+										enc_this, AsyncEvent.UPDATE, time, enc_this ));
 							}
 						}
 					}
@@ -872,7 +872,7 @@ extends DecimatedTrail
 
 					if( asyncManager != null ) {
 						asyncManager.dispatchEvent( new AsyncEvent( enc_this,
-							AsyncEvent.FINISHED, System.currentTimeMillis() ));
+							AsyncEvent.FINISHED, System.currentTimeMillis(), enc_this ));
 					}
 					synchronized( threadAsync ) {
 						threadAsync.notifyAll();

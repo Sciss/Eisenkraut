@@ -39,6 +39,7 @@ import java.util.List;
 import de.sciss.app.BasicEvent;
 import de.sciss.app.EventManager;
 import de.sciss.common.ProcessingThread;
+import de.sciss.eisenkraut.math.MathUtil;
 import de.sciss.io.AudioFile;
 import de.sciss.timebased.BasicTrail;
 
@@ -95,8 +96,8 @@ extends BasicTrail
 
 	protected EventManager			asyncManager			= null;
 	
-	protected static final double	TWENTYBYLOG10			= 20 / Math.log( 10 ); // 8.685889638065;
-	protected static final double	TENBYLOG10				= 10 / Math.log( 10 );
+	protected static final double	TWENTYBYLOG10			= 20 / MathUtil.LN10; // 8.685889638065;
+	protected static final double	TENBYLOG10				= 10 / MathUtil.LN10;
 
 	static {
 		final BufferedImage img = new BufferedImage( 3, 3, BufferedImage.TYPE_INT_ARGB );
@@ -155,7 +156,7 @@ extends BasicTrail
 	public final void addAsyncListener( AsyncListener l )
 	{
 		if( !isBusy() ) {
-			l.asyncFinished( new AsyncEvent( this, AsyncEvent.FINISHED, System.currentTimeMillis()) );
+			l.asyncFinished( new AsyncEvent( this, AsyncEvent.FINISHED, System.currentTimeMillis(), this ));
 			return;
 		}
 		if( asyncManager == null ) {
@@ -201,16 +202,23 @@ extends BasicTrail
 	{
 		protected static final int UPDATE = 0;
 		protected static final int FINISHED = 1;
+		
+		private final DecimatedTrail t;
 
-		protected AsyncEvent( Object source, int id, long when ) {
+		protected AsyncEvent( Object source, int id, long when, DecimatedTrail t )
+		{
 			super( source, id, when );
+			this.t	= t;
 		}
+		
+		public DecimatedTrail getDecimatedTrail() { return t; }
 
 		public boolean incorporate( BasicEvent oldEvent )
 		{
 			if( (oldEvent instanceof AsyncEvent) &&
 				(this.getSource() == oldEvent.getSource()) &&
-				(this.getID() == oldEvent.getID()) ) {
+				(this.getID() == oldEvent.getID()) &&
+				(t == ((AsyncEvent) oldEvent).t)) {
 
 				return true;
 			} else
