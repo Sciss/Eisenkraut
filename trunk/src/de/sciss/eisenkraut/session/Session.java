@@ -519,7 +519,7 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 		if( true ) return;
 		
 		if( dst != null ) throw new IllegalStateException();
-		dst	= new DecimatedSonaTrail( at, DecimatedSonaTrail.MODEL_SONA, sonaDecims );
+		dst	= new DecimatedSonaTrail( at, DecimatedTrail.MODEL_SONA, sonaDecims );
 	}
 
 	public AudioFileDescr getDisplayDescr()

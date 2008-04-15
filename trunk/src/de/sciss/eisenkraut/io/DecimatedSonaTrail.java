@@ -25,6 +25,7 @@
  *
  *  Changelog:
  *		18-Feb-08	created
+ *		15-Apr-08	extracted back from DecimatedWaveTrail
  */
 
 package de.sciss.eisenkraut.io;
@@ -52,9 +53,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-//import java.util.Random;
 import java.util.Vector;
 
 import javax.swing.Box;
@@ -63,11 +62,8 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.undo.CompoundEdit;
 
-// import de.sciss.app.AbstractApplication;
 import de.sciss.app.BasicEvent;
-import de.sciss.app.EventManager;
 import de.sciss.app.AbstractCompoundEdit;
-import de.sciss.common.ProcessingThread;
 import de.sciss.eisenkraut.gui.Axis;
 import de.sciss.eisenkraut.gui.WaveformView;
 import de.sciss.eisenkraut.math.Filter;
@@ -75,13 +71,11 @@ import de.sciss.eisenkraut.math.Fourier;
 import de.sciss.eisenkraut.math.MathUtil;
 import de.sciss.gui.VectorSpace;
 import de.sciss.io.AudioFile;
-// import de.sciss.io.AudioFileCacheInfo;
 import de.sciss.io.AudioFileDescr;
 import de.sciss.io.CacheManager;
 import de.sciss.io.IOUtil;
 import de.sciss.io.Span;
 import de.sciss.timebased.BasicTrail;
-//import de.sciss.util.MutableInt;
 
 /**
  * 	Sonagram trail with automatic handling of subsampled versions.
@@ -89,36 +83,13 @@ import de.sciss.timebased.BasicTrail;
  * 	former fellow student of mine. The sonagram colour table is
  * 	taken from his work sonasound (http://sonasound.sourceforge.net/)
  * 
- *	@version	0.70, 18-Feb-08
+ *	@version	0.70, 15-Apr-08
  *	@author		Hanns Holger Rutz
  */
 public class DecimatedSonaTrail
-extends BasicTrail
+extends DecimatedTrail
 {
 	private static final int		UPDATE_PERIOD			= 2000; // millisecs in async overview calculation
-
-	private static final boolean	DEBUG					= false;
-
-	public static final int			MODEL_SONA				= 10;
-
-	// dependance tracking that take longer than this amount in millisecs
-	// will be queued on the async thread
-	// private static final int INPLACE_TIMEOUT = 2000;
-
-//	private final int				modelChannels;
-//	private final int				decimChannels;
-	protected final int				fullChannels;
-	private final int				model;
-
-	private AudioFile[]				tempF					= null; // lazy
-	protected final DecimationHelp[] decimHelps;
-	protected final AudioTrail		fullScale;
-
-	private final int				SUBNUM;
-	private final int				MAXSHIFT;
-	protected final int				MAXCOARSE;
-	private final long				MAXMASK;
-	private final int				MAXCEILADD;
 
 	protected float[][]				tmpBuf					= null; // lazy
 	private final int				tmpBufSize;
@@ -126,32 +97,8 @@ extends BasicTrail
 	private final int				tmpBufSize2;
 
 	private final Decimator			decimator;
-
-	// private static final Paint pntArea = new Color( 0x00, 0x00, 0x00, 0x7F );
-	// private static final Paint pntNull = new Color( 0x7F, 0x7F, 0x00, 0xC0 );
-	// private static final Stroke strkNull = new BasicStroke( 1.0f,
-	// BasicStroke.CAP_SQUARE, BasicStroke.JOIN_BEVEL,
-	// 1.0f, new float[] { 4.0f, 4.0f }, 0.0f );
-//	private static final Paint		pntBusy;
-//
-//	private static final int[]		busyPixels = {
-//			0xFFCBCBCB, 0xFFC0C0C0, 0xFFA8A8A8,
-//			0xFFE6E6E6, 0xFFB2B2B2, 0xFFCACACA,
-//			0xFFB1B1B1, 0xFFD5D5D5, 0xFFC0C0C0 };
-
-	protected final Object			bufSync					= new Object();
-	private final Object			fileSync				= new Object();
-
-	private final List				drawBusyList			= new ArrayList();
-
-	protected Thread				threadAsync				= null;
-	private AudioFile[]				tempFAsync				= null; // lazy
-	protected volatile boolean		keepAsyncRunning		= false;
-
-	protected EventManager			asyncManager			= null;
 	
 	protected int					fftSize; //				= 1024;
-//	protected final int				numMag;
 	protected final int				stepSize;
 	private float[]					fftBuf;
 	protected final float[] 		inpWin;
@@ -369,13 +316,6 @@ extends BasicTrail
 		// addAllDepAsync( null, stakes, null, fullScale.getSpan() );
 		// }
 	}
-
-	public int getDefaultTouchMode() { return TOUCH_SPLIT; }
-//	public int getChannelNum() { return decimChannels; }
-	public int getChannelNum() { return fullChannels; }
-//	public int getNumModelChannels() { return modelChannels; }
-	public int getNumDecimations() { return SUBNUM; }
-	public int getModel() { return model; }
 
 	/**
 	 * @synchronization must be called in the event thread
@@ -976,64 +916,6 @@ vaxis.setSpace( spc );
 		}
 	}
 
-	private void killAsyncThread()
-	{
-		if( threadAsync != null ) {
-			synchronized( threadAsync ) {
-				if( threadAsync.isAlive() ) {
-					keepAsyncRunning = false;
-					try {
-						threadAsync.wait();
-					} catch( InterruptedException e1 ) {
-						System.err.println( e1 );
-					}
-				}
-			}
-		}
-	}
-
-	public boolean isBusy()
-	{
-		return( (threadAsync != null) && threadAsync.isAlive() );
-	}
-
-	public void addAsyncListener( AsyncListener l )
-	{
-		if( !isBusy() ) {
-			l.asyncFinished( new AsyncEvent( this, AsyncEvent.FINISHED, System.currentTimeMillis()) );
-			return;
-		}
-		if( asyncManager == null ) {
-			asyncManager = new EventManager( new EventManager.Processor() {
-				public void processEvent( BasicEvent e ) {
-					final AsyncEvent	ae = (AsyncEvent) e;
-					AsyncListener		al;
-
-					for( int i = 0; i < asyncManager.countListeners(); i++ ) {
-						al = (AsyncListener) asyncManager.getListener( i );
-						switch( e.getID() ) {
-						case AsyncEvent.UPDATE:
-							al.asyncUpdate( ae );
-							break;
-						case AsyncEvent.FINISHED:
-							al.asyncFinished( ae );
-							break;
-						default:
-							assert false : e.getID();
-							break;
-						}
-					}
-				}
-			});
-		}
-		asyncManager.addListener( l );
-	}
-
-	public void removeAsyncListener( AsyncListener l )
-	{
-		if( asyncManager != null ) asyncManager.removeListener( l );
-	}
-
 	// ----------- dependant implementation -----------
 
 	public void dispose()
@@ -1241,18 +1123,6 @@ vaxis.setSpace( spc );
 
 		keepAsyncRunning = true;
 		threadAsync.start();
-	}
-
-	private static void setProgression( long len, double progWeight )
-	throws ProcessingThread.CancelledException
-	{
-// System.err.println( "dec prog len " + len + ", p " + (float) (len * progWeight) );
-		ProcessingThread.update( (float) (len * progWeight) );
-	}
-
-	private static void flushProgression()
-	{
-		ProcessingThread.flushProgression();
 	}
 
 	protected void addAllDep(Object source, List stakes, AbstractCompoundEdit ce,

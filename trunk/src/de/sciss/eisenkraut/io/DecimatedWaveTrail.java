@@ -48,7 +48,6 @@ import javax.swing.undo.CompoundEdit;
 
 import de.sciss.app.AbstractApplication;
 import de.sciss.app.AbstractCompoundEdit;
-import de.sciss.common.ProcessingThread;
 import de.sciss.eisenkraut.gui.WaveformView;
 import de.sciss.eisenkraut.util.PrefsUtil;
 import de.sciss.io.AudioFile;
@@ -73,12 +72,6 @@ public class DecimatedWaveTrail
 extends DecimatedTrail
 {
 	private static final int		UPDATE_PERIOD			= 2000; // millisecs in async overview calculation
-
-	private final int				SUBNUM;
-	private final int				MAXSHIFT;
-	protected final int				MAXCOARSE;
-	private final long				MAXMASK;
-	private final int				MAXCEILADD;
 
 	protected float[][]				tmpBuf					= null; // lazy
 	private final int				tmpBufSize;
@@ -150,12 +143,6 @@ extends DecimatedTrail
 		// addAllDepAsync( null, stakes, null, fullScale.getSpan() );
 		// }
 	}
-
-	public int getDefaultTouchMode() { return TOUCH_SPLIT; }
-	public int getChannelNum() { return decimChannels; }
-	public int getNumModelChannels() { return modelChannels; }
-	public int getNumDecimations() { return SUBNUM; }
-	public int getModel() { return model; }
 
 	// private void drawPCM( float[] frames, int len, GeneralPath path, float
 	// offX, float scaleX, float offY, float scaleY,
@@ -897,18 +884,6 @@ extends DecimatedTrail
 
 		keepAsyncRunning = true;
 		threadAsync.start();
-	}
-
-	private static void setProgression( long len, double progWeight )
-	throws ProcessingThread.CancelledException
-	{
-// System.err.println( "dec prog len " + len + ", p " + (float) (len * progWeight) );
-		ProcessingThread.update( (float) (len * progWeight) );
-	}
-
-	private static void flushProgression()
-	{
-		ProcessingThread.flushProgression();
 	}
 
 	protected void addAllDep(Object source, List stakes, AbstractCompoundEdit ce,

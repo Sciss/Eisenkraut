@@ -24,7 +24,7 @@
  *
  *
  *  Changelog:
- *		18-Feb-08	extracted back from DecimatedWaveTrail
+ *		15-Apr-08	extracted back from DecimatedWaveTrail
  */
 
 package de.sciss.eisenkraut.io;
@@ -38,6 +38,7 @@ import java.util.List;
 
 import de.sciss.app.BasicEvent;
 import de.sciss.app.EventManager;
+import de.sciss.common.ProcessingThread;
 import de.sciss.io.AudioFile;
 import de.sciss.timebased.BasicTrail;
 
@@ -50,10 +51,17 @@ extends BasicTrail
 {
 	protected static final boolean	DEBUG					= false;
 
+	protected int					SUBNUM;
+	protected int					MAXSHIFT;
+	protected int					MAXCOARSE;
+	protected long					MAXMASK;
+	protected int					MAXCEILADD;
+
 	public static final int			MODEL_PCM				= 0;
 	public static final int			MODEL_HALFWAVE_PEAKRMS	= 1;
 	public static final int			MODEL_MEDIAN			= 2;
 	public static final int			MODEL_FULLWAVE_PEAKRMS	= 3;
+	public static final int			MODEL_SONA				= 10;
 
 	protected int					modelChannels;
 	protected int					decimChannels;
@@ -106,7 +114,24 @@ extends BasicTrail
 		throw new IllegalStateException( "Not allowed" );
 	}
 
-	protected void killAsyncThread()
+	public final int getDefaultTouchMode() { return TOUCH_SPLIT; }
+	public final int getChannelNum() { return decimChannels; }
+	public final int getNumModelChannels() { return modelChannels; }
+	public final int getNumDecimations() { return SUBNUM; }
+	public final int getModel() { return model; }
+
+	protected static void setProgression( long len, double progWeight )
+	throws ProcessingThread.CancelledException
+	{
+		ProcessingThread.update( (float) (len * progWeight) );
+	}
+
+	protected static void flushProgression()
+	{
+		ProcessingThread.flushProgression();
+	}
+
+	protected final void killAsyncThread()
 	{
 		if( threadAsync != null ) {
 			synchronized( threadAsync ) {
@@ -122,12 +147,12 @@ extends BasicTrail
 		}
 	}
 
-	public boolean isBusy()
+	public final boolean isBusy()
 	{
 		return( (threadAsync != null) && threadAsync.isAlive() );
 	}
 
-	public void addAsyncListener( AsyncListener l )
+	public final void addAsyncListener( AsyncListener l )
 	{
 		if( !isBusy() ) {
 			l.asyncFinished( new AsyncEvent( this, AsyncEvent.FINISHED, System.currentTimeMillis()) );
@@ -159,7 +184,7 @@ extends BasicTrail
 		asyncManager.addListener( l );
 	}
 
-	public void removeAsyncListener( AsyncListener l )
+	public final void removeAsyncListener( AsyncListener l )
 	{
 		if( asyncManager != null ) asyncManager.removeListener( l );
 	}
