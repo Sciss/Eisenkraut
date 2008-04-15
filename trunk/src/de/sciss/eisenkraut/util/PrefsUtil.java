@@ -77,7 +77,7 @@ import de.sciss.util.ParamSpace;
  *	and importing and exporting from/to XML.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
+ *  @version	0.70, 15-Apr-08
  */
 public class PrefsUtil
 {
@@ -91,13 +91,6 @@ public class PrefsUtil
 	 */
 	public static final String KEY_VERSION	= "version";	// double : app version
 
-//	/**
-//	 *  Value: String representing the pathname
-//	 *  of the temporary files directory.<br>
-//	 *  Has default value: yes!<br>
-//	 *  Node: root
-//	 */
-//	public static final String KEY_TEMPDIR	= "tmpdir";		// string : pathname
 	/**
 	 *  Value: String representing the path list of
 	 *  a user's set favourite directories. See PathList
@@ -106,14 +99,7 @@ public class PrefsUtil
 	 *  Node: root
 	 */
 	public static final String KEY_USERPATHS= "usrpaths";	// string : path list
-//	/**
-//	 *  Value: String representing a list of paths
-//	 *  of the recently used session files. See
-//	 *  PathList and MenuFactory.actionOpenRecentClass.<br>
-//	 *  Has default value: no!<br>
-//	 *  Node: root
-//	 */
-//	public static final String KEY_OPENRECENT= "recent";	// string: path list
+
 	/**
 	 *  Value: Boolean stating whether frame bounds
 	 *  should be recalled a session file when it's
@@ -121,52 +107,7 @@ public class PrefsUtil
 	 *  Node: root
 	 */
 	public static final String KEY_LOOKANDFEEL = "lookandfeel";	
-//	/**
-//	 *  Value: Boolean stating whether internal frames within one
-//     *  big app frame are used. Has default value: no!<br>
-//	 *  Node: root
-//	 */
-//	public static final String KEY_INTERNALFRAMES = "internalframes";
-//	/**
-//	 *  Value: Boolean stating whether frame size (grow) boxes
-//     *  intrude into the frame's pane. Has default value: yes!<br>
-//	 *  Node: root
-//	 */
-//	public static final String KEY_INTRUDINGSIZE = "intrudingsize";
-//	/**
-//	 *  Value: String "(int) modifiers (int) keyCode" for online
-//     *  help accelerator. Has default value: yes!<br>
-//	 *  Node: root
-//	 */
-//	public static final String KEY_KEYSTROKE_HELP = "keystrokehelp";
-//	/**
-//	 *  Value: Boolean stating whether palette windows should
-//     *  be floating on top and have palette decoration. Has default value: no!<br>
-//	 *  Node: root
-//	 */
-//	public static final String KEY_FLOATINGPALETTES = "floatingpalettes";
 
-//	/**
-//	 *  Value: String representing a Point object
-//	 *  describing a windows location. Use stringToPoint.<br>
-//	 *  Has default value: no!<br>
-//	 *  Node: multiple occurences in shared -> (Frame-class)
-//	 */
-//	public static final String KEY_LOCATION		= "location";   // point
-//	/**
-//	 *  Value: String representing a Dimension object
-//	 *  describing a windows size. Use stringToDimension.<br>
-//	 *  Has default value: no!<br>
-//	 *  Node: multiple occurences in shared -> (Frame-class)
-//	 */
-//	public static final String KEY_SIZE			= "size";		// dimension
-//	/**
-//	 *  Value: Boolean stating wheter a window is
-//	 *  shown or hidden.<br>
-//	 *  Has default value: no!<br>
-//	 *  Node: multiple occurences in shared -> (Frame-class)
-//	 */
-//	public static final String KEY_VISIBLE		= "visible";	// boolean
 	/**
 	 *  Value: Boolean indicating whether timeline position catch
 	 *  is active or not.<br>
@@ -220,13 +161,14 @@ public class PrefsUtil
 	 *  Has default value: yes!<br>
 	 *  Node: 
 	 */
-	public static final String KEY_AMPSCALE		= "ampscale";		// integer (AMP_LIN, AMP_LOG)
+	public static final String KEY_VERTSCALE	= "vertscale";		// integer (VSCALE_AMP_LIN etc.)
 
-	public static final int TIME_SAMPLES	= 0;
-	public static final int TIME_MINSECS	= 1;
+	public static final int TIME_SAMPLES		= 0;
+	public static final int TIME_MINSECS		= 1;
 
-	public static final int AMP_LIN			= 0;
-	public static final int AMP_LOG			= 1;
+	public static final int VSCALE_AMP_LIN		= 0;
+	public static final int VSCALE_AMP_LOG		= 1;
+	public static final int VSCALE_FREQ_SPECT	= 2;
 
 	// ------------ audio node level ------------
 
@@ -354,6 +296,18 @@ public class PrefsUtil
 	 *  Child node of global prefs
 	 */
 	public static final String NODE_PLUGINS	= "plugins";
+
+	// ------------ view node level ------------
+
+	/**
+	 *  Child node of global prefs
+	 */
+	public static final String NODE_VIEW	= "view";
+
+	/**
+	 *  Child node of view prefs
+	 */
+	public static final String NODE_SONAGRAM	= "sonagram";
 
 	public static List createDefaults( Preferences mainPrefs, double lastVersion )
 	{

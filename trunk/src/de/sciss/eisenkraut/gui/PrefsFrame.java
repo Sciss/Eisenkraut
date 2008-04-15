@@ -91,6 +91,7 @@ import de.sciss.common.BasicWindowHandler;
 import de.sciss.eisenkraut.Main;
 import de.sciss.eisenkraut.io.AudioBoxConfig;
 import de.sciss.eisenkraut.io.PrefCacheManager;
+import de.sciss.eisenkraut.math.ConstQPane;
 import de.sciss.eisenkraut.net.OSCRoot;
 import de.sciss.eisenkraut.util.PrefsUtil;
 import de.sciss.gui.AbstractWindowHandler;
@@ -121,7 +122,7 @@ import de.sciss.util.ParamSpace;
  *  application and session preferences
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
+ *  @version	0.70, 15-Apr-08
  */
 public class PrefsFrame
 extends AppWindow
@@ -171,22 +172,16 @@ implements SwingConstants
 
 		final TreeExpanderButton		ggTreeAudio;
 		final List						collAudioAdvanced;
-		JPanel							p, tabWrap; // , buttonPanel;
 		SpringPanel						tab;
-//		KeyStrokeTextField				ggKeyStroke;
 		PrefParamField					ggParam;
 		PrefPathField					ggPath;
 		PrefCheckBox					ggCheckBox;
         PrefComboBox					ggChoice;
-//		PrefTextField					ggText;
-//		PrefRecentItemsCombo			ggRecentItems;
-//		JButton							ggButton;
 		JTabbedPane						ggTabPane;
 		JLabel							lb;
 		JComboBox						ggCombo;
         UIManager.LookAndFeelInfo[]		lafInfos;
 		Box								b;
-//		final SpringPanel				pAudio;
 
 		Preferences						prefs;
 		String							key, key2, title;
@@ -196,7 +191,7 @@ implements SwingConstants
 
 		// ---------- global pane ----------
 
-		tab		= new SpringPanel( 2, 1, 4, 2 );
+		tab		= createTab();
 
 		row		= 0;
 		prefs   = IOUtil.getUserPrefs();
@@ -352,22 +347,14 @@ implements SwingConstants
 //		ggKeyStroke.setPreferences( prefs, key );
 //		tab.gridAdd( ggKeyStroke, 1, row, -1, 1 );
 
-		key2	= "prefsGeneral";
-		tab.makeCompactGrid();
-		tabWrap = new JPanel( new BorderLayout() );
-		tabWrap.add( tab, BorderLayout.NORTH );
-		p		= new JPanel( new FlowLayout( FlowLayout.RIGHT ));
-		p.add( new HelpButton( key2 ));
-		tabWrap.add( p, BorderLayout.SOUTH );
-//		HelpGlassPane.setHelp( tabWrap, key2 );
-		ggTabPane.addTab( getResourceString( key2 ), null, tabWrap, null );
+		addTab( ggTabPane, tab, "prefsGeneral");
 
 		// ---------- audio pane ----------
 
 		prefs   = app.getUserPrefs().node( PrefsUtil.NODE_AUDIO );
 		audioPrefs	= prefs;
 		abPrefs	= audioPrefs.node( PrefsUtil.NODE_AUDIOBOXES );
-		tab		= new SpringPanel( 2, 1, 4, 2 );
+		tab		= createTab();
 
 		row		= 0;
 		key		= PrefsUtil.KEY_SUPERCOLLIDERAPP;
@@ -402,37 +389,6 @@ implements SwingConstants
 		lb		= new JLabel( getResourceString( "labelAudioIFs" ), TRAILING );
 		tab.gridAdd( lb, 0, row );
 		tab.gridAdd( createAudioBoxGUI(), 1, row, 1, -1 );
-
-//		row++;
-//		key		= PrefsUtil.KEY_AUDIODEVICE;
-//		key2	= "prefsAudioDevice";
-//		lb		= new JLabel( getResourceString( key2 ), JLabel.TRAILING );
-//		tab.gridAdd( lb, 0, row );
-//		ggText  = new PrefTextField( 32 );
-//		ggText.setPreferences( prefs, key );
-//		ggRecentItems = new PrefRecentItemsCombo( ggText, 6 );
-//		ggRecentItems.setPreferences( prefs, key + "-recent" );
-//		tab.gridAdd( ggRecentItems, 1, row, -1, 1 );
-//
-//		row++;
-//		key		= PrefsUtil.KEY_AUDIOINPUTS;
-//		key2	= "prefsAudioInputChannels";
-//		lb		= new JLabel( getResourceString( key2 ), JLabel.TRAILING );
-//		tab.gridAdd( lb, 0, row );
-//		ggParam  = new PrefParamField();
-//		ggParam.addSpace( spcIntegerFromZero );
-//		ggParam.setPreferences( prefs, key );
-//		tab.gridAdd( ggParam, 1, row, -1, 1 );
-//
-//		row++;
-//		key		= PrefsUtil.KEY_AUDIOOUTPUTS;
-//		key2	= "prefsAudioOutputChannels";
-//		lb		= new JLabel( getResourceString( key2 ), JLabel.TRAILING );
-//		tab.gridAdd( lb, 0, row );
-//		ggParam  = new PrefParamField();
-//		ggParam.addSpace( spcIntegerFromZero );
-//		ggParam.setPreferences( prefs, key );
-//		tab.gridAdd( ggParam, 1, row, -1, 1 );
 
 		row++;
 		key		= PrefsUtil.KEY_AUDIORATE;
@@ -569,35 +525,28 @@ final SpringPanel tabAudio = tab;
 			}
 		});
 
-		key2	= "prefsAudio";
-		tab.makeCompactGrid();
-		tabWrap = new JPanel( new BorderLayout() );
-		tabWrap.add( tab, BorderLayout.NORTH );
-		p		= new JPanel( new FlowLayout( FlowLayout.RIGHT ));
-		p.add( new HelpButton( key2 ));
-		tabWrap.add( p, BorderLayout.SOUTH );
-		ggTabPane.addTab( getResourceString( key2 ), null, tabWrap, null );
+		addTab( ggTabPane, tab, "prefsAudio" );
 
-		// ---------- session pane ----------
+		// ---------- view pane ----------
+
+		prefs   = app.getUserPrefs().node( PrefsUtil.NODE_VIEW );
+		tab		= createTab();
+		
+		row		= 0;
+		key		= PrefsUtil.NODE_SONAGRAM;
+		key2	= "prefsSonaSettings";
+		lb		= new JLabel( getResourceString( key2 ), CENTER );
+		tab.gridAdd( lb, 0, row, 2, 1 );
+		row++;
+		final ConstQPane prefConstQ = new ConstQPane();
+		prefConstQ.setPreferences( prefs.node( key ));
+		tab.gridAdd( prefConstQ, 0, row, -1, 1 );
+		
+		addTab( ggTabPane, tab, "prefsView" );
 
 		// ---------- generic gadgets ----------
 
-//        ggButton	= new JButton( getResourceString( "buttonClose" ));
-//        buttonPanel = new JPanel( new FlowLayout( FlowLayout.RIGHT, 4, 4 ));
-//        buttonPanel.add( ggButton );
-//        ggButton.addActionListener( new ActionListener() {
-//			public void actionPerformed( ActionEvent newEvent )
-//			{
-//				setVisible( false );
-//                dispose();
-//			}	
-//		});
-//        if( app.getUserPrefs().getBoolean( PrefsUtil.KEY_INTRUDINGSIZE, false )) {
-//            buttonPanel.add( Box.createHorizontalStrut( 16 ));
-//        }
-
 		cp.add( ggTabPane, BorderLayout.CENTER );
-//        cp.add( buttonPanel, BorderLayout.SOUTH );
 		AbstractWindowHandler.setDeepFont( cp );
 
 		// ---------- listeners ----------
@@ -613,6 +562,24 @@ final SpringPanel tabAudio = tab;
 		setDefaultCloseOperation( WindowConstants.DO_NOTHING_ON_CLOSE );
 		init();
 		app.addComponent( Main.COMP_PREFS, this );
+    }
+    
+    private SpringPanel createTab()
+    {
+    	return new SpringPanel( 2, 1, 4, 2 );
+    }
+    
+    private void addTab( JTabbedPane ggTabPane, SpringPanel tab, String key )
+    {
+    	final JPanel tabWrap, p;
+    	
+		tab.makeCompactGrid();
+		tabWrap = new JPanel( new BorderLayout() );
+		tabWrap.add( tab, BorderLayout.NORTH );
+		p		= new JPanel( new FlowLayout( FlowLayout.RIGHT ));
+		p.add( new HelpButton( key ));
+		tabWrap.add( p, BorderLayout.SOUTH );
+		ggTabPane.addTab( getResourceString( key ), null, tabWrap, null );
     }
 	
 	protected boolean autoUpdatePrefs()

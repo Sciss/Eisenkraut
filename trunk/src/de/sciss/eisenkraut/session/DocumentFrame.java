@@ -890,7 +890,7 @@ actionReverse.setEnabled( false ); // currently broken (re FilterDialog)
 //		new DynamicAncestorAdapter
 		addDynamicListening( new DynamicPrefChangeManager( app.getUserPrefs(), new String[] {
 			PrefsUtil.KEY_VIEWNULLLINIE, PrefsUtil.KEY_VIEWVERTICALRULERS, PrefsUtil.KEY_VIEWMARKERS,
-			PrefsUtil.KEY_TIMEUNITS, PrefsUtil.KEY_AMPSCALE, PrefsUtil.KEY_VIEWCHANMETERS },
+			PrefsUtil.KEY_TIMEUNITS, PrefsUtil.KEY_VERTSCALE, PrefsUtil.KEY_VIEWCHANMETERS },
 			this )); // .addTo( rp );
 
 		initBounds();	// be sure this is after documentUpdate!
@@ -2044,9 +2044,9 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 		} else if( key == PrefsUtil.KEY_TIMEUNITS ) {
 			final boolean timeSmps = e.getNode().getInt( key, PrefsUtil.TIME_SAMPLES ) == PrefsUtil.TIME_SAMPLES;
 			msgCsr1.applyPattern( timeSmps ? smpPtrn : timePtrn );
-		} else if( key == PrefsUtil.KEY_AMPSCALE) {
-			final boolean ampLog = e.getNode().getInt( key, PrefsUtil.AMP_LIN ) == PrefsUtil.AMP_LOG;
-			waveView.setLogarithmic( ampLog );
+		} else if( key == PrefsUtil.KEY_VERTSCALE) {
+			final int vertScale = e.getNode().getInt( key, PrefsUtil.VSCALE_AMP_LIN );
+			waveView.setVerticalScale( vertScale );
 			actionIncVertMax.updateRuler();
 		}
 	}
@@ -2666,15 +2666,26 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 			final float			min, max;
 			Axis				chanRuler;
 			
-			if( waveView.isLogarithmic() ) {
-				min = waveView.getLogMin();
-				max = waveView.getLogMax();
-			} else {
-				min = waveView.getLinearMin() * 100;
-				max = waveView.getLinearMax() * 100;
+			switch( waveView.getVerticalScale() ) {
+			case PrefsUtil.VSCALE_AMP_LIN:
+				min = waveView.getAmpLinMin() * 100;
+				max = waveView.getAmpLinMax() * 100;
+				spc = VectorSpace.createLinSpace( 0.0, 1.0, min, max, null, null, null, null );
+				break;
+			case PrefsUtil.VSCALE_AMP_LOG:
+				min = waveView.getAmpLogMin();
+				max = waveView.getAmpLogMax();
+				spc = VectorSpace.createLinSpace( 0.0, 1.0, min, max, null, null, null, null );
+				break;
+			case PrefsUtil.VSCALE_FREQ_SPECT:
+				min = waveView.getAmpLogMin();
+				max = waveView.getAmpLogMax();
+				spc = VectorSpace.createLinSpace( 0.0, 1.0, min, max, null, null, null, null );
+				break;
+			default:
+				assert false : waveView.getVerticalScale();
+				spc = null;
 			}
-
-			spc = VectorSpace.createLinSpace( 0.0, 1.0, min, max, null, null, null, null );
 
 			for( int i = 0; i < collChannelRulers.size(); i++ ) {
 				chanRuler	= (Axis) collChannelRulers.get( i );
@@ -2706,20 +2717,20 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 		
 		public void actionPerformed( ActionEvent e )
 		{
-			if( waveView.isLogarithmic() ) zoomLog(); else zoomLin();
+			if( waveView.getVerticalScale() == PrefsUtil.VSCALE_AMP_LIN ) zoomLin(); else zoomLog();
 		}
 		
 		private void zoomLin()
 		{
 			float min, max;
 
-			min = waveView.getLinearMin();
-			max = waveView.getLinearMax();
+			min = waveView.getAmpLinMin();
+			max = waveView.getAmpLinMax();
 
 			if( ((linFactor >= 1.0f) && (min > -1.0e6f) && (max < 1.0e6f)) || (linFactor < 1.0f && (min < -1.0e-4f) && (max > 1.0e-4f)) ) {
 				min	   *= linFactor;
 				max	   *= linFactor;
-				waveView.setLinearMinMax( min, max );
+				waveView.setAmpLinMinMax( min, max );
 				updateRuler();
 			}
 		}
@@ -2728,14 +2739,14 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 		{
 			float min, max;
 
-			min = waveView.getLogMin();
-			max = waveView.getLogMax();
+			min = waveView.getAmpLogMin();
+			max = waveView.getAmpLogMax();
 
 			if( (max + logOffset - min >= 6f) &&
 				(((logOffset >= 0f) && (max < 60)) || (logOffset < 0f && (max > -160))) ) {
 //				min	   += logOffset;
 				max	   += logOffset;
-				waveView.setLogMinMax( min, max );
+				waveView.setAmpLogMinMax( min, max );
 				updateRuler();
 			}
 		}
@@ -2760,21 +2771,21 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 		
 		public void actionPerformed( ActionEvent e )
 		{
-			if( waveView.isLogarithmic() ) zoomLog();
+			if( waveView.getVerticalScale() != PrefsUtil.VSCALE_AMP_LIN ) zoomLog();
 		}
 		
 		private void zoomLog()
 		{
 			float min, max;
 
-			min = waveView.getLogMin();
-			max = waveView.getLogMax();
+			min = waveView.getAmpLogMin();
+			max = waveView.getAmpLogMax();
 
 			if( (max - (min + logOffset) >= 6f) &&
 				(((logOffset >= 0f) && (min < 60)) || (logOffset < 0f && (max > -160))) ) {
 				min	   += logOffset;
 //				max	   += logOffset;
-				waveView.setLogMinMax( min, max );
+				waveView.setAmpLogMinMax( min, max );
 				updateRuler();
 			}
 		}

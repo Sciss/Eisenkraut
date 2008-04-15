@@ -366,21 +366,25 @@ if( doc.getFrame() == null ) {
 		ia.setRadioGroup( rg );
 		ia.setPreferences( prefs, PrefsUtil.KEY_TIMEUNITS );
 		ia			= new IntPrefsMenuAction( getResourceString( "menuTimeUnitsMinSecs" ), null, PrefsUtil.TIME_MINSECS );
-		smg.add( new MenuRadioItem( rg, "minSecs", ia ));	// crucial reihenfolge : erst item erzeugen, dann gruppe setzen, dann prefs
+		smg.add( new MenuRadioItem( rg, "minSecs", ia ));
 		ia.setRadioGroup( rg );
 		ia.setPreferences( prefs, PrefsUtil.KEY_TIMEUNITS );
 		mg.add( smg );
 
-		smg			= new MenuGroup( "amplitude", getResourceString( "menuAmpScale" ));
-		ia			= new IntPrefsMenuAction( getResourceString( "menuAmpScaleLin" ), null, PrefsUtil.TIME_SAMPLES );
+		smg			= new MenuGroup( "vertscale", getResourceString( "menuVertScale" ));
+		ia			= new IntPrefsMenuAction( getResourceString( "menuVertScaleAmpLin" ), null, PrefsUtil.TIME_SAMPLES );
 		rg			= new MenuRadioGroup();
-		smg.add( new MenuRadioItem( rg, "linear", ia ));	// crucial reihenfolge : erst item erzeugen, dann gruppe setzen, dann prefs
+		smg.add( new MenuRadioItem( rg, "amplin", ia ));	// crucial reihenfolge : erst item erzeugen, dann gruppe setzen, dann prefs
 		ia.setRadioGroup( rg );
-		ia.setPreferences( prefs, PrefsUtil.KEY_AMPSCALE );
-		ia			= new IntPrefsMenuAction( getResourceString( "menuAmpScaleLog" ), null, PrefsUtil.TIME_MINSECS );
-		smg.add( new MenuRadioItem( rg, "logarithmic", ia ));	// crucial reihenfolge : erst item erzeugen, dann gruppe setzen, dann prefs
+		ia.setPreferences( prefs, PrefsUtil.KEY_VERTSCALE );
+		ia			= new IntPrefsMenuAction( getResourceString( "menuVertScaleAmpLog" ), null, PrefsUtil.TIME_MINSECS );
+		smg.add( new MenuRadioItem( rg, "amplog", ia ));
 		ia.setRadioGroup( rg );
-		ia.setPreferences( prefs, PrefsUtil.KEY_AMPSCALE );
+		ia.setPreferences( prefs, PrefsUtil.KEY_VERTSCALE );
+		ia			= new IntPrefsMenuAction( getResourceString( "menuVertScaleFreqSpect" ), null, PrefsUtil.TIME_MINSECS );
+		smg.add( new MenuRadioItem( rg, "freqspect", ia ));
+		ia.setRadioGroup( rg );
+		ia.setPreferences( prefs, PrefsUtil.KEY_VERTSCALE );
 		mg.add( smg );
 
 		ba			= new BooleanPrefsMenuAction( getResourceString( "menuViewNullLinie" ), null );

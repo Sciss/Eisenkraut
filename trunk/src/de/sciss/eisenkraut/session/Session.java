@@ -427,11 +427,6 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 		return at;
 	}
 	
-//	public void setDecimatedTrail( DecimatedTrail dt )
-//	{
-//		this.dt = dt;
-//	}
-	
 	public DecimatedWaveTrail getDecimatedWaveTrail()
 	{
 		return dwt;

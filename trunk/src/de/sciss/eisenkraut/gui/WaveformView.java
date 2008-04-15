@@ -46,6 +46,7 @@ import de.sciss.eisenkraut.io.DecimatedSonaTrail;
 import de.sciss.eisenkraut.io.DecimatedWaveTrail;
 import de.sciss.eisenkraut.io.DecimationInfo;
 import de.sciss.eisenkraut.session.Session;
+import de.sciss.eisenkraut.util.PrefsUtil;
 import de.sciss.gui.ComponentHost;
 import de.sciss.io.Span;
 import de.sciss.util.Disposable;
@@ -68,18 +69,16 @@ implements Disposable
 		
 	private Rectangle			r				= new Rectangle();
 	
-//	private static final Stroke	strkLine		= new BasicStroke( 0.5f );
-//	private static final Paint	pntArea			= new Color( 0x00, 0x00, 0x00, 0x7F );
-//	private static final Paint	pntLine			= Color.black;
 	private static final Paint	pntNull			= new Color( 0x7F, 0x7F, 0x00, 0xC0 );
 	private static final Stroke	strkNull		= new BasicStroke( 1.0f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_BEVEL,
 													1.0f, new float[] { 4.0f, 4.0f }, 0.0f );
 
-	private boolean				logarithmic		= false;
-	private float				linearMin		= -1.0f;	// minimum vector value
-	private float				linearMax		= 1.0f;		// maximum vector value
-	private float				logMin			= -60f;
-	private float				logMax			= 0f;
+	private int					vertScale		= PrefsUtil.VSCALE_AMP_LIN;
+//	private boolean				logarithmic		= false;
+	private float				ampLinMin		= -1.0f;	// minimum vector value
+	private float				ampLinMax		= 1.0f;		// maximum vector value
+	private float				ampLogMin			= -60f;
+	private float				ampLogMax			= 0f;
 	private boolean				nullLinie		= false;
 
 	private final Session		doc;
@@ -124,27 +123,40 @@ implements Disposable
 		return nullLinie;
 	}
 	
-	public void setLogarithmic( boolean onOff )
+	public void setVerticalScale( int mode )
 	{
-		if( logarithmic != onOff ) {
-			logarithmic = onOff;
+		if( vertScale != mode ) {
+			vertScale = mode;
 			triggerRedisplay();
 		}
 	}
 
-	public boolean isLogarithmic()
+	public int getVerticalScale()
 	{
-		return logarithmic;
+		return vertScale;
 	}
+
+//	public void setLogarithmic( boolean onOff )
+//	{
+//		if( logarithmic != onOff ) {
+//			logarithmic = onOff;
+//			triggerRedisplay();
+//		}
+//	}
+//
+//	public boolean isLogarithmic()
+//	{
+//		return logarithmic;
+//	}
 
 	/**
 	 *  Gets the minimum allowed y value
 	 *
 	 *  @return		the minimum specified function value
 	 */
-	public float getLinearMin()
+	public float getAmpLinMin()
 	{
-		return linearMin;
+		return ampLinMin;
 	}
 
 	/**
@@ -152,20 +164,20 @@ implements Disposable
 	 *
 	 *  @return		the maximum specified function value
 	 */
-	public float getLinearMax()
+	public float getAmpLinMax()
 	{
-		return linearMax;
+		return ampLinMax;
 	}
 
-	public float getLogMin()
+	public float getAmpLogMin()
 	{
-		return logMin;
+		return ampLogMin;
 	}
 
 
-	public float getLogMax()
+	public float getAmpLogMax()
 	{
-		return logMax;
+		return ampLogMax;
 	}
 	
 	/**
@@ -183,23 +195,23 @@ implements Disposable
 	 *				even if values lie outside the new
 	 *				allowed range.
 	 */
-	public void setLinearMinMax( float min, float max )
+	public void setAmpLinMinMax( float min, float max )
 	{
-		if( (this.linearMin != min) || (this.linearMax != max) ) {
-			this.linearMin	= min;
-			this.linearMax	= max;
+		if( (this.ampLinMin != min) || (this.ampLinMax != max) ) {
+			this.ampLinMin	= min;
+			this.ampLinMax	= max;
 
-			if( !logarithmic ) triggerRedisplay();
+			if( vertScale == PrefsUtil.VSCALE_AMP_LIN ) triggerRedisplay();
 		}
 	}
 	
-	public void setLogMinMax( float min, float max )
+	public void setAmpLogMinMax( float min, float max )
 	{
-		if( (this.logMin != min) || (this.logMax != max) ) {
-			this.logMin	= min;
-			this.logMax	= max;
+		if( (this.ampLogMin != min) || (this.ampLogMax != max) ) {
+			this.ampLogMin	= min;
+			this.ampLogMax	= max;
 
-			if( logarithmic ) triggerRedisplay();
+			if( vertScale != PrefsUtil.VSCALE_AMP_LIN ) triggerRedisplay();
 		}
 	}
 
@@ -260,24 +272,39 @@ implements Disposable
 	
 	public DecimationInfo getDecimationInfo() { return info; }
 
-	public void paintComponentLALA( Graphics g )
+	public void paintComponent( Graphics g )
 	{
 		super.paintComponent( g );
-
-//		doRecalc = false;	// not used now
-	
+		
 		if( viewSpan.isEmpty() ) return;
+		final Graphics2D g2 = (Graphics2D) g;
 
-		final Graphics2D			g2		= (Graphics2D) g;
-		final DecimatedSonaTrail	dt		= doc.getDecimatedSonaTrail();
+		switch( vertScale ) {
+		case PrefsUtil.VSCALE_AMP_LIN:
+			paintAmpLin( g2 );
+			break;
+		case PrefsUtil.VSCALE_AMP_LOG:
+			paintAmpLog( g2 );
+			break;
+		case PrefsUtil.VSCALE_FREQ_SPECT:
+			paintFreqSpect( g2 );
+			break;
+		default:
+			assert false : vertScale;
+		}
+	}
+	
+	private void paintAmpLin( Graphics2D g2 )
+	{
+
+		final DecimatedWaveTrail	dt		= doc.getDecimatedWaveTrail();
 		if( dt == null ) return;
 		
-		final int				w		= getWidth();
-//		final int				h		= getHeight();
-		Rectangle				cr;
-		int						y;
+		final int	w	= getWidth();
+		Rectangle	cr;
+		int			y;
 		
-		info	= dt.getBestSubsample( new Span( viewSpan.start, viewSpan.stop + 1 ), w );
+		info = dt.getBestSubsample( new Span( viewSpan.start, viewSpan.stop + 1 ), w );
 		dt.drawWaveform( info, this, g2 );
 
 		if( nullLinie ) {
@@ -291,24 +318,17 @@ implements Disposable
 		}
 	}
 
-	public void paintComponent( Graphics g )
+	private void paintAmpLog( Graphics2D g2 )
 	{
-		super.paintComponent( g );
 
-//		doRecalc = false;	// not used now
-	
-		if( viewSpan.isEmpty() ) return;
-
-		final Graphics2D			g2		= (Graphics2D) g;
 		final DecimatedWaveTrail	dt		= doc.getDecimatedWaveTrail();
 		if( dt == null ) return;
 		
-		final int				w		= getWidth();
-//		final int				h		= getHeight();
-		Rectangle				cr;
-		int						y;
+		final int	w	= getWidth();
+		Rectangle	cr;
+		int			y;
 		
-		info	= dt.getBestSubsample( new Span( viewSpan.start, viewSpan.stop + 1 ), w );
+		info = dt.getBestSubsample( new Span( viewSpan.start, viewSpan.stop + 1 ), w );
 		dt.drawWaveform( info, this, g2 );
 
 		if( nullLinie ) {
@@ -316,10 +336,34 @@ implements Disposable
 			g2.setStroke( strkNull );
 			for( int ch = 0; ch < fullChannels; ch++ ) {
 				cr = rectForChannel( ch );
-				y = cr.y + (logarithmic ? cr.height - 1 : (cr.height >> 1));
+				y = cr.y + cr.height - 1;
 				g2.drawLine( cr.x, y, cr.x + cr.width, y );
 			}
 		}
+	}
+
+	private void paintFreqSpect( Graphics2D g2 )
+	{
+		final DecimatedSonaTrail	dt		= doc.getDecimatedSonaTrail();
+		if( dt == null ) return;
+		
+		final int	w		= getWidth();
+//		Rectangle	cr;
+//		int			y;
+		
+		info	= dt.getBestSubsample( new Span( viewSpan.start, viewSpan.stop + 1 ), w );
+		dt.drawWaveform( info, this, g2 );
+
+// XXX
+//		if( nullLinie ) {
+//			g2.setPaint( pntNull );
+//			g2.setStroke( strkNull );
+//			for( int ch = 0; ch < fullChannels; ch++ ) {
+//				cr = rectForChannel( ch );
+//				y = cr.y + (cr.height >> 1);
+//				g2.drawLine( cr.x, y, cr.x + cr.width, y );
+//			}
+//		}
 	}
 
 	private void triggerRedisplay()

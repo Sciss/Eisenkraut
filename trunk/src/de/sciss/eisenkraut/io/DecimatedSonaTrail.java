@@ -402,8 +402,8 @@ extends BasicTrail
 		int						chunkLen, decimLen;
 		Rectangle				r;
 		
-final float pixScale = 1072 / (view.getLogMax() - view.getLogMin());
-final float pixOff   = -view.getLogMin();
+final float pixScale = 1072 / (view.getAmpLogMax() - view.getAmpLogMin());
+final float pixOff   = -view.getAmpLogMin();
 
 		g2.setRenderingHint( RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR );
 		

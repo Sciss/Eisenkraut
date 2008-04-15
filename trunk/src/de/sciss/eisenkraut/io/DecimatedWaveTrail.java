@@ -54,6 +54,7 @@ import de.sciss.app.EventManager;
 import de.sciss.app.AbstractCompoundEdit;
 import de.sciss.common.ProcessingThread;
 import de.sciss.eisenkraut.gui.WaveformView;
+import de.sciss.eisenkraut.util.PrefsUtil;
 import de.sciss.io.AudioFile;
 import de.sciss.io.AudioFileCacheInfo;
 import de.sciss.io.AudioFileDescr;
@@ -396,6 +397,7 @@ extends BasicTrail
 		final float				maxY, minY, minInpY, deltaY, deltaYN;
 		final float				offY;
 		final int[]				off				= new int[ fullChannels ];
+		final boolean			logAmp			= view.getVerticalScale() == PrefsUtil.VSCALE_AMP_LOG;
 
 		float[]					sPeakP;
 		float					offX, scaleX, scaleY, f1;
@@ -409,13 +411,13 @@ extends BasicTrail
 		try {
 			drawBusyList.clear(); // "must be called in the event thread"
 			
-			if( view.isLogarithmic() ) {
-				maxY	= view.getLogMax();
-				minY	= view.getLogMin();
+			if( logAmp ) {
+				maxY	= view.getAmpLogMax();
+				minY	= view.getAmpLogMin();
 				minInpY = (float) Math.exp( minY / TWENTYBYLOG10 );
 			} else {
-				maxY	= view.getLinearMax();
-				minY	= view.getLinearMin();
+				maxY	= view.getAmpLinMax();
+				minY	= view.getAmpLinMin();
 				minInpY	= 0;	// not used
 			}
 			deltaY	= maxY - minY;
@@ -458,7 +460,7 @@ extends BasicTrail
 						if( info.inlineDecim > 1 ) decimator.decimate( tmpBuf2, tmpBuf2, 0, decimLen, info.inlineDecim );
 					}
 					if( toPCM ) {
-						if( view.isLogarithmic() ) {
+						if( logAmp ) {
 							for( int ch = 0; ch < fullChannels; ch++ ) {
 								sPeakP = tmpBuf[ ch ];
 								for( int i = 0; i < decimLen; i++ ) {
@@ -482,7 +484,7 @@ extends BasicTrail
 								       			           peakPolyY[ ch ], off[ ch ], offX, scaleX, scaleY, sampleAndHold[ ch ]);
 						}
 					} else {
-						if( view.isLogarithmic() ) {
+						if( logAmp ) {
 							for( int ch = 0; ch < fullChannels; ch++ ) {
 								off[ ch ] = decimator.drawLog( info, ch, peakPolyX, peakPolyY, rmsPolyX, rmsPolyY, decimLen, view.rectForChannel( ch ), deltaYN, off[ ch ], minY, minInpY );
 							}
@@ -556,6 +558,7 @@ extends BasicTrail
 			System.err.println( e1 );
 		}
 	}
+
 
 	/**
 	 * Determines which subsampled version is suitable for a given display range
