@@ -28,6 +28,7 @@
  *		12-Jul-06	added fullwave peak/rms support
  *		27-Mar-07	fixed cache support
  *		18-Feb-08	renamed from DecimatedTrail to DecimatedWaveTrail
+ *		15-Apr-08	subclassing DecimatedTrail
  */
 
 package de.sciss.eisenkraut.io;
@@ -39,18 +40,13 @@ import java.awt.Paint;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.Stroke;
-import java.awt.TexturePaint;
 import java.awt.geom.AffineTransform;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.undo.CompoundEdit;
 
 import de.sciss.app.AbstractApplication;
-import de.sciss.app.BasicEvent;
-import de.sciss.app.EventManager;
 import de.sciss.app.AbstractCompoundEdit;
 import de.sciss.common.ProcessingThread;
 import de.sciss.eisenkraut.gui.WaveformView;
@@ -61,42 +57,22 @@ import de.sciss.io.AudioFileDescr;
 import de.sciss.io.CacheManager;
 import de.sciss.io.IOUtil;
 import de.sciss.io.Span;
-import de.sciss.timebased.BasicTrail;
 import de.sciss.util.MutableInt;
 
 /**
- * @version 0.70, 12-Nov-07
+ *	@version	0.70, 15-Apr-08
+ *	@author		Hanns Holger Rutz
  * 
- * @todo common superclass of AudioTrail and DecimatedTrail
- * @todo drawWaveform : the initial idea was that readFrames should be removed ;
- *       instead of filling "missing" samples, the polygon creation should use
- *       biased x position. also for coherency, drawPCM should use a Polygon not
- *       GeneralPath
+ *	@todo	common superclass of AudioTrail and DecimatedTrail
+ *	@todo	drawWaveform : the initial idea was that readFrames should be removed ;
+ *      	instead of filling "missing" samples, the polygon creation should use
+ *       	biased x position. also for coherency, drawPCM should use a Polygon not
+ *       	GeneralPath
  */
 public class DecimatedWaveTrail
-extends BasicTrail
+extends DecimatedTrail
 {
 	private static final int		UPDATE_PERIOD			= 2000; // millisecs in async overview calculation
-
-	private static final boolean	DEBUG					= false;
-
-	public static final int			MODEL_PCM				= 0;
-	public static final int			MODEL_HALFWAVE_PEAKRMS	= 1;
-	public static final int			MODEL_MEDIAN			= 2;
-	public static final int			MODEL_FULLWAVE_PEAKRMS	= 3;
-
-	// dependance tracking that take longer than this amount in millisecs
-	// will be queued on the async thread
-	// private static final int INPLACE_TIMEOUT = 2000;
-
-	private final int				modelChannels;
-	protected final int				decimChannels;
-	protected final int				fullChannels;
-	private final int				model;
-
-	private AudioFile[]				tempF					= null; // lazy
-	protected final DecimationHelp[] decimHelps;
-	protected final AudioTrail		fullScale;
 
 	private final int				SUBNUM;
 	private final int				MAXSHIFT;
@@ -116,60 +92,6 @@ extends BasicTrail
 	private static final Stroke		strkLine				= new BasicStroke(2.0f);
 
 	private static final Paint		pntLine					= Color.black;
-
-	// private static final Paint pntArea = new Color( 0x00, 0x00, 0x00, 0x7F );
-	// private static final Paint pntNull = new Color( 0x7F, 0x7F, 0x00, 0xC0 );
-	// private static final Stroke strkNull = new BasicStroke( 1.0f,
-	// BasicStroke.CAP_SQUARE, BasicStroke.JOIN_BEVEL,
-	// 1.0f, new float[] { 4.0f, 4.0f }, 0.0f );
-	private static final Paint		pntBusy;
-
-	private static final int[]		busyPixels = {
-			0xFFCBCBCB, 0xFFC0C0C0, 0xFFA8A8A8,
-			0xFFE6E6E6, 0xFFB2B2B2, 0xFFCACACA,
-			0xFFB1B1B1, 0xFFD5D5D5, 0xFFC0C0C0 };
-
-	protected final Object			bufSync					= new Object();
-	private final Object			fileSync				= new Object();
-
-	private final List				drawBusyList			= new ArrayList();
-
-	protected Thread				threadAsync				= null;
-	private AudioFile[]				tempFAsync				= null; // lazy
-	protected volatile boolean		keepAsyncRunning		= false;
-
-	protected EventManager			asyncManager			= null;
-	
-	protected static final double	TWENTYBYLOG10			= 20 / Math.log( 10 ); // 8.685889638065;
-	protected static final double	TENBYLOG10				= 10 / Math.log( 10 );
-
-	static {
-		final BufferedImage img = new BufferedImage( 3, 3, BufferedImage.TYPE_INT_ARGB );
-		img.setRGB( 0, 0, 3, 3, busyPixels, 0, 3 );
-		pntBusy = new TexturePaint( img, new Rectangle( 0, 0, 3, 3 ));
-	}
-
-	// public DecimatedTrail( DecimatedTrail parentSub, int shift )
-	// {
-	// super();
-	//
-	// final int factor = 1 << shift;
-	//	
-	// decimChannels = parentSub.getChannelNum();
-	// this.shift = shift;
-	// roundAdd = factor >> 1;
-	// mask = -factor;
-	//
-	// setRate( fullScale.getRate() / factor );
-	//		
-	// parentTrail = parentSub;
-	// parentTrail.addDependant( this );
-	// }
-
-	protected BasicTrail createEmptyCopy()
-	{
-		throw new IllegalStateException( "Not allowed" );
-	}
 
 	public DecimatedWaveTrail( AudioTrail fullScale, int model, int[] decimations )
 	throws IOException
@@ -756,64 +678,6 @@ extends BasicTrail
 		}
 	}
 
-	private void killAsyncThread()
-	{
-		if( threadAsync != null ) {
-			synchronized( threadAsync ) {
-				if( threadAsync.isAlive() ) {
-					keepAsyncRunning = false;
-					try {
-						threadAsync.wait();
-					} catch( InterruptedException e1 ) {
-						System.err.println( e1 );
-					}
-				}
-			}
-		}
-	}
-
-	public boolean isBusy()
-	{
-		return( (threadAsync != null) && threadAsync.isAlive() );
-	}
-
-	public void addAsyncListener( AsyncListener l )
-	{
-		if( !isBusy() ) {
-			l.asyncFinished( new AsyncEvent( this, AsyncEvent.FINISHED, System.currentTimeMillis()) );
-			return;
-		}
-		if( asyncManager == null ) {
-			asyncManager = new EventManager( new EventManager.Processor() {
-				public void processEvent( BasicEvent e ) {
-					final AsyncEvent	ae = (AsyncEvent) e;
-					AsyncListener		al;
-
-					for( int i = 0; i < asyncManager.countListeners(); i++ ) {
-						al = (AsyncListener) asyncManager.getListener( i );
-						switch( e.getID() ) {
-						case AsyncEvent.UPDATE:
-							al.asyncUpdate( ae );
-							break;
-						case AsyncEvent.FINISHED:
-							al.asyncFinished( ae );
-							break;
-						default:
-							assert false : e.getID();
-							break;
-						}
-					}
-				}
-			});
-		}
-		asyncManager.addListener( l );
-	}
-
-	public void removeAsyncListener( AsyncListener l )
-	{
-		if( asyncManager != null ) asyncManager.removeListener( l );
-	}
-
 	// ----------- dependant implementation -----------
 
 	public void dispose()
@@ -886,7 +750,7 @@ extends BasicTrail
 		final Object				source		= null; // XXX
 		final AudioStake			cacheReadAS;
 		final AudioStake			cacheWriteAS;
-		final DecimatedWaveTrail	enc_this	= this;
+		final DecimatedTrail	enc_this	= this;
 
 		synchronized( fileSync ) {
 			das			= allocAsync( union );
@@ -1356,9 +1220,10 @@ extends BasicTrail
 	}
 
 	// @synchronization caller must have sync on fileSync !!!
-	private DecimatedWaveStake alloc(Span span) throws IOException {
-		if (!Thread.holdsLock(fileSync))
-			throw new IllegalMonitorStateException();
+	private DecimatedWaveStake alloc( Span span )
+	throws IOException
+	{
+		if( !Thread.holdsLock( fileSync )) throw new IllegalMonitorStateException();
 
 		final long floorStart = span.start & MAXMASK;
 		final long ceilStop = (span.stop + MAXCEILADD) & MAXMASK;
@@ -1387,21 +1252,12 @@ extends BasicTrail
 				decimHelps);
 	}
 
-	// private InterleavedStreamFile[] prepareTempFiles()
-	// throws IOException
-	// {
-	// if( tempF == null ) {
-	// tempF = createTempFiles(); // XXX sync
-	// } else {
-	// tempF.seekFrame( tempF.getFrameNum() );
-	// }
-	// return tempF;
-	// }
-
-	private AudioFile[] createTempFiles() throws IOException {
+	private AudioFile[] createTempFiles()
+	throws IOException
+	{
 		// simply use an AIFC file with float format as temp file
 		final AudioFileDescr proto = new AudioFileDescr();
-		final AudioFile[] tempFiles = new AudioFile[SUBNUM];
+		final AudioFile[] tempFiles = new AudioFile[ SUBNUM ];
 		AudioFileDescr afd;
 		proto.type = AudioFileDescr.TYPE_AIFF;
 		proto.channels = decimChannels;
@@ -1482,35 +1338,6 @@ extends BasicTrail
 			// ste[i].continueWrite( ts[i], framesWritten, outBuf, 0, len );
 			das.continueWrite( i, buf, 0, len );
 		} // for( SUBNUM )
-	}
-
-	// ---------------------- internal classes and interfaces ----------------------
-
-	public static interface AsyncListener {
-		public void asyncFinished( AsyncEvent e );
-		public void asyncUpdate( AsyncEvent e );
-	}
-
-	public static class AsyncEvent
-	extends BasicEvent
-	{
-		protected static final int UPDATE = 0;
-		protected static final int FINISHED = 1;
-
-		protected AsyncEvent( Object source, int id, long when ) {
-			super( source, id, when );
-		}
-
-		public boolean incorporate( BasicEvent oldEvent )
-		{
-			if( (oldEvent instanceof AsyncEvent) &&
-				(this.getSource() == oldEvent.getSource()) &&
-				(this.getID() == oldEvent.getID()) ) {
-
-				return true;
-			} else
-				return false;
-		}
 	}
 
 	// ---------------------- decimation subclasses ----------------------

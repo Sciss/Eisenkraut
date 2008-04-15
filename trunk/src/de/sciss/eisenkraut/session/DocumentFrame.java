@@ -131,6 +131,7 @@ import de.sciss.eisenkraut.gui.ToolActionEvent;
 import de.sciss.eisenkraut.gui.ToolActionListener;
 import de.sciss.eisenkraut.gui.WaveformView;
 import de.sciss.eisenkraut.io.AudioTrail;
+import de.sciss.eisenkraut.io.DecimatedTrail;
 import de.sciss.eisenkraut.io.DecimatedWaveTrail;
 import de.sciss.eisenkraut.io.DecimationInfo;
 import de.sciss.eisenkraut.net.SuperColliderClient;
@@ -3373,7 +3374,7 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 			csrInfo[0]		= msgCsr1.format( argsCsr );
 			
 			switch( info.model ) {
-			case DecimatedWaveTrail.MODEL_PCM:
+			case DecimatedTrail.MODEL_PCM:
 //			if( info.getDecimationFactor() == 1 ) {
 				at			= doc.getAudioTrail();
 				data		= new float[ at.getChannelNum() ][];
@@ -3395,7 +3396,7 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 				}
 				break;
 				
-			case DecimatedWaveTrail.MODEL_FULLWAVE_PEAKRMS:
+			case DecimatedTrail.MODEL_FULLWAVE_PEAKRMS:
 				dt			= doc.getDecimatedWaveTrail();
 				frame		= new float[ dt.getNumModelChannels() ];
 //				dt.readFrame( info.idx, pos, ch, frame );

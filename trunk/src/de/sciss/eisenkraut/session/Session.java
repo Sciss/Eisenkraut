@@ -50,6 +50,7 @@ import de.sciss.eisenkraut.gui.BlendingAction;
 import de.sciss.eisenkraut.io.AudioTrail;
 import de.sciss.eisenkraut.io.BlendContext;
 import de.sciss.eisenkraut.io.DecimatedSonaTrail;
+import de.sciss.eisenkraut.io.DecimatedTrail;
 import de.sciss.eisenkraut.io.DecimatedWaveTrail;
 import de.sciss.eisenkraut.io.MarkerTrail;
 import de.sciss.eisenkraut.net.OSCRoot;
@@ -509,7 +510,7 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 	throws IOException
 	{
 		if( dwt != null ) throw new IllegalStateException();
-		dwt	= new DecimatedWaveTrail( at, DecimatedWaveTrail.MODEL_FULLWAVE_PEAKRMS, waveDecims );
+		dwt	= new DecimatedWaveTrail( at, DecimatedTrail.MODEL_FULLWAVE_PEAKRMS, waveDecims );
 	}
 	
 	private void createDecimatedSonaTrail()
