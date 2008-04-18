@@ -131,7 +131,6 @@ import de.sciss.eisenkraut.gui.ToolActionEvent;
 import de.sciss.eisenkraut.gui.ToolActionListener;
 import de.sciss.eisenkraut.gui.WaveformView;
 import de.sciss.eisenkraut.io.AudioTrail;
-import de.sciss.eisenkraut.io.DecimatedSonaTrail;
 import de.sciss.eisenkraut.io.DecimatedTrail;
 import de.sciss.eisenkraut.io.DecimatedWaveTrail;
 import de.sciss.eisenkraut.io.DecimationInfo;
@@ -220,6 +219,8 @@ implements ProgressComponent, TimelineListener,
 	
 	private final JLabel					lbSRC;
 	protected final TreeExpanderButton		ggTreeExp;
+	
+	private DecimatedTrail					asyncTrail				= null;
 
 	// --- tools ---
 	
@@ -947,31 +948,34 @@ actionReverse.setEnabled( false ); // currently broken (re FilterDialog)
 	
 	protected void checkDecimatedTrails()
 	{
-		final DecimatedWaveTrail	dwt	= doc.getDecimatedWaveTrail();
-		final DecimatedSonaTrail	dst	= doc.getDecimatedSonaTrail();
-
-		if( dwt != null ) dwt.removeAsyncListener( this );
-		if( dst != null ) dst.removeAsyncListener( this );
+		final DecimatedTrail		dt;
 		
 		if( waveExpanded ) {
 			if( waveView.getVerticalScale() == PrefsUtil.VSCALE_FREQ_SPECT ) {
-				if( dst == null ) {
+				if( doc.getDecimatedSonaTrail() == null ) {
 					try {
-						doc.createDecimatedSonaTrail().addAsyncListener( this );
+						doc.createDecimatedSonaTrail();
 					}
 					catch( IOException e1 ) {
 						e1.printStackTrace();
 					}
 				}
+				dt = doc.getDecimatedSonaTrail();
 			} else {
-				if( dwt == null ) {
+				if( doc.getDecimatedWaveTrail() == null ) {
 					try {
-						doc.createDecimatedWaveTrail().addAsyncListener( this );
+						doc.createDecimatedWaveTrail();
 					}
 					catch( IOException e1 ) {
 						e1.printStackTrace();
 					}
 				}
+				dt = doc.getDecimatedWaveTrail();
+			}
+			if( dt != asyncTrail ) {
+				if( asyncTrail != null ) asyncTrail.removeAsyncListener( this );
+				asyncTrail = dt;
+				if( asyncTrail != null ) asyncTrail.addAsyncListener( this );
 			}
 		}
 	}
@@ -1729,12 +1733,16 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 
 	public void asyncFinished( DecimatedTrail.AsyncEvent e )
 	{
-		e.getDecimatedTrail().removeAsyncListener( this );
+//System.out.println( "asyncFinished " + e.getDecimatedTrail() );
+		final DecimatedTrail dt = e.getDecimatedTrail();
+		dt.removeAsyncListener( this );
+		if( dt == asyncTrail ) asyncTrail = null;
 		updateOverviews( false, true );
 	}
 
 	public void asyncUpdate( DecimatedTrail.AsyncEvent e )
 	{
+//System.out.println( "asyncUpdate " + e.getDecimatedTrail() );
 		updateOverviews( false, true );
 	}
 	
