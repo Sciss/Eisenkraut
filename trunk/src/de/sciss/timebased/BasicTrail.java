@@ -54,7 +54,7 @@ import de.sciss.io.Span;
 import de.sciss.util.ListEnum;
 
 /**
- *	@version	0.20, 18-Mar-08
+ *	@version	0.21, 19-Apr-08
  *	@author		Hanns Holger Rutz
  *
  *	@todo		addPerform( new Edit-Dispatch ) ueberpruefen (evtl. redundant)
@@ -150,8 +150,9 @@ implements Trail, EventManager.Processor
 		// coz they might otherwise try be keep running stuff which is already disposed
 		if( dependants != null ) {
 			synchronized( dependants ) {
-				for( int i = 0; i < dependants.size(); i++ ) {
-					((BasicTrail) dependants.get( i )).dispose();
+				final Object[] dep = dependants.toArray();
+				for( int i = 0; i < dep.length; i++ ) {
+					((BasicTrail) dep[ i ]).dispose();
 				}
 			}
 		}

@@ -44,7 +44,6 @@ import java.awt.geom.AffineTransform;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import javax.swing.undo.CompoundEdit;
 
 import de.sciss.app.AbstractApplication;
 import de.sciss.app.AbstractCompoundEdit;
@@ -54,7 +53,6 @@ import de.sciss.io.AudioFile;
 import de.sciss.io.AudioFileCacheInfo;
 import de.sciss.io.AudioFileDescr;
 import de.sciss.io.CacheManager;
-import de.sciss.io.IOUtil;
 import de.sciss.io.Span;
 import de.sciss.util.MutableInt;
 
@@ -72,11 +70,6 @@ public class DecimatedWaveTrail
 extends DecimatedTrail
 {
 	private static final int		UPDATE_PERIOD			= 2000; // millisecs in async overview calculation
-
-	protected float[][]				tmpBuf					= null; // lazy
-	private final int				tmpBufSize;
-	protected float[][]				tmpBuf2					= null; // lazy
-	private final int				tmpBufSize2;
 
 	private final Decimator			decimator;
 
@@ -552,7 +545,7 @@ extends DecimatedTrail
 			createBuffers();
 
 			final int				idx	= indexOf( pos, true );
-			final DecimatedWaveStake	ds	= (DecimatedWaveStake) editGetLeftMost( idx, true, null );
+			final DecimatedStake	ds	= (DecimatedStake) editGetLeftMost( idx, true, null );
 			if( ds == null ) return false;
 
 			if( !ds.readFrame( sub, tmpBuf2, 0, pos )) return false;
@@ -585,14 +578,14 @@ extends DecimatedTrail
 		final List			coll		= editGetCollByStart( ce );
 		final MutableInt	readyLen	= new MutableInt( 0 );
 		final MutableInt	busyLen		= new MutableInt( 0 );
-		DecimatedWaveStake	stake;
+		DecimatedStake	stake;
 		int					chunkLen, discrepancy;
 		Span				subSpan;
 		int					readOffset, nextOffset = dataOffset;
 		int					len			= (int) (readSpan.getLength() >> decimHelps[ sub ].shift);
 
 		while( (len > 0) && (idx < coll.size()) ) {
-			stake		= (DecimatedWaveStake) coll.get( idx );
+			stake		= (DecimatedStake) coll.get( idx );
 			subSpan		= new Span( Math.max( stake.getSpan().start, readSpan.start ),
 									Math.min( stake.getSpan().stop, readSpan.stop ));
 			stake.readFrames( sub, data, nextOffset, subSpan, readyLen, busyLen );
@@ -627,94 +620,16 @@ extends DecimatedTrail
 	public void debugDump()
 	{
 		for( int i = 0; i < getNumStakes(); i++ ) {
-			((DecimatedWaveStake) get( i, true )).debugDump();
-		}
-	}
-
-	/*
-	 * @synchronization call within synchronoized( bufSync ) block
-	 */
-	private void createBuffers()
-	{
-		if( !Thread.holdsLock( bufSync )) throw new IllegalMonitorStateException();
-
-		if( tmpBuf == null ) {
-			tmpBuf	= new float[ fullChannels  ][ tmpBufSize ];
-			tmpBuf2	= new float[ decimChannels ][ tmpBufSize2 ];
-		}
-	}
-
-	private void freeBuffers()
-	{
-		synchronized( bufSync ) {
-			tmpBuf	= null;
-			tmpBuf2	= null;
-		}
-	}
-
-	private void freeTempFiles()
-	{
-		synchronized( fileSync ) {
-			if( tempF != null ) {
-				deleteTempFiles( tempF );
-			}
-			// XXX THIS IS THE PLACE TO KEEP WAVEFORM CACHE FILE
-			if( tempFAsync != null ) {
-				deleteTempFiles( tempFAsync );
-			}
+			((DecimatedStake) get( i, true )).debugDump();
 		}
 	}
 
 	// ----------- dependant implementation -----------
 
-	public void dispose()
-	{
-		// System.err.println( "DecimatedTrail.dispose()" );
-		killAsyncThread(); // this has to be the first step
-		fullScale.removeDependant( this );
-		freeBuffers();
-		freeTempFiles();
-		super.dispose();
-	}
-
-	// public void insert( Object source, Span span, CompoundEdit ce )
-	// {
-	// insert( source, span, TOUCH_SPLIT, ce );
-	// }
-	//
-	// public void remove( Object source, Span span, CompoundEdit ce )
-	// {
-	// remove( source, span, TOUCH_SPLIT, ce );
-	// }
-
-	// handled by superclass
-	// public void insert( Object source, Span span, int touchMode, CompoundEdit
-	// ce )
-	// {
-	// System.err.println( "insert" );
-	// }
-
-	// handled by superclass
-	// public void remove( Object source, Span span, int touchMode, CompoundEdit
-	// ce )
-	// {
-	// System.err.println( "remove" );
-	// }
-
-	// public void add( Object source, Stake stake, CompoundEdit ce )
-	// {
-	// final DecimatedStake as = (DecimatedStake) stake;
-	// System.err.println( "add" );
-	//
-	// // ____ dep ____
-	// if( dependants != null ) {
-	// synchronized( dependants ) {
-	// for( int i = 0; i < dependants.size(); i++ ) {
-	// ((Trail) dependants.get( i )).add( source, stake, ce );
-	// }
-	// }
-	// }
-	// }
+//	public void dispose()
+//	{
+//		super.dispose();
+//	}
 
 	// private void addAllDepAsync( Object source, List stakes, SyncCompoundEdit
 	// ce, Span union )
@@ -726,7 +641,7 @@ extends DecimatedTrail
 		final List					stakes		= fullScale.getAll(true);
 		if( stakes.isEmpty() ) return;
 
-		final DecimatedWaveStake		das;
+		final DecimatedStake		das;
 		final Span					union		= fullScale.getSpan();
 		final Span					extSpan;
 		final long					fullrateStop, fullrateLen; // , insertLen;
@@ -814,7 +729,7 @@ extends DecimatedTrail
 						}
 						time = System.currentTimeMillis();
 						if( time >= nextTime ) {
-							nextTime = time + 2000;
+							nextTime = time + UPDATE_PERIOD;
 							if( asyncManager != null ) {
 								asyncManager.dispatchEvent( new AsyncEvent(
 										enc_this, AsyncEvent.UPDATE, time, enc_this ));
@@ -886,50 +801,50 @@ extends DecimatedTrail
 		threadAsync.start();
 	}
 
-	protected void addAllDep(Object source, List stakes, AbstractCompoundEdit ce,
-			Span union) throws IOException {
-		if (DEBUG)
-			System.err.println("addAllDep " + union.toString());
+	protected void addAllDep( Object source, List stakes, AbstractCompoundEdit ce, Span union )
+	throws IOException
+	{
+		if( DEBUG ) System.err.println( "addAllDep " + union.toString() );
 
-		final DecimatedWaveStake	das;
-		final Span				extSpan;
-		final long				fullrateStop, fullrateLen; // , insertLen;
-		final int				numFullBuf;
-		final double			progWeight;
-		long					pos;
-		long					framesWritten	= 0;
-		Span					tag2;
-		float					f1;
-		int						len;
+		final DecimatedStake das;
+		final Span extSpan;
+		final long fullrateStop, fullrateLen; // , insertLen;
+		final int numFullBuf;
+		final double progWeight;
+		long pos;
+		long framesWritten = 0;
+		Span tag2;
+		float f1;
+		int len;
 
-		synchronized (fileSync) {
-			das = alloc(union);
+		synchronized( fileSync ) {
+			das = alloc( union );
 		}
-		extSpan			= das.getSpan();
-		pos				= extSpan.getStart();
-		// insertLen	= extSpan.getLength();
-		fullrateStop	= Math.min(extSpan.getStop(), fullScale.editGetSpan(ce).stop);
-		fullrateLen		= fullrateStop - extSpan.getStart();
-		progWeight		= 1.0 / fullrateLen;
-		numFullBuf		= (int) (fullrateLen >> MAXSHIFT);
-		pos				= extSpan.getStart();
+		extSpan = das.getSpan();
+		pos = extSpan.getStart();
+		// insertLen = extSpan.getLength();
+		fullrateStop = Math.min( extSpan.getStop(), fullScale.editGetSpan( ce ).stop );
+		fullrateLen = fullrateStop - extSpan.getStart();
+		progWeight = 1.0 / fullrateLen;
+		numFullBuf = (int) (fullrateLen >> MAXSHIFT);
+		pos = extSpan.getStart();
 
 		synchronized( bufSync ) {
 			flushProgression();
 			createBuffers();
 
 			for( int i = 0; i < numFullBuf; i++ ) {
-				tag2		   = new Span( pos, pos + MAXCOARSE );
+				tag2 = new Span( pos, pos + MAXCOARSE );
 				fullScale.readFrames( tmpBuf, 0, tag2, ce );
 				subsampleWrite( tmpBuf, tmpBuf2, das, MAXCOARSE, null, 0 );
-				pos			  += MAXCOARSE;
+				pos += MAXCOARSE;
 				framesWritten += MAXCOARSE;
-				
+
 				setProgression( framesWritten, progWeight );
 			}
 
 			len = (int) (fullrateStop - pos);
-			if (len > 0) {
+			if( len > 0 ) {
 				tag2 = new Span( pos, pos + len );
 				fullScale.readFrames( tmpBuf, 0, tag2, ce );
 				for( int ch = 0; ch < fullChannels; ch++ ) {
@@ -939,51 +854,18 @@ extends DecimatedTrail
 					}
 				}
 				subsampleWrite( tmpBuf, tmpBuf2, das, MAXCOARSE, null, 0 );
-				pos			  += MAXCOARSE;
+				pos += MAXCOARSE;
 				framesWritten += MAXCOARSE;
-				
+
 				setProgression( framesWritten, progWeight );
 			}
 		} // synchronized( bufSync )
 
 		// editRemove( source, das.getSpan(), ce );
-		editClear(source, das.getSpan(), ce);
+		editClear( source, das.getSpan(), ce );
 		// System.err.println( "editRemove "+das.getSpan() );
-		editAdd(source, das, ce);
+		editAdd( source, das, ce );
 		// System.err.println( "editAdd ..." );
-	}
-
-	// public void remove( Object source, Stake stake, CompoundEdit ce )
-	// {
-	// final DecimatedStake as = (DecimatedStake) stake;
-	// System.err.println( "remove" );
-	//
-	// // ____ dep ____
-	// if( dependants != null ) {
-	// synchronized( dependants ) {
-	// for( int i = 0; i < dependants.size(); i++ ) {
-	// ((Trail) dependants.get( i )).remove( source, stake, ce );
-	// }
-	// }
-	// }
-	// }
-
-	protected void removeAllDep(Object source, List stakes, CompoundEdit ce,
-			Span union) {
-		if (DEBUG)
-			System.err.println("removeAllDep " + union.toString());
-		if (1 == 1)
-			throw new IllegalArgumentException("n.y.i.");
-
-		// // ____ dep ____
-		// if( dependants != null ) {
-		// synchronized( dependants ) {
-		// for( int i = 0; i < dependants.size(); i++ ) {
-		// ((Trail) dependants.get( i )).removeAllDep( source, stakes, ce, union
-		// );
-		// }
-		// }
-		// }
 	}
 
 	// ----------- private schnucki -----------
@@ -1001,29 +883,6 @@ extends DecimatedTrail
 			f[i] = cm.createCacheFileName( audioFiles[i].getFile() );
 		}
 		return f;
-	}
-
-	private int[][] createCacheChannelMaps()
-	{
-		final int[][] fullChanMaps	= fullScale.getChannelMaps();
-		final int[][] cacheChanMaps	= new int[ fullChanMaps.length ][];
-
-		for( int i = 0; i < fullChanMaps.length; i++ ) {
-//			System.out.println( "fullChanMaps[ " + i + " ] = " );
-//			for( int k = 0; k < fullChanMaps[ i ].length; k++ ) {
-//				System.out.println( "  " + fullChanMaps[ i ][ k ]);
-//			}
-			cacheChanMaps[ i ] = new int[ fullChanMaps[ i ].length * modelChannels ];
-			for( int j = 0; j < cacheChanMaps[ i ].length; j++ ) {
-				cacheChanMaps[ i ][ j ] = j;
-			}
-//			System.out.println( "cacheChanMaps[ " + i + " ] = " );
-//			for( int k = 0; k < cacheChanMaps[ i ].length; k++ ) {
-//				System.out.println( "  " + cacheChanMaps[ i ][ k ]);
-//			}
-		}
-
-		return cacheChanMaps;
 	}
 
 	/*
@@ -1161,111 +1020,6 @@ extends DecimatedTrail
 		}
 	}
 
-	// @synchronization caller must have sync on fileSync !!!
-	private DecimatedWaveStake allocAsync(Span span) throws IOException {
-		if (!Thread.holdsLock(fileSync))
-			throw new IllegalMonitorStateException();
-
-		final long floorStart = span.start & MAXMASK;
-		final long ceilStop = (span.stop + MAXCEILADD) & MAXMASK;
-		final Span extSpan = (floorStart == span.start)
-				&& (ceilStop == span.stop) ? span : new Span(floorStart,
-				ceilStop);
-		final Span[] fileSpans = new Span[SUBNUM];
-		final Span[] biasedSpans = new Span[SUBNUM];
-		long fileStart;
-		long fileStop;
-
-		if (tempFAsync == null) {
-			// XXX THIS IS THE PLACE TO OPEN WAVEFORM CACHE FILE
-			tempFAsync = createTempFiles();
-		}
-		synchronized (tempFAsync) {
-			for (int i = 0; i < SUBNUM; i++) {
-				fileStart = tempFAsync[i].getFrameNum();
-				fileStop = fileStart
-						+ (extSpan.getLength() >> decimHelps[i].shift);
-				tempFAsync[i].setFrameNum(fileStop);
-				fileSpans[i] = new Span(fileStart, fileStop);
-				biasedSpans[i] = extSpan;
-			}
-		}
-		return new DecimatedWaveStake(extSpan, tempFAsync, fileSpans, biasedSpans,
-				decimHelps);
-	}
-
-	// @synchronization caller must have sync on fileSync !!!
-	private DecimatedWaveStake alloc( Span span )
-	throws IOException
-	{
-		if( !Thread.holdsLock( fileSync )) throw new IllegalMonitorStateException();
-
-		final long floorStart = span.start & MAXMASK;
-		final long ceilStop = (span.stop + MAXCEILADD) & MAXMASK;
-		final Span extSpan = (floorStart == span.start)
-				&& (ceilStop == span.stop) ? span : new Span(floorStart,
-				ceilStop);
-		final Span[] fileSpans = new Span[SUBNUM];
-		final Span[] biasedSpans = new Span[SUBNUM];
-		long fileStart;
-		long fileStop;
-
-		if (tempF == null) {
-			tempF = createTempFiles(); // XXX sync
-		}
-		synchronized (tempF) {
-			for (int i = 0; i < SUBNUM; i++) {
-				fileStart = tempF[i].getFrameNum();
-				fileStop = fileStart
-						+ (extSpan.getLength() >> decimHelps[i].shift);
-				tempF[i].setFrameNum(fileStop);
-				fileSpans[i] = new Span(fileStart, fileStop);
-				biasedSpans[i] = extSpan;
-			}
-		}
-		return new DecimatedWaveStake(extSpan, tempF, fileSpans, biasedSpans,
-				decimHelps);
-	}
-
-	private AudioFile[] createTempFiles()
-	throws IOException
-	{
-		// simply use an AIFC file with float format as temp file
-		final AudioFileDescr proto = new AudioFileDescr();
-		final AudioFile[] tempFiles = new AudioFile[ SUBNUM ];
-		AudioFileDescr afd;
-		proto.type = AudioFileDescr.TYPE_AIFF;
-		proto.channels = decimChannels;
-		proto.bitsPerSample = 32;
-		proto.sampleFormat = AudioFileDescr.FORMAT_FLOAT;
-		// proto.bitsPerSample = 8;
-		// proto.sampleFormat = AudioFileDescr.FORMAT_INT;
-		try {
-			for (int i = 0; i < SUBNUM; i++) {
-				afd = new AudioFileDescr(proto);
-				afd.file = IOUtil.createTempFile();
-				afd.rate = decimHelps[i].rate;
-				tempFiles[i] = AudioFile.openAsWrite(afd);
-			}
-			return tempFiles;
-		} catch (IOException e1) {
-			for (int i = 0; i < SUBNUM; i++) {
-				if (tempFiles[i] != null)
-					tempFiles[i].cleanUp();
-			}
-			throw e1;
-		}
-	}
-
-	private void deleteTempFiles( AudioFile[] tempFiles ) {
-		for( int i = 0; i < tempFiles.length; i++ ) {
-			if( tempFiles[i] != null ) {
-				tempFiles[i].cleanUp();
-				tempFiles[i].getFile().delete();
-			}
-		}
-	}
-
 	/*
 	 * This is invoked by insert(). it subsamples the given buffer for all
 	 * subsample STEs and writes it out using continueWrite; therefore the call
@@ -1276,7 +1030,7 @@ extends DecimatedTrail
 	 */
 	// private void subsampleWrite( float[][] inBuf, float[][] outBuf,
 	// DecimatedStake das, int len )
-	protected void subsampleWrite( float[][] inBuf, float[][] outBuf, DecimatedWaveStake das,
+	protected void subsampleWrite( float[][] inBuf, float[][] outBuf, DecimatedStake das,
 								   int len, AudioStake cacheAS, long cacheOff )
 	throws IOException
 	{
@@ -1299,7 +1053,7 @@ extends DecimatedTrail
 	}
 
 	// same as subsampleWrite but input is already at first decim stage
-	protected void subsampleWrite2( float[][] buf, DecimatedWaveStake das, int len )
+	protected void subsampleWrite2( float[][] buf, DecimatedStake das, int len )
 	throws IOException
 	{
 		int decim;

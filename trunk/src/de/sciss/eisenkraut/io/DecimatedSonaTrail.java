@@ -50,6 +50,8 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+//import java.awt.image.ColorModel;
+//import java.awt.image.MemoryImageSource;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
@@ -61,17 +63,16 @@ import javax.swing.Box;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.undo.CompoundEdit;
 
 import de.sciss.app.AbstractApplication;
 import de.sciss.app.AbstractCompoundEdit;
 import de.sciss.eisenkraut.gui.Axis;
 import de.sciss.eisenkraut.gui.WaveformView;
 import de.sciss.eisenkraut.math.ConstQ;
+import de.sciss.eisenkraut.math.MathUtil;
 import de.sciss.eisenkraut.util.PrefsUtil;
 import de.sciss.gui.VectorSpace;
 import de.sciss.io.AudioFile;
-import de.sciss.io.AudioFileDescr;
 import de.sciss.io.CacheManager;
 import de.sciss.io.IOUtil;
 import de.sciss.io.Span;
@@ -88,22 +89,18 @@ import de.sciss.io.Span;
 public class DecimatedSonaTrail
 extends DecimatedTrail
 {
-	private static final int		UPDATE_PERIOD			= 2000; // millisecs in async overview calculation
+	private static final int		UPDATE_PERIOD			= 4000; // millisecs in async overview calculation
 
-	protected float[][]				tmpBuf					= null; // lazy
-	private final int				tmpBufSize;
-	protected float[][]				tmpBuf2					= null; // lazy
-	private final int				tmpBufSize2;
-
-	private final Decimator			decimator;
+	protected final Decimator		decimator;
 	
 	protected int					fftSize; //				= 1024;
 	protected final int				stepSize;
 //	protected final float[] 		inpWin;
 	
 	protected final ConstQ			constQ;
-	protected int					cqKernelNum;
-
+	protected final int				numKernels;
+	protected final float[]			filterBuf;
+	
 	private static final int[] 		colors = {  // from niklas werner's sonasound!
 		0x000000, 0x050101, 0x090203, 0x0E0304, 0x120406, 0x160507, 0x1A0608, 0x1D0609,
 		0x20070A, 0x23080B, 0x25080C, 0x27090D, 0x290A0D, 0x2B0A0E, 0x2D0B0F, 0x2E0B0F,
@@ -265,42 +262,49 @@ extends DecimatedTrail
 		constQ.setSampleRate( fullScale.getRate() );
 		System.out.println( "Creating ConstQ Kernels..." );
 		constQ.createKernels();
+		numKernels		= constQ.getNumKernels();
+		filterBuf		= new float[ numKernels ];
 		fftSize = constQ.getFFTSize();
-		cqKernelNum	= constQ.getNumKernels();
+		modelChannels = constQ.getNumKernels();
 		System.out.println( "...done." );
 		
 //		numMag			= fftSize >> 1;
 //		stepSize		= Math.min( fftSize, 256 );
 		// approx. 5 milliseconds resolution (for the high freqs)
-		stepSize		= Math.max( 64, Math.min( fftSize, (int) (0.005 * fullScale.getRate() + 0.5) & ~1 ));
-//		LNKORR_ADD		= -2 * Math.log( fftSize );
+//		stepSize		= Math.max( 64, Math.min( fftSize, (int) (0.005 * fullScale.getRate() + 0.5) & ~1 ));
+		stepSize		= Math.max( 64, Math.min( fftSize, MathUtil.nextPowerOfTwo( (int) (0.005 * fullScale.getRate() + 0.5) )));
+
+		int decimKorr, j;
+		for( decimKorr = 0, j = stepSize; j > 2; decimKorr++, j >>= 1 ) ;
 
 //		inpWin			= Filter.createFullWindow( fftSize, Filter.WIN_HANNING );
 		
 		fullChannels	= fullScale.getChannelNum();
-//		decimChannels	= fullChannels * modelChannels;
+		decimChannels	= fullChannels * modelChannels;
 
 		SUBNUM			= decimations.length; // the first 'subsample' is actually fullrate
 		this.decimHelps	= new DecimationHelp[ SUBNUM ];
 		for( int i = 0; i < SUBNUM; i++ ) {
-			this.decimHelps[ i ] = new DecimationHelp( fullScale.getRate(), decimations[ i ] );
+			this.decimHelps[ i ] = new DecimationHelp( fullScale.getRate(), decimations[ i ] + decimKorr );
 		}
-		MAXSHIFT		= decimations[ SUBNUM - 1 ];
+		MAXSHIFT		= decimations[ SUBNUM - 1 ]; // + decimKorr;
 		MAXCOARSE		= Math.max( fftSize, 1 << MAXSHIFT );
 		MAXMASK			= -MAXCOARSE;
 		MAXCEILADD		= MAXCOARSE - 1;
 
-		tmpBufSize		= Math.max( 4096, MAXCOARSE << 1 );
-		// tmpBuf = new float[channels][tmpBufSize];
-		tmpBufSize2		= SUBNUM > 0 ? Math.max( 4096, tmpBufSize >> decimations[ 0 ]) : tmpBufSize;
-		// System.err.print( "tmpBufSize2 : "+tmpBufSize2 );
-		// tmpBuf2 = new float[modelChannels * channels][tmpBufSize2];
+		tmpBufSize		= fftSize; // Math.max( 4096, MAXCOARSE << 1 );
+		// XXX generates OutOfMemoryError ; need to use a different approach in the decimation steps
+		// (should "just" use the maximum per-step decimation, which is 256 in the Session defaults)
+//		tmpBufSize2		= SUBNUM > 0 ? Math.max( 4096, tmpBufSize >> (decimations[ 0 ] + decimKorr)) : tmpBufSize;
+		tmpBufSize2		= 0;
+		for( int i = 1; i < SUBNUM; i++ ) {
+			tmpBufSize2 = Math.max( tmpBufSize2, 1 << decimations[ i ] - decimations[ i - 1 ]);
+		}
 
-		// setRate( fullScale.getRate() / factor );
 		setRate( fullScale.getRate() );
-				
+		
 		fullScale.addDependant( this );
-
+		
 		// ok, the fullScale file might have already been populated
 		// final List stakes = fullScale.getAll( true );
 		// if( !stakes.isEmpty() ) {
@@ -317,17 +321,17 @@ extends DecimatedTrail
 	public void drawWaveform( DecimationInfo info, WaveformView view, Graphics2D g2 )
 	{
 		final boolean			fromPCM 		= false; // info.idx == -1;
-		final long				maxLen			= fromPCM ?
+		final int				maxLen			= fromPCM ?
 				  Math.min( tmpBufSize, tmpBufSize2 * info.getDecimationFactor() )
-				: tmpBufSize2 << info.shift;
+				: tmpBufSize2; //  << info.shift;
 
-		final int				imgW			= view.getWidth(); // (int) info.sublength;
-		final BufferedImage		bufImg			= new BufferedImage( imgW, cqKernelNum, BufferedImage.TYPE_INT_RGB );
+//		final int				imgW			= view.getWidth(); // (int) info.sublength;
+		final BufferedImage		bufImg			= new BufferedImage( maxLen, modelChannels, BufferedImage.TYPE_INT_RGB );
 		final WritableRaster	raster			= bufImg.getRaster();
-		final int[]				data			= new int[ imgW * cqKernelNum ];
-		final int				dataStartOff	= imgW * (cqKernelNum - 1);
+		final int[]				data			= new int[ maxLen * modelChannels ];
+		final int				dataStartOff	= maxLen * (modelChannels - 1);
 
-		float[]					chanBuf;
+//		float[]					chanBuf;
 		long					start			= info.span.start;
 		long					totalLength		= info.getTotalLength();
 //		Span					chunkSpan;
@@ -348,6 +352,7 @@ final float pixOff   = -view.getAmpLogMin();
 			synchronized( bufSync ) {
 				createBuffers();
 
+int screenOffX = 0;
 				while( totalLength > 0 ) {
 					fullLen		= Math.min( maxLen, totalLength );
 					chunkLen	= (int) (fromPCM ? fullLen : decimHelps[ info.idx ].fullrateToSubsample( fullLen ));
@@ -383,10 +388,12 @@ final float pixOff   = -view.getAmpLogMin();
 //					}
 
 					if( tempFAsync == null || tempFAsync[0] == null ) break;
-					decimLen = imgW;
-					totalLength = 0;
-tempFAsync[0].seekFrame( Math.min( info.span.start / stepSize * cqKernelNum, tempFAsync[0].getFrameNum() ));
-					int gaga = (int) Math.min( decimLen * cqKernelNum, Math.min( tmpBufSize2, tempFAsync[0].getFrameNum() - tempFAsync[0].getFramePosition() ));
+//					decimLen = imgW;
+//					totalLength = 0;
+//					tempFAsync[0].seekFrame( Math.min( info.span.start / stepSize * modelChannels, tempFAsync[0].getFrameNum() ));
+tempFAsync[0].seekFrame( Math.min( start / stepSize, tempFAsync[0].getFrameNum() ));
+//int gaga = (int) Math.min( decimLen * modelChannels, Math.min( tmpBufSize2, tempFAsync[0].getFrameNum() - tempFAsync[0].getFramePosition() ));
+					int gaga = (int) Math.min( fullLen, Math.min( tmpBufSize2, tempFAsync[0].getFrameNum() - tempFAsync[0].getFramePosition() ));
 //System.out.println( "reading " + gaga + " frames / " + (gaga/cqKernelNum) + " columns ; file " + tempFAsync[0].getFile().getAbsolutePath() + "; has " + tempFAsync[0].getChannelNum() + " channels." );
 tempFAsync[0].readFrames( tmpBuf2, 0, gaga);
 //tempFAsync[0].flush();
@@ -396,24 +403,29 @@ tempFAsync[0].readFrames( tmpBuf2, 0, gaga);
 //for( int kkk = gaga; kkk >= Math.max( gaga - 20, 0 ); kkk--) {
 //	System.out.println( tmpBuf2[0][kkk] );
 //}
+//final MemoryImageSource mis = new MemoryImageSource( gaga, modelChannels, ColorModel.getRGBdefault(), data, 0, maxLen );
 					
-					for( int ch = 0; ch < fullChannels; ch++ ) {
+					for( int ch = 0, tmpChReset = 0; ch < fullChannels; ch++, tmpChReset += modelChannels ) {
 						r = view.rectForChannel( ch );
-						chanBuf = tmpBuf2[ ch ];
-						for( int x = 0, off = 0; x < decimLen; x++ ) {
-							for( int y = 0, off2 = x + dataStartOff; y < cqKernelNum; y++, off2 -= imgW, off++ ) {
-if( chanBuf.length <= off ) break;
+//						chanBuf = tmpBuf2[ ch ];
+						for( int x = 0, off = 0; x < gaga; x++ ) {
+							for( int y = 0, off2 = x + dataStartOff, tmpCh = tmpChReset; y < modelChannels; y++, tmpCh++, off2 -= maxLen, off++ ) {
+//if( chanBuf.length <= off ) break;
 //data[ off2 ] = colors[ Math.max( 0, Math.min( 1072, (int) ((chanBuf[ off ] + 100) * 10) ))];
 // data[ off2 ] = colors[ Math.max( 0, Math.min( 1072, (int) ((rrr.nextInt( 60 ) - 60 + pixOff) * pixScale) ))];
-								data[ off2 ] = colors[ Math.max( 0, Math.min( 1072, (int) ((chanBuf[ off ] + pixOff) * pixScale) ))];
+								data[ off2 ] = colors[ Math.max( 0, Math.min( 1072, (int) ((tmpBuf2[ tmpCh ][ x ] + pixOff) * pixScale) ))];
 							}
 						}
-						raster.setDataElements( 0, 0, imgW, cqKernelNum, data );
-						g2.drawImage( bufImg, r.x, r.y, r.width, r.height, view );
+						raster.setDataElements( 0, 0, maxLen, modelChannels, data );
+						g2.drawImage( bufImg, r.x + screenOffX, r.y, r.x + screenOffX + gaga, r.y + r.height, 0, 0, gaga, modelChannels, view );
+//System.out.println( "g2.drawImage( ..., " +  (r.x+screenOffX) + ", " + r.y+", " + gaga + ", " + r.height + ", view );" );
+//						g2.drawImage( view.createImage( mis ), r.x + screenOffX, r.y, gaga, r.height, view );
 //						off[ ch ] = decimator.draw( info, ch, peakPolyX, peakPolyY, rmsPolyX, rmsPolyY, decimLen, view.rectForChannel( ch ), deltaYN, off[ ch ]);
 					}
-					start += fullLen;
-//					totalLength -= fullLen;
+					start += gaga * stepSize;
+					totalLength -= gaga * stepSize;
+					screenOffX += gaga;
+					if( gaga == 0 ) totalLength = 0;
 				}
 			} // synchronized( bufSync )
 
@@ -545,7 +557,7 @@ inlineDecim=1;
 			createBuffers();
 
 			final int				idx	= indexOf( pos, true );
-			final DecimatedSonaStake	ds	= (DecimatedSonaStake) editGetLeftMost( idx, true, null );
+			final DecimatedWaveStake	ds	= (DecimatedWaveStake) editGetLeftMost( idx, true, null );
 			if( ds == null ) return false;
 
 			if( !ds.readFrame( sub, tmpBuf2, 0, pos )) return false;
@@ -632,14 +644,14 @@ vaxis.setSpace( spc );
 		final List			coll		= editGetCollByStart( ce );
 		final MutableInt	readyLen	= new MutableInt( 0 );
 		final MutableInt	busyLen		= new MutableInt( 0 );
-		DecimatedSonaStake		stake;
+		DecimatedWaveStake		stake;
 		int					chunkLen, discrepancy;
 		Span				subSpan;
 		int					readOffset, nextOffset = dataOffset;
 		int					len			= (int) (readSpan.getLength() >> decimHelps[ sub ].shift);
 
 		while( (len > 0) && (idx < coll.size()) ) {
-			stake		= (DecimatedSonaStake) coll.get( idx );
+			stake		= (DecimatedWaveStake) coll.get( idx );
 			subSpan		= new Span( Math.max( stake.getSpan().start, readSpan.start ),
 									Math.min( stake.getSpan().stop, readSpan.stop ));
 			stake.readFrames( sub, data, nextOffset, subSpan, readyLen, busyLen );
@@ -674,94 +686,16 @@ vaxis.setSpace( spc );
 	public void debugDump()
 	{
 		for( int i = 0; i < getNumStakes(); i++ ) {
-			((DecimatedSonaStake) get( i, true )).debugDump();
-		}
-	}
-
-	/*
-	 * @synchronization call within synchronoized( bufSync ) block
-	 */
-	private void createBuffers()
-	{
-		if( !Thread.holdsLock( bufSync )) throw new IllegalMonitorStateException();
-
-		if( tmpBuf == null ) {
-			tmpBuf	= new float[ fullChannels  ][ tmpBufSize ];
-			tmpBuf2	= new float[ fullChannels ][ tmpBufSize2 ];
-		}
-	}
-
-	private void freeBuffers()
-	{
-		synchronized( bufSync ) {
-			tmpBuf	= null;
-			tmpBuf2	= null;
-		}
-	}
-
-	private void freeTempFiles()
-	{
-		synchronized( fileSync ) {
-			if( tempF != null ) {
-				deleteTempFiles( tempF );
-			}
-			// XXX THIS IS THE PLACE TO KEEP WAVEFORM CACHE FILE
-			if( tempFAsync != null ) {
-				deleteTempFiles( tempFAsync );
-			}
+			((DecimatedStake) get( i, true )).debugDump();
 		}
 	}
 
 	// ----------- dependant implementation -----------
 
-	public void dispose()
-	{
-		// System.err.println( "DecimatedTrail.dispose()" );
-		killAsyncThread(); // this has to be the first step
-		fullScale.removeDependant( this );
-		freeBuffers();
-		freeTempFiles();
-		super.dispose();
-	}
-
-	// public void insert( Object source, Span span, CompoundEdit ce )
-	// {
-	// insert( source, span, TOUCH_SPLIT, ce );
-	// }
-	//
-	// public void remove( Object source, Span span, CompoundEdit ce )
-	// {
-	// remove( source, span, TOUCH_SPLIT, ce );
-	// }
-
-	// handled by superclass
-	// public void insert( Object source, Span span, int touchMode, CompoundEdit
-	// ce )
-	// {
-	// System.err.println( "insert" );
-	// }
-
-	// handled by superclass
-	// public void remove( Object source, Span span, int touchMode, CompoundEdit
-	// ce )
-	// {
-	// System.err.println( "remove" );
-	// }
-
-	// public void add( Object source, Stake stake, CompoundEdit ce )
-	// {
-	// final DecimatedStake as = (DecimatedStake) stake;
-	// System.err.println( "add" );
-	//
-	// // ____ dep ____
-	// if( dependants != null ) {
-	// synchronized( dependants ) {
-	// for( int i = 0; i < dependants.size(); i++ ) {
-	// ((Trail) dependants.get( i )).add( source, stake, ce );
-	// }
-	// }
-	// }
-	// }
+//	public void dispose()
+//	{
+//		super.dispose();
+//	}
 
 	// private void addAllDepAsync( Object source, List stakes, SyncCompoundEdit
 	// ce, Span union )
@@ -773,7 +707,7 @@ vaxis.setSpace( spc );
 		final List					stakes		= fullScale.getAll( true );
 		if( stakes.isEmpty() ) return;
 
-		final DecimatedSonaStake	das;
+		final DecimatedStake	das;
 		final Span					union		= fullScale.getSpan();
 		final Span					extSpan;
 		final long					fullrateStop, fullrateLen; // , insertLen;
@@ -799,7 +733,8 @@ vaxis.setSpace( spc );
 			// cacheWriteAS = fullScale.openCacheForWrite( model,
 			// decimHelps[ 0 ].fullrateToSubsample( union.getLength() ));
 			cacheWriteAS = null; // openCacheForWrite( model, (fullrateLen + MAXCEILADD) & MAXMASK );
-			numFullBuf	= (int) (fullrateLen >> MAXSHIFT);
+//			numFullBuf	= (int) (fullrateLen >> MAXSHIFT);
+			numFullBuf	= (int) ((fullrateLen - fftSize + stepSize + stepSize - 1) / stepSize);
 		} else {
 			// cached files always have integer fullBufs!
 			numFullBuf	= (int) ((fullrateLen + MAXCEILADD) >> MAXSHIFT);
@@ -816,7 +751,6 @@ vaxis.setSpace( spc );
 		threadAsync = new Thread( new Runnable() {
 			public void run()
 			{
-				final int			minCoarse;
 				final CacheManager	cm					= PrefCacheManager.getInstance();
 				long				pos;
 				// long framesWritten = 0;
@@ -825,62 +759,76 @@ vaxis.setSpace( spc );
 				Span				tag2;
 				int					len;
 				long				time;
+				int					inBufOff = 0, outBufOff = 0, nextLen = fftSize;
 				long				nextTime			= System.currentTimeMillis() + UPDATE_PERIOD;
 
 				if( cacheReadAS != null ) {
-					pos = decimHelps[ 0 ].fullrateToSubsample( extSpan.getStart() );
+					pos = decimHelps[ 0 ].fullrateToSubsample( extSpan.getStart() ); // XXX
 				} else {
 					pos = extSpan.getStart();
 				}
-				minCoarse = MAXCOARSE >> decimHelps[ 0 ].shift;
+//				minCoarse = MAXCOARSE >> decimHelps[ 0 ].shift;
 
 				try {
 					for( int i = 0; (i < numFullBuf) && keepAsyncRunning; i++ ) {
 						synchronized( bufSync ) {
-							System.out.println( "ici " + i );
-							tag2 = new Span( pos, pos + MAXCOARSE );
-							fullScale.readFrames( tmpBuf, 0, tag2, null );
-							subsampleWrite( tmpBuf, tmpBuf2, das, MAXCOARSE,
-							                cacheWriteAS, framesWrittenCache );
-							pos += MAXCOARSE;
-							framesWrittenCache += minCoarse;
+							if( (i % 100) == 0 ) System.out.println( "ici " + i + " / " + numFullBuf );
+							len = (int) Math.min( nextLen, fullrateStop - pos ); 
+//							if( inBufOff + len <= tmpBufSize ) {
+								tag2 = new Span( pos, pos + len );
+//								fullScale.readFrames( tmpBuf, inBufOff, tag2, null );
+								fullScale.readFrames( tmpBuf, fftSize - nextLen, tag2, null );
+//							} else { // hitting buffer boundaries
+//								tag2 = new Span( pos, pos + (tmpBufSize - inBufOff) );
+//								fullScale.readFrames( tmpBuf, inBufOff, tag2, null );
+//								tag2 = new Span( tag2.stop, pos + len );
+//								fullScale.readFrames( tmpBuf, 0, tag2, null );
+//							}
+							if( len < nextLen ) {
+								for( int ch = 0; ch < fullChannels; ch++ ) {
+									for( int j = (inBufOff + len) % tmpBufSize, k = nextLen - len; k >= 0; k-- ) {
+										tmpBuf[ ch ][ j ] = 0f;
+										if( ++j == tmpBufSize ) j = 0;
+									}
+								}
+							}
+							decimator.decimatePCM( tmpBuf, tmpBuf2, outBufOff, 1, 1 );
+							if( ++outBufOff == tmpBufSize2 ) {
+								das.continueWrite( 0, tmpBuf2, 0, outBufOff );
+								if( cacheWriteAS != null ) {
+									cacheWriteAS.writeFrames( tmpBuf2, 0, new Span( framesWrittenCache, framesWrittenCache + outBufOff ));
+								}
+								framesWrittenCache += outBufOff;
+								outBufOff = 0;
+							}
+							pos += nextLen;
+							inBufOff = (inBufOff + nextLen) % tmpBufSize;
+							nextLen = stepSize;
+							for( int ch = 0; ch < fullChannels; ch++ ) {
+								System.arraycopy( tmpBuf[ ch ], nextLen, tmpBuf[ ch ], 0, fftSize - nextLen );
+							}
 //							System.out.println( "frame done" );
 						}
 						time = System.currentTimeMillis();
 						if( time >= nextTime ) {
-							nextTime = time + 2000;
+							nextTime = time + UPDATE_PERIOD;
 							if( asyncManager != null ) {
 								asyncManager.dispatchEvent( new AsyncEvent(
 									enc_this, AsyncEvent.UPDATE, time, enc_this ));
 							}
 						}
 					}
-					// cached files always have integer fullBufs!
-					if( (cacheReadAS == null) && keepAsyncRunning ) {
-						len = (int) (fullrateStop - pos);
-						if( len > 0 ) {
-							synchronized( bufSync ) {
-								System.out.println( "ici rest" );
-								tag2 = new Span( pos, pos + len );
-								// fullScale.readFrames( tmpBuf, 0, tag2, ce );
-								fullScale.readFrames( tmpBuf, 0, tag2, null );
-								for( int ch = 0; ch < fullChannels; ch++ ) {
-									for( int i = len; i < MAXCOARSE; i++ ) {
-										tmpBuf[ ch ][ i ] = 0f;
-									}
-								}
-								subsampleWrite( tmpBuf, tmpBuf2, das, MAXCOARSE,
-								                cacheWriteAS, framesWrittenCache );
-								pos += MAXCOARSE;
-								// framesWritten += MAXCOARSE;
-								framesWrittenCache += minCoarse;
-								System.out.println( "frame done" );
-							}
-						}
-					}
 					if( keepAsyncRunning ) {
+						if( outBufOff > 0 ) {	// flush rest
+							das.continueWrite( 0, tmpBuf2, 0, outBufOff );
+							if( cacheWriteAS != null ) {
+								cacheWriteAS.writeFrames( tmpBuf2, 0, new Span( framesWrittenCache, framesWrittenCache + outBufOff ));
+							}
+							framesWrittenCache += outBufOff;
+							outBufOff = 0;
+						}
 						cacheWriteComplete = true;
-						if( cacheWriteAS != null ) cacheWriteAS.addToCache(cm);
+						if( cacheWriteAS != null ) cacheWriteAS.addToCache( cm );
 					}
 					das.flush();
 				} catch( IOException e1 ) {
@@ -898,7 +846,7 @@ vaxis.setSpace( spc );
 							final File[] f = createCacheFileNames();
 							if( f != null ) { // ... therefore delete incomplete cache files!
 								for( int i = 0; i < f.length; i++ ) {
-									if( !f[i].delete() ) f[i].deleteOnExit();
+									if( !f[ i ].delete() ) f[ i ].deleteOnExit();
 									// cm.removeFile( f[ i ]);
 								}
 							}
@@ -921,50 +869,50 @@ vaxis.setSpace( spc );
 		threadAsync.start();
 	}
 
-	protected void addAllDep(Object source, List stakes, AbstractCompoundEdit ce,
-			Span union) throws IOException {
-		if (DEBUG)
-			System.err.println("addAllDep " + union.toString());
+	protected void addAllDep( Object source, List stakes, AbstractCompoundEdit ce, Span union )
+	throws IOException
+	{
+		if( DEBUG ) System.err.println( "addAllDep " + union.toString() );
 
-		final DecimatedSonaStake	das;
-		final Span				extSpan;
-		final long				fullrateStop, fullrateLen; // , insertLen;
-		final int				numFullBuf;
-		final double			progWeight;
-		long					pos;
-		long					framesWritten	= 0;
-		Span					tag2;
-		float					f1;
-		int						len;
+		final DecimatedStake das;
+		final Span extSpan;
+		final long fullrateStop, fullrateLen; // , insertLen;
+		final int numFullBuf;
+		final double progWeight;
+		long pos;
+		long framesWritten = 0;
+		Span tag2;
+		float f1;
+		int len;
 
-		synchronized (fileSync) {
-			das = alloc(union);
+		synchronized( fileSync ) {
+			das = alloc( union );
 		}
-		extSpan			= das.getSpan();
-		pos				= extSpan.getStart();
-		// insertLen	= extSpan.getLength();
-		fullrateStop	= Math.min(extSpan.getStop(), fullScale.editGetSpan(ce).stop);
-		fullrateLen		= fullrateStop - extSpan.getStart();
-		progWeight		= 1.0 / fullrateLen;
-		numFullBuf		= (int) (fullrateLen >> MAXSHIFT);
-		pos				= extSpan.getStart();
+		extSpan = das.getSpan();
+		pos = extSpan.getStart();
+		// insertLen = extSpan.getLength();
+		fullrateStop = Math.min( extSpan.getStop(), fullScale.editGetSpan( ce ).stop );
+		fullrateLen = fullrateStop - extSpan.getStart();
+		progWeight = 1.0 / fullrateLen;
+		numFullBuf = (int) (fullrateLen >> MAXSHIFT);
+		pos = extSpan.getStart();
 
 		synchronized( bufSync ) {
 			flushProgression();
 			createBuffers();
 
 			for( int i = 0; i < numFullBuf; i++ ) {
-				tag2		   = new Span( pos, pos + MAXCOARSE );
+				tag2 = new Span( pos, pos + MAXCOARSE );
 				fullScale.readFrames( tmpBuf, 0, tag2, ce );
 				subsampleWrite( tmpBuf, tmpBuf, das, MAXCOARSE, null, 0 );
-				pos			  += MAXCOARSE;
+				pos += MAXCOARSE;
 				framesWritten += MAXCOARSE;
-				
+
 				setProgression( framesWritten, progWeight );
 			}
 
 			len = (int) (fullrateStop - pos);
-			if (len > 0) {
+			if( len > 0 ) {
 				tag2 = new Span( pos, pos + len );
 				fullScale.readFrames( tmpBuf, 0, tag2, ce );
 				for( int ch = 0; ch < fullChannels; ch++ ) {
@@ -974,51 +922,18 @@ vaxis.setSpace( spc );
 					}
 				}
 				subsampleWrite( tmpBuf, tmpBuf, das, MAXCOARSE, null, 0 );
-				pos			  += MAXCOARSE;
+				pos += MAXCOARSE;
 				framesWritten += MAXCOARSE;
-				
+
 				setProgression( framesWritten, progWeight );
 			}
 		} // synchronized( bufSync )
 
 		// editRemove( source, das.getSpan(), ce );
-		editClear(source, das.getSpan(), ce);
+		editClear( source, das.getSpan(), ce );
 		// System.err.println( "editRemove "+das.getSpan() );
-		editAdd(source, das, ce);
+		editAdd( source, das, ce );
 		// System.err.println( "editAdd ..." );
-	}
-
-	// public void remove( Object source, Stake stake, CompoundEdit ce )
-	// {
-	// final DecimatedStake as = (DecimatedStake) stake;
-	// System.err.println( "remove" );
-	//
-	// // ____ dep ____
-	// if( dependants != null ) {
-	// synchronized( dependants ) {
-	// for( int i = 0; i < dependants.size(); i++ ) {
-	// ((Trail) dependants.get( i )).remove( source, stake, ce );
-	// }
-	// }
-	// }
-	// }
-
-	protected void removeAllDep(Object source, List stakes, CompoundEdit ce,
-			Span union) {
-		if (DEBUG)
-			System.err.println("removeAllDep " + union.toString());
-		if (1 == 1)
-			throw new IllegalArgumentException("n.y.i.");
-
-		// // ____ dep ____
-		// if( dependants != null ) {
-		// synchronized( dependants ) {
-		// for( int i = 0; i < dependants.size(); i++ ) {
-		// ((Trail) dependants.get( i )).removeAllDep( source, stakes, ce, union
-		// );
-		// }
-		// }
-		// }
 	}
 
 	// ----------- private schnucki -----------
@@ -1201,119 +1116,6 @@ vaxis.setSpace( spc );
 	}
 */
 
-	// @synchronization caller must have sync on fileSync !!!
-	private DecimatedSonaStake allocAsync(Span span) throws IOException {
-		if (!Thread.holdsLock(fileSync))
-			throw new IllegalMonitorStateException();
-
-		final long floorStart = span.start & MAXMASK;
-		final long ceilStop = (span.stop + MAXCEILADD) & MAXMASK;
-		final Span extSpan = (floorStart == span.start)
-				&& (ceilStop == span.stop) ? span : new Span(floorStart,
-				ceilStop);
-		final Span[] fileSpans = new Span[SUBNUM];
-		final Span[] biasedSpans = new Span[SUBNUM];
-		long fileStart;
-		long fileStop;
-
-		if (tempFAsync == null) {
-			// XXX THIS IS THE PLACE TO OPEN WAVEFORM CACHE FILE
-			tempFAsync = createTempFiles();
-		}
-		synchronized (tempFAsync) {
-			for (int i = 0; i < SUBNUM; i++) {
-				fileStart = tempFAsync[i].getFrameNum();
-				fileStop = fileStart
-						+ (extSpan.getLength() >> decimHelps[i].shift);
-				tempFAsync[i].setFrameNum(fileStop);
-				fileSpans[i] = new Span(fileStart, fileStop);
-				biasedSpans[i] = extSpan;
-			}
-		}
-		return new DecimatedSonaStake(extSpan, tempFAsync, fileSpans, biasedSpans,
-				decimHelps);
-	}
-
-	// @synchronization caller must have sync on fileSync !!!
-	private DecimatedSonaStake alloc(Span span) throws IOException {
-		if (!Thread.holdsLock(fileSync))
-			throw new IllegalMonitorStateException();
-
-		final long floorStart = span.start & MAXMASK;
-		final long ceilStop = (span.stop + MAXCEILADD) & MAXMASK;
-		final Span extSpan = (floorStart == span.start)
-				&& (ceilStop == span.stop) ? span : new Span(floorStart,
-				ceilStop);
-		final Span[] fileSpans = new Span[SUBNUM];
-		final Span[] biasedSpans = new Span[SUBNUM];
-		long fileStart;
-		long fileStop;
-
-		if (tempF == null) {
-			tempF = createTempFiles(); // XXX sync
-		}
-		synchronized (tempF) {
-			for (int i = 0; i < SUBNUM; i++) {
-				fileStart = tempF[i].getFrameNum();
-				fileStop = fileStart
-						+ (extSpan.getLength() >> decimHelps[i].shift);
-				tempF[i].setFrameNum(fileStop);
-				fileSpans[i] = new Span(fileStart, fileStop);
-				biasedSpans[i] = extSpan;
-			}
-		}
-		return new DecimatedSonaStake(extSpan, tempF, fileSpans, biasedSpans,
-				decimHelps);
-	}
-
-	// private InterleavedStreamFile[] prepareTempFiles()
-	// throws IOException
-	// {
-	// if( tempF == null ) {
-	// tempF = createTempFiles(); // XXX sync
-	// } else {
-	// tempF.seekFrame( tempF.getFrameNum() );
-	// }
-	// return tempF;
-	// }
-
-	private AudioFile[] createTempFiles() throws IOException {
-		// simply use an AIFC file with float format as temp file
-		final AudioFileDescr proto = new AudioFileDescr();
-		final AudioFile[] tempFiles = new AudioFile[SUBNUM];
-		AudioFileDescr afd;
-		proto.type = AudioFileDescr.TYPE_AIFF;
-		proto.channels = fullChannels; // decimChannels;
-		proto.bitsPerSample = 32;
-		proto.sampleFormat = AudioFileDescr.FORMAT_FLOAT;
-		// proto.bitsPerSample = 8;
-		// proto.sampleFormat = AudioFileDescr.FORMAT_INT;
-		try {
-			for (int i = 0; i < SUBNUM; i++) {
-				afd = new AudioFileDescr(proto);
-				afd.file = IOUtil.createTempFile();
-				afd.rate = decimHelps[i].rate;
-				tempFiles[i] = AudioFile.openAsWrite(afd);
-			}
-			return tempFiles;
-		} catch (IOException e1) {
-			for (int i = 0; i < SUBNUM; i++) {
-				if (tempFiles[i] != null)
-					tempFiles[i].cleanUp();
-			}
-			throw e1;
-		}
-	}
-
-	private void deleteTempFiles( AudioFile[] tempFiles ) {
-		for( int i = 0; i < tempFiles.length; i++ ) {
-			if( tempFiles[i] != null ) {
-				tempFiles[i].cleanUp();
-				tempFiles[i].getFile().delete();
-			}
-		}
-	}
-
 	/*
 	 * This is invoked by insert(). it subsamples the given buffer for all
 	 * subsample STEs and writes it out using continueWrite; therefore the call
@@ -1324,7 +1126,7 @@ vaxis.setSpace( spc );
 	 */
 	// private void subsampleWrite( float[][] inBuf, float[][] outBuf,
 	// DecimatedStake das, int len )
-	protected void subsampleWrite( float[][] inBuf, float[][] outBuf, DecimatedSonaStake das,
+	protected void subsampleWrite( float[][] inBuf, float[][] outBuf, DecimatedStake das,
 								   int len, AudioStake cacheAS, long cacheOff )
 	throws IOException
 	{
@@ -1336,7 +1138,7 @@ vaxis.setSpace( spc );
 		// calculate first decimation from fullrate PCM
 		assert len % fftSize == 0;
 //		len >>= decim;
-		len = (len / stepSize * cqKernelNum) >> decim;
+		len = (len / stepSize * modelChannels) >> decim;
 		if( inBuf != null ) {
 //			System.out.println( "decimator.decimatePCM( inBuf, outBuf, fftBuf, 0, " + len + ", " + (1 << decim) + " )" );
 			decimator.decimatePCM( inBuf, outBuf, 0, len, 1 << decim );
@@ -1351,7 +1153,7 @@ vaxis.setSpace( spc );
 	}
 
 	// same as subsampleWrite but input is already at first decim stage
-	private void subsampleWrite2( float[][] buf, DecimatedSonaStake das, int len )
+	private void subsampleWrite2( float[][] buf, DecimatedStake das, int len )
 	throws IOException
 	{
 		int decim;
@@ -1411,12 +1213,30 @@ vaxis.setSpace( spc );
 		{
 			final double w = 1.0 / decim;
 			
+//			for( int inOff = 0, stop = outOff + len, decimCnt = 0; outOff < stop; inOff += stepSize ) {
+//				for( int ch = 0; ch < fullChannels; ch++ ) {
+//					constQ.transform( inBuf[ ch ], inOff, Math.max( 0, inBuf[ ch ].length - inOff ), outBuf[ ch ], outOff, decimCnt > 0, w );
+//				}
+//				decimCnt = (decimCnt + 1) % decim;
+//				if( decimCnt == 0 ) outOff += modelChannels;
+//			}
+			
 			for( int inOff = 0, stop = outOff + len, decimCnt = 0; outOff < stop; inOff += stepSize ) {
-				for( int ch = 0; ch < fullChannels; ch++ ) {
-					constQ.transform( inBuf[ ch ], inOff, Math.max( 0, inBuf[ ch ].length - inOff ), outBuf[ ch ], outOff, decimCnt > 0, w );
+				for( int ch = 0, outChanOff = 0; ch < fullChannels; ch++ ) {
+//System.out.println( "calling with " + inBuf[ ch].length + " -- " + inOff + " ; " + fftSize + "; " + filterBuf.length + " -- " + constQ.getNumKernels() );
+					constQ.transform( inBuf[ ch ], inOff, fftSize, filterBuf, 0, w );
+					if( decimCnt == 0 ) {
+						for( int i = 0; i < numKernels; i++ ) {
+							outBuf[ outChanOff++ ][ outOff ] = filterBuf[ i ];
+						}
+					} else {
+						for( int i = 0; i < numKernels; i++ ) {
+							outBuf[ outChanOff++ ][ outOff ] += filterBuf[ i ];
+						}
+					}
 				}
 				decimCnt = (decimCnt + 1) % decim;
-				if( decimCnt == 0 ) outOff += cqKernelNum;
+				if( decimCnt == 0 ) outOff++;
 			}
 		}
 		

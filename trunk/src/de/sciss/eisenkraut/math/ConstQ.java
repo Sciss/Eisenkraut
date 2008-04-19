@@ -278,7 +278,7 @@ public class ConstQ
 		}
 	}
 	
-	public float[] transform( float[] input, int inOff, int inLen, float output[], int outOff, boolean add, double gain )
+	public float[] transform( float[] input, int inOff, int inLen, float output[], int outOff, double gain )
 	{
 		if( output == null ) output = new float[ numKernels ];
 		
@@ -324,11 +324,7 @@ public class ConstQ
 //			cBuf[ k ] = ;  // squared magnitude
 			f1 = (float) ((Math.log( f1 * f1 + f2 * f2 ) + LNKORR_ADD) * gain);
 f1 = Math.max( -160, f1 + 90 );	// XXX
-			if( add ) {
-				output[ outOff ] += f1;
-			} else {
-				output[ outOff ] = f1;
-			}
+			output[ outOff ] = f1;
 		}
 		
 		return output;
