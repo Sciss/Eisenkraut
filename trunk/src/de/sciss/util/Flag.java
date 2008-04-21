@@ -31,6 +31,9 @@ package de.sciss.util;
 
 /**
  *	A mutable Boolean essentially.
+ *
+ *	@version	0.11, 21-Apr-08
+ *	@author		Hanns Holger Rutz
  */
 public class Flag
 {
@@ -49,5 +52,10 @@ public class Flag
 	public void set( boolean onOff )
 	{
 		value = onOff;
+	}
+
+	public String toString()
+	{
+		return "Flag( " + value + " )";
 	}
 }

@@ -31,6 +31,9 @@ package de.sciss.util;
 
 /**
  *	A mutable integer
+ *
+ *	@version	0.11, 21-Apr-08
+ *	@author		Hanns Holger Rutz
  */
 public class MutableInt
 {
@@ -49,5 +52,15 @@ public class MutableInt
 	public void set( int newValue )
 	{
 		value = newValue;
+	}
+
+	public void add( int x )
+	{
+		value += x;
+	}
+	
+	public String toString()
+	{
+		return "MutableInt( " + value + " )";
 	}
 }

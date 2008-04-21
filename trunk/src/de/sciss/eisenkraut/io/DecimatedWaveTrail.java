@@ -337,7 +337,7 @@ extends DecimatedTrail
 					decimLen	= chunkLen / info.inlineDecim;
 					chunkLen	= decimLen * info.inlineDecim;
 					fullLen		= (long) chunkLen << info.shift;
-					chunkSpan	= new Span( start, start + fullLen );
+//					chunkSpan	= new Span( start, start + fullLen );
 
 					if( fromPCM ) {
 						fullStop = fullScale.getSpan().stop;
@@ -422,26 +422,14 @@ extends DecimatedTrail
 				for( int ch = 0; ch < fullChannels; ch++ ) {
 					r = view.rectForChannel( ch );
 					g2.clipRect( r.x, r.y, r.width, r.height );
-					if (!drawBusyList.isEmpty()) {
+					if( !drawBusyList.isEmpty() ) {
 						// g2.setColor( Color.red );
 						g2.setPaint( pntBusy );
-						for (int i = 0; i < drawBusyList.size(); i++) {
-							chunkSpan = (Span) drawBusyList.get(i);
-							scaleX = r.width / (float) info.getTotalLength(); // (info.sublength
-																				// -
-																				// 1);
-							// System.err.println( "scaleX = "+scaleX+ ";
-							// chunkSpan "+chunkSpan );
-							// System.err.println( "fill " + ((int)
-							// ((chunkSpan.start - info.span.start) * scaleX) +
-							// r.x) + ", "+r.y+", "+((int)
-							// (chunkSpan.getLength() * scaleX))+", "+r.height
-							// );
-							g2.fillRect(
-							    (int) ((chunkSpan.start - info.span.start) * scaleX) + r.x,
-							    r.y,
-							    (int) (chunkSpan.getLength() * scaleX),
-							    r.height );
+						for( int i = 0; i < drawBusyList.size(); i++ ) {
+							chunkSpan = (Span) drawBusyList.get( i );
+							scaleX = r.width / (float) info.getTotalLength(); // (info.sublength - 1);
+							g2.fillRect( (int) ((chunkSpan.start - info.span.start) * scaleX) + r.x, r.y,
+										 (int) (chunkSpan.getLength() * scaleX), r.height );
 						}
 					}
 					g2.translate( r.x, r.y + r.height * offY );
@@ -485,7 +473,7 @@ extends DecimatedTrail
 		long					subLength, n;
 		int						idx, inlineDecim;
 
-		subLength = tag.getLength();
+		subLength = fullLength;
 		for( idx = 0; idx < SUBNUM; idx++ ) {
 			n = decimHelps[ idx ].fullrateToSubsample( fullLength );
 			if( n < minLen ) break;

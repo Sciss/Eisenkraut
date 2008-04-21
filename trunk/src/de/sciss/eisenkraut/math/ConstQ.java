@@ -31,6 +31,7 @@ package de.sciss.eisenkraut.math;
 import java.util.prefs.Preferences;
 
 import de.sciss.util.Param;
+import de.sciss.util.ParamSpace;
 
 /**
  *	@version	0.70, 15-Apr-08
@@ -49,11 +50,12 @@ public class ConstQ
 	private int			fftSize;
 	private float[]		fftBuf;
 
-	private float		minFreq		= 27.5f;
+	// rather moderate defaults with 55 Hz, 8ms spacing, 4096 FFT...
+	private float		minFreq		= 55f;	// 27.5f;
 	private float		maxFreq		= 20000f;
-	private float		maxTimeRes	= 5f;
-	private int			bandsPerOct	= 24;
-	private int			maxFFTSize	= 8192;
+	private float		maxTimeRes	= 8f;	// 5f;
+	private int			bandsPerOct	= 24;	// 24
+	private int			maxFFTSize	= 4096;	// 8192;
 	
 	private double		fs;
 	
@@ -144,6 +146,15 @@ public class ConstQ
 			}
 			catch( NumberFormatException e1 ) { /* ignore */ }
 		}
+	}
+	
+	public void writePrefs( Preferences prefs )
+	{
+		prefs.put( KEY_MINFREQ, new Param( minFreq, ParamSpace.FREQ | ParamSpace.HERTZ ).toString() );
+		prefs.put( KEY_MAXFREQ, new Param( maxFreq, ParamSpace.FREQ | ParamSpace.HERTZ ).toString() );
+		prefs.put( KEY_BANDSPEROCT, new Param( bandsPerOct, ParamSpace.NONE ).toString() );
+		prefs.put( KEY_MAXTIMERES, new Param( maxTimeRes, ParamSpace.TIME | ParamSpace.MILLI | ParamSpace.SECS ).toString() );
+		prefs.put( KEY_MAXFFTSIZE, String.valueOf( maxFFTSize ));
 	}
 
 	public float getFrequency( int kernel )

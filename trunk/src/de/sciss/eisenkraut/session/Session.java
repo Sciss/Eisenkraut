@@ -104,7 +104,7 @@ implements OSCRouter
 	public final MarkerTrack				markerTrack;
 
 	private static final int[]				waveDecims		= { 8, 12, 16 };
-	private static final int[]				sonaDecims		= { 0, 8 /*, 16 */ };
+//	private static final int[]				sonaDecims		= { 0, 8 /*, 16 */ };
 
 //	/**
 //	 *  Use this <code>LockManager</code> to gain access to
@@ -519,7 +519,7 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 	throws IOException
 	{
 		if( dst == null ) {
-			dst	= new DecimatedSonaTrail( at, DecimatedTrail.MODEL_SONA, sonaDecims );
+			dst	= new DecimatedSonaTrail( at, DecimatedTrail.MODEL_SONA /*, sonaDecims */ );
 		}
 		return dst;
 	}

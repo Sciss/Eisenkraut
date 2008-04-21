@@ -62,6 +62,7 @@ import net.roydesign.mac.MRJAdapter;
 import de.sciss.app.AbstractApplication;
 import de.sciss.eisenkraut.io.AudioBoxConfig;
 import de.sciss.eisenkraut.io.RoutingConfig;
+import de.sciss.eisenkraut.math.ConstQ;
 import de.sciss.gui.CoverGrowBox;
 import de.sciss.io.IOUtil;
 import de.sciss.net.OSCChannel;
@@ -77,7 +78,7 @@ import de.sciss.util.ParamSpace;
  *	and importing and exporting from/to XML.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 15-Apr-08
+ *  @version	0.70, 21-Apr-08
  */
 public class PrefsUtil
 {
@@ -334,7 +335,7 @@ public class PrefsUtil
 		putBooleanDontOverwrite( mainPrefs, KEY_VIEWCHANMETERS, false );
 		
 		putIntDontOverwrite( mainPrefs, KEY_TIMEUNITS, TIME_MINSECS );
-		putIntDontOverwrite( mainPrefs, KEY_TIMEUNITS, TIME_MINSECS );
+		putIntDontOverwrite( mainPrefs, KEY_VERTSCALE, VSCALE_AMP_LIN );
 
 		// audio
 		childPrefs  = mainPrefs.node( NODE_AUDIO );
@@ -441,7 +442,19 @@ public class PrefsUtil
 			}
 			if( f != null ) putDontOverwrite( childPrefs, KEY_SUPERCOLLIDERAPP, f.getAbsolutePath() );
 		}
-
+		
+		// view
+		childPrefs  = mainPrefs.node( NODE_VIEW );
+		try {
+			if( !childPrefs.nodeExists( NODE_SONAGRAM )) {
+				childPrefs2 = childPrefs.node( NODE_SONAGRAM );
+				new ConstQ().writePrefs( childPrefs2 );
+			}
+		}
+		catch( BackingStoreException e1 ) {
+			warnings.add( e1.toString() );
+		}
+			
 		// save current version
 		mainPrefs.putDouble( KEY_VERSION, AbstractApplication.getApplication().getVersion() );
 

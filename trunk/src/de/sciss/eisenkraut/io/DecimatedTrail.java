@@ -325,8 +325,8 @@ extends BasicTrail
 
 		if( tmpBuf == null ) {
 			
-System.out.println( "tmpBuf  : [ " + fullChannels + " ][ " + tmpBufSize + " ]" );
-System.out.println( "tmpBuf2 : [ " + decimChannels + " ][ " + tmpBufSize2 + " ]" );
+//System.out.println( "tmpBuf  : [ " + fullChannels + " ][ " + tmpBufSize + " ]" );
+//System.out.println( "tmpBuf2 : [ " + decimChannels + " ][ " + tmpBufSize2 + " ]" );
 			
 			tmpBuf	= new float[ fullChannels  ][ tmpBufSize ];
 			tmpBuf2	= new float[ decimChannels ][ tmpBufSize2 ];
@@ -345,7 +345,7 @@ System.out.println( "tmpBuf2 : [ " + decimChannels + " ][ " + tmpBufSize2 + " ]"
 
 	public void dispose()
 	{
-System.err.println( "DecimatedTrail.dispose() " + this );
+//System.err.println( "DecimatedTrail.dispose() " + this );
 		killAsyncThread(); // this has to be the first step
 		fullScale.removeDependant( this );
 		freeBuffers();

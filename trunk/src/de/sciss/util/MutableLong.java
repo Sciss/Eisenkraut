@@ -31,6 +31,9 @@ package de.sciss.util;
 
 /**
  *	A mutable long
+ *
+ *	@version	0.11, 21-Apr-08
+ *	@author		Hanns Holger Rutz
  */
 public class MutableLong
 {
@@ -49,5 +52,15 @@ public class MutableLong
 	public void set( long newValue )
 	{
 		value = newValue;
+	}
+
+	public void add( long x )
+	{
+		value += x;
+	}
+
+	public String toString()
+	{
+		return "MutableInt( " + value + " )";
 	}
 }

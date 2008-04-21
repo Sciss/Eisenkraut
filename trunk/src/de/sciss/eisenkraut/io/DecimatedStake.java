@@ -54,6 +54,8 @@ extends BasicStake
 	private final DecimationHelp[]			decimations;
 	private final int						SUBNUM;
 
+//public boolean GOGO = false;
+	
 	public DecimatedStake( Span span, InterleavedStreamFile[] fs, Span[] fileSpans, Span[] biasedSpans,
 						   	   DecimationHelp[] decimations )
 	{
@@ -214,6 +216,9 @@ extends BasicStake
 		synchronized( fs ) {
 			readyLen = (int) Math.min( len, Math.max( 0, fileSpans[ sub ].start + framesWritten[ sub ].value() - fOffset ));
 			if( readyLen > 0 ) {
+				
+//if( GOGO ) System.out.println( "read : span = " + readSpan + " ; fOffset = " + fOffset + "; framePos = " + fs[ sub ].getFramePosition() + "; readyLen = " + readyLen );
+				
 				if( fs[ sub ].getFramePosition() != fOffset ) {
 					fs[ sub ].seekFrame( fOffset );
 				}
@@ -291,12 +296,13 @@ extends BasicStake
 				throw new IllegalArgumentException( fOffset + " ... " + (fOffset + len) + " not within " + fileSpans[ sub ].toString() );
 			}
 
+//if( GOGO ) System.out.println( "write : framesWritten = " + framesWritten[ sub ] + " ; fOffset = " + fOffset + "; framePos = " + fs[ sub ].getFramePosition() + "; len = " + len );
 			if( fs[ sub ].getFramePosition() != fOffset ) {
 				fs[ sub ].seekFrame( fOffset );
 			}
 			fs[ sub ].writeFrames( data, dataOffset, len );
 			
-			framesWritten[ sub ].set( framesWritten[ sub ].value() + len );
+			framesWritten[ sub ].add( len );
 //			if( fStop > framesWritten[ sub ].value() ) framesWritten[ sub ].set( fStop );
 		}
 //		return len;
