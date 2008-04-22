@@ -59,9 +59,9 @@ public class ConstQ
 	
 	private double		fs;
 	
-	private double		LNKORR_ADD; // = -2 * Math.log( fftSize );
+//	private double		LNKORR_ADD; // = -2 * Math.log( fftSize );
 
-	private static final double	TENBYLOG10				= 10 / MathUtil.LN10;
+//	private static final double	TENBYLOG10				= 10 / MathUtil.LN10;
 
 	public ConstQ() { /* empty */ }
 	
@@ -170,8 +170,8 @@ public class ConstQ
 
 		int				kernelLen, kernelLenE, specStart, specStop;
 		float[]			win;
-		float			centerFreq, f1, f2;
-		double			theorKernLen, weight, d1, cos, sin;
+		float			f1, f2;
+		double			theorKernLen, centerFreq, centerFreqN, weight, d1, cos, sin;
 
 //		System.out.println( "Calculating sparse kernel matrices" );
 		
@@ -187,7 +187,7 @@ public class ConstQ
 		
 		fftSize		= Math.min( maxFFTSize,
 		    MathUtil.nextPowerOfTwo( (int) Math.ceil( maxKernLen )));
-		LNKORR_ADD	= -2 * Math.log( fftSize );
+//		LNKORR_ADD	= -2 * Math.log( fftSize );
 		fftSizeC	= fftSize << 1;
 		fftBuf		= new float[ fftSizeC ];
 //		thresh		= 0.0054f / fftLen; // for Hamming window
@@ -195,7 +195,10 @@ public class ConstQ
 		// spectral noise, not improve analysis! so the truncating of the
 		// kernel is essential for a clean analysis (why??). the 0.0054
 		// seems to be a good choice, so don't touch it.
-		threshSqr	= 2.916e-05f / (fftSize * fftSize); // for Hamming window (squared!)
+//		threshSqr	= 2.916e-05f / (fftSize * fftSize); // for Hamming window (squared!)
+//		threshSqr	= 2.916e-05f / fftSize; // for Hamming window (squared!)
+		// (0.0054 * 3).squared
+		threshSqr	= 2.6244e-4f / (fftSize * fftSize); // for Hamming window (squared!)
 		// tempKernel= zeros(fftLen, 1); 
 //		sparKernel= [];
 		
@@ -207,13 +210,15 @@ public class ConstQ
 			kernelLenE	= kernelLen & ~1;
 			win			= Filter.createFullWindow( kernelLen, Filter.WIN_HAMMING );
 			
-			centerFreq	= (float) (-MathUtil.PI2 * minFreq * Math.pow( 2, (float) k / bandsPerOct ) / fs);
+			centerFreq	= minFreq * Math.pow( 2, (float) k / bandsPerOct );
+			centerFreqN	= centerFreq * -MathUtil.PI2 / fs;
 
 //			weight		= 1.0f / (kernelLen * fftSize);
 			// this is a good approximation in the kernel len truncation case
 			// (tested with pink noise, where it will appear pretty much
 			// with the same brightness over all frequencies)
-			weight		= 2 / ((theorKernLen + kernelLen) * fftSize);
+			weight		= 6 / ((theorKernLen + kernelLen) * fftSize);
+//			weight		= 2 / ((theorKernLen + kernelLen) * Math.sqrt( fftSize ));
 			for( int m = kernelLenE, n = fftSizeC - kernelLenE; m < n; m++ ) {
 				fftBuf[ m ] = 0f;
 			}
@@ -232,9 +237,9 @@ public class ConstQ
 			for( int i = 0, j = fftSizeC - kernelLenE; i < kernelLen; i++ ) {
 				// complex exponential of a purely imaginary number
 				// is cos( imag( n )) + i sin( imag( n ))
-				f1			= centerFreq * i;
-				cos			= Math.cos( f1 );
-				sin			= Math.sin( f1 ); // Math.sqrt( 1 - cos*cos );
+				d1			= centerFreqN * i;
+				cos			= Math.cos( d1 );
+				sin			= Math.sin( d1 ); // Math.sqrt( 1 - cos*cos );
 				d1			= win[ i ] * weight;
 				fftBuf[ j++ ] = (float) (d1 * cos);
 //				fftBuf[ j++ ] = -f1 * sin;  // conj!
@@ -284,12 +289,13 @@ public class ConstQ
 				if( (f1 * f1 + f2 * f2) <= threshSqr ) break;
 			}
 
-			kernels[ k ] = new Kernel( specStart, new float[ specStop - specStart ], centerFreq );
+//System.out.println( "Kernel k : specStart " + specStart + "; specStop " + specStop + "; centerFreq " + centerFreq );
+			kernels[ k ] = new Kernel( specStart, new float[ specStop - specStart ], (float) centerFreq );
 			System.arraycopy( fftBuf, specStart, kernels[ k ].data, 0, specStop - specStart );
 		}
 	}
 	
-	public float[] transform( float[] input, int inOff, int inLen, float output[], int outOff, double gain )
+	public float[] transform( float[] input, int inOff, int inLen, float output[], int outOff )
 	{
 		if( output == null ) output = new float[ numKernels ];
 		
@@ -297,7 +303,7 @@ public class ConstQ
 		float[]	kern;
 		float	f1, f2;
 		
-		gain *= TENBYLOG10;
+//		gain *= TENBYLOG10;
 		off = fftSize >> 1;
 		num = Math.min( fftSize - off, inLen );
 		
@@ -334,40 +340,21 @@ public class ConstQ
 			}
 //			cBuf[ k ] = ;  // squared magnitude
 //			f1 = (float) ((Math.log( f1 * f1 + f2 * f2 ) + LNKORR_ADD) * gain);
-			f1 = (float) ((Math.log( f1 * f1 + f2 * f2 ) + LNKORR_ADD) * gain);
-f1 = Math.max( -160, f1 + 90 );	// XXX
-			output[ outOff ] = f1;
+//f1 = Math.max( -160, f1 + 90 );
+			
+			// since we use constQ to decimate spectra, we actually
+			// are going to store a "mean square" of the amplitudes
+			// so at the end of the decimation we'll have one squareroot,
+			// or even easier, when calculating the logarithm, the
+			// multiplicator of the log just has to be divided by two.
+			// hence we don't calc abs( f ) but abs( f )^2 !
+			
+			output[ outOff ] = (f1 * f1 + f2 * f2);
 		}
 		
 		return output;
 	}
-	
-//	private int q = 11;  // 12 is still ok, but already tiny bit noisy in the colour map
-//	private static float[] lookUp;
-//	private float korr = (float) Math.log( 2 ); // / Math.log( 10 );
-//	
-//	private double myLog( double inp )
-//	{
-//		if( lookUp == null ) {
-//			double korr2 = 1.0 / Math.log( 2 );
-//			int mantBits = 24 - q;
-//			int tabSize = 1 << mantBits;
-//			lookUp = new float[ tabSize ];
-//			for( int i = 0; i < tabSize; i++ ) {
-//				lookUp[ i ] = (float) (Math.log( i << q ) * korr2);
-//			}
-//		}
-//		
-//		float f = (float) inp;
-//		int x = Float.floatToRawIntBits( f );
-//		int exp = (x >> 23) & 0xFF;
-//		int mant = (x & 0x7FFFFF);
-//		if( exp == 0 ) mant <<= 1; else mant |= 0x800000;
-//		exp -= 150;
-//		float value = (exp + lookUp[ mant >> q ]) * korr;
-//		return value;
-//	}
-	
+		
 	private static class Kernel
 	{
 		protected final int			offset;

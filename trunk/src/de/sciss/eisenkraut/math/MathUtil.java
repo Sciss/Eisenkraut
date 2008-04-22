@@ -34,7 +34,7 @@ package de.sciss.eisenkraut.math;
  *  for common math operations and constants
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 11-Apr-08
+ *  @version	0.70, 22-Apr-08
  */
 public class MathUtil
 {

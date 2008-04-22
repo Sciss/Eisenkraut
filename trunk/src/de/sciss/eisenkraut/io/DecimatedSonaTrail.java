@@ -69,6 +69,7 @@ import de.sciss.app.AbstractCompoundEdit;
 import de.sciss.eisenkraut.gui.Axis;
 import de.sciss.eisenkraut.gui.WaveformView;
 import de.sciss.eisenkraut.math.ConstQ;
+import de.sciss.eisenkraut.math.FastLog;
 import de.sciss.eisenkraut.math.MathUtil;
 import de.sciss.eisenkraut.util.PrefsUtil;
 import de.sciss.gui.VectorSpace;
@@ -248,6 +249,8 @@ extends DecimatedTrail
 		0xFBFBFF, 0xFCFCFF, 0xFCFCFF, 0xFCFCFF, 0xFCFCFF, 0xFDFDFF, 0xFDFDFF, 0xFDFDFF,
 		0xFEFEFE
 	};
+	
+	private static FastLog log10 = null;
 
 	public DecimatedSonaTrail( AudioTrail fullScale, int model /*, int[] decimations */ )
 	throws IOException
@@ -305,6 +308,10 @@ final int decimations[] = { decimKorr }; // , decimKorr + 8 };
 		MAXMASK			= -MAXCOARSE;
 		MAXCEILADD		= MAXCOARSE - 1;
 
+		if( log10 == null ) {
+			log10 = new FastLog( 10, 11 );
+		}
+
 		tmpBufSize		= fftSize; // Math.max( 4096, MAXCOARSE << 1 );
 		// XXX generates OutOfMemoryError ; need to use a different approach in the decimation steps
 		// (should "just" use the maximum per-step decimation, which is 256 in the Session defaults)
@@ -357,13 +364,15 @@ final int decimations[] = { decimKorr }; // , decimKorr + 8 };
 		long					fullLen;
 //		long					fullStop;
 		int						chunkLen; // decimLen;
-		float					scaleX;
+		float					scaleX, ampLog;
 		Rectangle				r;
 		
 //		final float				scaleX			= (float) (view.getWidth() * stepSize) / totalLength;
 		
-final float pixScale = 1072 / (view.getAmpLogMax() - view.getAmpLogMin());
-final float pixOff   = -view.getAmpLogMin();
+//final float pixScale = 1072 / (view.getAmpLogMax() - view.getAmpLogMin());
+//final float pixOff   = -view.getAmpLogMin();
+final float pixScale = 10720 / (view.getAmpLogMax() - view.getAmpLogMin());
+final float pixOff   = -view.getAmpLogMin() / 10;
 
 		g2.setRenderingHint( RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR );
 		
@@ -422,7 +431,9 @@ long screenOffX = 0;
 //System.out.println( " ... for ch = " + ch + "; scaleX = " + scaleX );
 						for( int x = 0, off = 0; x < chunkLen; x++ ) {
 							for( int y = 0, off2 = x + dataStartOff, tmpCh = tmpChReset; y < modelChannels; y++, tmpCh++, off2 -= imgW, off++ ) {
-								data[ off2 ] = colors[ Math.max( 0, Math.min( 1072, (int) ((tmpBuf2[ tmpCh ][ x ] + pixOff) * pixScale) ))];
+//								ampLog = log10.calc( tmpBuf2[ tmpCh ][ x ]) * 20;
+								ampLog = log10.calc( Math.max( 1.0e-9f, tmpBuf2[ tmpCh ][ x ]));
+								data[ off2 ] = colors[ Math.max( 0, Math.min( 1072, (int) ((ampLog + pixOff) * pixScale) ))];
 							}
 						}
 						raster.setDataElements( 0, 0, imgW, modelChannels, data );
@@ -1308,7 +1319,7 @@ vaxis.setSpace( spc );
 
 		protected void decimatePCM( float[][] inBuf, float[][] outBuf, int outOff, int len, int decim )
 		{
-			final double w = 1.0 / decim;
+			final float w = 1.0f / decim;
 			
 //			for( int inOff = 0, stop = outOff + len, decimCnt = 0; outOff < stop; inOff += stepSize ) {
 //				for( int ch = 0; ch < fullChannels; ch++ ) {
@@ -1321,14 +1332,14 @@ vaxis.setSpace( spc );
 			for( int inOff = 0, stop = outOff + len, decimCnt = 0; outOff < stop; inOff += stepSize ) {
 				for( int ch = 0, outChanOff = 0; ch < fullChannels; ch++ ) {
 //System.out.println( "calling with " + inBuf[ ch].length + " -- " + inOff + " ; " + fftSize + "; " + filterBuf.length + " -- " + constQ.getNumKernels() );
-					constQ.transform( inBuf[ ch ], inOff, fftSize, filterBuf, 0, w );
+					constQ.transform( inBuf[ ch ], inOff, fftSize, filterBuf, 0 );
 					if( decimCnt == 0 ) {
 						for( int i = 0; i < numKernels; i++ ) {
-							outBuf[ outChanOff++ ][ outOff ] = filterBuf[ i ];
+							outBuf[ outChanOff++ ][ outOff ] = filterBuf[ i ] * w;
 						}
 					} else {
 						for( int i = 0; i < numKernels; i++ ) {
-							outBuf[ outChanOff++ ][ outOff ] += filterBuf[ i ];
+							outBuf[ outChanOff++ ][ outOff ] += filterBuf[ i ] * w;
 						}
 					}
 				}
