@@ -367,6 +367,55 @@ implements OSCRouter // ProgressComponent // , PreferenceChangeListener
 //		for( int j = 0; j < fftBuf.length; j += 2 ) {
 //			System.out.println( fftBuf[j] + " " + (fftBuf[j+1]>=0 ? "+ " : "- ") + Math.abs(fftBuf[j+1]) + "i" );
 //		}
+		
+		// loge(val) = (exp + log2(man)) * loge(2)
+		// logx(val) = (exp + log2(man)) * log(2)/log(x)
+/*
+		float korr = (float) Math.log( 2 ); // / Math.log( 10 );
+		double korr2 = 1.0 / Math.log( 2 );
+		int q = 11;
+		int mantBits = 24 - q;
+		int tabSize = 1 << mantBits;
+		float[] lookUp = new float[ tabSize ];
+		for( int i = 0; i < tabSize; i++ ) {
+			lookUp[ i ] = (float) (Math.log( i << q ) * korr2);
+		}
+		
+		final java.util.Random rnd = new java.util.Random( System.currentTimeMillis() );
+		final long t1 = System.currentTimeMillis();
+		for( int i = 0; i < 10000000; i++ ) {
+			float value = rnd.nextFloat();
+		}
+		final long t2 = System.currentTimeMillis();
+		for( int i = 0; i < 10000000; i++ ) {
+			float value = (float) Math.log( rnd.nextFloat() );
+		}
+		final long t3 = System.currentTimeMillis();
+		for( int i = 0; i < 10000000; i++ ) {
+			int x = Float.floatToRawIntBits( rnd.nextFloat() );
+			int exp = (x >> 23) & 0xFF;
+			int mant = (x & 0x7FFFFF);
+			float value = (exp + lookUp[ mant >> q ]) * korr;
+		}
+		final long t4 = System.currentTimeMillis();
+		double error = 0;
+		for( int i = 0; i < 10000000; i++ ) {
+			float f = rnd.nextFloat();
+			int x = Float.floatToRawIntBits( f );
+			int exp = (x >> 23) & 0xFF;
+			int mant = (x & 0x7FFFFF);
+			if( exp == 0 ) mant <<= 1; else mant |= 0x800000;
+			exp -= 150;
+			float value = (exp + lookUp[ mant >> q ]) * korr;
+			float value2 = (float) Math.log( f );
+			float err = (value - value2) / value2;
+			if( !Float.isInfinite( err )) error += err*err;
+			
+//			System.out.println( "for " + f + " -> norm = " + value2 + "; fast = " + value + "; x = " + x+ "; lookUp = " + lookUp[ mant >> q ]);
+		}
+		System.out.println( "rnd " + (t2-t1) + " ; (rnd+log) " + (t3-t2) + " ; log " + (t3-t2-(t2-t1)) +
+		                    "; fast " + (t4-t3-(t2-t1)) + " ; error (RMS) = " + Math.sqrt( error/10000000 ));
+*/
 	}
 
 	protected BasicMenuFactory createMenuFactory()

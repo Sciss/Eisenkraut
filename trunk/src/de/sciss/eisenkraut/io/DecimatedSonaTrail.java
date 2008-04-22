@@ -86,6 +86,15 @@ import de.sciss.util.MutableInt;
  * 
  *	@version	0.70, 15-Apr-08
  *	@author		Hanns Holger Rutz
+ *
+ *	@todo		editing (addAllDep)
+ *	@todo		delay compensation (fftSize data seems to be missing,
+ *				the necessary pre-delay seems to be fftSize / 2)
+ *	@todo		cache management
+ *	@todo		cost-calculation of potential sliding DFT
+ *	@todo		there's an efficient multi-channel FFT?
+ *	@todo		the AsyncEvent should have Span info so DocumentFrame
+ *				doesn't always need to repaint
  */
 public class DecimatedSonaTrail
 extends DecimatedTrail

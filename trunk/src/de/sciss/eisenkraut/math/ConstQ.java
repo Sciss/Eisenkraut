@@ -333,6 +333,7 @@ public class ConstQ
 				f2 += fftBuf[ i ] * kern[ j+1 ] + fftBuf[ i+1 ] * kern[ j ];
 			}
 //			cBuf[ k ] = ;  // squared magnitude
+//			f1 = (float) ((Math.log( f1 * f1 + f2 * f2 ) + LNKORR_ADD) * gain);
 			f1 = (float) ((Math.log( f1 * f1 + f2 * f2 ) + LNKORR_ADD) * gain);
 f1 = Math.max( -160, f1 + 90 );	// XXX
 			output[ outOff ] = f1;
@@ -340,6 +341,32 @@ f1 = Math.max( -160, f1 + 90 );	// XXX
 		
 		return output;
 	}
+	
+//	private int q = 11;  // 12 is still ok, but already tiny bit noisy in the colour map
+//	private static float[] lookUp;
+//	private float korr = (float) Math.log( 2 ); // / Math.log( 10 );
+//	
+//	private double myLog( double inp )
+//	{
+//		if( lookUp == null ) {
+//			double korr2 = 1.0 / Math.log( 2 );
+//			int mantBits = 24 - q;
+//			int tabSize = 1 << mantBits;
+//			lookUp = new float[ tabSize ];
+//			for( int i = 0; i < tabSize; i++ ) {
+//				lookUp[ i ] = (float) (Math.log( i << q ) * korr2);
+//			}
+//		}
+//		
+//		float f = (float) inp;
+//		int x = Float.floatToRawIntBits( f );
+//		int exp = (x >> 23) & 0xFF;
+//		int mant = (x & 0x7FFFFF);
+//		if( exp == 0 ) mant <<= 1; else mant |= 0x800000;
+//		exp -= 150;
+//		float value = (exp + lookUp[ mant >> q ]) * korr;
+//		return value;
+//	}
 	
 	private static class Kernel
 	{
