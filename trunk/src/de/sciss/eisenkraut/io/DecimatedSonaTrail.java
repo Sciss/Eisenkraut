@@ -419,25 +419,26 @@ long screenOffX = 0;
 					
 //System.out.println( "chunkSpan = " + chunkSpan + "; chunkLen = " + chunkLen + "; fullLen = " + fullLen + "; screenOffX " + screenOffX + "; subLength " + info.sublength + "; shift " + info.shift + "; totalLen " + info.getTotalLength() );
 					
-					readFrames( info.idx, tmpBuf2, 0, drawBusyList, chunkSpan, null );
+					if( readFrames( info.idx, tmpBuf2, 0, drawBusyList, chunkSpan, null )) {
 //					if( tempFAsync == null || tempFAsync[0] == null ) break;
 //					tempFAsync[0].seekFrame( Math.min( start / stepSize, tempFAsync[0].getFrameNum() ));
 //					int gaga = (int) Math.min( fullLen, Math.min( tmpBufSize2, tempFAsync[0].getFrameNum() - tempFAsync[0].getFramePosition() ));
 //					tempFAsync[0].readFrames( tmpBuf2, 0, gaga);
 					
-					for( int ch = 0, tmpChReset = 0; ch < fullChannels; ch++, tmpChReset += modelChannels ) {
-						r = view.rectForChannel( ch );
-						scaleX = (float) r.width / info.getTotalLength();
-//System.out.println( " ... for ch = " + ch + "; scaleX = " + scaleX );
-						for( int x = 0, off = 0; x < chunkLen; x++ ) {
-							for( int y = 0, off2 = x + dataStartOff, tmpCh = tmpChReset; y < modelChannels; y++, tmpCh++, off2 -= imgW, off++ ) {
-//								ampLog = log10.calc( tmpBuf2[ tmpCh ][ x ]) * 20;
-								ampLog = log10.calc( Math.max( 1.0e-9f, tmpBuf2[ tmpCh ][ x ]));
-								data[ off2 ] = colors[ Math.max( 0, Math.min( 1072, (int) ((ampLog + pixOff) * pixScale) ))];
+						for( int ch = 0, tmpChReset = 0; ch < fullChannels; ch++, tmpChReset += modelChannels ) {
+							r = view.rectForChannel( ch );
+							scaleX = (float) r.width / info.getTotalLength();
+	//System.out.println( " ... for ch = " + ch + "; scaleX = " + scaleX );
+							for( int x = 0, off = 0; x < chunkLen; x++ ) {
+								for( int y = 0, off2 = x + dataStartOff, tmpCh = tmpChReset; y < modelChannels; y++, tmpCh++, off2 -= imgW, off++ ) {
+	//								ampLog = log10.calc( tmpBuf2[ tmpCh ][ x ]) * 20;
+									ampLog = log10.calc( Math.max( 1.0e-9f, tmpBuf2[ tmpCh ][ x ]));
+									data[ off2 ] = colors[ Math.max( 0, Math.min( 1072, (int) ((ampLog + pixOff) * pixScale) ))];
+								}
 							}
+							raster.setDataElements( 0, 0, imgW, modelChannels, data );
+							g2.drawImage( bufImg, r.x + (int) (screenOffX * scaleX + 0.5f), r.y, r.x + (int) ((screenOffX + fullLen) * scaleX + 0.5f), r.y + r.height, 0, 0, chunkLen, modelChannels, view );
 						}
-						raster.setDataElements( 0, 0, imgW, modelChannels, data );
-						g2.drawImage( bufImg, r.x + (int) (screenOffX * scaleX + 0.5f), r.y, r.x + (int) ((screenOffX + fullLen) * scaleX + 0.5f), r.y + r.height, 0, 0, chunkLen, modelChannels, view );
 					}
 					start += fullLen; // chunkLen * stepSize;
 					totalLength -= fullLen; // chunkLen * stepSize;
@@ -575,7 +576,7 @@ inlineDecim=1;
 	 * 
 	 * @synchronization	caller must have bufSync !
 	 */
-	private void readFrames( int sub, float[][] data, int dataOffset, List busyList,
+	private boolean readFrames( int sub, float[][] data, int dataOffset, List busyList,
 							 Span readSpan, AbstractCompoundEdit ce )
 	throws IOException
 	{
@@ -585,6 +586,10 @@ inlineDecim=1;
 		final List			coll		= editGetCollByStart( ce );
 		final MutableInt	readyLen	= new MutableInt( 0 );
 		final MutableInt	busyLen		= new MutableInt( 0 );
+		// someReady is a transient trick to keep a newly opened documented
+		// responsive (since it's zoomed out completely and due to the missing
+		// decimation drawWaveform would take ages)
+		boolean				someReady	= false;
 		DecimatedStake		stake;
 		int					chunkLen, discrepancy;
 		Span				subSpan;
@@ -601,6 +606,7 @@ inlineDecim=1;
 			nextOffset	= (int) ((subSpan.stop + startR) >> decimHelps[ sub ].shift) + dataOffset;
 			discrepancy	= nextOffset - readOffset;
 			len 	   -= readyLen.value() + discrepancy;
+			if( readyLen.value() > 0 ) someReady = true;
 			if( busyLen.value() == 0 ) {
 				if( discrepancy > 0 ) {
 					if( readOffset > 0 ) {
@@ -633,6 +639,7 @@ inlineDecim=1;
 			}
 			idx++;
 		}
+		return someReady;
 	}
 
 	public static void view( float[] data, int off, int length, String descr )
