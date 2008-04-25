@@ -792,7 +792,7 @@ inlineDecim=1;
 // the speed gain using the outBufOff cache method is
 // anyway <3%.
 //				int					outBufOff	= 0;
-				int					inBufOff = 0, nextLen = fftSize;
+				int					inBufOff = 0, nextLen = fftSize >> 1;
 				long				nextTime			= System.currentTimeMillis() + UPDATE_PERIOD;
 
 				if( cacheReadAS != null ) {
