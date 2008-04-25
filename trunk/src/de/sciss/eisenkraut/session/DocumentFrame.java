@@ -131,6 +131,7 @@ import de.sciss.eisenkraut.gui.ToolActionEvent;
 import de.sciss.eisenkraut.gui.ToolActionListener;
 import de.sciss.eisenkraut.gui.WaveformView;
 import de.sciss.eisenkraut.io.AudioTrail;
+import de.sciss.eisenkraut.io.DecimatedSonaTrail;
 import de.sciss.eisenkraut.io.DecimatedTrail;
 import de.sciss.eisenkraut.io.DecimatedWaveTrail;
 import de.sciss.eisenkraut.io.DecimationInfo;
@@ -332,6 +333,8 @@ implements ProgressComponent, TimelineListener,
 	
 	private static Point					lastLeftTop		= new Point();
 	private static final String				KEY_TRACKSIZE	= "tracksize";
+	
+	private int								verticalScale;
 
 	/**
 	 *  Constructs a new timeline window with
@@ -551,6 +554,7 @@ bbb.add( markAxisHeader );
 //					startStopMeters();
 //					waveView.setPreferredSize( waveView.getSize() );
 
+					checkDecimatedTrails();
 					setPreferredSize( getSize() );
 
 					waveView.setVisible( false );
@@ -567,8 +571,6 @@ bbb.add( markAxisHeader );
 					cbr.setMinimumHeight( h );
 					cbr.setMaximumHeight( h );
 					cbr.add( getComponent() );
-					
-					checkDecimatedTrails();
 				}
 //				getRootPane().revalidate();
 			}
@@ -626,7 +628,7 @@ bbb.add( markAxisHeader );
 		doc.timeline.addTimelineListener( this );
 //		doc.addListener( this );
 		
-		checkDecimatedTrails();
+//		checkDecimatedTrails();
 
 		doc.audioTracks.addListener( new SessionCollection.Listener() {
 			public void sessionCollectionChanged( SessionCollection.Event e )
@@ -948,13 +950,15 @@ actionReverse.setEnabled( false ); // currently broken (re FilterDialog)
 	
 	protected void checkDecimatedTrails()
 	{
-		final DecimatedTrail		dt;
+		final DecimatedTrail dt;
 		
 		if( waveExpanded ) {
-			if( waveView.getVerticalScale() == PrefsUtil.VSCALE_FREQ_SPECT ) {
+			if( verticalScale == PrefsUtil.VSCALE_FREQ_SPECT ) {
 				if( doc.getDecimatedSonaTrail() == null ) {
 					try {
-						doc.createDecimatedSonaTrail();
+						final DecimatedSonaTrail dst = doc.createDecimatedSonaTrail();
+						// set initial freq bounds of waveview
+						waveView.setFreqMinMax( dst.getMinFreq(), dst.getMaxFreq() );
 					}
 					catch( IOException e1 ) {
 						e1.printStackTrace();
@@ -2074,10 +2078,10 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 			final boolean timeSmps = e.getNode().getInt( key, PrefsUtil.TIME_SAMPLES ) == PrefsUtil.TIME_SAMPLES;
 			msgCsr1.applyPattern( timeSmps ? smpPtrn : timePtrn );
 		} else if( key == PrefsUtil.KEY_VERTSCALE) {
-			final int vertScale = e.getNode().getInt( key, PrefsUtil.VSCALE_AMP_LIN );
-			waveView.setVerticalScale( vertScale );
+			verticalScale = e.getNode().getInt( key, PrefsUtil.VSCALE_AMP_LIN );
+			checkDecimatedTrails(); // needs to be before setVert.scale / updateRuler!
+			waveView.setVerticalScale( verticalScale );
 			actionIncVertMax.updateRuler();
-			checkDecimatedTrails();
 		}
 	}
 	
@@ -2694,31 +2698,38 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 		{
 			final VectorSpace	spc;
 			final float			min, max;
+//			final int			flags;
 			Axis				chanRuler;
 			
 			switch( waveView.getVerticalScale() ) {
 			case PrefsUtil.VSCALE_AMP_LIN:
 				min = waveView.getAmpLinMin() * 100;
 				max = waveView.getAmpLinMax() * 100;
+//				flags = Axis.VERTICAL | Axis.FIXEDBOUNDS;
 				spc = VectorSpace.createLinSpace( 0.0, 1.0, min, max, null, null, null, null );
 				break;
 			case PrefsUtil.VSCALE_AMP_LOG:
 				min = waveView.getAmpLogMin();
 				max = waveView.getAmpLogMax();
+//				flags = Axis.VERTICAL | Axis.FIXEDBOUNDS;
 				spc = VectorSpace.createLinSpace( 0.0, 1.0, min, max, null, null, null, null );
 				break;
 			case PrefsUtil.VSCALE_FREQ_SPECT:
-				min = waveView.getAmpLogMin();
-				max = waveView.getAmpLogMax();
-				spc = VectorSpace.createLinSpace( 0.0, 1.0, min, max, null, null, null, null );
+				min = waveView.getFreqMin();
+				max = waveView.getFreqMax();
+//				flags = Axis.VERTICAL;
+//				System.out.println( "min " + min + "; max " + max + "; center " + Math.sqrt( min * max ) );
+				spc = VectorSpace.createLinLogSpace( 0.0, 1.0, min, max, Math.sqrt( min * max ), null, null, null, null );
 				break;
 			default:
 				assert false : waveView.getVerticalScale();
 				spc = null;
+//				flags = 0;
 			}
 
 			for( int i = 0; i < collChannelRulers.size(); i++ ) {
 				chanRuler	= (Axis) collChannelRulers.get( i );
+//				chanRuler.setFlags( flags );
 				chanRuler.setSpace( spc );
 			}
 		}

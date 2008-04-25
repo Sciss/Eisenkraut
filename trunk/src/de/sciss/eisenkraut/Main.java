@@ -416,6 +416,28 @@ implements OSCRouter // ProgressComponent // , PreferenceChangeListener
 		System.out.println( "rnd " + (t2-t1) + " ; (rnd+log) " + (t3-t2) + " ; log " + (t3-t2-(t2-t1)) +
 		                    "; fast " + (t4-t3-(t2-t1)) + " ; error (RMS) = " + Math.sqrt( error/10000000 ));
 */
+//		final int fftSize = 128;
+//		final float[] fftBuf = new float[ fftSize + 2 ];
+//		final float[] gaga = new float[ fftSize + 2 ];
+//		for( int i = 0; i < fftSize; i++ ) {
+//			fftBuf[ i ] = (float) Math.cos( de.sciss.eisenkraut.math.MathUtil.PI2 * i / 4 ) / fftSize;
+//		}
+//		de.sciss.eisenkraut.math.Fourier.realTransform( fftBuf, fftSize, de.sciss.eisenkraut.math.Fourier.FORWARD );
+//		de.sciss.eisenkraut.util.DebugView.fftPhase( fftBuf, (fftSize >> 1) + 1, true, "FFT" );
+//		final de.sciss.eisenkraut.math.SlidingDFT slide = new de.sciss.eisenkraut.math.SlidingDFT( fftSize, 1 );
+//		for( int i = 0; i < fftSize; i++ ) {
+//			gaga[ i ] = (float) Math.cos( de.sciss.eisenkraut.math.MathUtil.PI2 * i / 4 ) / fftSize;
+//		}
+//		slide.next( gaga, 0, fftSize, 0, fftBuf );
+//		de.sciss.eisenkraut.util.DebugView.fftPhase( fftBuf, (fftSize >> 1) + 1, true, "Slide1" );
+//		final de.sciss.eisenkraut.math.SlidingDFT slide2 = new de.sciss.eisenkraut.math.SlidingDFT( fftSize, 1 );
+//		for( int i = 0; i < fftSize; i++ ) {
+//			gaga[ i ] = (float) Math.cos( de.sciss.eisenkraut.math.MathUtil.PI2 * i / 4 ) / fftSize;
+//		}
+//		for( int i = 0; i < fftSize; i += 1 ) {
+//			slide2.next( gaga, i, 1, 0, fftBuf );
+//		}
+//		de.sciss.eisenkraut.util.DebugView.fftPhase( fftBuf, (fftSize >> 1) + 1, true, "Slide2" );
 	}
 
 	protected BasicMenuFactory createMenuFactory()

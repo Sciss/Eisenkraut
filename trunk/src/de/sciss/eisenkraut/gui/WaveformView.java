@@ -77,8 +77,10 @@ implements Disposable
 //	private boolean				logarithmic		= false;
 	private float				ampLinMin		= -1.0f;	// minimum vector value
 	private float				ampLinMax		= 1.0f;		// maximum vector value
-	private float				ampLogMin			= -60f;
-	private float				ampLogMax			= 0f;
+	private float				ampLogMin		= -60f;
+	private float				ampLogMax		= 0f;
+	private float				freqMin			= 27.5f;
+	private float				freqMax			= 20000f;
 	private boolean				nullLinie		= false;
 
 	private final Session		doc;
@@ -212,6 +214,27 @@ implements Disposable
 			this.ampLogMax	= max;
 
 			if( vertScale != PrefsUtil.VSCALE_AMP_LIN ) triggerRedisplay();
+		}
+	}
+
+	public float getFreqMin()
+	{
+		return freqMin;
+	}
+
+
+	public float getFreqMax()
+	{
+		return freqMax;
+	}
+
+	public void setFreqMinMax( float min, float max )
+	{
+		if( (this.freqMin != min) || (this.freqMax != max) ) {
+			this.freqMin	= min;
+			this.freqMax	= max;
+
+			if( vertScale == PrefsUtil.VSCALE_FREQ_SPECT ) triggerRedisplay();
 		}
 	}
 

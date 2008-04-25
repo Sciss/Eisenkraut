@@ -34,16 +34,16 @@ import de.sciss.util.Param;
 import de.sciss.util.ParamSpace;
 
 /**
- *	@version	0.70, 15-Apr-08
+ *	@version	0.70, 25-Apr-08
  *	@author		Hanns Holger Rutz
  */
 public class ConstQ
 {
-	public static final String KEY_MINFREQ		= "minfreq";	// Param (Hz)
-	public static final String KEY_MAXFREQ		= "maxfreq";	// Param (Hz)
+	public static final String KEY_MINFREQ		= "minfreq";		// Param (Hz)
+	public static final String KEY_MAXFREQ		= "maxfreq";		// Param (Hz)
 	public static final String KEY_BANDSPEROCT	= "bandsperoct";	// Param (none)
 	public static final String KEY_MAXTIMERES	= "maxtimeres" ;	// Param (ms)
-	public static final String KEY_MAXFFTSIZE	= "maxfftsize";	// Param (String fftSize)
+	public static final String KEY_MAXFFTSIZE	= "maxfftsize";		// Param (String fftSize)
 	
 	private Kernel[]	kernels;
 	private int			numKernels;
@@ -73,6 +73,11 @@ public class ConstQ
 	public int getFFTSize()
 	{
 		return fftSize;
+	}
+	
+	public float[] getFFTBuffer()
+	{
+		return fftBuf;
 	}
 
 	public void setSampleRate( double fs )
@@ -234,10 +239,12 @@ public class ConstQ
 			// there seems to be a bug with Fourier.complexTransform
 			// that already computes the conjugate spectrum (why??)
 //			for( int i = kernelLen - 1, j = fftSizeC - kernelLenE; i >= 0; i-- ) { ... }
+//			for( int i = 0, j = 0; /* fftSizeC - kernelLenE; */ i < kernelLen; i++ ) { ... }
 			for( int i = 0, j = fftSizeC - kernelLenE; i < kernelLen; i++ ) {
 				// complex exponential of a purely imaginary number
 				// is cos( imag( n )) + i sin( imag( n ))
 				d1			= centerFreqN * i;
+//				d1			= centerFreqN * (i - kernelLenE);
 				cos			= Math.cos( d1 );
 				sin			= Math.sin( d1 ); // Math.sqrt( 1 - cos*cos );
 				d1			= win[ i ] * weight;
@@ -295,38 +302,28 @@ public class ConstQ
 		}
 	}
 	
-	public float[] transform( float[] input, int inOff, int inLen, float output[], int outOff )
+	/**
+	 * 	Assumes that the input was already successfully transformed
+	 * 	into the Fourier domain (namely into fftBuf as returned by
+	 * 	getFFTBuffer()). From this FFT, the method calculates the
+	 * 	convolutions with the filter kernels, returning the magnitudes
+	 * 	of the filter outputs.
+	 * 
+	 *	@param	output
+	 *	@param	outOff
+	 *	@return
+	 */
+	public float[] convolve( float[] output, int outOff )
 	{
 		if( output == null ) output = new float[ numKernels ];
 		
-		final int off, num, num2;
 		float[]	kern;
 		float	f1, f2;
-		
-//		gain *= TENBYLOG10;
-		off = fftSize >> 1;
-		num = Math.min( fftSize - off, inLen );
-		
-//System.out.println( "inOff " + inOff + "; num  " + num + " ; inOff + num " + (inOff + num) + "; input.length " + input.length + "; fftBuf.length " + fftBuf.length );
-		
-		System.arraycopy( input, inOff, fftBuf, off, num );
-		for( int i = off + num; i < fftSize; i++ ) {
-			fftBuf[ i ] = 0f;
-		}
-		num2 = Math.min( fftSize - num, inLen - num );
-		System.arraycopy( input, inOff + num, fftBuf, 0, num2 );
-		for( int i = num2; i < off; i++ ) {
-			fftBuf[ i ] = 0f;
-		}
-		
-		// XXX evtl., wenn inpWin weggelassen werden kann,
-		// optimierte overlap-add fft
-		Fourier.realTransform( fftBuf, fftSize, Fourier.FORWARD );
-		
+				
 		for( int k = 0; k < numKernels; k++, outOff++ ) {
-			kern = kernels[ k ].data;
-			f1 = 0f;
-			f2 = 0f;
+			kern	= kernels[ k ].data;
+			f1		= 0f;
+			f2		= 0f;
 			for( int i = kernels[ k ].offset, j = 0; j < kern.length; i += 2, j += 2 ) {
 				// complex mult: a * b =
 				// (re(a)re(b)-im(a)im(b))+i(re(a)im(b)+im(a)re(b))
@@ -353,6 +350,35 @@ public class ConstQ
 		}
 		
 		return output;
+	}
+	
+	public float[] transform( float[] input, int inOff, int inLen, float output[], int outOff )
+	{
+		if( output == null ) output = new float[ numKernels ];
+		
+		final int off, num, num2;
+
+//		gain *= TENBYLOG10;
+		off = fftSize >> 1;
+		num = Math.min( fftSize - off, inLen );
+		
+//System.out.println( "inOff " + inOff + "; num  " + num + " ; inOff + num " + (inOff + num) + "; input.length " + input.length + "; fftBuf.length " + fftBuf.length );
+		
+		System.arraycopy( input, inOff, fftBuf, off, num );
+		for( int i = off + num; i < fftSize; i++ ) {
+			fftBuf[ i ] = 0f;
+		}
+		num2 = Math.min( fftSize - num, inLen - num );
+		System.arraycopy( input, inOff + num, fftBuf, 0, num2 );
+		for( int i = num2; i < off; i++ ) {
+			fftBuf[ i ] = 0f;
+		}
+		
+		// XXX evtl., wenn inpWin weggelassen werden kann,
+		// optimierte overlap-add fft
+		Fourier.realTransform( fftBuf, fftSize, Fourier.FORWARD );
+		
+		return convolve( output, outOff );
 	}
 		
 	private static class Kernel

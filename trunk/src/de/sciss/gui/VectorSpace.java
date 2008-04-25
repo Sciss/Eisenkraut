@@ -125,6 +125,21 @@ public class VectorSpace
 								hlabel, hunit, vlabel, vunit );
 	}
 
+	/**
+	 * 	Creates a space whose horizontal axis is linearly scaled and vertical
+	 * 	axis is logarithmically scaled.
+	 * 
+	 *	@param	hmin
+	 *	@param	hmax
+	 *	@param	vmin
+	 *	@param	vmax
+	 *	@param	vcenter
+	 *	@param	hlabel
+	 *	@param	hunit
+	 *	@param	vlabel
+	 *	@param	vunit
+	 *	@return
+	 */
 	public static VectorSpace createLinLogSpace( double hmin, double hmax, double vmin, double vmax, double vcenter,
 												 String hlabel, String hunit, String vlabel, String vunit )
 	{

@@ -53,6 +53,7 @@ import javax.swing.JComponent;
 
 import de.sciss.app.AbstractApplication;
 import de.sciss.app.GraphicsHandler;
+import de.sciss.eisenkraut.math.MathUtil;
 import de.sciss.gui.ComponentHost;
 import de.sciss.gui.VectorSpace;
 import de.sciss.util.Disposable;
@@ -66,7 +67,7 @@ import de.sciss.util.Disposable;
  *  timeline.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 20-Mar-08
+ *  @version	0.70, 23-Apr-08
  *
  *	@todo		FIXEDBOUNDS is ignored in logarithmic mode now
  *	@todo		new label width calculation not performed in logarithmic mode
@@ -535,12 +536,15 @@ implements Disposable
 			width		= recentHeight;
 			height		= recentWidth;
 			min			= space.vmin;
-			max			= space.hmax;
+			max			= space.vmax;
 		}
 		
 		factor	= Math.pow( max / min, (double) 72 / (double) width );	// XXX
-		expon	= (int) (Math.log( factor ) / Math.log( 10 ));
+		expon	= (int) (Math.log( factor ) / MathUtil.LN10);
 		mult	= (int) (Math.ceil( factor / Math.pow( 10, expon )) + 0.5);
+		
+//System.out.println( "orig : factor " + factor + "; expon " + expon + "; mult " + mult );
+		
 		if( mult > 5 ) {
 			expon++;
 			mult = 1;
@@ -552,6 +556,9 @@ implements Disposable
 		factor	= mult * Math.pow( 10, expon );
 		
 		numLabels = (int) (Math.ceil( Math.log( max/min ) / Math.log( factor )) + 0.5);
+		
+//System.out.println( "max " + max + "; min " + min + "; width " + width + "; numLabels " + numLabels + "; factor " + factor + "; expon " + expon + "; mult " + mult );
+		
 		if( labels.length != numLabels ) labels = new String[ numLabels ];
 		if( labelPos.length != numLabels ) labelPos = new int[ numLabels ];
 
