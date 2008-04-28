@@ -57,7 +57,7 @@ import de.sciss.util.Disposable;
  *	for a smooth look.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 20-Mar-08
+ *  @version	0.70, 28-Apr-08
  *
  *	@todo	allow linear display (now it's hard coded logarithmic)
  *	@todo	add optional horizontal orientation
@@ -523,20 +523,27 @@ implements Disposable
 				if( holdPainted ) {
 					minY = Math.min( yHold, yHoldPainted );
 					if( rmsPainted ) {
-						maxY = Math.max( Math.max( yPeak, yPeakPainted ), Math.max( yRMS, yRMSPainted )) + 2;
+						maxY = Math.max( Math.max( yPeak, yPeakPainted ), Math.max( yRMS, yRMSPainted )) + 3;
 					} else {
-						maxY = Math.max( yPeak, yPeakPainted );
+						maxY = Math.max( yPeak, yPeakPainted ) + 1;
 					}
 				} else {
 					if( rmsPainted ) {
 						minY = Math.min( Math.min( yPeak, yPeakPainted ), Math.min( yRMS, yRMSPainted ));
-						maxY = Math.max( Math.max( yPeak, yPeakPainted ), Math.max( yRMS, yRMSPainted )) + 2;
+						maxY = Math.max( Math.max( yPeak, yPeakPainted ), Math.max( yRMS, yRMSPainted )) + 3;
 					} else {
 						minY = Math.min( yPeak, yRMSPainted );
-						maxY = Math.max( yPeak, yRMSPainted );
+						maxY = Math.max( yPeak, yRMSPainted ) + 1;
 					}
 				}
 
+//				if( refreshParent ) {
+//					getParent().repaint( insets.left + getX(), insets.top + (recentHeight - h1) + minY + getY(), getWidth() - insets.left - insets.right,
+//										 maxY - minY );
+//				} else {
+//					repaint( insets.left, insets.top + (recentHeight - h1) + minY, getWidth() - insets.left - insets.right,
+//							 maxY - minY );
+//				}
 				if( refreshParent ) {
 					getParent().repaint( insets.left + getX(), insets.top + (recentHeight - h1) + minY + getY(), getWidth() - insets.left - insets.right,
 										 maxY - minY );
