@@ -40,6 +40,8 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.Timer;
 
+import de.sciss.app.BasicEvent;
+import de.sciss.app.EventManager;
 import de.sciss.jcollider.Bus;
 import de.sciss.jcollider.Constants;
 import de.sciss.jcollider.Group;
@@ -53,8 +55,13 @@ import de.sciss.net.OSCBundle;
 import de.sciss.net.OSCListener;
 import de.sciss.net.OSCMessage;
 
+/**
+ *  @author		Hanns Holger Rutz
+ *  @version	0.70, 28-Apr-08
+ */
 public class MeterManager
-implements OSCListener, Constants, ServerListener, ActionListener
+implements OSCListener, Constants, ServerListener, ActionListener,
+		   EventManager.Processor
 {
 	private List					collAllClients		= new ArrayList();
 	private List					collActiveClients	= new ArrayList();
@@ -81,11 +88,14 @@ implements OSCListener, Constants, ServerListener, ActionListener
 	private final SuperColliderClient sc;
 	
 	private int						numTask				= 0;
+	
+	private final EventManager		elm;
 
 	public MeterManager( SuperColliderClient sc )
 	{
 		this.sc		= sc;
 		meterTimer	= new javax.swing.Timer( 33, this );
+		elm			= new EventManager( this );
 		sc.addServerListener( this );
 	}
 	
@@ -135,34 +145,27 @@ implements OSCListener, Constants, ServerListener, ActionListener
 //		}
 	}
 
-	// ------------- OSCListener interface -------------
-	
-	private volatile OSCMessage rcvMsg;
-	private final Runnable runProcessMessage = new Runnable() {
-		public void run()
-		{
-			processMessage();
-		}
-	};
+	// ----------------- OSCListener interface -----------------
 	
 	public void messageReceived( OSCMessage msg, SocketAddress sender, long time )
 	{
-		rcvMsg = msg;
-		EventQueue.invokeLater( runProcessMessage );
+		elm.dispatchEvent( new Event( sender, msg, time ));
 	}
-	
-	protected void processMessage()
+
+	// ----------------- EventManager.Processor interface -----------------
+
+	public void processEvent( BasicEvent e )
 	{
-		final OSCMessage msg = rcvMsg;
-		final int		busIndex	= ((Number) msg.getArg( 0 )).intValue();
-		final int		numVals		= ((Number) msg.getArg( 1 )).intValue();
-		MeterClient		mc;	
+		final OSCMessage	msg			= ((Event) e).msg;
+		final int			busIndex	= ((Number) msg.getArg( 0 )).intValue();
+		final int			numVals		= ((Number) msg.getArg( 1 )).intValue();
+		Client				mc;	
 		
 //		synchronized( sync ) {
 			if( (bus == null) || (busIndex != bus.getIndex()) ) return;
 
 			for( int i = 0; i < collActiveClients.size(); i++ ) {
-				mc	= (MeterClient) collActiveClients.get( i );
+				mc	= (Client) collActiveClients.get( i );
 				if( !mc.task ) continue;
 //				for( int j = 0, off = mc.cOffset; (j < mc.cNum) && (off < numVals); j++, off++ ) {
 //					mc.peakRMSPairs[ j ] = ((Number) msg.getArg( off + 2 )).floatValue();
@@ -190,7 +193,7 @@ implements OSCListener, Constants, ServerListener, ActionListener
 	// @synchronization	must be called with sync on sync
 	private void disposeServer()
 	{
-		MeterClient mc;
+		Client mc;
 
 		meterTimer.stop();
 		
@@ -212,7 +215,7 @@ implements OSCListener, Constants, ServerListener, ActionListener
 		if( server == null ) return;
 		
 		for( int i = 0; i < collAllClients.size(); ) {
-			mc = (MeterClient) collAllClients.get( i );
+			mc = (Client) collAllClients.get( i );
 			if( mc.server == server ) {
 				collAllClients.remove( i );
 			} else {
@@ -230,7 +233,7 @@ implements OSCListener, Constants, ServerListener, ActionListener
 	{
 //		if( !Thread.holdsLock( sync )) throw new IllegalMonitorStateException();
 	
-		MeterClient mc;
+		Client mc;
 
 		disposeServer();
 	
@@ -239,7 +242,7 @@ implements OSCListener, Constants, ServerListener, ActionListener
 		server		= s;
 				
 		for( int i = 0; i < collAllClients.size(); i++ ) {
-			mc = (MeterClient) collAllClients.get( i );
+			mc = (Client) collAllClients.get( i );
 			if( mc.server == server ) {
 				collActiveClients.add( mc );
 			}
@@ -254,7 +257,7 @@ implements OSCListener, Constants, ServerListener, ActionListener
 		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
 
 //		synchronized( sync ) {
-			final MeterClient mc = (MeterClient) mapClients.get( ml );
+			final Client mc = (Client) mapClients.get( ml );
 			if( mc == null ) return;
 			if( mc.task != task ) {
 				mc.task	= task;
@@ -306,14 +309,14 @@ implements OSCListener, Constants, ServerListener, ActionListener
 
 	public void addListener( MeterListener ml, Server s, int[] channels, Group g, boolean task )
 	{
-		final MeterClient mc;
+		final Client mc;
 
 //Thread.dumpStack();
 //System.err.println( "addListener( "+ml+", "+channels.length+", "+g );
 		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
 		
 //		synchronized( sync ) {
-			mc = new MeterClient( ml, s, channels, g, task );
+			mc = new Client( ml, s, channels, g, task );
 //System.err.println( "add "+ml+"; bus "+b );
 			if( mapClients.put( ml, mc ) != null ) throw new IllegalArgumentException( "MeterListener was already registered" );
 			collAllClients.add( mc );
@@ -326,13 +329,13 @@ implements OSCListener, Constants, ServerListener, ActionListener
 	
 	public void removeListener( MeterListener ml )
 	{
-		final MeterClient	mc;
+		final Client	mc;
 		final OSCBundle		bndl;
 		
 		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
 
 //		synchronized( sync ) {
-			mc = (MeterClient) mapClients.remove( ml );
+			mc = (Client) mapClients.remove( ml );
 			if( mc == null ) return;
 			collAllClients.remove( mc );
 			if( collActiveClients.remove( mc )) {
@@ -366,7 +369,7 @@ implements OSCListener, Constants, ServerListener, ActionListener
 		OSCBundle			bndl;
 		Group				g;
 		boolean				haveGrpTrig	= false;
-		MeterClient			mc;
+		Client			mc;
 		int					srcChan;
 	
 		meterTimer.stop();
@@ -384,7 +387,7 @@ implements OSCListener, Constants, ServerListener, ActionListener
 		meterBangBndl	= null;
 
 		for( int i = 0; i < collActiveClients.size(); i++ ) {
-			mc = (MeterClient) collActiveClients.get( i );
+			mc = (Client) collActiveClients.get( i );
 			for( int j = 0; j < mc.synths.length; j++ ) {
 				if( mc.synths[ j ] != null ) {
 					bndl.addPacket( mc.synths[ j ].freeMsg() );
@@ -427,7 +430,7 @@ implements OSCListener, Constants, ServerListener, ActionListener
 						new Integer( bus.getIndex() ), new Integer( bus.getNumChannels() )}));
 
 					for( int i = 0; i < collActiveClients.size(); i++ ) {
-						mc	= (MeterClient) collActiveClients.get( i );
+						mc	= (Client) collActiveClients.get( i );
 //System.err.println( "i = "+i+"; mc = "+mc );
 						if( mc.task ) numTask++;
 						if( mc.g != null ) {
@@ -485,7 +488,44 @@ implements OSCListener, Constants, ServerListener, ActionListener
 
 	// ------------- internal classes -------------
 	
-	private static class MeterClient
+	private static class Event
+	extends BasicEvent
+	{
+		protected OSCMessage msg;
+		
+		protected Event( Object src, OSCMessage msg, long time )
+		{
+			super( src, 0, time );
+			this.msg = msg;
+		}
+
+		public boolean incorporate( BasicEvent oldEvent )
+		{
+			if( (oldEvent instanceof Event) && (oldEvent.getSource() == getSource()) ) {
+				final OSCMessage omsg = ((Event) oldEvent).msg;
+				if( omsg.getName().equals( msg.getName() ) &&
+					(omsg.getArgCount() == msg.getArgCount()) &&
+					omsg.getArg( 0 ).equals( msg.getArg( 0 )) &&	// busIndex
+					omsg.getArg( 1 ).equals( msg.getArg( 1 ))) {	// numVals
+					
+					final Object[] fuseArgs = new Object[ msg.getArgCount() ];
+					fuseArgs[ 0 ] = msg.getArg( 0 );
+					fuseArgs[ 1 ] = msg.getArg( 1 );
+					for( int i = 2; i < fuseArgs.length; i++ ) {
+						fuseArgs[ i ] = new Float( Math.max(
+						    ((Number)  msg.getArg( i )).floatValue(),
+						    ((Number) omsg.getArg( i )).floatValue() ));
+					}
+					msg = new OSCMessage( msg.getName(), fuseArgs );
+//System.out.println( "FUSE!" );
+					return true;
+				}
+			}
+			return false;
+		}
+	}
+	
+	private static class Client
 	{
 		protected final float[]		peakRMSPairs;
 		protected final int			cNum;
@@ -497,7 +537,7 @@ implements OSCListener, Constants, ServerListener, ActionListener
 		protected final Server		server;
 		protected boolean			task;
 		
-		protected MeterClient( MeterListener ml, Server server, int[] channels, Group g, boolean task )
+		protected Client( MeterListener ml, Server server, int[] channels, Group g, boolean task )
 		{
 			this.ml			= ml;
 			this.server		= server;
