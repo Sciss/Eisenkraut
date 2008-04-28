@@ -25,6 +25,7 @@
  *
  *  Changelog:
  *		20-Jan-06	created
+ *		28-Apr-08	extends BasicEvent
  */
 
 package de.sciss.eisenkraut.net;
@@ -32,13 +33,15 @@ package de.sciss.eisenkraut.net;
 import java.io.IOException;
 import java.net.SocketAddress;
 
+import de.sciss.app.BasicEvent;
 import de.sciss.net.OSCMessage;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
+ *  @version	0.70, 28-Apr-08
  */
 public class RoutedOSCMessage
+extends BasicEvent
 {
 	public final OSCMessage			msg;
 	public final SocketAddress		addr;
@@ -53,6 +56,7 @@ public class RoutedOSCMessage
 //							 String[] path, int pathIdx, List routers )
 	public RoutedOSCMessage( OSCMessage msg, SocketAddress addr, long when, OSCRoot server, String[] path, int pathIdx )
 	{
+		super( addr, 0, when );
 		this.msg		= msg;
 		this.addr		= addr;
 		this.when		= when;
@@ -61,7 +65,12 @@ public class RoutedOSCMessage
 		this.pathIdx	= pathIdx;
 //		this.routers	= routers;
 	}
-	
+
+	public boolean incorporate( BasicEvent oldEvent )
+	{
+		return false;
+	}
+
 //	public void route()
 //	{
 //		for( int i = 0; i < routers.size(); i++ ) {

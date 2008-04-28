@@ -29,18 +29,16 @@
 
 package de.sciss.eisenkraut.net;
 
-import java.awt.EventQueue;
 import java.io.IOException;
 import java.net.SocketAddress;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 
 import de.sciss.app.AbstractApplication;
+import de.sciss.app.BasicEvent;
+import de.sciss.app.EventManager;
 import de.sciss.net.OSCChannel;
 import de.sciss.net.OSCListener;
 import de.sciss.net.OSCMessage;
@@ -51,10 +49,10 @@ import de.sciss.util.ParamSpace;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
+ *  @version	0.70, 28-Apr-08
  */
 public class OSCRoot
-implements OSCRouter, OSCListener, Runnable, PreferenceChangeListener
+implements OSCRouter, OSCListener, EventManager.Processor, PreferenceChangeListener
 {
 	/**
 	 *	Convenient name for preferences node
@@ -79,8 +77,9 @@ implements OSCRouter, OSCListener, Runnable, PreferenceChangeListener
 	private final Pattern					oscPathPtrn		= Pattern.compile( "/" );
 	
 	// elements = RoutedOSCMessage instances
-	private final List						collMessages	= Collections.synchronizedList( new ArrayList() );
+//	private final List						collMessages	= Collections.synchronizedList( new ArrayList() );
 	private final OSCRouterWrapper			osc;
+	private final EventManager				elm;
 
 	private static final String				OSC_DUMP		= "dumpOSC";
 
@@ -114,6 +113,7 @@ implements OSCRouter, OSCListener, Runnable, PreferenceChangeListener
 			prefs.putBoolean( KEY_ACTIVE, false );
 			prefs.put( KEY_PORT, defaultPortParam.toString() );
 		}
+		elm = new EventManager( this );
 		osc = new OSCRouterWrapper( null, this );
 		osc.oscAddRouter( new OSCRouter() {
 			public String oscGetPathComponent()
@@ -429,11 +429,9 @@ implements OSCRouter, OSCListener, Runnable, PreferenceChangeListener
 
 	// called from the event thread
 	// when new messages have been queued
-	public void run()
+	public void processEvent( BasicEvent e )
 	{
-		while( !collMessages.isEmpty() ) {
-			osc.oscRoute( (RoutedOSCMessage) collMessages.remove( 0 ));
-		}
+		osc.oscRoute( (RoutedOSCMessage) e );
 	}
 
 	// ------------ OSCRouter interface ------------
@@ -521,8 +519,7 @@ implements OSCRouter, OSCListener, Runnable, PreferenceChangeListener
 //		}
 		
 //		if( r != null ) {
-			collMessages.add( new RoutedOSCMessage( msg, addr, when, this, path, 0 ));
-			EventQueue.invokeLater( this );
+			elm.dispatchEvent( new RoutedOSCMessage( msg, addr, when, this, path, 0 ));
 //		} else {
 //			failedUnknownCmd( msg );
 //		}
