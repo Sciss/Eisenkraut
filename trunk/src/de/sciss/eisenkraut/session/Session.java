@@ -549,9 +549,10 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 		return actionDelete.initiate( name, span, mode );
 	}
 
-	public ProcessingThread procSave( String name, Span span, AudioFileDescr[] targetAFDs, boolean asCopy )
+	public ProcessingThread procSave( String name, Span span, AudioFileDescr[] targetAFDs,
+									  int[] channelMap, boolean saveMarkers, boolean asCopy )
 	{
-		return actionSave.initiate( name, span, targetAFDs, asCopy );
+		return actionSave.initiate( name, span, targetAFDs, channelMap, saveMarkers, asCopy );
 	}
 	
 	public MenuAction getCutAction()
@@ -973,7 +974,8 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 		 *
 		 *  @synchronization	this method is to be called in the event thread
 		 */
-		protected ProcessingThread initiate( String name, Span span, AudioFileDescr[] descrs, boolean asCopy )
+		protected ProcessingThread initiate( String name, Span span, AudioFileDescr[] descrs,
+											 int[] channelMap, boolean saveMarkers, boolean asCopy )
 		{
 			final ProcessingThread proc;
 		
@@ -985,6 +987,8 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 			proc.putClientArg( "afds", descrs );
 			proc.putClientArg( "doc", enc_this );
 			proc.putClientArg( "asCopy", new Boolean( asCopy ));
+			proc.putClientArg( "chanMap", channelMap );
+			proc.putClientArg( "markers", new Boolean( saveMarkers ));
 			proc.putClientArg( "span", span == null ? new Span( 0, timeline.getLength() ) : span );
 			return proc;
 		}
@@ -1002,8 +1006,9 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 			final AudioFileDescr[]			clientAFDs	= (AudioFileDescr[]) context.getClientArg( "afds" );
 			final int						numFiles	= clientAFDs.length;
 			final Session					doc			= (Session) context.getClientArg( "doc" );
-//			final boolean					asCopy		= ((Boolean) context.getClientArg( "asCopy" )).booleanValue();
+			final boolean					saveMarkers	= ((Boolean) context.getClientArg( "markers" )).booleanValue();
 			final Span						span		= (Span) context.getClientArg( "span" );
+			final int[]						channelMap	= (int[]) context.getClientArg( "chanMap" );
 			final AudioTrail				audioTrail	= doc.getAudioTrail();
 //			final File[]					tempFs		= new File[ numFiles ];
 //			final boolean[]					renamed		= new boolean[ numFiles ];
@@ -1013,10 +1018,14 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 			
 			context.putClientArg( "afs", afs );
 
-			if( clientAFDs[ 0 ].isPropertySupported( AudioFileDescr.KEY_MARKERS )) {
-				doc.markers.copyToAudioFile( clientAFDs[ 0 ], span );	// XXX
-			} else if( doc.markers.isEmpty() ) {
-				System.err.println( "WARNING: markers are not saved in this file format!!!" );
+			if( saveMarkers ) {
+				if( clientAFDs[ 0 ].isPropertySupported( AudioFileDescr.KEY_MARKERS )) {
+					doc.markers.copyToAudioFile( clientAFDs[ 0 ], span );	// XXX
+				} else if( !doc.markers.isEmpty() ) {
+					System.err.println( "WARNING: markers are not saved in this file format!!!" );
+				}
+			} else { // WARNING: we must clear KEY_MARKERS, it might contain copied data!
+				clientAFDs[ 0 ].setProperty( AudioFileDescr.KEY_MARKERS, null );
 			}
 			for( int i = 0; i < numFiles; i++ ) {
 				if( clientAFDs[ i ].file.exists() ) {
@@ -1033,7 +1042,7 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 				}
 			}
 			
-			audioTrail.flatten( afs, span );
+			audioTrail.flatten( afs, span, channelMap );
 			return DONE;
 		} // run
 

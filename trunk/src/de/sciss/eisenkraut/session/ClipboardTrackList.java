@@ -51,7 +51,7 @@ import de.sciss.util.Disposable;
 
 /**
  *  @author				Hanns Holger Rutz
- *  @version			0.70, 07-Dec-07
+ *  @version			0.70, 28-Apr-08
  *
  *	@todo				disposeAll is not a safe decision because another
  *						document might be in the middle of pasting this track list!!
@@ -93,7 +93,7 @@ implements Transferable, ClipboardOwner, Disposable
 	
 		this.span	= span;
 		
-		final List				infos = Track.getInfos( tracks, tracks );
+		final List				infos = Track.getInfos( tracks, doc.tracks.getAll() );
 		Track.Info				ti;
 		Trail					subTrail;
 		Set						setTrackLists;

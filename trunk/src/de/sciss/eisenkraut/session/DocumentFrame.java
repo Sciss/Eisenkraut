@@ -135,6 +135,7 @@ import de.sciss.eisenkraut.io.DecimatedSonaTrail;
 import de.sciss.eisenkraut.io.DecimatedTrail;
 import de.sciss.eisenkraut.io.DecimatedWaveTrail;
 import de.sciss.eisenkraut.io.DecimationInfo;
+import de.sciss.eisenkraut.io.MarkerTrail;
 import de.sciss.eisenkraut.net.SuperColliderClient;
 import de.sciss.eisenkraut.net.SuperColliderPlayer;
 import de.sciss.eisenkraut.realtime.Transport;
@@ -1476,10 +1477,10 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 		case 0:
 			confirmed.set( false );
 			if( (displayAFD.file == null) || writeProtected ) {
-				afds = actionSaveAs.query( afds, false, false, null );
+				afds = actionSaveAs.query( afds );
 			}
 			if( afds != null ) {
-				return actionSave.initiate( actionSave.getValue( Action.NAME ).toString(), null, afds, false, false );
+				return actionSave.initiate( actionSave.getValue( Action.NAME ).toString(), null, afds, null, true, false, false );
 			}
 			return null;
 			
@@ -2211,24 +2212,31 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 			final AudioFileDescr[]	afds;
 
 			if( displayAFD.file == null ) {
-				afds = actionSaveAs.query( doc.getDescr(), false, false, null );
+				afds = actionSaveAs.query( doc.getDescr() );
 			} else {
 				afds = doc.getDescr();
 			}
 			if( afds != null ) {
-				perform( getValue( NAME ).toString(), null, afds, false, false );
+				perform( getValue( NAME ).toString(), afds );
 			}
 		}
 		
-		protected void perform( String name, Span span, AudioFileDescr[] afds, boolean asCopy, boolean openAfterSave )
+		protected void perform( String name, AudioFileDescr[] afds )
 		{
-			final ProcessingThread pt = initiate( name, span, afds, asCopy, openAfterSave );
+			perform( name, null, afds, null, true, false, false );
+		}
+
+		protected void perform( String name, Span span, AudioFileDescr[] afds,
+								int[] channelMap, boolean saveMarkers, boolean asCopy, boolean openAfterSave )
+		{
+			final ProcessingThread pt = initiate( name, span, afds, channelMap, saveMarkers, asCopy, openAfterSave );
 			if( pt != null ) doc.start( pt );
 		}
 
-		protected ProcessingThread initiate( String name, final Span span, final AudioFileDescr[] afds, final boolean asCopy, final boolean openAfterSave )
+		protected ProcessingThread initiate( String name, final Span span, final AudioFileDescr[] afds,
+											 int[] channelMap, boolean saveMarkers, final boolean asCopy, final boolean openAfterSave )
 		{
-			final ProcessingThread pt = doc.procSave( name, span, afds, asCopy );
+			final ProcessingThread pt = doc.procSave( name, span, afds, channelMap, saveMarkers, asCopy );
 			if( pt == null ) return null;
 			
 			pt.addListener( new ProcessingThread.Listener() {
@@ -2286,12 +2294,37 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 		 */
 		public void actionPerformed( ActionEvent e )
 		{
-			final AudioFileDescr[] afds = query( doc.getDescr(), asCopy, selection, openAfterSave );
+			final List	infos		= Track.getInfos( doc.selectedTracks.getAll(), doc.tracks.getAll() );
+			boolean		saveMarkers	= true;
+			int[] 		channelMap	= null;
+			if( selection ) {
+				for( int i = 0; i < infos.size(); i++ ) {
+					Track.Info ti = (Track.Info) infos.get( i );
+					if( ti.trail instanceof AudioTrail ) {
+						int numSelChannels = 0;
+						for( int j = 0; j < ti.trackMap.length; j++ ) {
+							if( ti.trackMap[ j ]) numSelChannels++;
+						}
+						channelMap = new int[ numSelChannels ];
+						for( int j = 0, k = 0; j < ti.trackMap.length; j++ ) {
+							if( ti.trackMap[ j ]) channelMap[ k++ ] = j;
+						}
+					} else if( ti.trail instanceof MarkerTrail ) {
+						saveMarkers = ti.selected;
+					}
+				}
+			}
+			final AudioFileDescr[] afds = query( doc.getDescr(), channelMap, saveMarkers, asCopy, selection, openAfterSave );
 			if( afds != null ) {
-				actionSave.perform( getValue( NAME ).toString(), selection ? timelineSel : null, afds, asCopy, openAfterSave.isSet() );
+				actionSave.perform( getValue( NAME ).toString(), selection ? timelineSel : null, afds, channelMap, saveMarkers, asCopy, openAfterSave.isSet() );
 			}
 		}
 		
+		protected AudioFileDescr[] query( AudioFileDescr[] protoType )
+		{
+			return query( protoType, null, true, false, false, null );
+		}
+
 		/**
 		 *  Open a file chooser so the user
 		 *  can select a new output file and format for the session.
@@ -2299,8 +2332,11 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 		 *  @return the AudioFileDescr representing the chosen file path
 		 *			and format or <code>null</code>
 		 *			if the dialog was cancelled.
+		 *
+		 *	@todo	should warn user if saveMarkers is true and format does not support it
 		 */
-		protected AudioFileDescr[] query( AudioFileDescr[] protoType, boolean asCopySettings, boolean selectionSettings, Flag openAfterSaveSettings )
+		protected AudioFileDescr[] query( AudioFileDescr[] protoType, int[] channelMap, boolean saveMarkers,
+										  boolean asCopySettings, boolean selectionSettings, Flag openAfterSaveSettings )
 		{
 			if( protoType.length == 0 ) return null;
 		
@@ -2310,15 +2346,22 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 //			final JOptionPane			dlg;
 			final SpringPanel			msgPane;
 			final PathField[]			ggPathFields;
+			final int[]					channelsUsed	= new int[ protoType.length ];
 			final JCheckBox				ggOpenAfterSave;
 			final JPanel				p;
+			int							filesUsed		= 0;
 			File						f, f2;
-			String[]					queryOptions = { getResourceString( "buttonSave" ),
-														 getResourceString( "buttonCancel" )};
+			String[]					queryOptions	= { getResourceString( "buttonSave" ),
+														  	getResourceString( "buttonCancel" )};
 			int							i, result;
 			String						str;
 			JLabel						lb;
-			int							y	= 0;
+			boolean						setFocus		= false;
+			int							y				= 0;
+			
+//System.out.print( "channelMap = [ " );
+//for( int kkk = 0; kkk < channelMap.length; kkk++ ) System.out.print( (kkk > 0 ? ", " : "") + channelMap[ kkk ]);
+//System.out.println( " ]" );
 			
 			msgPane			= new SpringPanel( 4, 2, 4, 2 );
 			ggPathFields	= new PathField[ protoType.length ];
@@ -2327,7 +2370,20 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 			lb				= new JLabel( getResourceString( "labelOutputFile" ), RIGHT );
 //			lb.setLabelFor( ggPathField );
 			msgPane.gridAdd( lb, 0, y );
-			for( int j = 0; j < protoType.length; j++, y++ ) {
+			for( int j = 0, chanOff = 0; j < protoType.length; chanOff += protoType[ j ].channels, j++, y++ ) {
+				if( channelMap == null ) {
+					channelsUsed[ j ] = protoType[ j ].channels;
+				} else {
+					for( int k = 0; k < channelMap.length; k++ ) {
+						if( (channelMap[ k ] >= chanOff) && (channelMap[ k ] < chanOff + protoType[ j ].channels) ) {
+							channelsUsed[ j ]++;
+						}
+					}
+				}
+//System.out.println( "channelsUsed[ " + j + " ] = " + channelsUsed[ j ]);
+				if( channelsUsed[ j ] == 0 ) continue;
+
+				filesUsed++;
 				ggPathFields[ j ] = new PathField( PathField.TYPE_OUTPUTFILE, getValue( NAME ).toString() );
 				if( protoType[ j ].file == null ) {
 					f	= new File( System.getProperty( "user.home" ));
@@ -2351,7 +2407,10 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 				}
 				ggPathFields[ j ].selectFileName( false );
 				msgPane.gridAdd( ggPathFields[ j ], 1, y );
-				if( j == 0 ) GUIUtil.setInitialDialogFocus( ggPathFields[ j ]);
+				if( !setFocus ) {
+					GUIUtil.setInitialDialogFocus( ggPathFields[ j ]);
+					setFocus = true;
+				}
 			}
 			lb = new JLabel( getResourceString( "labelFormat" ), RIGHT );
 			msgPane.gridAdd( lb, 0, y );
@@ -2375,15 +2434,16 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 
 			result		= JOptionPane.showOptionDialog( getWindow(), p, getValue( NAME ).toString(),
 														JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
-														null, queryOptions, queryOptions[0] );
+														null, queryOptions, queryOptions[ 0 ]);
 
 			if( ggOpenAfterSave != null ) {
 				openAfterSaveSettings.set( ggOpenAfterSave.isSelected() );
 			}
 
 			if( result == 0 ) {
-				afds	= new AudioFileDescr[ protoType.length ];
-				for( int j = 0; j < ggPathFields.length; j++ ) {
+				afds = new AudioFileDescr[ filesUsed ];
+				for( int j = 0, k = 0; j < ggPathFields.length; j++ ) {
+					if( channelsUsed[ j ] == 0 ) continue;
 					f = ggPathFields[ j ].getPath();
 					if( f.exists() ) {
 						queryOptions = new String[] { getResourceString( "buttonOverwrite" ),
@@ -2394,9 +2454,11 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 							null, queryOptions, queryOptions[1] );
 						if( result != 0 ) return null;
 					}
-					afds[ j ]		= new AudioFileDescr( protoType[ j ]);
-					affp.toDescr( afds[ j ]);
-					afds[ j ].file	= f;
+					afds[ k ]		= new AudioFileDescr( protoType[ j ]);
+					affp.toDescr( afds[ k ]);
+					afds[ k ].file	= f;
+					afds[ k ].channels = channelsUsed[ j ];
+					k++;
 				}
 				return afds;
 			} else {
