@@ -230,24 +230,31 @@ public class PrefsUtil
 	/**
 	 *  Value: Param representing the number of
 	 *  internal supercollider busses
-	 *  Has default value: no!<br>
+	 *  Has default value: yes!<br>
 	 *  Node: audio
 	 */
 	public static final String KEY_AUDIOBUSSES	= "audiobusses";	// Param : integer number of busses
 	/**
 	 *  Value: Param representing the amount of
 	 *  realtime memory for supercollider (in MB)
-	 *  Has default value: no!<br>
+	 *  Has default value: yes!<br>
 	 *  Node: audio
 	 */
 	public static final String KEY_SCMEMSIZE	= "scmemsize";		// Param : integer number MB realtime mem for supercollider
 	/**
 	 *  Value: Param representing the number of
 	 *  audio samples per control period in supercollider
-	 *  Has default value: no!<br>
+	 *  Has default value: yes!<br>
 	 *  Node: audio
 	 */
 	public static final String KEY_SCBLOCKSIZE	= "scblocksize";	// Param : integer number samples per control period in supercollider
+	/**
+	 *  Value: Boolean determining whether scsynth should be booted
+	 *  with Rendezvous enabled or not.
+	 *  Has default value: yes!<br>
+	 *  Node: audio
+	 */
+	public static final String KEY_SCRENDEZVOUS	= "screndezvous";	// Boolean
 	/**
 	 *  Value: Boolean indicating whether scsynth shall
 	 *  be booted automatically when Eisenkraut launched or not
@@ -365,6 +372,7 @@ public class PrefsUtil
 		putDontOverwrite( childPrefs, KEY_AUDIOBUSSES, new Param( 128, ParamSpace.NONE ).toString() );
 		putDontOverwrite( childPrefs, KEY_SCMEMSIZE, new Param( 8, ParamSpace.NONE ).toString() );
 		putDontOverwrite( childPrefs, KEY_SCBLOCKSIZE, new Param( 64, ParamSpace.NONE ).toString() );
+		putBooleanDontOverwrite( childPrefs, KEY_SCRENDEZVOUS, true );
 		putBooleanDontOverwrite( childPrefs, KEY_AUTOBOOT, false );
 
 		// outputconfigs

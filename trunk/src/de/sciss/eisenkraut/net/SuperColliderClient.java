@@ -485,7 +485,7 @@ implements OSCRouter, Constants, ServerListener, DocumentListener
 		if( p != null ) so.setBlockSize( (int) p.val );
 		if( !abCfg.name.equals( "Default" )) so.setDevice( abCfg.name );
 		so.setLoadDefs( false );
-		so.setRendezvous( false );
+		so.setRendezvous( audioPrefs.getBoolean( PrefsUtil.KEY_SCRENDEZVOUS, true ));
 //System.err.println( "abCfgID ="+abCfgID+" ("+abCfgID.equals( AudioBoxConfig.NAME_DEFAULT )+") ; in "+abCfg.numInputChannels+"; out "+abCfg.numOutputChannels );
 
 		// udp-port-number

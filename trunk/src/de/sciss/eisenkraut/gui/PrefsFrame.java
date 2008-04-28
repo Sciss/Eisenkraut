@@ -499,6 +499,19 @@ implements SwingConstants
 		collAudioAdvanced.add( ggParam );
 		tab.gridAdd( ggParam, 1, row, -1, 1 );
 
+		row++;
+		key		= PrefsUtil.KEY_SCRENDEZVOUS;
+		key2	= "prefsSCRendezvous";
+		lb		= new JLabel( getResourceString( key2 ), TRAILING );
+		lb.setVisible( false );
+		collAudioAdvanced.add( lb );
+		tab.gridAdd( lb, 0, row );
+		ggCheckBox  = new PrefCheckBox();
+		ggCheckBox.setPreferences( prefs, key );
+		ggCheckBox.setVisible( false );
+		collAudioAdvanced.add( ggCheckBox );
+		tab.gridAdd( ggCheckBox, 1, row, -1, 1 );
+
 final SpringPanel tabAudio = tab;
 		ggTreeAudio.addActionListener( new ActionListener() {
 			public void actionPerformed( ActionEvent e )
