@@ -34,7 +34,7 @@ import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
 
 /**
- *	@version	0.70, 07-Dec-07
+ *	@version	0.70, 29-Apr-08
  *	@author		Hanns Holger Rutz
  */
 public class RoutingConfig
@@ -66,6 +66,8 @@ public class RoutingConfig
 	public final int		numChannels;
 	public final int[]		mapping;
 	public final float		startAngle;
+	
+	public static final String[] KEYS = { KEY_NAME, KEY_RC_NUMCHANNELS, KEY_RC_MAPPING, KEY_RC_STARTANGLE };
 	
 	public RoutingConfig( String id, String name )
 	{
@@ -101,6 +103,34 @@ public class RoutingConfig
 		}
 	}
 	
+	public boolean equals( Object o )
+	{
+		if( (o == null) || !o.getClass().equals( getClass() )) return false;
+		
+		final RoutingConfig cfg2 = (RoutingConfig) o;
+		if( id.equals( cfg2.id ) &&
+			name.equals( cfg2.name ) &&
+			(numChannels == cfg2.numChannels) &&
+			(mapping.length == cfg2.mapping.length) &&
+			(startAngle == cfg2.startAngle )) {
+			
+			for( int i = 0; i < mapping.length; i++ ) {
+				if( mapping[ i ] != cfg2.mapping[ i ]) return false;
+			}
+			return true;
+		}
+		return false;
+	}
+	
+	public int hashCode()
+	{
+		int hash = id.hashCode() ^ name.hashCode() ^ numChannels ^ Float.floatToRawIntBits( startAngle );
+		for( int i = 0; i < mapping.length; i++ ) {
+			hash ^= mapping[ i ] << i;
+		}
+		return hash;
+	}
+	
 	public void toPrefs( Preferences cfgPrefs )
 	{
 		final StringBuffer sb = new StringBuffer();
@@ -116,5 +146,16 @@ public class RoutingConfig
 			sb.append( mapping[ j ]);
 		}
 		cfgPrefs.put( KEY_RC_MAPPING, sb.toString() );
+	}
+	
+	public String toString()
+	{
+		final StringBuffer bMap = new StringBuffer( "[ ");
+		for( int i = 0; i < mapping.length; i++ ) {
+			if( i > 0 ) bMap.append( ", " );
+			bMap.append( String.valueOf( mapping[ i ]));
+		}
+		bMap.append( " ]" );
+		return "RoutingConfig( \"" + id + "\", \"" + name + "\", " + bMap.toString() + ", " + startAngle + " )";
 	}
 }

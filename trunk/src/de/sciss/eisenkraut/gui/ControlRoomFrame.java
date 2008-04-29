@@ -603,17 +603,36 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 	{
 		final Preferences	childPrefs;
 		final String[]		cfgIDs;
+//		final String		cfgID	= audioPrefs.get( PrefsUtil.KEY_OUTPUTCONFIG, null );
 		
 		try {
+			if( isListening ) {
+				ggOutputConfig.stopListening();
+//				ggOutputConfig.removeActionListener( ... );
+			}
 			childPrefs	= audioPrefs.node( PrefsUtil.NODE_OUTPUTCONFIGS );
 			cfgIDs		= childPrefs.childrenNames();
 			ggOutputConfig.removeAllItems();
 			for( int i = 0; i < cfgIDs.length; i++ ) {
+//				if( cfgIDs[ i ].equals( cfgID )) {
+//					
+//				}
+//				oCfg = new RoutingConfig( childPrefs.node( cfgID ));
 				ggOutputConfig.addItem( new StringItem( cfgIDs[ i ], childPrefs.node( cfgIDs[ i ]).get( RoutingConfig.KEY_NAME, cfgIDs[ i ])));
 			}
 		}
 		catch( BackingStoreException e1 ) {
 			System.err.println( e1.getClass().getName() + " : " + e1.getLocalizedMessage() );
+		}
+		finally {
+			if( isListening ) {
+				ggOutputConfig.startListening();
+//				// add ActionListener _after_ startListening() so no superfluous
+//				// event is caught (resulting in the reboot-question-dialog)
+//				ggAudioBox.addActionListener( audioBoxListener );
+			}
+			// so SuperColliderClient is notified
+//			audioPrefs.put( PrefsUtil.KEY_OUTPUTCONFIG, audioPrefs.get( PrefsUtil.KEY_OUTPUTCONFIG, null ));
 		}
 	}
 

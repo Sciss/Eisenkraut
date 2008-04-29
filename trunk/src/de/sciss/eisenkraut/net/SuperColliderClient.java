@@ -81,7 +81,7 @@ import de.sciss.util.Param;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 19-Mar-08
+ *  @version	0.70, 29-Apr-08
  *
  *	@todo		volume should be managed in separate synths pre limiters
  *				so that pre-fader metering becomes possible
@@ -103,6 +103,8 @@ implements OSCRouter, Constants, ServerListener, DocumentListener
 	private final Map				mapDocsToPlayers	= new HashMap();
 	
 	protected RoutingConfig			oCfg				= null;
+	private Preferences				oCfgNode			= null;
+	private final DynamicPrefChangeManager oCfgDynPrefs;
 	private Group					grpMaster;
 	private Group					grpGain;
 	private Group					grpLimiter;
@@ -136,41 +138,33 @@ implements OSCRouter, Constants, ServerListener, DocumentListener
 	public SuperColliderClient()
 	{
 		super();
-	
+
 		if( instance != null ) throw new IllegalStateException( "Only one instance allowed" );
 		instance	= this;
 	
-		final Application	app			= AbstractApplication.getApplication();
-		final Preferences	userPrefs	= app.getUserPrefs();
+		final Application				app			= AbstractApplication.getApplication();
+		final Preferences				userPrefs	= app.getUserPrefs();
+		final PreferenceChangeListener	oCfgListener;
 
 		audioPrefs				= userPrefs.node( PrefsUtil.NODE_AUDIO );
 		so						= new ServerOptions();
 		so.setBlockAllocFactory( new ContiguousBlockAllocator.Factory() );	// deals better with fragmentation
 		
+		oCfgListener = new PreferenceChangeListener() {
+			public void preferenceChange( PreferenceChangeEvent e )
+			{
+//				System.out.println( "DOING " + e.getKey() + " -> " + e.getNewValue() );
+				outputConfigChanged();
+			}
+		};
+		
+		// note: we are using the DynamicPrefChangeManager instead of direct
+		// registration with oCfgNode because the sucky Preferences class
+		// is not using the EventThread
+		oCfgDynPrefs = new DynamicPrefChangeManager( null, RoutingConfig.KEYS, oCfgListener, false );
+		
 		new DynamicPrefChangeManager( audioPrefs, new String[] { PrefsUtil.KEY_OUTPUTCONFIG },
-			new PreferenceChangeListener() {
-				public void preferenceChange( PreferenceChangeEvent e )
-				{
-					final String				key	= e.getKey();
-					SuperColliderPlayer			p;
-					
-					if( key.equals( PrefsUtil.KEY_OUTPUTCONFIG )) {
-						createOutputConfig();
-						setOutputConfig();
-						for( int i = 0; i < collPlayers.size(); i++ ) {
-							p = (SuperColliderPlayer) collPlayers.get( i );
-//							p.setOutputConfig( oCfg, volume );
-							p.setOutputConfig( oCfg );
-						}
-						if( elmClient != null ) {
-							elmClient.dispatchEvent( new Event( instance, Event.OUTPUTCONFIG, System.currentTimeMillis(), instance ));
-						}
-					} else {
-						assert false : key;
-					}
-				}
-			}, false
-		).startListening();	// fires change and hence createOutputConfig()
+		                              oCfgListener, false ).startListening();	// fires change and hence createOutputConfig()
 
 //		osc = new OSCRouterWrapper( superRouter, this );
 		osc = new OSCRouterWrapper( OSCRoot.getInstance(), this );
@@ -340,6 +334,56 @@ implements OSCRouter, Constants, ServerListener, DocumentListener
 		}
 		catch( IOException e1 ) {
 			printError( "setOutputConfig", e1 );
+		}
+	}
+
+	protected void outputConfigChanged()
+	{
+		SuperColliderPlayer p;
+		
+		final String		cfgID		= audioPrefs.get( PrefsUtil.KEY_OUTPUTCONFIG, null );
+		final Preferences	childPrefs	= audioPrefs.node( PrefsUtil.NODE_OUTPUTCONFIGS );
+		RoutingConfig		newCfg		= null;
+
+//		oCfg = null;
+		
+		if( oCfgNode != null ) {
+			oCfgDynPrefs.stopListening();
+			oCfgDynPrefs.setPreferences( null );
+			oCfgNode = null;
+		}
+
+		try {
+			if( (cfgID != null) && childPrefs.nodeExists( cfgID )) {
+				oCfgNode	= childPrefs.node( cfgID );
+				newCfg		= new RoutingConfig( oCfgNode );
+//				oCfgNode.addPreferenceChangeListener( oCfgListener );
+				oCfgDynPrefs.setPreferences( oCfgNode );
+				oCfgDynPrefs.startListening();
+			}
+		}
+		catch( BackingStoreException e1 ) {
+			printError( "createOutputConfig", e1 );
+		}
+		
+		if( newCfg == null ) {
+			newCfg = new RoutingConfig( "none", "none" );
+		}
+		
+		if( (oCfg != null) && oCfg.equals( newCfg )) return;
+
+//System.out.println( "CHANGED" );
+//System.out.println( oCfg );
+//System.out.println( newCfg );
+		oCfg = newCfg;
+		setOutputConfig();
+		for( int i = 0; i < collPlayers.size(); i++ ) {
+			p = (SuperColliderPlayer) collPlayers.get( i );
+	//		p.setOutputConfig( oCfg, volume );
+			p.setOutputConfig( oCfg );
+		}
+		if( elmClient != null ) {
+			elmClient.dispatchEvent( new Event( instance, Event.OUTPUTCONFIG, System.currentTimeMillis(), instance ));
 		}
 	}
 
@@ -562,22 +606,6 @@ implements OSCRouter, Constants, ServerListener, DocumentListener
 			printError( "boot", e1 );
 		}
 		return false;
-	}
-	
-	protected void createOutputConfig()
-	{
-		final String cfgName	= audioPrefs.get( PrefsUtil.KEY_OUTPUTCONFIG, null );
-
-		oCfg	= null;
-
-		try {
-			if( cfgName != null && audioPrefs.node( PrefsUtil.NODE_OUTPUTCONFIGS ).nodeExists( cfgName )) {
-				oCfg	= new RoutingConfig( audioPrefs.node( PrefsUtil.NODE_OUTPUTCONFIGS ).node( cfgName ));
-			}
-		}
-		catch( BackingStoreException e1 ) {
-			printError( "createOutputConfig", e1 );
-		}
 	}
 	
 	protected static void printError( String name, Throwable t )
