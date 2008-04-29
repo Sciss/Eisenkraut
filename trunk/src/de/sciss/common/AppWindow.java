@@ -902,10 +902,18 @@ EventQueue.invokeLater( new Runnable() {
 	public void pack()
 	{
 		if( w != null ) {
-			// bug in swing??
-			// when using undecorated windows plus metal-lnf plus lnf-window-deco
-//			try { w.pack(); } catch( NullPointerException e ) {}
+			// circumvention for bug 1924630 : this throws a NullPointerException
+			// with the combination Metal-lnf / java 1.5 / screen menu bar / laf window deco
+			// / floating palettes. We have to make sure the window is focusable
+			// during pack():
+			final boolean wasFocusable = w.getFocusableWindowState();
+			if( !wasFocusable ) {
+				w.setFocusableWindowState( true );
+			}
 			w.pack();
+			if( !wasFocusable ) {
+				w.setFocusableWindowState( false );
+			}
 		} else if( jif != null ) {
 			// bug in swing??
 			// when using undecorated windows plus metal-lnf plus lnf-window-deco
