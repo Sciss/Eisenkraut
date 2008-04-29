@@ -63,7 +63,7 @@ implements OSCRouter
 		hasSelectedAudio.set( false );
 	
 		for( int i = 0; i < tis.size(); i++ ) {
-			ti		= (Track.Info) tis.get( i );
+			ti = (Track.Info) tis.get( i );
 			if( changesTimeline && !ti.getChannelSync() ) {
 				if( context != null ) context.setException( new IllegalStateException( AbstractApplication.getApplication().getResourceString( "errAudioWillLooseSync" )));
 				return false;

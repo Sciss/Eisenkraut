@@ -1334,19 +1334,28 @@ tryRename:					  {
 				 *	                  |
 				 *	               insertPos
 				 */
+				// note: now the discrepancy between postMaxLen and preMaxLen is
+				// limited to 100%, so pasting at the very end or beginning of
+				// a doc will not produce a single sided xfade any more
+				// (answering bug 1922862)
 				if( insertPos < (docLength - insertPos) ) {
 					postMaxLen	= Math.min( insertPos, pasteLength >> 1 );
-					preMaxLen	= Math.min( docLength - insertPos, pasteLength - postMaxLen );
+//					preMaxLen	= Math.min( docLength - insertPos, pasteLength - postMaxLen );
+					preMaxLen	= Math.min( postMaxLen << 1, Math.min( docLength - insertPos, pasteLength - postMaxLen ));
+//System.out.println( "A" );
 				} else {
 					preMaxLen	= Math.min( docLength - insertPos, pasteLength >> 1 );
-					postMaxLen	= Math.min( insertPos, pasteLength - preMaxLen );
+					postMaxLen	= Math.min( preMaxLen << 1, Math.min( insertPos, pasteLength - preMaxLen ));
+//System.out.println( "B" );
 				}
 			} else {
 				preMaxLen	= pasteLength >> 1;	// note: pasteLength already clipped to be <= docLength - insertPos !
 				postMaxLen	= pasteLength - preMaxLen;
+//System.out.println( "C" );
 			}
 			bcPre			= createBlendContext( preMaxLen, 0, hasSelectedAudio );
 			bcPost			= createBlendContext( postMaxLen, 0, hasSelectedAudio );
+//System.out.println( "D ; preMaxLen = " + preMaxLen + "; postMaxLen = " + postMaxLen + "; bcPre.getLeftLen() = " + (bcPre == null ? null : String.valueOf( bcPre.getLeftLen())) + "; bcPre.getRightLen() = " + (bcPre == null ? null : String.valueOf( bcPre.getRightLen() )) + "; bcPost.getLeftLen() = " + (bcPost == null ? null : String.valueOf( bcPost.getLeftLen() )) + "; bcPost.getRightLen() = " + (bcPost == null ? null : String.valueOf( bcPost.getRightLen() )));
 
 //			if( bcPre != null )  System.out.println( "bcPre  : " + bcPre.getLen() + ", " + bcPre.getLeftLen() + ", "+ bcPre.getRightLen() );
 //			if( bcPost != null ) System.out.println( "bcPost : " + bcPost.getLen() + ", " + bcPost.getLeftLen() + ", "+ bcPost.getRightLen() );
