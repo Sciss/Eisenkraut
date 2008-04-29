@@ -518,7 +518,7 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 	public DecimatedSonaTrail createDecimatedSonaTrail()
 	throws IOException
 	{
-		if( dst == null ) {
+		if( dst == null ) {			
 			dst	= new DecimatedSonaTrail( at, DecimatedTrail.MODEL_SONA /*, sonaDecims */ );
 		}
 		return dst;
@@ -675,13 +675,13 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 		}
 	}
 	
-	public static Session newFrom( File[] paths, boolean createDecimated )
+	public static Session newFrom( File[] paths )
 	throws IOException
 	{
-		return newFrom( paths, createDecimated, true, true );
+		return newFrom( paths, true, true );
 	}
 
-	public static Session newFrom( File[] paths, boolean createDecimated, boolean createTransport, boolean createOSC )
+	public static Session newFrom( File[] paths, boolean createTransport, boolean createOSC )
 	throws IOException
 	{
 		final AudioFile[]		afs		= new AudioFile[ paths.length ];
@@ -708,10 +708,10 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 			doc.setAudioTrail( null, at );
 //			if( createOSC ) doc.createOSC();
 			if( createTransport ) doc.createTransport();
-			if( createDecimated ) {
-				doc.createDecimatedWaveTrail();
-				doc.createDecimatedSonaTrail();
-			}
+//			if( createDecimated ) {
+//				doc.createDecimatedWaveTrail();
+//				doc.createDecimatedSonaTrail();
+//			}
 			return doc;
 		}
 		catch( IOException e1 ) {

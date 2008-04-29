@@ -732,7 +732,7 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 			}
 		
 			try {
-				doc	= Session.newFrom( paths, true );
+				doc	= Session.newFrom( paths );
 				addRecent( doc.getDisplayDescr().file );
 				AbstractApplication.getApplication().getDocumentHandler().addDocument( this, doc );
 				doc.createFrame();	// must be performed after the doc was added
