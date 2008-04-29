@@ -182,7 +182,7 @@ import org.unicode.Normalizer;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 18-Mar-08
+ *  @version	0.70, 29-Apr-08
  */
 public class DocumentFrame
 extends AppWindow
@@ -306,6 +306,7 @@ implements ProgressComponent, TimelineListener,
 	protected int		vpZoomStrokeIdx			= 0;
 
 	protected boolean	waveExpanded			= true;	// XXX should keep that in some prefs
+	protected boolean	viewMarkers;
 	protected boolean	markVisible;
 	private boolean		chanMeters				= false;
 	private boolean		forceMeters				= false;
@@ -389,7 +390,8 @@ implements ProgressComponent, TimelineListener,
 		wavePanel			= new ComponentHost();
         timeAxis			= new TimelineAxis( doc, wavePanel );
 		markAxis			= new MarkerAxis( doc, wavePanel );
-		markVisible			= app.getUserPrefs().getBoolean( PrefsUtil.KEY_VIEWMARKERS, false );
+		viewMarkers			= app.getUserPrefs().getBoolean( PrefsUtil.KEY_VIEWMARKERS, false );
+		markVisible			= viewMarkers && waveExpanded;
 		markAxisHeader		= new TrackRowHeader( doc.markerTrack, doc.tracks, doc.selectedTracks, doc.getUndoManager() );
 		markAxisHeader.setPreferredSize( new Dimension( 63, markAxis.getPreferredSize().height ));	// XXX
 		markAxisHeader.setMaximumSize( new Dimension( 128, markAxis.getMaximumSize().height ));		// XXX
@@ -534,13 +536,14 @@ bbb.add( markAxisHeader );
 			{
 				final Dimension d	= getSize();
 				
-				waveExpanded = ggTreeExp.isExpanded();
+				waveExpanded	= ggTreeExp.isExpanded();
+				markVisible		= viewMarkers && waveExpanded;
 				
 				if( waveExpanded ) {
 					cbr.remove( getComponent() );
 					waveView.setVisible( true );
 					channelHeaderPanel.setVisible( true );
-					if( markVisible ) {
+					if( viewMarkers ) {
 						markAxis.setVisible( true );
 						markAxisHeader.setVisible( true );
 					}
@@ -567,7 +570,7 @@ bbb.add( markAxisHeader );
 					actionZoomAllOut.perform();
 
 					final int h = d.height - (waveView.getHeight() + scroll.getHeight() +
-					 	(markVisible ? markAxis.getHeight() : 0));
+					 	(viewMarkers ? markAxis.getHeight() : 0));
 					setSize( new Dimension( d.width - timeTB.getWidth(), h ));
 					cbr.setMinimumHeight( h );
 					cbr.setMaximumHeight( h );
@@ -2064,8 +2067,9 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 			showHideMeters();
 //			GUIUtil.makeCompactSpringGrid( waveHeaderView, collChannelMeters.size(), 3, 0, 0, 1, 1 );
 		} else if( key == PrefsUtil.KEY_VIEWMARKERS ) {
-			markVisible = e.getNode().getBoolean( e.getKey(), false );
-			if( ggTreeExp.isExpanded() ) {
+			viewMarkers = e.getNode().getBoolean( e.getKey(), false );
+			markVisible	= viewMarkers && waveExpanded;
+			if( waveExpanded ) {
 				markAxis.setVisible( markVisible );
 				markAxisHeader.setVisible( markVisible );
 				wavePanel.updateAll();
