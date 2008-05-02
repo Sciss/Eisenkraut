@@ -114,9 +114,9 @@ implements RandomAccessRequester
 	throws IOException
 	{
 		prGain			= (float) ut.translate( Param.fromPrefs( prefs, KEY_GAIN, DEFAULT_GAIN ), ParamSpace.spcAmpRel ).val;
-		prNormalize	= prefs.get( KEY_GAINTYPE, "" ).equals( GAIN_NORMALIZED );
-		prFramesWritten= 0;
-		prTotalSpan	= source.context.getTimeSpan();
+		prNormalize		= prefs.get( KEY_GAINTYPE, "" ).equals( GAIN_NORMALIZED );
+		prFramesWritten	= 0;
+		prTotalSpan		= source.context.getTimeSpan();
 		prConsumer		= source.context.getConsumer();
 		prHost			= source.context.getHost();
 		

@@ -82,10 +82,10 @@ extends AbstractRenderPlugIn
 	throws IOException
 	{
 		prConsumer		= source.context.getConsumer();
-		prTotalSpan	= source.context.getTimeSpan();
+		prTotalSpan		= source.context.getTimeSpan();
 		
-//		prBlend		= new BlendContext( prTotalSpan.getLength(), CurvePanel.getControlPoints( prefs ));
-		prBlend		= new BlendContext( prTotalSpan.getLength(), 0, CurvePanel.getControlPoints( prefs ));
+//		prBlend			= new BlendContext( prTotalSpan.getLength(), CurvePanel.getControlPoints( prefs ));
+		prBlend			= new BlendContext( prTotalSpan.getLength(), 0, CurvePanel.getControlPoints( prefs ));
 		prBuf			= new float[ source.numAudioChannels ][];
 
 		return prConsumer.consumerBegin( source );

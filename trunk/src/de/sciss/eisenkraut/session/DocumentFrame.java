@@ -243,7 +243,7 @@ implements ProgressComponent, TimelineListener,
 	private final ActionSaveAs				actionSaveSelectionAs;
 	private final ActionSelectAll			actionSelectAll;
 	private final MenuAction				actionProcess, actionFadeIn, actionFadeOut, actionGain,
-											actionInvert, actionMix,
+											actionInvert, // actionMix,
 											actionReverse, actionRotateChannels, // actionSilence, 
 											actionFScNeedlehole,
 											actionDebugDump, actionDebugVerify, actionInsertRec;
@@ -758,9 +758,9 @@ bbb.add( markAxisHeader );
 		actionFadeOut		= new ActionPlugIn( plugInPackage + "FadeOut" );
 		actionGain			= new ActionPlugIn( plugInPackage + "Gain" );
 		actionInvert		= new ActionPlugIn( plugInPackage + "Invert" );
-		actionMix			= new ActionPlugIn( plugInPackage + "Mix" );
+//		actionMix			= new ActionPlugIn( plugInPackage + "Mix" );
 		actionReverse		= new ActionPlugIn( plugInPackage + "Reverse" );
-actionReverse.setEnabled( false ); // currently broken (re FilterDialog)
+//actionReverse.setEnabled( false ); // currently broken (re FilterDialog)
 		actionRotateChannels = new ActionPlugIn( plugInPackage + "RotateChannels" );
 //		actionSilence		= new actionPlugInClass( plugInPackage + "Silence" );
 		actionFScNeedlehole	= new ActionPlugIn( fscapePackage + "Needlehole" );
@@ -863,7 +863,7 @@ actionReverse.setEnabled( false ); // currently broken (re FilterDialog)
 		mr.putMimic( "process.fadeOut", this, actionFadeOut );
 		mr.putMimic( "process.gain", this, actionGain );
 		mr.putMimic( "process.invert", this, actionInvert );
-		mr.putMimic( "process.mix", this, actionMix );
+//		mr.putMimic( "process.mix", this, actionMix );
 		mr.putMimic( "process.reverse", this, actionReverse );
 		mr.putMimic( "process.rotateChannels", this, actionRotateChannels );
 		mr.putMimic( "process.fscape.needlehole", this, actionFScNeedlehole );

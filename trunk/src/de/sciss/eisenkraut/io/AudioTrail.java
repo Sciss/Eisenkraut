@@ -470,7 +470,7 @@ extends BasicTrail
 		final double			progWeight	= 1.0 / len;
 		
 		// throws IOException
-		writeStake	= alloc( new Span( insertPos, insertPos + len ));		
+		writeStake	= alloc( new Span( insertPos, insertPos + len ));
 		
 		try {
 			switch( mode ) {

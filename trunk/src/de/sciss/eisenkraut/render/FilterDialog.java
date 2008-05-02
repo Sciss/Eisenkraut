@@ -57,6 +57,7 @@ import de.sciss.eisenkraut.Main;
 import de.sciss.eisenkraut.edit.BasicCompoundEdit;
 import de.sciss.eisenkraut.io.AudioStake;
 import de.sciss.eisenkraut.io.AudioTrail;
+import de.sciss.eisenkraut.io.BlendContext;
 import de.sciss.eisenkraut.io.MarkerTrail;
 import de.sciss.eisenkraut.session.Session;
 import de.sciss.eisenkraut.timeline.AudioTracks;
@@ -297,7 +298,7 @@ implements	RenderConsumer, RenderHost,
 	 *
 	 *	@see	RenderContext#KEY_CONSUMER
 	 */
-	private boolean invokeProducerBegin( ProcessingThread proc, RenderSource source, RenderPlugIn prod )
+	private boolean invokeProducerBegin( RenderSource source, RenderPlugIn prod )
 	throws IOException
 	{
 //		context.setOption( RenderContext.KEY_CONSUMER, this );
@@ -345,13 +346,15 @@ implements	RenderConsumer, RenderHost,
 	throws IOException
 	{
 //System.err.println( "consumerBegin" );
-		AudioTrail	at;
+		final AudioTrail		at;
 		final ConsumerContext	consc   = (ConsumerContext) source.context.getOption( KEY_CONSC );
+		final Span				span	= source.context.getTimeSpan();
 		
 //		consc.edit		= new SyncCompoundSessionObjEdit(
 //			this, doc.bird, Session.DOOR_ALL, context.getTracks(),
 //			AudioTrack.OWNER_WAVE, null, null, consc.plugIn.getName() );
 		consc.edit		= new BasicCompoundEdit( consc.plugIn.getName() );
+		
 //		consc.bc		= BlendingAction.createBlendContext(
 //			AbstractApplication.getApplication().getUserPrefs().node( BlendingAction.DEFAULT_NODE ),
 //			context.getSourceRate(), context.getTimeSpan().getLength() / 2, context.getTimeSpan().getLength() / 2 ); // XXXXXXX
@@ -359,9 +362,9 @@ implements	RenderConsumer, RenderHost,
 		at				= consc.doc.getAudioTrail();
 // XXX
 //		consc.bs		= mte.beginOverwrite( context.getTimeSpan(), consc.bc, consc.edit );
-consc.as = at.alloc( source.context.getTimeSpan() );
+		consc.as		= at.alloc( span );
 		consc.progOff	= getProgression();
-		consc.progWeight= (1.0f - consc.progOff) / source.context.getTimeSpan().getLength();
+		consc.progWeight= (1.0f - consc.progOff) / span.getLength();
 		
 		return true;
 	}
@@ -393,6 +396,7 @@ consc.as = at.alloc( source.context.getTimeSpan() );
 				at.editRemove( this, consc.as.getSpan(), consc.edit );
 				at.editInsert( this, consc.as.getSpan(), consc.edit );
 				at.editAdd( this, consc.as, consc.edit );
+//				if( !audioTrail.copyRangeFrom( (AudioTrail) srcTrail, copySpan, insertPos, mode, this, edit, trackMap2, bcPre, bcPost )) return CANCELLED;
 				at.editEnd( consc.edit );
 			}
 			if( source.validMarkers ) {
@@ -419,7 +423,8 @@ consc.as = at.alloc( source.context.getTimeSpan() );
 	{
 //System.err.println( "consumerRender" );
 		final ConsumerContext		consc   = (ConsumerContext) source.context.getOption( KEY_CONSC );
-//		final AudioTrail			at		= consc.doc.getAudioTrail();
+		final AudioTrail			at		= consc.doc.getAudioTrail();
+		final boolean				preFade, postFade;
 
 // UUU
 //		if( consc.bs == null ) {
@@ -429,7 +434,43 @@ consc.as = at.alloc( source.context.getTimeSpan() );
 			return false;
 		}
 //		mte.continueWrite( consc.bs, source.blockBuf, source.blockBufOff, source.blockBufLen );
-consc.as.writeFrames( source.audioBlockBuf, source.audioBlockBufOff, source.blockSpan );
+		
+		preFade		= source.blockSpan.overlaps( consc.blendPreSpan );
+		postFade	= source.blockSpan.overlaps( consc.blendPostSpan );
+
+		// outBuf is audioBlockBuf but with the unused
+		// channels set to null, so they won't be faded
+		if( preFade || postFade ) {
+			for( int i = 0; i < source.numAudioChannels; i++ ) {
+				if( source.audioTrackMap[ i ]) {
+//					System.out.println( "Yes for chan " + i );
+					consc.outBuf[ i ] = source.audioBlockBuf[ i ];
+				} else {
+					consc.outBuf[ i ] = null;
+				}
+			}
+		}
+		
+		if( preFade ) {
+//			System.out.println( "pre fade" );
+			at.readFrames( consc.inBuf, 0, source.blockSpan );
+			consc.bcPre.blend( source.blockSpan.start - consc.blendPreSpan.start,
+			                   consc.inBuf, 0, 
+			                   source.audioBlockBuf, source.audioBlockBufOff,
+			                   consc.outBuf, source.audioBlockBufOff,
+			                   source.audioBlockBufLen );
+		}
+		if( postFade ) {
+//			System.out.println( "post fade" );
+			at.readFrames( consc.inBuf, 0, source.blockSpan );
+			consc.bcPost.blend( source.blockSpan.start - consc.blendPostSpan.start,
+			                    source.audioBlockBuf, source.audioBlockBufOff,
+			                    consc.inBuf, 0,
+			                    consc.outBuf, source.audioBlockBufOff,
+			                    source.audioBlockBufLen );
+		}
+		
+		consc.as.writeFrames( source.audioBlockBuf, source.audioBlockBufOff, source.blockSpan );
 //float test = 0f;
 //for( int i = source.audioBlockBufOff, k = source.audioBlockBufOff + (int) source.blockSpan.getLength(); i < k; i++ ) {
 //	for( int j = 0; j < source.audioBlockBuf.length; j++ ) {
@@ -513,18 +554,113 @@ consc.as.writeFrames( source.audioBlockBuf, source.audioBlockBufOff, source.bloc
 	
 		if( (context == null) || (plugIn == null) || !doc.checkProcess() ) return;
 	
-		ConsumerContext consc;
-	
+		final ConsumerContext	consc;
+		final Flag				hasSelectedAudio	= new Flag( false );
+		final RenderSource		source;
+		final List				tis					= context.getTrackInfos();
+		final int				inTrnsLen, outTrnsLen;
+		final int				minBlockSize, maxBlockSize, prefBlockSize;
+		final Set				newOptions;
+		final RandomAccessRequester rar;
+		final long				pasteLength, preMaxLen, postMaxLen;
+		final Span				span;
+//		final int				numClipChannels		= 0;
+		boolean					hasSelectedMarkers	= false;
+		Track.Info				ti;
+		Object					val;
+
 		consc			= new ConsumerContext();
 		consc.plugIn	= plugIn;
 		consc.doc		= doc;
 		context.setOption( KEY_CONSC, consc );
+		
+		source			= new RenderSource( context );
+		
+		if( !AudioTracks.checkSyncedAudio( tis, consc.plugIn.getLengthPolicy() == RenderPlugIn.POLICY_MODIFY, null, hasSelectedAudio )) {
+			return; // FAILED;
+		}
+		source.validAudio = (consc.plugIn.getAudioPolicy() == RenderPlugIn.POLICY_MODIFY) && hasSelectedAudio.isSet();
+		for( int i = 0; i < tis.size(); i++ ) {
+			ti = (Track.Info) tis.get( i );
+			if( (ti.trail instanceof MarkerTrail) && ti.selected ) {
+				hasSelectedMarkers = true;
+				break;
+			}
+		}
+		source.validMarkers	= (consc.plugIn.getMarkerPolicy() == RenderPlugIn.POLICY_MODIFY) && hasSelectedMarkers;
+		if( source.validMarkers ) source.markers = doc.markers.getCuttedTrail( context.getTimeSpan(), doc.markers.getDefaultTouchMode(), 0 );
+		
+		try {
+			if( !invokeProducerBegin( source, plugIn )) {
+				GUIUtil.displayError( getWindow(), new IOException( getResourceString( "errAudioWillLooseSync" )), plugIn.getName() );
+				return; // FAILED;
+			}
+//			consStarted			= true;
+//			remainingRead		= context.getTimeSpan().getLength();
+			newOptions			= context.getModifiedOptions();
+			if( newOptions.contains( RenderContext.KEY_MINBLOCKSIZE )) {
+				val				= context.getOption( RenderContext.KEY_MINBLOCKSIZE );
+				minBlockSize	= ((Integer) val).intValue();
+			} else {
+				minBlockSize	= 1;
+			}
+			if( newOptions.contains( RenderContext.KEY_MAXBLOCKSIZE )) {
+				val				= context.getOption( RenderContext.KEY_MAXBLOCKSIZE );
+				maxBlockSize	= ((Integer) val).intValue();
+			} else {
+				maxBlockSize	= 0x7FFFFF;
+			}
+			if( newOptions.contains( RenderContext.KEY_PREFBLOCKSIZE )) {
+				val				= context.getOption( RenderContext.KEY_PREFBLOCKSIZE );
+				prefBlockSize	= ((Integer) val).intValue();
+			} else {
+				prefBlockSize   = Math.max( minBlockSize, Math.min( maxBlockSize, 1024 ));
+			}
+			if( newOptions.contains( RenderContext.KEY_RANDOMACCESS )) {
+				rar				= (RandomAccessRequester) context.getOption( RenderContext.KEY_RANDOMACCESS );
+//				randomAccess	= true;
+			} else {
+				rar				= null;
+			}
+			if( newOptions.contains( RenderContext.KEY_CLIPBOARD )) {
+				return; // FAILED;
+			}
+			assert minBlockSize <= maxBlockSize : "minmaxblocksize";
+			
+			inTrnsLen		= prefBlockSize;
+			outTrnsLen		= inTrnsLen;
+
+			// ---  ---
+			for( int ch = 0; ch < source.numAudioChannels; ch++ ) {
+				source.audioBlockBuf[ ch ]	= new float[ outTrnsLen ];
+			}
+		}
+		catch( IOException e1 ) {
+			GUIUtil.displayError( getWindow(), e1, plugIn.getName() );
+			return;
+		}
+
+		consc.inBuf		= new float[ source.numAudioChannels ][ inTrnsLen ];
+		consc.outBuf	= new float[ source.numAudioChannels ][];
+		pasteLength		= context.getTimeSpan().getLength();
+		preMaxLen		= pasteLength >> 1;
+		postMaxLen		= pasteLength - preMaxLen;
+		consc.bcPre		= doc.createBlendContext( preMaxLen, 0, source.validAudio );
+		consc.bcPost	= doc.createBlendContext( postMaxLen, 0, source.validAudio );
+		span			= context.getTimeSpan();
+		consc.blendPreSpan = consc.bcPre == null ? new Span() :
+			span.replaceStop( span.start + consc.bcPre.getLen() );
+		consc.blendPostSpan = consc.bcPost == null ? new Span() :
+			span.replaceStart( span.stop - consc.bcPost.getLen() );
 
 		progress		= 0.0f;
 //		pt  = new ProcessingThread( this, doc.getFrame(), doc.bird, plugIn.getName(), new Object[] { context, null },
 //									Session.DOOR_ALL );
 		pt  = new ProcessingThread( this, doc.getFrame(), plugIn.getName() );
 		pt.putClientArg( "context", context );
+		pt.putClientArg( "source", source );
+		pt.putClientArg( "rar", rar );
+		pt.putClientArg( "inTrnsLen", new Integer( inTrnsLen ));
 //		pt.putClientArg( "tis", Track.getInfos( doc.selectedTracks.getAll(), doc.tracks.getAll() ));
 		doc.start( pt );
 
@@ -665,128 +801,38 @@ consc.as.writeFrames( source.audioBlockBuf, source.audioBlockBufOff, source.bloc
 	{
 		final RenderContext				rc					= (RenderContext) proc.getClientArg( "context" );
 //		final List						tis					= (List) pt.getClientArg( "tis" );
-		final List						tis					= rc.getTrackInfos();
 		final ConsumerContext			consc				= (ConsumerContext) rc.getOption( KEY_CONSC );
-		final RenderSource				source;
+		final RenderSource				source				= (RenderSource) proc.getClientArg( "source" );
+		final AudioTrail				at					= consc.doc.getAudioTrail();
 
-		final Flag						hasSelectedAudio	= new Flag( false );
-		boolean							hasSelectedMarkers	= false;
-		final float[][]					inBuf;
-		int								minBlockSize, maxBlockSize, prefBlockSize;
+		final int						inTrnsLen			= ((Integer) proc.getClientArg( "inTrnsLen" )).intValue();
+		final RandomAccessRequester		rar					= (RandomAccessRequester) proc.getClientArg( "rar" );
+		final boolean					randomAccess		= rar != null;
 		int								readLen, writeLen;
-		AudioTrail						at;
-		Track.Info						ti;
-		Object							val;
 //		Span							span;
 		long							readOffset, remainingRead;
-		Set								newOptions;
 //		String							className;
 		boolean							consStarted			= false;
 		boolean							consFinished		= false;
-		boolean							randomAccess		= false;
-		RandomAccessRequester			rar					= null;
 
 		// --- clipboard related ---
-		int								numClipChannels		= 0;
 //		Span							clipSpan			= null;
 //		long							clipShift			= 0;
 		
 		// --- resampling related ---
-		int								inOff, inTrnsLen, outTrnsLen;
+		final int						inOff				= 0;
 
 		// --- init ---
+		
+		remainingRead = context.getTimeSpan().getLength();
+		if( source.validAudio ) ProcessingThread.setNextProgStop( 0.9f ); // XXX arbitrary
 
-		readOffset			= rc.getTimeSpan().getStart();
-		
-		at					= consc.doc.getAudioTrail();
-		source				= new RenderSource( rc );
-		
-		if( !AudioTracks.checkSyncedAudio( tis, consc.plugIn.getLengthPolicy() == RenderPlugIn.POLICY_MODIFY, proc, hasSelectedAudio )) return FAILED;
-		source.validAudio	= (consc.plugIn.getAudioPolicy() == RenderPlugIn.POLICY_MODIFY) && hasSelectedAudio.isSet();
-		for( int i = 0; i < tis.size(); i++ ) {
-			ti = (Track.Info) tis.get( i );
-			if( (ti.trail instanceof MarkerTrail) && ti.selected ) {
-				hasSelectedMarkers = true;
-				break;
-			}
-		}
-		source.validMarkers	= (consc.plugIn.getMarkerPolicy() == RenderPlugIn.POLICY_MODIFY) && hasSelectedMarkers;
-		if( source.validMarkers ) source.markers = doc.markers.getCuttedTrail( rc.getTimeSpan(), doc.markers.getDefaultTouchMode(), 0 );
-		
+//		inOff		= 0;
+		readOffset	= context.getTimeSpan().getStart();
+
 		try {
-			if( !invokeProducerBegin( proc, source, plugIn )) return FAILED;
-			consStarted			= true;
-			remainingRead		= rc.getTimeSpan().getLength();
-			newOptions			= rc.getModifiedOptions();
-			if( newOptions.contains( RenderContext.KEY_MINBLOCKSIZE )) {
-				val				= rc.getOption( RenderContext.KEY_MINBLOCKSIZE );
-				minBlockSize	= ((Integer) val).intValue();
-			} else {
-				minBlockSize	= 1;
-			}
-			if( newOptions.contains( RenderContext.KEY_MAXBLOCKSIZE )) {
-				val				= rc.getOption( RenderContext.KEY_MAXBLOCKSIZE );
-				maxBlockSize	= ((Integer) val).intValue();
-			} else {
-				maxBlockSize	= 0x7FFFFF;
-			}
-			if( newOptions.contains( RenderContext.KEY_PREFBLOCKSIZE )) {
-				val				= rc.getOption( RenderContext.KEY_PREFBLOCKSIZE );
-				prefBlockSize	= ((Integer) val).intValue();
-			} else {
-				prefBlockSize   = Math.max( minBlockSize, Math.min( maxBlockSize, 1024 ));
-			}
-			if( newOptions.contains( RenderContext.KEY_RANDOMACCESS )) {
-				rar				= (RandomAccessRequester) rc.getOption( RenderContext.KEY_RANDOMACCESS );
-				randomAccess	= true;
-			}
-			if( newOptions.contains( RenderContext.KEY_CLIPBOARD )) {
-return FAILED;
-// UUU
-//				try {
-//					final Transferable t = Main.clipboard.getContents( this );
-//					if( (t == null) || !t.isDataFlavorSupported( SampledChunkList.trackListFlavor ) ) {
-//						args[1]	= getResourceString( "errFilterNeedsClipboard" );
-//						return FAILED;
-//					}
-//					tl2				= (SampledChunkList) t.getTransferData( SampledChunkList.trackListFlavor );
-//					clipSpan		= tl2.getSpan();
-//					if( clipSpan.isEmpty() ) {
-//						args[1]	= getResourceString( "errFilterNeedsClipboard" );
-//						return FAILED;
-//					}
-//					numClipChannels	= tl2.get( 0 ).getChannelNum();
-//					clipShift		= clipSpan.getStart() - context.getTimeSpan().getStart();
-//				}
-//				catch( IOException e11 ) {
-//					pt.setException( e11 );
-//					return FAILED;
-//				}
-//				catch( UnsupportedFlavorException e12 ) {
-//					pt.setException( e12 );
-//					return FAILED;
-//				}
-			}
-			assert minBlockSize <= maxBlockSize : "minmaxblocksize";
-			
-			inTrnsLen		= prefBlockSize;
-			outTrnsLen		= inTrnsLen;
-			inBuf			= new float[ Math.max( source.numAudioChannels, numClipChannels )][ inTrnsLen ];
-			inOff			= 0;
-
-			// ---  ---
-			for( int ch = 0; ch < source.numAudioChannels; ch++ ) {
-				source.audioBlockBuf[ ch ]	= new float[ outTrnsLen ];
-			}
-// UUU
-//			if( tl2 != null ) {
-//				source.clipboardBuf	= new float[ numClipChannels ][ outTrnsLen ];
-//			}
-
 			// --- rendering loop ---
 			
-			if( source.validAudio ) ProcessingThread.setNextProgStop( 0.9f ); // XXX arbitrary
-
 prodLp:		while( !ProcessingThread.shouldCancel() ) {
 				if( randomAccess ) {
 					source.blockSpan = rar.getNextSpan();
@@ -807,7 +853,7 @@ prodLp:		while( !ProcessingThread.shouldCancel() ) {
 //				mte.read( source.blockSpan, inBuf, inOff );
 // UUU
 //				tl.read( source.blockSpan, inBuf, inOff );
-at.readFrames( inBuf, inOff, source.blockSpan );
+at.readFrames( consc.inBuf, inOff, source.blockSpan );
 //				if( inOff + readLen < inTrnsLen ) {
 //					for( int ch = 0; ch < numChannels; ch++ ) {
 //						for( int i = inOff + readLen; i < inTrnsLen; i++ ) {
@@ -819,7 +865,7 @@ at.readFrames( inBuf, inOff, source.blockSpan );
 				// looks like a bit of overload but in future
 				// versions, channel arrangement might be different than 1:1 from mte
 				for( int ch = 0; ch < source.numAudioChannels; ch++ ) {
-					System.arraycopy( inBuf[ ch ], inOff, source.audioBlockBuf[ ch ], 0, writeLen );
+					System.arraycopy( consc.inBuf[ ch ], inOff, source.audioBlockBuf[ ch ], 0, writeLen );
 				}
 				
 // UUU
@@ -950,10 +996,12 @@ at.readFrames( inBuf, inOff, source.blockSpan );
 		protected Session					doc;
 		protected RenderPlugIn				plugIn;
 		protected AbstractCompoundEdit		edit;
-//		private BlendContext				bc;
+		protected BlendContext				bcPre, bcPost;
+		protected Span						blendPreSpan, blendPostSpan;
 		protected float						progOff, progWeight;
 		protected long						framesWritten;
 		protected AudioStake				as;
+		protected float[][]					inBuf, outBuf;
 		
 		protected ConsumerContext() { /* empty */ }
 	}

@@ -745,9 +745,9 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 //		}
 //	}
 	
-	protected BlendContext createBlendContext( long maxLeft, long maxRight, Flag hasSelectedAudio )
+	public BlendContext createBlendContext( long maxLeft, long maxRight, boolean hasSelectedAudio )
 	{
-		if( !hasSelectedAudio.isSet() || ((maxLeft == 0L) && (maxRight == 0L)) ) {
+		if( !hasSelectedAudio || ((maxLeft == 0L) && (maxRight == 0L)) ) {
 			return null;
 		} else {
 			return blending.createBlendContext( maxLeft, maxRight );
@@ -1353,8 +1353,8 @@ tryRename:					  {
 				postMaxLen	= pasteLength - preMaxLen;
 //System.out.println( "C" );
 			}
-			bcPre			= createBlendContext( preMaxLen, 0, hasSelectedAudio );
-			bcPost			= createBlendContext( postMaxLen, 0, hasSelectedAudio );
+			bcPre			= createBlendContext( preMaxLen, 0, hasSelectedAudio.isSet() );
+			bcPost			= createBlendContext( postMaxLen, 0, hasSelectedAudio.isSet() );
 //System.out.println( "D ; preMaxLen = " + preMaxLen + "; postMaxLen = " + postMaxLen + "; bcPre.getLeftLen() = " + (bcPre == null ? null : String.valueOf( bcPre.getLeftLen())) + "; bcPre.getRightLen() = " + (bcPre == null ? null : String.valueOf( bcPre.getRightLen() )) + "; bcPost.getLeftLen() = " + (bcPost == null ? null : String.valueOf( bcPost.getLeftLen() )) + "; bcPost.getRightLen() = " + (bcPost == null ? null : String.valueOf( bcPost.getRightLen() )));
 
 //			if( bcPre != null )  System.out.println( "bcPre  : " + bcPre.getLen() + ", " + bcPre.getLeftLen() + ", "+ bcPre.getRightLen() );
@@ -1587,7 +1587,7 @@ tryRename:					  {
 				 *	              span.start
 				 */
 				maxLen				= Math.min( cutLength, Math.min( span.start, docLength - span.stop ) << 1 );
-				bc					= createBlendContext( maxLen >> 1, (maxLen + 1) >> 1, hasSelectedAudio );
+				bc					= createBlendContext( maxLen >> 1, (maxLen + 1) >> 1, hasSelectedAudio.isSet() );
 			} else {
 				/*
 				 *	after delete:
@@ -1601,7 +1601,7 @@ tryRename:					  {
 				 *	                  |     span     |
 				 */
 				maxLen				= cutLength >> 1;
-				bc					= createBlendContext( maxLen, 0, hasSelectedAudio );
+				bc					= createBlendContext( maxLen, 0, hasSelectedAudio.isSet() );
 			}
 //			bc					= createBlendContext( Math.min( cutLength, span.start ), Math.min( cutLength, docLength - span.stop ), hasSelectedAudio );
 			edit				= new BasicCompoundEdit( name );

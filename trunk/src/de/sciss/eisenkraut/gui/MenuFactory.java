@@ -295,7 +295,7 @@ if( doc.getFrame() == null ) {
 		mg.add( new MenuItem( "fadeOut", getResourceString( "menuFadeOut" ), KeyStroke.getKeyStroke( KeyEvent.VK_O, myCtrl )));
 		mg.add( new MenuItem( "gain", getResourceString( "menuGain" ), KeyStroke.getKeyStroke( KeyEvent.VK_N, myCtrl )));
 		mg.add( new MenuItem( "invert", getResourceString( "menuInvert" )));
-		mg.add( new MenuItem( "mix", getResourceString( "menuMix" )));
+//		mg.add( new MenuItem( "mix", getResourceString( "menuMix" )));
 		mg.add( new MenuItem( "reverse", getResourceString( "menuReverse" )));
 		mg.add( new MenuItem( "rotateChannels", getResourceString( "menuRotateChannels" )));
 		add( mg, i + 2 );

@@ -225,11 +225,29 @@ public class BlendContext
 		final int		numCh	= sourceBufA.length;
 		final double	wOff	= blendOff * wFact;
 		final double[]	res		= new double[ 3 ];
+		int				len2;
 		double			t, tt, ttt;
+		int				i		= 0;
 		int				ch;
 		float			wIn, wOut;
+		
+		// plain A
+		len2 = (int) Math.min( length, -blendOff );
+		if( len2 > 0 ) {
+			for( ch = 0; ch < numCh; ch++ ) {
+				if( targetBuf[ ch ] != null ) {
+					System.arraycopy( sourceBufA[ ch ], sourceOffA, targetBuf[ ch ], targetOff, len2 );
+				}
+			}
+			i		   += len2;
+			sourceOffA += len2;
+			sourceOffB += len2;
+			targetOff  += len2;
+		}
 
-		for( int i = 0; i < length; i++, sourceOffA++, sourceOffB++, targetOff++ ) {
+		// xfade
+		len2 = (int) Math.min( length, left + right - blendOff );
+		for( ; i < len2; i++, sourceOffA++, sourceOffB++, targetOff++ ) {
 			eqn[ 0 ]	= -(wOff + wFact * i);		// C = -x
  			CubicCurve2D.solveCubic( eqn, res );
 			t			= res[ 0 ];
@@ -251,6 +269,16 @@ public class BlendContext
 				if( targetBuf[ ch ] != null ) {
 					targetBuf[ ch ][ targetOff ] = sourceBufB[ ch ][ sourceOffB ] * wIn +
 												   sourceBufA[ ch ][ sourceOffA ] * wOut;
+				}
+			}
+		}
+
+		// plain B
+		len2 = length - i;
+		if( len2 > 0 ) {
+			for( ch = 0; ch < numCh; ch++ ) {
+				if( targetBuf[ ch ] != null ) {
+					System.arraycopy( sourceBufB[ ch ], sourceOffB, targetBuf[ ch ], targetOff, len2 );
 				}
 			}
 		}

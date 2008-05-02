@@ -585,9 +585,12 @@ implements TimelineListener, OSCRouter, Disposable
 				currentFrame = ((currentFrame - loopStart) % (loopStop - loopStart)) + loopStart;
 			}
 		} else if( currentFrame > stopFrame ) {
+//			final boolean dispatch = (currentFrame - stopFrame) >= 128;
 			currentFrame	= stopFrame;
 			running			= false;
-			dispatchStop( currentFrame );
+//			if( dispatch ) {
+				dispatchStop( currentFrame );
+//			}
 		}
 		return currentFrame;
 	}
