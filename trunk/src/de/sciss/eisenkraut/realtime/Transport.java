@@ -39,11 +39,9 @@
 package de.sciss.eisenkraut.realtime;
 
 import java.awt.EventQueue;
-import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import javax.swing.AbstractAction;
 
 import de.sciss.app.AbstractApplication;
 import de.sciss.io.Span;
@@ -70,7 +68,7 @@ import de.sciss.eisenkraut.util.PrefsUtil;
  *	transport listeners are informed about actions.
  * 
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 29-Oct-06
+ *  @version	0.70, 02-May-08
  *
  *	@todo	the methods for adding and removing consumers should
  *			be moved to the realtime host interface?
@@ -105,9 +103,6 @@ implements TimelineListener, OSCRouter, Disposable
 	private boolean						running		= false;
 				
 	// --- actions ---
-
-	private final ActionPlay			actionPlay;
-	private final ActionStop			actionStop;
 	
 	private static final String			OSC_TRANSPORT = "transport";
 	private final OSCRouter				osc;
@@ -128,8 +123,6 @@ implements TimelineListener, OSCRouter, Disposable
         
 		doc.timeline.addTimelineListener( this );
 
-		actionPlay		= new ActionPlay();
-		actionStop		= new ActionStop();
 		osc				= new OSCRouterWrapper( doc, this );
 		rate			= doc.timeline.getRate();
 		frameFactor		= rateScale * rate / 1000;
@@ -142,15 +135,15 @@ implements TimelineListener, OSCRouter, Disposable
 		doc.timeline.removeTimelineListener( this );
 	}
 	
-	public AbstractAction getPlayAction()
-	{
-		return actionPlay;
-	}
+//	public AbstractAction getPlayAction()
+//	{
+//		return actionPlay;
+//	}
 
-	public AbstractAction getStopAction()
-	{
-		return actionStop;
-	}
+//	public AbstractAction getStopAction()
+//	{
+//		return actionStop;
+//	}
 
 	public Session getDocument()
 	{
@@ -671,7 +664,8 @@ implements TimelineListener, OSCRouter, Disposable
 		try {
 			final float r = rom.msg.getArgCount() == 1 ? 1.0f :
 				Math.max( 0.25f, Math.min( 4f, ((Number) rom.msg.getArg( 1 )).floatValue() ));
-			actionPlay.perform( r );
+//			actionPlay.perform( r );
+			play( r );
 		}
 		catch( ClassCastException e1 ) {
 			OSCRoot.failedArgType( rom, 1 );
@@ -682,43 +676,4 @@ implements TimelineListener, OSCRouter, Disposable
 	{
 		stop();
 	}
-
-// --------------- internal actions ---------------
-
-	private class ActionPlay
-	extends AbstractAction
-	{
-		protected ActionPlay()
-		{
-			super();
-		}
-		
-		public void actionPerformed( ActionEvent e )
-		{
-			perform( (e.getModifiers() & ActionEvent.SHIFT_MASK) == 0 ? 1.0f :
-					    ((e.getModifiers() & ActionEvent.ALT_MASK) == 0 ? 0.5f : 2.0f) );
-		}
-		
-		protected void perform( float scale )
-		{
-			if( doc.timeline.getPosition() == doc.timeline.getLength() ) {
-				doc.timeline.editPosition( enc_this, 0 );
-			}
-			play( scale );
-        }
-	} // class actionPlayClass
-
-	private class ActionStop
-	extends AbstractAction
-	{
-		protected ActionStop()
-		{
-			super();
-		}
-		
-		public void actionPerformed( ActionEvent e )
-		{
-			stop();
-        }
-	} // class actionStopClass
 }

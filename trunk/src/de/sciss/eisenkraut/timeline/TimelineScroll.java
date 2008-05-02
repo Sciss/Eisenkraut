@@ -248,8 +248,8 @@ implements AdjustmentListener, TimelineListener, DynamicListening, PreferenceCha
 	 */
 	public void setPosition( long pos, long patience, int type )
 	{
-		if( prefCatch && (catchBypassCount == 0) && timelineVis.contains( timelinePos ) &&
-			(timelineVis.getStop() < timelineLen) &&
+		if( prefCatch && (catchBypassCount == 0) /* && timelineVis.contains( timelinePos ) */ &&
+//			(timelineVis.getStop() < timelineLen) &&
 			!timelineVis.contains( pos + (type == TYPE_TRANSPORT ? timelineVis.getLength() >> 3 : 0) )) {
 			
 			timelinePos = pos;

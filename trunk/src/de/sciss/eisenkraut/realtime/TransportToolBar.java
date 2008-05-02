@@ -92,7 +92,7 @@ import de.sciss.util.ParamSpace;
  *	</pre>
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 20-Sep-06
+ *  @version	0.70, 02-May-08
  *
  *	@todo		(FIXED?) cueing sometimes uses an obsolete start position.
  *				idea: cue speed changes with zoom level
@@ -159,11 +159,11 @@ implements  TimelineListener, TransportListener,	// RealtimeConsumer,
 		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_NUMPAD1, 0, true ), "stoprwd" );
 		amap.put( "stoprwd", new ActionCue( ggRewind, false ));
 
-		actionStop		= transport.getStopAction();
+		actionStop		= new ActionStop();
         ggStop			= new JButton( actionStop );
 		GraphicsUtil.setToolIcons( ggStop, GraphicsUtil.createToolIcons( GraphicsUtil.ICON_STOP ));
 
-		actionPlay		= transport.getPlayAction();
+		actionPlay		= new ActionPlay();
         ggPlay			= new JButton( actionPlay );
 		GraphicsUtil.setToolIcons( ggPlay, GraphicsUtil.createToolIcons( GraphicsUtil.ICON_PLAY ));
 
@@ -614,4 +614,45 @@ msgPane.add( ggCurrent );
 			}
 		}
 	}
+
+	// --------------- internal actions ---------------
+
+	private class ActionPlay
+	extends AbstractAction
+	{
+		protected ActionPlay()
+		{
+			super();
+		}
+		
+		public void actionPerformed( ActionEvent e )
+		{
+			perform( (e.getModifiers() & ActionEvent.SHIFT_MASK) == 0 ? 1.0f :
+					    ((e.getModifiers() & ActionEvent.ALT_MASK) == 0 ? 0.5f : 2.0f) );
+		}
+		
+		protected void perform( float scale )
+		{
+			if( doc.timeline.getPosition() == doc.timeline.getLength() ) {
+//				doc.getFrame().addCatchBypass();
+				doc.timeline.editPosition( transport, 0 );
+//				doc.getFrame().removeCatchBypass();
+			}
+			transport.play( scale );
+	    }
+	} // class actionPlayClass
+
+	private class ActionStop
+	extends AbstractAction
+	{
+		protected ActionStop()
+		{
+			super();
+		}
+		
+		public void actionPerformed( ActionEvent e )
+		{
+			transport.stop();
+        }
+	} // class actionStopClass
 }
