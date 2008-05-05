@@ -54,6 +54,10 @@ extends Disposable
 	 */
 	public int getAudioPolicy();
 	/**
+	 *	Either of POLICY_BYPASS, or POLICY_MODIFY
+	 */
+	public int getUnselectedAudioPolicy();
+	/**
 	 *	Either of POLICY_BYPASS, POLICY_CLEAR, or POLICY_MODIFY
 	 */
 	public int getMarkerPolicy();

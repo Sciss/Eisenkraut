@@ -64,6 +64,14 @@ implements RenderPlugIn
 	/**
 	 *	Default behaviour : POLICY_BYPASS
 	 */
+	public int getUnselectedAudioPolicy()
+	{
+		return POLICY_MODIFY;
+	}
+
+	/**
+	 *	Default behaviour : POLICY_BYPASS
+	 */
 	public int getMarkerPolicy()
 	{
 		return POLICY_BYPASS;

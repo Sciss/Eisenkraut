@@ -51,6 +51,11 @@ extends AbstractRenderPlugIn
 		return POLICY_MODIFY;
 	}
 
+	public int getUnselectedAudioPolicy()
+	{
+		return POLICY_MODIFY;
+	}
+
 	public boolean producerBegin( RenderSource source )
 	throws IOException
 	{
@@ -89,6 +94,7 @@ extends AbstractRenderPlugIn
 	
 		// reverse each block
 		for( int ch = 0; ch < source.numAudioChannels; ch++ ) {
+			if( !source.audioTrackMap[ ch ]) continue;
 			convBuf = source.audioBlockBuf[ ch ];
 			for( int i = source.audioBlockBufOff, j = i + source.audioBlockBufLen - 1; i < j; i++, j-- ) {
 				temp			= convBuf[ i ];

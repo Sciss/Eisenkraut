@@ -440,20 +440,21 @@ implements	RenderConsumer, RenderHost,
 
 		// outBuf is audioBlockBuf but with the unused
 		// channels set to null, so they won't be faded
-		if( preFade || postFade ) {
-			for( int i = 0; i < source.numAudioChannels; i++ ) {
-				if( source.audioTrackMap[ i ]) {
-//					System.out.println( "Yes for chan " + i );
-					consc.outBuf[ i ] = source.audioBlockBuf[ i ];
+		if( preFade || postFade || consc.restoreUnused ) {
+			for( int ch = 0; ch < source.numAudioChannels; ch++ ) {
+				if( source.audioTrackMap[ ch ]) {
+//					System.out.println( "Yes for chan " + ch );
+					consc.outBuf[ ch ] = source.audioBlockBuf[ ch ];
 				} else {
-					consc.outBuf[ i ] = null;
+					consc.outBuf[ ch ] = null;
 				}
 			}
+			at.readFrames( consc.inBuf, 0, source.blockSpan );
 		}
 		
 		if( preFade ) {
 //			System.out.println( "pre fade" );
-			at.readFrames( consc.inBuf, 0, source.blockSpan );
+//			at.readFrames( consc.inBuf, 0, source.blockSpan );
 			consc.bcPre.blend( source.blockSpan.start - consc.blendPreSpan.start,
 			                   consc.inBuf, 0, 
 			                   source.audioBlockBuf, source.audioBlockBufOff,
@@ -462,15 +463,23 @@ implements	RenderConsumer, RenderHost,
 		}
 		if( postFade ) {
 //			System.out.println( "post fade" );
-			at.readFrames( consc.inBuf, 0, source.blockSpan );
+//			at.readFrames( consc.inBuf, 0, source.blockSpan );
 			consc.bcPost.blend( source.blockSpan.start - consc.blendPostSpan.start,
 			                    source.audioBlockBuf, source.audioBlockBufOff,
 			                    consc.inBuf, 0,
 			                    consc.outBuf, source.audioBlockBufOff,
 			                    source.audioBlockBufLen );
 		}
-		
-		consc.as.writeFrames( source.audioBlockBuf, source.audioBlockBufOff, source.blockSpan );
+		if( consc.restoreUnused ) {
+			for( int ch = 0; ch < source.numAudioChannels; ch++ ) {
+				if( !source.audioTrackMap[ ch ]) {
+					consc.outBuf[ ch ] = consc.inBuf[ ch ];
+				}
+			}
+			consc.as.writeFrames( consc.outBuf, source.audioBlockBufOff, source.blockSpan );
+		} else {
+			consc.as.writeFrames( source.audioBlockBuf, source.audioBlockBufOff, source.blockSpan );
+		}
 //float test = 0f;
 //for( int i = source.audioBlockBufOff, k = source.audioBlockBufOff + (int) source.blockSpan.getLength(); i < k; i++ ) {
 //	for( int j = 0; j < source.audioBlockBuf.length; j++ ) {
@@ -589,6 +598,8 @@ implements	RenderConsumer, RenderHost,
 		}
 		source.validMarkers	= (consc.plugIn.getMarkerPolicy() == RenderPlugIn.POLICY_MODIFY) && hasSelectedMarkers;
 		if( source.validMarkers ) source.markers = doc.markers.getCuttedTrail( context.getTimeSpan(), doc.markers.getDefaultTouchMode(), 0 );
+		
+		consc.restoreUnused = plugIn.getUnselectedAudioPolicy() == RenderPlugIn.POLICY_MODIFY;
 		
 		try {
 			if( !invokeProducerBegin( source, plugIn )) {
@@ -848,44 +859,18 @@ prodLp:		while( !ProcessingThread.shouldCancel() ) {
 				writeLen			= readLen;
 				source.audioBlockBufLen  = writeLen;
 
-				// --- read transmitter trajectory data ---
-//System.err.println( "mte.read( "+source.blockSpan.getStart()+" ... "+source.blockSpan.getStop()+ " )" );
-//				mte.read( source.blockSpan, inBuf, inOff );
-// UUU
-//				tl.read( source.blockSpan, inBuf, inOff );
-at.readFrames( consc.inBuf, inOff, source.blockSpan );
-//				if( inOff + readLen < inTrnsLen ) {
-//					for( int ch = 0; ch < numChannels; ch++ ) {
-//						for( int i = inOff + readLen; i < inTrnsLen; i++ ) {
-//							inBuf[ ch ][ i ] = 0.0f;		// zero pad in the end 
-//						}
-//					}
-//				}
-
+				// XXX optimization possibilities here:
+				// leave some channels null (both in readFrames
+				// as well as in arraycopy) depending on some
+				// kind of policy (maybe a new value of audioPolicy: POLICY_READONLY
+				// and POLICY_BYPASS would become POLICY_IGNORE
+				at.readFrames( consc.inBuf, inOff, source.blockSpan );
 				// looks like a bit of overload but in future
 				// versions, channel arrangement might be different than 1:1 from mte
 				for( int ch = 0; ch < source.numAudioChannels; ch++ ) {
 					System.arraycopy( consc.inBuf[ ch ], inOff, source.audioBlockBuf[ ch ], 0, writeLen );
 				}
 				
-// UUU
-//				if( tl2 != null ) {
-//					span = new Span( Math.min( clipSpan.getStop(), source.blockSpan.getStart() + clipShift ),
-//									 Math.min( clipSpan.getStop(), source.blockSpan.getStop() + clipShift ));
-//					tl2.read( span, inBuf, 0 );
-//					readLen	= (int) span.getLength();
-//					if( readLen < writeLen ) {	// zero pad
-//						for( int ch = 0; ch < numClipChannels; ch++ ) {
-//							for( int i = readLen; i < writeLen; i++ ) {
-//								inBuf[ ch ][ i ] = 0.0f;
-//							}
-//						}
-//					}
-//					for( int ch = 0; ch < numClipChannels; ch++ ) {
-//						System.arraycopy( inBuf[ ch ], 0, source.clipboardBuf[ ch ], 0, writeLen );
-//					}
-//				}
-
 				// --- handle thread ---
 				if( ProcessingThread.shouldCancel() ) break prodLp;
 
@@ -1001,6 +986,7 @@ at.readFrames( consc.inBuf, inOff, source.blockSpan );
 		protected float						progOff, progWeight;
 		protected long						framesWritten;
 		protected AudioStake				as;
+		protected boolean					restoreUnused;
 		protected float[][]					inBuf, outBuf;
 		
 		protected ConsumerContext() { /* empty */ }
