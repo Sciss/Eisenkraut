@@ -34,6 +34,7 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -631,9 +632,16 @@ implements OSCRouter, Constants, ServerListener, DocumentListener
 	}
 	
 	protected OSCMessage loadDefsMsg()
+	throws IOException
 	{
 //		return new OSCMessage( "/d_loadDir", new Object[] { new File( "synthdefs" ).getAbsolutePath() });
-		return new OSCMessage( "/d_load", new Object[] { new File( "synthdefs", "eisk-all.scsyndef" ).getAbsolutePath() });
+//		return new OSCMessage( "/d_load", new Object[] { new File( "synthdefs", "eisk-all.scsyndef" ).getAbsolutePath() });
+		final InputStream	is		= getClass().getResourceAsStream( "eisk-all.scsyndef" );
+		final int			size	= is.available();
+		final byte[]		data	= new byte[ size ];
+		is.read( data );
+		is.close();
+		return new OSCMessage( "/d_recv", new Object[] { data });
 	}
 
 	private void createNewPlayer( Session doc )
