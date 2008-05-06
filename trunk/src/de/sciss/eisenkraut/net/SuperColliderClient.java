@@ -632,7 +632,8 @@ implements OSCRouter, Constants, ServerListener, DocumentListener
 	
 	protected OSCMessage loadDefsMsg()
 	{
-		return new OSCMessage( "/d_loadDir", new Object[] { new File( "synthdefs" ).getAbsolutePath() });
+//		return new OSCMessage( "/d_loadDir", new Object[] { new File( "synthdefs" ).getAbsolutePath() });
+		return new OSCMessage( "/d_load", new Object[] { new File( "synthdefs", "eisk-all.scsyndef" ).getAbsolutePath() });
 	}
 
 	private void createNewPlayer( Session doc )

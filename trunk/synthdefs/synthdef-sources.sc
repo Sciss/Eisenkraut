@@ -7,10 +7,10 @@
  *				SRC mode introduced by a BufRd bug
  *	- 21-Sep-06	multichannel defs dynamically created in JCollider now
  *	- 04-Dec-07	removed OffsetOut uses
+ *	- 06-May-08	putting them all together in one file
  *
  *	@author	Hanns Holger Rutz
- *	@version	04-Dec-07
- *	@todo	
+ *	@version	06-May-08
  */
 
 s = Server.local;
@@ -19,6 +19,7 @@ s = Server.local;
 //p = "/Applications/Eisenkraut/synthdefs/"; // folder in which to save the synth defs
 p = "~/Documents/workspace/Eisenkraut/synthdefs/".standardizePath; // folder in which to save the synth defs
 //n = 32; // maximum number of channels for which to generate synth defs
+~defs = nil;
 
 // ------------ realtime synthdefs ------------
 
@@ -27,7 +28,7 @@ p = "~/Documents/workspace/Eisenkraut/synthdefs/".standardizePath; // folder in 
 // and writes peak and mean-square
 // to two adjectant control busses
 // which can be queried using /b_getn
-SynthDef( "eisk-meter", { arg i_aInBs = 0, i_kOtBs, t_trig;
+~defs = ~defs.add( SynthDef( "eisk-meter", { arg i_aInBs = 0, i_kOtBs, t_trig;
 	var in, rms, peak;
 	
 	in	= In.ar( i_aInBs );
@@ -42,21 +43,21 @@ SynthDef( "eisk-meter", { arg i_aInBs = 0, i_kOtBs, t_trig;
 	// not missing any peak values.
 	Out.kr( i_kOtBs, [ Latch.kr( peak, t_trig ), rms ]);
 	
-}).writeDefFile( p );
+}));
 
 // single channel no thrills limiter
-SynthDef( "eisk-limiter", { arg i_aBus, i_ceil = 0.99, i_look = 0.01;
+~defs = ~defs.add( SynthDef( "eisk-limiter", { arg i_aBus, i_ceil = 0.99, i_look = 0.01;
 	var out, in;
 		
 	in	= In.ar( i_aBus );
 	out	= Limiter.ar( in, i_ceil, i_look );
 	ReplaceOut.ar( i_aBus, out );
-}).writeDefFile( p );
+}));
 
 // single channel gain insert
-SynthDef( "eisk-gain", { arg i_aBus, volume = 1.0;
+~defs = ~defs.add( SynthDef( "eisk-gain", { arg i_aBus, volume = 1.0;
 	ReplaceOut.ar( i_aBus, In.ar( i_aBus ) * volume );
-}).writeDefFile( p );
+}));
 
 // function included in panning synth
 //SynthDef( "eisk-volume", { arg i_aInBus, i_aOutBus, volume = 1.0;
@@ -102,7 +103,7 @@ SynthDef( "eisk-gain", { arg i_aBus, volume = 1.0;
 // at the buffer start and end which will be accessed by BufRd's interpolation
 // algorithm
 ~pad = 4;
-SynthDef( "eisk-phasor", { arg i_aInBf, rate = 1.0, i_aPhBs;
+~defs = ~defs.add( SynthDef( "eisk-phasor", { arg i_aInBf, rate = 1.0, i_aPhBs;
 	var phasorRate, halfPeriod, numFrames, phasor, phasorTrig, clockTrig;
 
 	phasorRate 	= BufRateScale.kr( i_aInBf ) * rate;
@@ -117,9 +118,9 @@ SynthDef( "eisk-phasor", { arg i_aInBf, rate = 1.0, i_aPhBs;
 	SendTrig.kr( clockTrig, 0, PulseCount.kr( clockTrig ));
 //	OffsetOut.ar( i_aPhBs, phasor );	// OffsetOut is buggy!
 	Out.ar( i_aPhBs, phasor );
-}).writeDefFile( p );
+}));
 
-
+/*
 	////////////////////////////// DEBUGGING VERSION
 	SynthDef( "eisk-phasor", { arg i_aInBf, rate = 1.0, i_aPhBs, stopClock = 1.0e7, stopPhase = 1.0e7;
 		var phasorRate, halfPeriod, numFrames, phasor, phasorPad, phasorTrig, clockTrig, clock, stop;
@@ -149,17 +150,17 @@ SynthDef( "eisk-phasor", { arg i_aInBf, rate = 1.0, i_aPhBs;
 	//	Out.ar( i_aPhBs, phasorPad );
 		Out.ar( i_aPhBs, phasorPad * (1 - stop) );
 	}).writeDefFile( p );
-
+*/
 
 
 // reads input from sound file
 // and writes it to an audio bus
-SynthDef( "eisk-route", {
+~defs = ~defs.add( SynthDef( "eisk-route", {
 	arg i_aInBs, i_aOtBs;
 
 //	OffsetOut.ar( i_aOtBs, In.ar( i_aInBs ));	// OffsetOut is buggy!
 	Out.ar( i_aOtBs, In.ar( i_aInBs ));
-}).writeDefFile( p );
+}));
 
 //// reads input from sound file
 //// and writes it to an audio bus
@@ -211,3 +212,5 @@ SynthDef( "eisk-route", {
 //	}).writeDefFile( p );
 //});
 )
+
+~defs.writeDefFile( "eisk-all", p );
