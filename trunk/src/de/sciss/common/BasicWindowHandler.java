@@ -60,6 +60,7 @@ import net.roydesign.mac.MRJAdapter;
 import de.sciss.app.AbstractApplication;
 import de.sciss.app.AbstractWindow;
 import de.sciss.app.WindowHandler;
+import de.sciss.eisenkraut.util.PrefsUtil;
 import de.sciss.gui.AbstractWindowHandler;
 import de.sciss.gui.FloatingPaletteHandler;
 import de.sciss.gui.GUIUtil;
@@ -71,7 +72,7 @@ import de.sciss.gui.WindowListenerWrapper;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 19-Mar-08
+ *  @version	0.70, 06-May-08
  */
 public class BasicWindowHandler
 extends AbstractWindowHandler
@@ -97,6 +98,13 @@ extends AbstractWindowHandler
 	 */
 	public static final String KEY_LAFDECORATION = "lafdecoration";
 
+	/**
+	 *  Value: Rectangle describing the usable screen space last time
+     *  the application was launched. Has default value: no!<br>
+	 *  Node: root
+	 */
+	public static final String KEY_SCREENSPACE = "screenspace";
+
 	private final FloatingPaletteHandler	fph;
 	private final boolean					internalFrames, floating;
 	protected final JDesktopPane			desktop;
@@ -108,6 +116,7 @@ extends AbstractWindowHandler
 	private AbstractWindow					defaultBorrower			= null;		// when no doc frame active (usually the main log window)
 
 	private final Action					actionCollect;
+	private final boolean					autoCollect;
 	
 	private final BasicApplication			root;
 
@@ -117,6 +126,8 @@ extends AbstractWindowHandler
 		
 		final Preferences	prefs	= root.getUserPrefs();
 		final boolean		lafDeco = prefs.getBoolean( KEY_LAFDECORATION, false );
+		final Rectangle		oScreen	= PrefsUtil.stringToRectangle( prefs.get( KEY_SCREENSPACE, null ));
+		final Rectangle		nScreen;
 		JFrame.setDefaultLookAndFeelDecorated( lafDeco );
 		
 		this.root		= root;
@@ -144,8 +155,12 @@ extends AbstractWindowHandler
 //			}
 		}
 		
-		actionCollect	= new ActionCollect( root.getResourceString( "menuCollectWindows" ));
-
+		nScreen		= calcOuterBounds();
+		autoCollect	= !nScreen.equals( oScreen );
+		prefs.put( KEY_SCREENSPACE, PrefsUtil.rectangleToString( nScreen ));
+		actionCollect = new ActionCollect( root.getResourceString( "menuCollectWindows" ));
+//System.out.println( "autoCollect = " + autoCollect );
+		
 //		MenuGroup	mg;
 //
 //		mg	= (MenuGroup) root.getMenuFactory().get( "window" );
@@ -235,6 +250,10 @@ extends AbstractWindowHandler
 		super.addWindow( w, options );
 //		if( (w instanceof FloatingPalette) && ((FloatingPalette) w).isFloating() ) {
 		if( fph != null ) fph.add( w );
+//System.out.println( "checkin " + w );
+		if( autoCollect ) {
+			collect( w, calcOuterBounds() );
+		}
 //		if( w.isFloating() ) {
 //			fph.addPalette( w );
 //		} else {
@@ -323,6 +342,59 @@ extends AbstractWindowHandler
 //	{
 //		return actionCollect;
 //	}
+	
+	protected Rectangle calcOuterBounds()
+	{
+		final Rectangle	outerBounds;
+		final boolean	isMacOS = System.getProperty( "os.name" ).indexOf( "Mac OS" ) >= 0;
+		
+		if( desktop == null ) {
+			outerBounds = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration().getBounds();
+			if( isMacOS ) {
+				outerBounds.y     += 22;
+				outerBounds.width -= 80;
+				outerBounds.height-= 22;
+			}
+		} else {
+			outerBounds = new Rectangle( 0, 0, desktop.getWidth(), desktop.getHeight() );
+		}
+		return outerBounds;
+	}
+
+	protected void collect( AbstractWindow w, Rectangle outerBounds )
+	{
+		final boolean	adjustLeft, adjustTop;
+		final Rectangle	winBounds;
+		boolean			adjustRight, adjustBottom;
+		
+		winBounds	= w.getBounds();
+		adjustLeft	= winBounds.x < outerBounds.x;
+		adjustTop	= winBounds.y < outerBounds.y;
+		adjustRight	= (winBounds.x + winBounds.width) > (outerBounds.x + outerBounds.width);
+		adjustBottom= (winBounds.y + winBounds.height) > (outerBounds.y + outerBounds.height);
+		
+		if( !(adjustLeft || adjustTop || adjustRight || adjustBottom) ) return;
+
+		if( adjustLeft ) {
+			winBounds.x = outerBounds.x;
+			adjustRight	= (winBounds.x + winBounds.width) > (outerBounds.x + outerBounds.width);
+		}
+		if( adjustTop ) {
+			winBounds.y = outerBounds.y;
+			adjustBottom= (winBounds.y + winBounds.height) > (outerBounds.y + outerBounds.height);
+		}
+		if( adjustRight ) {
+			winBounds.x = Math.max( outerBounds.x, outerBounds.x + outerBounds.width - winBounds.width );
+			adjustRight	= (winBounds.x + winBounds.width) > (outerBounds.x + outerBounds.width);
+			if( adjustRight && w.isResizable() ) winBounds.width = outerBounds.width;
+		}
+		if( adjustBottom ) {
+			winBounds.y = Math.max( outerBounds.y, outerBounds.y + outerBounds.height - winBounds.height );
+			adjustBottom= (winBounds.y + winBounds.height) > (outerBounds.y + outerBounds.height);
+			if( adjustBottom && w.isResizable() ) winBounds.height = outerBounds.height;
+		}
+		w.setBounds( winBounds );
+	}
 
 	public static int showDialog( JOptionPane op, Component parent, String title )
 	{
@@ -467,53 +539,10 @@ extends AbstractWindowHandler
 		
 		public void actionPerformed( ActionEvent e )
 		{
-			AbstractWindow w;
+			final Rectangle	outerBounds = calcOuterBounds();
 
-			final Rectangle	outerBounds;
-			Rectangle		winBounds;
-			boolean			adjustLeft, adjustTop, adjustRight, adjustBottom;
-			final boolean	isMacOS = System.getProperty( "os.name" ).indexOf( "Mac OS" ) >= 0;
-			
-			if( desktop == null ) {
-				outerBounds = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration().getBounds();
-				if( isMacOS ) {
-					outerBounds.y     += 22;
-					outerBounds.width -= 80;
-					outerBounds.height-= 22;
-				}
-			} else {
-				outerBounds = new Rectangle( 0, 0, desktop.getWidth(), desktop.getHeight() );
-			}
-			  		
 			for( Iterator iter = getWindows(); iter.hasNext(); ) {
-				w			= (AbstractWindow) iter.next();
-				winBounds	= w.getBounds();
-				adjustLeft	= winBounds.x < outerBounds.x;
-				adjustTop	= winBounds.y < outerBounds.y;
-				adjustRight	= (winBounds.x + winBounds.width) > (outerBounds.x + outerBounds.width);
-				adjustBottom= (winBounds.y + winBounds.height) > (outerBounds.y + outerBounds.height);
-				
-				if( !(adjustLeft || adjustTop || adjustRight || adjustBottom) ) continue;
-
-				if( adjustLeft ) {
-					winBounds.x = outerBounds.x;
-					adjustRight	= (winBounds.x + winBounds.width) > (outerBounds.x + outerBounds.width);
-				}
-				if( adjustTop ) {
-					winBounds.y = outerBounds.y;
-					adjustBottom= (winBounds.y + winBounds.height) > (outerBounds.y + outerBounds.height);
-				}
-				if( adjustRight ) {
-					winBounds.x = Math.max( outerBounds.x, outerBounds.x + outerBounds.width - winBounds.width );
-					adjustRight	= (winBounds.x + winBounds.width) > (outerBounds.x + outerBounds.width);
-					if( adjustRight && w.isResizable() ) winBounds.width = outerBounds.width;
-				}
-				if( adjustBottom ) {
-					winBounds.y = Math.max( outerBounds.y, outerBounds.y + outerBounds.height - winBounds.height );
-					adjustBottom= (winBounds.y + winBounds.height) > (outerBounds.y + outerBounds.height);
-					if( adjustBottom && w.isResizable() ) winBounds.height = outerBounds.height;
-				}
-				w.setBounds( winBounds );
+				collect( (AbstractWindow) iter.next(), outerBounds );
 			}
 		}
 	}

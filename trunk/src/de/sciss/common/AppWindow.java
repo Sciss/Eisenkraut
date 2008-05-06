@@ -509,7 +509,6 @@ implements AbstractWindow
 		} else if( ownMenuBar ) {
 			setJMenuBar( wh.getMenuBarRoot().createBar( this ));
 		}
-		wh.addWindow( this, null );
 //		AbstractApplication.getApplication().addComponent( getClass().getName(), this );
 		
 //		final AbstractWindow enc_this = this;
@@ -619,8 +618,6 @@ EventQueue.invokeLater( new Runnable() {
 			}
 		};
 		addListener( winListener );
-
-		initialized = true;
 		
 		if( autoUpdatePrefs() ) {
 			getClassPrefs();	// this creates the prefs
@@ -653,6 +650,9 @@ EventQueue.invokeLater( new Runnable() {
 				pack();
 			}
 		}
+		
+		wh.addWindow( this, null );
+		initialized = true;
 	}
 	
 	protected Preferences getClassPrefs()

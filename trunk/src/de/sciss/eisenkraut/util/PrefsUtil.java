@@ -528,8 +528,8 @@ public class PrefsUtil
 	
 	public static Rectangle stringToRectangle( String value )
 	{
-		Rectangle		rect	= null;
-		StringTokenizer tok;
+		Rectangle				rect	= null;
+		final StringTokenizer	tok;
 		
 		if( value != null ) {
 			try {
@@ -545,8 +545,8 @@ public class PrefsUtil
 
 	public static Point stringToPoint( String value )
 	{
-		Point			pt	= null;
-		StringTokenizer tok;
+		Point					pt	= null;
+		final StringTokenizer	tok;
 		
 		if( value != null ) {
 			try {
@@ -561,8 +561,8 @@ public class PrefsUtil
 
 	public static Dimension stringToDimension( String value )
 	{
-		Dimension		dim	= null;
-		StringTokenizer tok;
+		Dimension				dim	= null;
+		final StringTokenizer	tok;
 		
 		if( value != null ) {
 			try {
