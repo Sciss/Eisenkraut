@@ -778,6 +778,10 @@ inlineDecim=1;
 		threadAsync = new Thread( new Runnable() {
 			public void run()
 			{
+final int pri = Thread.currentThread().getPriority();
+//System.out.println( "pri was " + pri );
+Thread.currentThread().setPriority( pri - 2 );
+				
 //				final CacheManager	cm					= PrefCacheManager.getInstance();
 				long				pos;
 				// long framesWritten = 0;

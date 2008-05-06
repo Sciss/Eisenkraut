@@ -672,6 +672,9 @@ extends DecimatedTrail
 		threadAsync = new Thread( new Runnable() {
 			public void run()
 			{
+final int pri = Thread.currentThread().getPriority();
+//System.out.println( "pri was " + pri );
+Thread.currentThread().setPriority( pri - 2 );
 				final int			minCoarse;
 				final CacheManager	cm					= PrefCacheManager.getInstance();
 				long				pos;
