@@ -25,12 +25,18 @@
  *
  *  Changelog:
  *		10-Sep-06	created
+ *		07-May-08	removing necessity to compile with SwingOSC (just using reflection)
  */
 
 package de.sciss.eisenkraut.net;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
 import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -52,21 +58,32 @@ import de.sciss.gui.MenuRoot;
 import de.sciss.gui.MenuSeparator;
 import de.sciss.net.OSCChannel;
 import de.sciss.net.OSCMessage;
-import de.sciss.swingosc.SwingOSC;
+//import de.sciss.swingosc.SwingOSC;
 import de.sciss.util.Disposable;
+import de.sciss.util.DynamicURLClassLoader;
 
+/**
+ * 	A basic management for custom menus via OSC and access to SwingOSC
+ * 
+ *	@author		Hanns Holger Rutz
+ *	@version	0.70, 07-May-08
+ */
 public class OSCGUI
 implements OSCRouter, Disposable
 {
 	private static final String		OSC_GUI			= "gui";
 //	private static final String		OSC_ID			= "id";
 	
+	private static final int		SWING_PORT		= 12345;
+	
+	public static final String		KEY_SWINGAPP	= "swingapp";
+	
 	private final OSCRouterWrapper	osc;
 	private final MenuBuilder		mb;
 //	private final WindowBuilder		wb;
 	
-//	private Object					swingOSC		= null;
-	private SwingOSC				swingOSC		= null;
+	private Object					swingOSC		= null;
+//	private SwingOSC				swingOSC		= null;
 	
 	public OSCGUI()
 	{
@@ -83,6 +100,11 @@ implements OSCRouter, Disposable
 		mb.dispose();
 //		wb.dispose();
 		osc.remove();
+	}
+	
+	public Object getSwingOSC()
+	{
+		return swingOSC;
 	}
 
 	// ------------ OSCRouter interface ------------
@@ -115,78 +137,55 @@ implements OSCRouter, Disposable
 	{
 		if( swingOSC != null ) return;
 	
-		swingOSC = new SwingOSC();
+		final DynamicURLClassLoader	cl = new DynamicURLClassLoader( getClass().getClassLoader() );
+		final Class					clz;
+		
 		try {
+			cl.addURL( new File( OSCRoot.getInstance().getPreferences().get( KEY_SWINGAPP, null )).toURL() );
+			clz = Class.forName( "de.sciss.swingosc.SwingOSC", true, cl );
+//			swingOSC = new SwingOSC();
+			swingOSC = clz.newInstance();
 			// start( String protocol, int port, boolean loopBack, int bufSize, boolean initSwing, SocketAddress helloAddr)
-			swingOSC.start( OSCChannel.TCP, 12345, true, 8192, false, null );
+//			swingOSC.start( OSCChannel.TCP, 12345, true, 8192, false, null );
+			final Method m = clz.getMethod( "start", new Class[] {
+				String.class, Integer.TYPE, Boolean.TYPE, Integer.TYPE,
+				Boolean.TYPE, InetSocketAddress.class });
+			m.invoke( swingOSC, new Object[] { OSCChannel.TCP, new Integer( SWING_PORT ),
+				Boolean.TRUE, new Integer( 8192 ), Boolean.FALSE, null });
 		}
-		catch( IOException e1 ) {
+		catch( MalformedURLException e1 ) {
 			OSCRoot.failed( rom, e1 );
 		}
+		catch( ClassNotFoundException e1 ) {
+			OSCRoot.failed( rom, e1 );
+		}
+		catch( IllegalAccessException e1 ) {
+			OSCRoot.failed( rom, e1 );
+		}
+		catch( InstantiationException e1 ) {
+			OSCRoot.failed( rom, e1 );
+		}
+		catch( NoSuchMethodException e1 ) {
+			OSCRoot.failed( rom, e1 );
+		}
+		catch( InvocationTargetException e1 ) {
+			OSCRoot.failed( rom, e1 );
+		}
+//		catch( IOException e1 ) {
+//			OSCRoot.failed( rom, e1 );
+//		}
 	}
-
-//	public void oscCmd_initSwing( RoutedOSCMessage rom )
-//	{
-//		if( swingOSC != null ) return;
-//	
-//		final DynamicURLClassLoader	cl = new DynamicURLClassLoader();
-//		final Class					c;
-//		final Method				methodStart;
-//		
-//		try {
-//			cl.addURL( new URL( "file:///Users/rutz/Documents/workspace/SwingOSC/build/SwingOSC.jar" ));
-//			c			= Class.forName( "de.sciss.swingosc.SwingOSC", true, cl );
-//			swingOSC	= c.newInstance();
-//			// public void start( String protocol, int port, boolean loopBack, boolean initSwing, SocketAddress hello );
-//			methodStart	= c.getMethod( "start", new Class[] { String.class, Integer.TYPE, Boolean.TYPE, Boolean.TYPE, SocketAddress.class });
-//			methodStart.invoke( swingOSC, new Object[] { OSCChannel.TCP, new Integer( 12345 ), Boolean.FALSE, Boolean.FALSE, null });
-//		}
-//		catch( LinkageError e1 ) {
-//			OSCRoot.failed( rom, e1 );
-//		}
-////		catch( ExceptionInInitializerError e1 ) {
-////			OSCRoot.failed( rom, e1 );
-////		}
-//		catch( ClassNotFoundException e1 ) {
-//			OSCRoot.failed( rom, e1 );
-//		}
-//		catch( IllegalAccessException e1 ) {
-//			OSCRoot.failed( rom, e1 );
-//		}
-//		catch( InstantiationException e1 ) {
-//			OSCRoot.failed( rom, e1 );
-//		}
-//		catch( SecurityException e1 ) {
-//			OSCRoot.failed( rom, e1 );
-//		}
-//		catch( NoSuchMethodException e1 ) {
-//			OSCRoot.failed( rom, e1 );
-//		}
-////		catch( IllegalAccessException e1 ) {
-////			OSCRoot.failed( rom, e1 );
-////		}
-//		catch( IllegalArgumentException e1 ) {
-//			OSCRoot.failed( rom, e1 );
-//		}
-//		catch( InvocationTargetException e1 ) {
-//			OSCRoot.failed( rom, e1 );
-//		}
-////		catch( IndexOutOfBoundsException e1 ) {
-////			OSCRoot.failedArgCount( rom );
-////		}
-//		catch( MalformedURLException e1 ) {
-//			OSCRoot.failed( rom, e1 );
-//		}
-//	}
 
 	public Object oscQuery_swingPort()
 	{
-		return new Integer( swingOSC == null ? 0 : swingOSC.getLocalAddress().getPort() );
+//		return new Integer( swingOSC == null ? 0 : swingOSC.getLocalAddress().getPort() );
+		return new Integer( swingOSC == null ? 0 : SWING_PORT );
 	}
 
 	public Object oscQuery_swingProtocol()
 	{
-		return( swingOSC == null ? (Object) new Integer( 0 ) : (Object) swingOSC.getProtocol() );
+//		return( swingOSC == null ? (Object) new Integer( 0 ) : (Object) swingOSC.getProtocol() );
+		return( swingOSC == null ? (Object) new Integer( 0 ) : (Object) OSCChannel.TCP );
 	}
 
 	public Object oscQuery_swingRunning()

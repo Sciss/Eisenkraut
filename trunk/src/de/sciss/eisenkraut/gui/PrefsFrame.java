@@ -88,10 +88,12 @@ import de.sciss.app.Application;
 import de.sciss.app.PreferenceEntrySync;
 import de.sciss.common.AppWindow;
 import de.sciss.common.BasicWindowHandler;
+import de.sciss.common.BasicPathField;
 import de.sciss.eisenkraut.Main;
 import de.sciss.eisenkraut.io.AudioBoxConfig;
 import de.sciss.eisenkraut.io.PrefCacheManager;
 import de.sciss.eisenkraut.math.ConstQPane;
+import de.sciss.eisenkraut.net.OSCGUI;
 import de.sciss.eisenkraut.net.OSCRoot;
 import de.sciss.eisenkraut.util.PrefsUtil;
 import de.sciss.gui.AbstractWindowHandler;
@@ -105,7 +107,6 @@ import de.sciss.gui.PathField;
 import de.sciss.gui.PrefCheckBox;
 import de.sciss.gui.PrefComboBox;
 import de.sciss.gui.PrefParamField;
-import de.sciss.gui.PrefPathField;
 import de.sciss.gui.SortedTableModel;
 import de.sciss.gui.SpringPanel;
 import de.sciss.gui.StringItem;
@@ -122,7 +123,7 @@ import de.sciss.util.ParamSpace;
  *  application and session preferences
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 15-Apr-08
+ *  @version	0.70, 07-May-08
  */
 public class PrefsFrame
 extends AppWindow
@@ -174,7 +175,7 @@ implements SwingConstants
 		final List						collAudioAdvanced;
 		SpringPanel						tab;
 		PrefParamField					ggParam;
-		PrefPathField					ggPath;
+		BasicPathField						ggPath;
 		PrefCheckBox					ggCheckBox;
         PrefComboBox					ggChoice;
 		JTabbedPane						ggTabPane;
@@ -199,7 +200,7 @@ implements SwingConstants
 		key2	= "prefsTmpDir";
 		lb		= new JLabel( getResourceString( key2 ), TRAILING );
 		tab.gridAdd( lb, 0, row );
-		ggPath	= new PrefPathField( PathField.TYPE_FOLDER, getResourceString( key2 ));
+		ggPath	= new BasicPathField( PathField.TYPE_FOLDER, getResourceString( key2 ));
 		ggPath.setPreferences( prefs, key );
 		tab.gridAdd( ggPath, 1, row );
 
@@ -236,49 +237,9 @@ implements SwingConstants
 		key2	= "prefsCacheFolder";
 		lb		= new JLabel( getResourceString( key2 ), TRAILING );
 		tab.gridAdd( lb, 0, row );
-		ggPath	= new PrefPathField( PathField.TYPE_FOLDER, getResourceString( key2 ));
+		ggPath	= new BasicPathField( PathField.TYPE_FOLDER, getResourceString( key2 ));
 		ggPath.setPreferences( prefs, key );
 		tab.gridAdd( ggPath, 1, row );
-
-		row++;
-		osc		= OSCRoot.getInstance();
-		prefs   = osc.getPreferences();
-		key		= OSCRoot.KEY_ACTIVE;
-//		key2	= "prefsOSCActive";
-		key2	= "prefsOSCServer";
-		lb		= new JLabel( getResourceString( key2 ), TRAILING );
-		tab.gridAdd( lb, 0, row );
-		b		= Box.createHorizontalBox();
-		ggCheckBox = new PrefCheckBox( getResourceString( "prefsOSCActive" ));
-		ggCheckBox.setPreferences( prefs, key );
-//		tab.gridAdd( ggCheckBox, 1, row, -1, 1 );
-		b.add( ggCheckBox );
-
-		key		= OSCRoot.KEY_PROTOCOL;
-		key2	= "prefsOSCProtocol";
-		lb		= new JLabel( getResourceString( key2 ), TRAILING );
-//		tab.gridAdd( lb, 2, row );
-		b.add( Box.createHorizontalStrut( 16 ));
-		b.add( lb );
-		ggChoice = new PrefComboBox();
-		ggChoice.addItem( new StringItem( OSCChannel.TCP, "TCP" ));
-		ggChoice.addItem( new StringItem( OSCChannel.UDP, "UDP" ));
-		ggChoice.setPreferences( prefs, key );
-//		tab.gridAdd( ggChoice, 3, row, -1, 1 );
-		b.add( ggChoice );
-
-		key		= OSCRoot.KEY_PORT;
-		key2	= "prefsOSCPort";
-		lb		= new JLabel( getResourceString( key2 ), TRAILING );
-//		tab.gridAdd( lb, 4, row );
-		b.add( Box.createHorizontalStrut( 16 ));
-		b.add( lb );
-		ggParam  = new PrefParamField();
-		ggParam.addSpace( spcIntegerFromZero );
-		ggParam.setPreferences( prefs, key );
-//		tab.gridAdd( ggParam, 5, row, -1, 1 );
-		b.add( ggParam );
-		tab.gridAdd( b, 1, row, -1, 1 );
 
 		row++;
 		prefs   = app.getUserPrefs();
@@ -361,7 +322,7 @@ implements SwingConstants
 		key2	= "prefsSuperColliderApp";
 		lb		= new JLabel( getResourceString( key2 ), TRAILING );
 		tab.gridAdd( lb, 0, row );
-		ggPath = new PrefPathField( PathField.TYPE_INPUTFILE, getResourceString( key2 ));
+		ggPath = new BasicPathField( PathField.TYPE_INPUTFILE, getResourceString( key2 ));
 		ggPath.setPreferences( prefs, key );
 //		HelpGlassPane.setHelp( ggPath, key2 );
 		tab.gridAdd( ggPath, 1, row );
@@ -539,6 +500,61 @@ final SpringPanel tabAudio = tab;
 		});
 
 		addTab( ggTabPane, tab, "prefsAudio" );
+
+		// ---------- osc pane ----------
+
+		tab		= createTab();
+
+		row		= 0;
+		osc		= OSCRoot.getInstance();
+		prefs   = osc.getPreferences();
+		key		= OSCRoot.KEY_ACTIVE;
+//		key2	= "prefsOSCActive";
+		key2	= "prefsOSCServer";
+		lb		= new JLabel( getResourceString( key2 ), TRAILING );
+		tab.gridAdd( lb, 0, row );
+		b		= Box.createHorizontalBox();
+		ggCheckBox = new PrefCheckBox( getResourceString( "prefsOSCActive" ));
+		ggCheckBox.setPreferences( prefs, key );
+//		tab.gridAdd( ggCheckBox, 1, row, -1, 1 );
+		b.add( ggCheckBox );
+
+		key		= OSCRoot.KEY_PROTOCOL;
+		key2	= "prefsOSCProtocol";
+		lb		= new JLabel( getResourceString( key2 ), TRAILING );
+//		tab.gridAdd( lb, 2, row );
+		b.add( Box.createHorizontalStrut( 16 ));
+		b.add( lb );
+		ggChoice = new PrefComboBox();
+		ggChoice.addItem( new StringItem( OSCChannel.TCP, "TCP" ));
+		ggChoice.addItem( new StringItem( OSCChannel.UDP, "UDP" ));
+		ggChoice.setPreferences( prefs, key );
+//		tab.gridAdd( ggChoice, 3, row, -1, 1 );
+		b.add( ggChoice );
+
+		key		= OSCRoot.KEY_PORT;
+		key2	= "prefsOSCPort";
+		lb		= new JLabel( getResourceString( key2 ), TRAILING );
+//		tab.gridAdd( lb, 4, row );
+		b.add( Box.createHorizontalStrut( 16 ));
+		b.add( lb );
+		ggParam  = new PrefParamField();
+		ggParam.addSpace( spcIntegerFromZero );
+		ggParam.setPreferences( prefs, key );
+//		tab.gridAdd( ggParam, 5, row, -1, 1 );
+		b.add( ggParam );
+		tab.gridAdd( b, 1, row, -1, 1 );
+
+		row++;
+		key		= OSCGUI.KEY_SWINGAPP;
+		key2	= "prefsOSCSwingApp";
+		lb		= new JLabel( getResourceString( key2 ), TRAILING );
+		tab.gridAdd( lb, 0, row );
+		ggPath = new BasicPathField( PathField.TYPE_INPUTFILE, getResourceString( key2 ));
+		ggPath.setPreferences( prefs, key );
+		tab.gridAdd( ggPath, 1, row );
+
+		addTab( ggTabPane, tab, "prefsOSC" );
 
 		// ---------- view pane ----------
 

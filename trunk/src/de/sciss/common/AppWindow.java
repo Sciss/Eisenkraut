@@ -46,6 +46,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+//import java.awt.event.FocusEvent;
+//import java.awt.event.FocusListener;
+//import java.awt.event.WindowAdapter;
+//import java.awt.event.WindowEvent;
+//import java.awt.event.WindowFocusListener;
 import java.awt.geom.Point2D;
 import java.beans.PropertyVetoException;
 import java.util.prefs.Preferences;
@@ -241,12 +246,44 @@ implements AbstractWindow
 		initTempFloating();
    	}
 	
-	protected AppWindow( JDialog wrap )
+	protected AppWindow( Dialog wrap )
 	{
 		super();
 		final Application app	= AbstractApplication.getApplication();
 		wh = (BasicWindowHandler) app.getWindowHandler();
 
+//wrap.addWindowFocusListener( new WindowFocusListener() {
+//	public void windowGainedFocus( WindowEvent e ) {
+//		System.out.println( "WINDOWFOCUSGAINED" );
+//	}
+//	
+//	public void windowLostFocus( WindowEvent e ) {
+//		System.out.println( "WINDOWFOCUSLOST" );
+//	}
+//});
+//wrap.addWindowListener( new WindowAdapter() {
+//	public void windowOpened( WindowEvent e ) {
+//		System.out.println( "OPENED" );
+//	}
+//
+//	public void windowActivated( WindowEvent e ) {
+//		System.out.println( "ACTIVATED" );
+//	}
+//
+//	public void windowDeactivated( WindowEvent e ) {
+//		System.out.println( "DEACTIVATED" );
+//	}
+//});
+//wrap.addFocusListener( new FocusListener() {
+//	public void focusGained( FocusEvent e ) {
+//		System.out.println( "FOCUSGAINED" );
+//	}
+//
+//	public void focusLost( FocusEvent e ) {
+//		System.out.println( "FOCUSLOST" );
+//	}
+//});
+		
 		c = w				= wrap;
 		f = jf				= null;	// XXX
 		jc = jif			= null;

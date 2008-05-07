@@ -165,7 +165,7 @@ implements ActionListener, PathListener, EventManager.Processor
 
 		ggPath			= new IOTextField();
 		ggPath.addActionListener( this );		// High-Level Events: Return-Hit weiterleiten
-		ggChoose		= new PathButton( type );
+		ggChoose		= createPathButton( type );
 		ggChoose.addPathListener( this );
 		gridAdd( ggPath, 1, 0 );
 
@@ -705,6 +705,11 @@ implements ActionListener, PathListener, EventManager.Processor
 		}
 
 		return( new File( udir, orig.substring( i )).getPath() );
+	}
+	
+	protected PathButton createPathButton( int buttonType )
+	{
+		return new PathButton( buttonType );
 	}
 	
 // -------- PathListener interface --------

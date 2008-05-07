@@ -33,6 +33,7 @@
 package de.sciss.gui;
 
 import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.FileDialog;
 import java.awt.Frame;
 import java.awt.datatransfer.DataFlavor;
@@ -230,6 +231,11 @@ implements EventManager.Processor
 		} // for( i = 0; i < elm.countListeners(); i++ )
 	}
 
+	protected void showDialog( Dialog dlg )
+	{
+		dlg.setVisible( true );
+	}
+	
 	protected void showFileChooser()
 	{
 		File		p;
@@ -263,7 +269,7 @@ implements EventManager.Processor
 			fDlg.setFile( p.getName() );
 			fDlg.setDirectory( p.getParent() );
 		}
-		fDlg.setVisible( true );
+		showDialog( fDlg );
 		fDir	= fDlg.getDirectory();
 		fFile	= fDlg.getFile();
 					

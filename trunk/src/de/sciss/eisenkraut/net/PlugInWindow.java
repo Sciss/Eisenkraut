@@ -65,11 +65,12 @@ extends AppWindow
 			setResizable( false );
 		}
 		try {
-			topView		= (JComponent) Class.forName( "de.sciss.swingosc.ContentPane" ).getConstructor( new Class[] { Boolean.TYPE }).newInstance( new Object[] { new Boolean( (flags & FLAG_SCROLLPANE) == 0) });
+			final ClassLoader cl = OSCRoot.getInstance().getGUI().getSwingOSC().getClass().getClassLoader();
+			topView		= (JComponent) Class.forName( "de.sciss.swingosc.ContentPane", true, cl ).getConstructor( new Class[] { Boolean.TYPE }).newInstance( new Object[] { new Boolean( (flags & FLAG_SCROLLPANE) == 0) });
 			if( (flags & FLAG_SCROLLPANE) != 0 ) {
 //				topView		= new ContentPane( false );
 //				final JScrollPane scrollPane = new ScrollPane( topView ); // ...SCROLLBAR_AS_NEEDED
-				final JComponent scrollPane = (JComponent) Class.forName( "de.sciss.swingosc.ScrollPane" ).getConstructor( new Class[] { Component.class }).newInstance( new Object[] { topView });
+				final JComponent scrollPane = (JComponent) Class.forName( "de.sciss.swingosc.ScrollPane", true, cl ).getConstructor( new Class[] { Component.class }).newInstance( new Object[] { topView });
 //				scrollPane.setViewportBorder( null );
 //				scrollPane.setBorder( null );
 				setContentPane( scrollPane );

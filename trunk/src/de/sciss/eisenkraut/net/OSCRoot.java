@@ -175,6 +175,11 @@ implements OSCRouter, OSCListener, EventManager.Processor, PreferenceChangeListe
 		return prefs;
 	}
 	
+	public OSCGUI getGUI()
+	{
+		return gui;
+	}
+	
 	public void boot()
 	{
 		try {

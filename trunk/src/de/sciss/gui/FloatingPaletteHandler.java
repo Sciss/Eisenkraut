@@ -53,7 +53,7 @@ import de.sciss.app.AbstractWindow;
  *	Werner Randelshofer (Quaqua project).
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.12, 21-Sep-06
+ *  @version	0.13, 07-May-08
  *
  *	@synchronization	all methods must be called in the Swing thread
  *
@@ -80,6 +80,8 @@ implements ActionListener
 //	private AbstractWindow			borrower		= null;
 	  
 	private static final boolean	DEBUG			= false;
+	
+	private int						modalDlgs		= 0;
 	
     public static FloatingPaletteHandler getInstance()
 	{
@@ -111,6 +113,8 @@ implements ActionListener
 				
 				if( frames.contains( w )) {
 					setFocusedWindow( w );
+//				} else if( DEBUG ) {
+//					System.out.println( "windowActivated : not registered : " + w );
 				}
 			}
 			
@@ -202,6 +206,16 @@ if( DEBUG ) System.out.println( "focusedWindow = " + w.getClass().getName() );
 //			
 //		}
 //	}
+	
+	public void addModalDialog()
+	{
+		modalDlgs++;
+	}
+	
+	public void removeModalDialog()
+	{
+		modalDlgs--;
+	}
     
     /**
      * Unregisters a project window with the FloatingPaletteHandler.
@@ -322,11 +336,13 @@ timer.restart();
     	
         focusedWindow = w;
 		if( DEBUG ) System.out.println( "focusedWindow : " + (w == null ? null : w.getClass().getName()) );
-		if( w != null ) {
-//System.out.println( "not null" );
-            showPalettes();
-		} else {
-			hidePalettes();
+		
+		if( modalDlgs == 0 ) {
+			if( w != null ) {
+	            showPalettes();
+			} else {
+				hidePalettes();
+			}
 		}
 		
 //    	System.err.println( "...done" );
@@ -353,12 +369,19 @@ timer.restart();
 			//		focusedWindow.requestFocus();
 			// trick to not have the originally focussed window loose its focus due to palettes showing up
 //System.out.println( "entonces " + (focusedWindow != null) );
-//			if( focusedWindow != null ) {
+			
+			// for some reason focusedWindow can be null, although
+			// showPalettes is only called when focusedWindow is not null
+			// (bug 1953444). the only explanation is that setVisible will
+			// immediately invoke one of windowActivated or windowDeactivated
+			// without deferal to the event-queue... anyway, we're safe
+			// by checking again against null...
+			if( focusedWindow != null ) {
 				if( DEBUG ) System.out.println( "setVisible( true ) : " + focusedWindow.getClass().getName() );
 				focusedWindow.setVisible( true );
 //				if( DEBUG ) System.out.println( "toFront : " + focusedWindow.getClass().getName() );
 //				focusedWindow.toFront();
-//			}
+			}
 		}
     }
     

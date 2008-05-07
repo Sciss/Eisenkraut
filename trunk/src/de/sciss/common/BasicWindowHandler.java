@@ -31,6 +31,7 @@
 package de.sciss.common;
 
 import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.GraphicsEnvironment;
 import java.awt.Point;
@@ -72,7 +73,7 @@ import de.sciss.gui.WindowListenerWrapper;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 06-May-08
+ *  @version	0.70, 07-May-08
  */
 public class BasicWindowHandler
 extends AbstractWindowHandler
@@ -396,29 +397,59 @@ extends AbstractWindowHandler
 		w.setBounds( winBounds );
 	}
 
-	public static int showDialog( JOptionPane op, Component parent, String title )
+	public static void showDialog( Dialog dlg )
 	{
 		final BasicWindowHandler wh = (BasicWindowHandler) AbstractApplication.getApplication().getWindowHandler();
-		return wh.instShowDialog( op, parent, title );
+		wh.instShowDialog( dlg );
 	}
 	
-	private int instShowDialog( JOptionPane op, Component parent, String title )
+	public static int showDialog( JOptionPane op, Component parent, String title )
+	{
+		final JDialog	dlg;
+		final Object	value;
+		final int		result;
+		
+		dlg = op.createDialog( parent, title );
+		showDialog( dlg );
+		value = op.getValue();
+		if( value == null ) {
+			result = JOptionPane.CLOSED_OPTION;
+		} else {
+			final Object[] options = op.getOptions();
+			if( options == null ) {
+				if( value instanceof Integer ) {
+					result = ((Integer) value).intValue();
+				} else {
+					result = JOptionPane.CLOSED_OPTION;
+		       	}
+			} else {
+				int i;
+				for( i = 0; i < options.length; i++ ) {
+			        if( options[ i ].equals( value )) break;
+				}
+				result = i < options.length ? i : JOptionPane.CLOSED_OPTION;
+			}
+		}
+		return result;
+	}
+	
+	private void instShowDialog( Dialog dlg )
 	{
 //		System.out.println( "instShowDialog" );
 		
-		final AbstractWindow w;
-		final Object value;
-		final int result;
-		final JDialog dlg;
-		final List wasOnTop = new ArrayList();
-		AbstractWindow w2;
-		dlg = op.createDialog( parent, title );
-
+		final AbstractWindow	w;
+		final List				wasOnTop	= new ArrayList();
+		final boolean			modal		= dlg.isModal() && (fph != null);
+		AbstractWindow			w2;
+//boolean gaga = false;
+		
 		// temporarily disable alwaysOnTop
 		if( !internalFrames && floating ) {
 			for( Iterator iter = getWindows(); iter.hasNext(); ) {
 				w2 = (AbstractWindow) iter.next();
 				if( GUIUtil.isAlwaysOnTop( w2.getWindow() )) {
+//gaga = true;
+//break;
 					wasOnTop.add( w2 );
 					GUIUtil.setAlwaysOnTop( w2.getWindow(), false );
 				}
@@ -430,30 +461,13 @@ extends AbstractWindowHandler
 //			((AppWindow) w).gaga();
 				
 			// --- modal interruption ---
+			if( modal ) fph.addModalDialog(); // this shit is necessary because java.awt.FileDialog doesn't fire windowActivated ...
+//			if( gaga ) GUIUtil.setAlwaysOnTop( dlg, true );
 			w.setVisible( true );
+			if( modal ) fph.removeModalDialog();
 			
-			value = op.getValue();
-			if( value == null ) {
-				result = JOptionPane.CLOSED_OPTION;
-			} else {
-				final Object[] options = op.getOptions();
-				if( options == null ) {
-					if( value instanceof Integer ) {
-						result = ((Integer) value).intValue();
-					} else {
-						result = JOptionPane.CLOSED_OPTION;
-			       	}
-				} else {
-					int i;
-					for( i = 0; i < options.length; i++ ) {
-				        if( options[ i ].equals( value )) break;
-					}
-					result = i < options.length ? i : JOptionPane.CLOSED_OPTION;
-				}
-			}
 	//		wh.removeWindow( w, null );
 			w.dispose();	// calls removeWindow
-			return result;
 
 		} finally { // make sure to restore original state
 			for( int i = 0; i < wasOnTop.size(); i++ ) {
