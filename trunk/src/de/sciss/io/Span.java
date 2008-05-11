@@ -31,7 +31,8 @@
  *		15-Aug-05	implements Serializable, Cloneable
  *		25-Aug-05	has comparator fields for start and stop
  *		08-Jan-05	added contains( Span )
- *		01-Ma-06	added replaceStart(), replaceStop()
+ *		01-Mar-06	added replaceStart(), replaceStop()
+ *		12-May-08	fixed overlaps for empty spans
  */
 
 package de.sciss.io;
@@ -50,7 +51,7 @@ import java.util.Comparator;
  *  in sense rate frames.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.29, 25-Feb-08
+ *  @version	0.29, 12-May-08
  */
 public class Span
 implements Serializable, Cloneable
@@ -154,12 +155,14 @@ implements Serializable, Cloneable
     public boolean overlaps( Span anotherSpan )
     {
 		if( anotherSpan == null ) return false;
-		
-		if( this.start <= anotherSpan.start ) {
-			return( this.stop > anotherSpan.start );
-		} else {
-			return( anotherSpan.stop > this.start );
-		}
+
+//		if( this.start <= anotherSpan.start ) {
+//			return( this.stop > anotherSpan.start );
+//		} else {
+//			return( anotherSpan.stop > this.start );
+//		}
+
+		return( !((anotherSpan.start >= this.stop) || (anotherSpan.stop <= this.start)) ); 
     }
 
 	/**
