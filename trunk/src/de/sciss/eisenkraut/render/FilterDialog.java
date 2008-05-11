@@ -659,9 +659,10 @@ implements	RenderConsumer, RenderHost,
 		consc.bcPre		= doc.createBlendContext( preMaxLen, 0, source.validAudio );
 		consc.bcPost	= doc.createBlendContext( postMaxLen, 0, source.validAudio );
 		span			= context.getTimeSpan();
-		consc.blendPreSpan = consc.bcPre == null ? new Span() :
+		// note: -1, -1 because of Span.overlap !
+		consc.blendPreSpan = consc.bcPre == null ? new Span( -1, -1 ) :
 			span.replaceStop( span.start + consc.bcPre.getLen() );
-		consc.blendPostSpan = consc.bcPost == null ? new Span() :
+		consc.blendPostSpan = consc.bcPost == null ? new Span( -1, -1 ) :
 			span.replaceStart( span.stop - consc.bcPost.getLen() );
 
 		progress		= 0.0f;
