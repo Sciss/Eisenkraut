@@ -721,6 +721,7 @@ numDefsLp:
 				o	= map.getValue( AudioTrack.MAP_KEY_PANSPREAD );
 				if( (o != null) && (o instanceof Number) ) {
 					width		= ((Number) o).floatValue();
+//System.out.println( "width in : " + width );
 					if( width <= 0.0f ) {
 						width	= Math.max( 1.0f, width + 2.0f );
 					} else {
@@ -729,6 +730,8 @@ numDefsLp:
 				} else {
 					width	= 2.0f;
 				}
+//System.out.println( "width out : " + width );
+				
 				bndl.addPacket( ct.synthsPan[ ch ].setMsg(
 					new String[] { "pos", "width" }, new float[] { pos, width }));
 			}
