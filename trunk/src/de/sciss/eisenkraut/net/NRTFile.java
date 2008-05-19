@@ -54,13 +54,15 @@ public class NRTFile
 			pending.addPacket( new OSCMessage( "/status" ));	// properly mark ending of rendering
 		}
 		flush();
-		fch.close();
+//		fch.close();
+		raf.close();
 	}
 	
 	public void dispose()
 	{
 		try {
-			fch.close();
+//			fch.close();
+			raf.close();
 		}
 		catch( IOException e1 ) { /* ignore */ }
 	}

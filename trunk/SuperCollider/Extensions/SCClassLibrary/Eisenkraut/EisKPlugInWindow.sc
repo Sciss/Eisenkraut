@@ -40,7 +40,7 @@ EisKPlugInWindow : JSCWindow
 			{ state === \closing }
 			{
 				if( userCanClose, {
-					{ this.prClose; }.defer;
+					{ this.prClose }.defer;
 				});
 			}
 		}).add;

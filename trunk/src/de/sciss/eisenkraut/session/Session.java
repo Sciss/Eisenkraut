@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JOptionPane;
 
+import de.sciss.eisenkraut.Main;
 import de.sciss.eisenkraut.edit.BasicCompoundEdit;
 import de.sciss.eisenkraut.edit.EditSetTimelineLength;
 import de.sciss.eisenkraut.edit.TimelineVisualEdit;
@@ -58,6 +59,9 @@ import de.sciss.eisenkraut.net.OSCRouter;
 import de.sciss.eisenkraut.net.OSCRouterWrapper;
 import de.sciss.eisenkraut.net.RoutedOSCMessage;
 import de.sciss.eisenkraut.realtime.Transport;
+import de.sciss.eisenkraut.render.FilterDialog;
+import de.sciss.eisenkraut.render.RenderPlugIn;
+import de.sciss.eisenkraut.render.Replace;
 import de.sciss.eisenkraut.timeline.AudioTrack;
 import de.sciss.eisenkraut.timeline.AudioTracks;
 import de.sciss.eisenkraut.timeline.MarkerTrack;
@@ -879,6 +883,86 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 	public void oscCmd_trim( RoutedOSCMessage rom )
 	{
 		actionTrim.perform();
+	}
+	
+	/**
+	 *	"editMode", <modeName>
+	 */
+	public void oscCmd_editMode( RoutedOSCMessage rom )
+	{
+		final String	mode;
+		int				argIdx	= 1;
+	
+		try {
+			mode = rom.msg.getArg( argIdx ).toString();
+			for( int i = 0; i < EDITMODES.length; i++ ) {
+				if( EDITMODES[ i ].equals( mode )) {
+					setEditMode( i );
+					break;
+				}
+			}
+		}
+		catch( IndexOutOfBoundsException e1 ) {
+			OSCRoot.failedArgCount( rom );
+			return;
+		}
+		catch( ClassCastException e1 ) {
+			OSCRoot.failedArgType( rom, argIdx );
+			return;
+		}
+	}
+
+	/**
+	 *	Replaces the currently selected span with
+	 *	the contents of a given audio file, applying
+	 *	blending if activated.
+	 *
+	 *	"replace", <fileName>[, <fileOffset> ]
+	 *
+	 *	@todo	XXX FilterDialog should return a ProcessingThread, so we can properly close the file after pasting
+	 */
+	public void oscCmd_replace( RoutedOSCMessage rom )
+	{
+		final RenderPlugIn	plugIn;
+		final String		fileName;
+		final long			startFrame;
+		AudioFile			af		= null;
+		int					argIdx	= 1;
+		FilterDialog		filterDlg;
+	
+		try {
+			fileName	= rom.msg.getArg( argIdx ).toString();
+			argIdx++;
+			if( argIdx < rom.msg.getArgCount() ) {
+				startFrame	= ((Number) rom.msg.getArg( argIdx )).longValue();
+			} else {
+				startFrame	= 0;
+			}
+			af			= AudioFile.openAsRead( new File( fileName ));
+			af.seekFrame( startFrame );
+			plugIn		= new Replace( af );
+		}
+		catch( IndexOutOfBoundsException e1 ) {
+			OSCRoot.failedArgCount( rom );
+			return;
+		}
+		catch( ClassCastException e1 ) {
+			OSCRoot.failedArgType( rom, argIdx );
+			return;
+		}
+		catch( IOException e1 ) {
+			if( af != null ) af.cleanUp();
+			OSCRoot.failed( rom, e1 );
+			return;
+		}
+		
+		filterDlg = (FilterDialog) AbstractApplication.getApplication().getComponent( Main.COMP_FILTER );
+		
+		if( filterDlg == null ) {
+			filterDlg = new FilterDialog();
+		}
+		filterDlg.process( plugIn, this, false, false );
+//		actionProcessAgain.setPlugIn( filterDlg.getPlugIn() );
 	}
 
 	public Object oscQuery_id()

@@ -53,7 +53,7 @@ import de.sciss.app.AbstractWindow;
  *	Werner Randelshofer (Quaqua project).
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.13, 07-May-08
+ *  @version	0.13, 19-May-08
  *
  *	@synchronization	all methods must be called in the Swing thread
  *
@@ -229,6 +229,8 @@ if( DEBUG ) System.out.println( "focusedWindow = " + w.getClass().getName() );
 				throw new IllegalArgumentException( "Palette was not registered" );
 			}
 			if( listen ) w.removeListener( winListener );
+			hiddenPalettes.remove( w );
+			
 		} else {
 			if( !frames.remove( w )) {
 				throw new IllegalArgumentException( "Frame was not registered" );

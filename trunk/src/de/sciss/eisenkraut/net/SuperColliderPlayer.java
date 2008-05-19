@@ -967,7 +967,7 @@ numDefsLp:
 			}
 			
 			f.close();
-			f.dispose();
+//			f.dispose();
 			f = null;
 
 			try {

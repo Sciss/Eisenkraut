@@ -138,33 +138,51 @@ implements	RenderConsumer, RenderHost,
 		super.dispose();
 	}
 
+	public void process( RenderPlugIn plug, Session aDoc, boolean forceDisplay, boolean blockDisplay )
+	{
+		final String className;
+
+		plugIn		= plug;
+		className	= plugIn.getName();
+		plugIn.init( AbstractApplication.getApplication().getUserPrefs().node( PrefsUtil.NODE_PLUGINS ).node(
+			className.substring( className.lastIndexOf( '.' ) + 1 )));
+		
+		process( aDoc, forceDisplay, blockDisplay );
+	}
+	
 	public void process( String plugInClassName, Session aDoc, boolean forceDisplay, boolean blockDisplay )
 	{
-		this.doc	= aDoc;
-
-		final JComponent view;
-
 		if( switchPlugIn( plugInClassName )) {
-			context = createRenderContext();
-			if( context == null ) return;
-			if( (!blockDisplay && plugIn.shouldDisplayParameters()) ||
-				(forceDisplay && plugIn.hasUserParameters()) ) {
+			process( aDoc, forceDisplay, blockDisplay );
+		}
+	}
+	
+	private void process( Session aDoc, boolean forceDisplay, boolean blockDisplay )
+	{
+		this.doc = aDoc;
 
-				// display settings
-				if( !guiCreated ) createGUI();
-				ggHelp.setHelpFile( plugInClassName.substring( plugInClassName.lastIndexOf( '.' ) + 1 ));
-				view = plugIn.getSettingsView( context );
-				AbstractWindowHandler.setDeepFont( view );
-				ggSettingsPane.setViewportView( view );
-				pack();
-				setTitle( plugIn.getName() );
-				setVisible( true );	// modal
-//				toFront();
-				
-			} else {	// process immediately
+		context = createRenderContext();
+		if( context == null ) return;
+
+		if( (!blockDisplay && plugIn.shouldDisplayParameters()) ||
+			(forceDisplay && plugIn.hasUserParameters()) ) {
+
+			final String		plugInClassName	= plugIn.getName();
+			final JComponent	view;
+
+			// display settings
+			if( !guiCreated ) createGUI();
+			ggHelp.setHelpFile( plugInClassName.substring( plugInClassName.lastIndexOf( '.' ) + 1 ));
+			view = plugIn.getSettingsView( context );
+			AbstractWindowHandler.setDeepFont( view );
+			ggSettingsPane.setViewportView( view );
+			pack();
+			setTitle( plugIn.getName() );
+			setVisible( true );	// modal
 			
-				processStart();
-			}
+		} else {	// process immediately
+		
+			processStart();
 		}
 	}
 	
@@ -516,8 +534,8 @@ implements	RenderConsumer, RenderHost,
 	 */
 	private boolean switchPlugIn( String className )
 	{
-		boolean					success	= false;
-		final Application		app		= AbstractApplication.getApplication();
+		boolean				success	= false;
+		final Application	app		= AbstractApplication.getApplication();
 
 		plugIn = null;
 		if( className != null ) {
