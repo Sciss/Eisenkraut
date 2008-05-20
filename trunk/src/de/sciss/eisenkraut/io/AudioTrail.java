@@ -1520,16 +1520,6 @@ extends BasicTrail
 				} else {
 					writeStake3	= null;
 				}
-//				final long myProc	= 9 * blendLen2;	// ratio 9:1
-//				final long decProc	= (blendLen2 + silentLen) * numDepDec;
-//				progWeight			= (double) myProc / ((myProc + decPro) * blendLen2);
-// bruch gekuerzt:
-//				progWeight			= 9.0 / (myProc + decProc);
-				
-//				progWeight			= progRatio * blendLen2 / ((blendLen2 + silentLen) * blendLen2);
-// bruch gekuerzt:
-//				progWeight			= progRatio / (blendLen2 + silentLen);
-//				progWeight			= progRatio / blendLen2 - 1.0 / silentLen;
 				
 				final double progRatio2		= 1.0 / (1.0 + numDepDec);  // inf:1 for silentLen
 				final double w				= (double) blendLen2 / (blendLen2 + silentLen); // weight of progRatio versus progRatio2
@@ -1597,8 +1587,14 @@ extends BasicTrail
 				totalFramesWritten += chunkLen;
 				setProgression( totalFramesWritten, progWeight );
 			}
-			writeStake1.flush();
-			if( writeStake1 != writeStake3 ) writeStake3.flush();
+			
+			// ---- flushing ----
+			if( useSilentStake ) {
+				if( writeStake1 != null ) writeStake1.flush();
+				if( writeStake3 != null ) writeStake3.flush();
+			} else {
+				writeStake2.flush();
+			}
 			success = true;
 		}
 		finally {
