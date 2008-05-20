@@ -341,14 +341,12 @@ extends DecimatedTrail
 
 					if( fromPCM ) {
 						fullStop = fullScale.getSpan().stop;
-						if( start + fullLen <= fullStop ) {
-							chunkSpan = new Span( start, start + fullLen );
-							fullScale.readFrames( tmpBuf, 0, chunkSpan );
-						} else {
-							chunkSpan = new Span( start, fullStop );
-							fullScale.readFrames( tmpBuf, 0, chunkSpan );
+						chunkSpan = new Span( start, Math.min( fullStop, start + fullLen ));
+						fullScale.readFrames( tmpBuf, 0, chunkSpan );
+						final long chunkStop = chunkSpan.getLength();
+						if( (chunkStop < fullLen) && (chunkStop > 0) ) {
 							// duplicate last frames
-							for( int i = (int) chunkSpan.getLength(), j = i - 1; i < (int) fullLen; i++ ) {
+							for( int i = (int) chunkStop, j = i - 1; i < (int) fullLen; i++ ) {
 								for( int ch = 0; ch < fullChannels; ch++ ) {
 									sPeakP		= tmpBuf[ ch ];
 									sPeakP[ i ]	= sPeakP[ j ];
