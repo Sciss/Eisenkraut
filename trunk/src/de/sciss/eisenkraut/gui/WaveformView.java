@@ -268,12 +268,14 @@ implements Disposable
 	 */
 	public Rectangle rectForChannel( int ch )
 	{
-		final int ht	= getHeight();
+		final int ht	= getHeight() - (insets.top + insets.bottom);
 		final int temp	= ht * ch / fullChannels;
 		final int y		= insets.top + temp;
 		final int h		= (ht * (ch + 1) / fullChannels) - temp - vGap;
 		
-		r.setBounds( insets.left, y, getWidth(), h );
+		r.setBounds( insets.left, y, getWidth() - (insets.left + insets.right), h );
+//		r.setBounds( insets.left, insets.top, getWidth() - (insets.left + insets.right),
+//		             getHeight() - (insets.top + insets.bottom) );
 		
 		return r;
 	}
