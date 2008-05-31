@@ -58,7 +58,7 @@ import javax.swing.event.MouseInputAdapter;
  *  a <code>Component</code>.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 17-Apr-07
+ *  @version	0.70, 31-May-08
  */
 public class CurvePanel
 extends JComponent
@@ -238,7 +238,7 @@ extends JComponent
 	public static void toPrefs( Point2D[] ctrlPt, Preferences prefs )
 	{
 		prefs.putDouble( KEY_CTRLX1, ctrlPt[0].getX() );
-		prefs.putDouble( KEY_CTRLY1, ctrlPt[1].getY() );
+		prefs.putDouble( KEY_CTRLY1, ctrlPt[0].getY() );
 		prefs.putDouble( KEY_CTRLX2, ctrlPt[1].getX() );
 		prefs.putDouble( KEY_CTRLY2, ctrlPt[1].getY() );
 	}
