@@ -38,7 +38,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
-import de.sciss.gui.GUIUtil;
+import de.sciss.common.BasicWindowHandler;
 import de.sciss.gui.ModificationButton;
 import de.sciss.gui.ProgressBar;
 import de.sciss.gui.ProgressComponent;
@@ -116,7 +116,7 @@ implements ProgressComponent
 
 	public void displayError( Exception e, String processName )
 	{
-		GUIUtil.displayError( this, e, processName );
+		BasicWindowHandler.showErrorDialog( this, e, processName );
 	}
 
 	public void showMessage( int type, String text )

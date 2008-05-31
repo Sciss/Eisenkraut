@@ -52,7 +52,6 @@ import de.sciss.app.DocumentEvent;
 import de.sciss.app.DocumentHandler;
 import de.sciss.app.DocumentListener;
 import de.sciss.gui.AboutBox;
-import de.sciss.gui.GUIUtil;
 import de.sciss.gui.HelpFrame;
 import de.sciss.gui.MenuAction;
 import de.sciss.gui.MenuGroup;
@@ -605,7 +604,7 @@ implements DocumentListener
 					MRJAdapter.openURL( theURL );
 				}
 				catch( IOException e1 ) {
-					GUIUtil.displayError( null, e1, NAME );
+					BasicWindowHandler.showErrorDialog( null, e1, NAME );
 				}
 			} else {
 				HelpFrame.openViewerAndLoadHelpFile( theURL );

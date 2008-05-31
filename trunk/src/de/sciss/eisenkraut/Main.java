@@ -276,7 +276,7 @@ implements OSCRouter // ProgressComponent // , PreferenceChangeListener
 			superCollider.init();
 		}
 		catch( IOException e1 ) {
-			GUIUtil.displayError( null, e1, "SuperColliderClient Initialization" );
+			BasicWindowHandler.showErrorDialog( null, e1, "SuperColliderClient Initialization" );
 			System.exit( 1 );
 			return;
 		}

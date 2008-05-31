@@ -46,9 +46,9 @@ import javax.swing.KeyStroke;
 
 import de.sciss.app.AbstractApplication;
 import de.sciss.common.BasicApplication;
+import de.sciss.common.BasicWindowHandler;
 import de.sciss.gui.BooleanPrefsMenuAction;
 import de.sciss.gui.KeyStrokeTextField;
-import de.sciss.gui.GUIUtil;
 import de.sciss.gui.MenuAction;
 import de.sciss.gui.MenuCheckItem;
 import de.sciss.gui.MenuGroup;
@@ -376,7 +376,7 @@ implements OSCRouter, Disposable
 				server.send( new OSCMessage( "/gui/menu", args ), n.getAddress() );
 			}
 			catch( IOException e1 ) {
-				GUIUtil.displayError( null, e1, n.getText() );
+				BasicWindowHandler.showErrorDialog( null, e1, n.getText() );
 			}
 		}
 	}

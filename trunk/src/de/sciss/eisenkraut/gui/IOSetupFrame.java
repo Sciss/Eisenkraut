@@ -85,13 +85,13 @@ import de.sciss.app.AbstractApplication;
 import de.sciss.app.Application;
 import de.sciss.app.GraphicsHandler;
 import de.sciss.common.AppWindow;
+import de.sciss.common.BasicWindowHandler;
 import de.sciss.eisenkraut.Main;
 import de.sciss.eisenkraut.io.AudioBoxConfig;
 import de.sciss.eisenkraut.io.RoutingConfig;
 import de.sciss.eisenkraut.util.PrefsUtil;
 import de.sciss.gui.AbstractWindowHandler;
 import de.sciss.gui.CoverGrowBox;
-import de.sciss.gui.GUIUtil;
 import de.sciss.gui.HelpButton;
 import de.sciss.gui.ModificationButton;
 import de.sciss.gui.SortedTableModel;
@@ -383,7 +383,7 @@ extends AppWindow
 //System.err.println( "Got "+arrayNames.length+" children . " );
 		}
 		catch( BackingStoreException e1 ) {
-			GUIUtil.displayError( getWindow(), e1, getResourceString( "errLoadPrefs" ));
+			BasicWindowHandler.showErrorDialog( getWindow(), e1, getResourceString( "errLoadPrefs" ));
 			return;
 		}
 			
@@ -436,7 +436,7 @@ extends AppWindow
 			ocPrefs.flush();
 		}
 		catch( BackingStoreException e1 ) {
-			GUIUtil.displayError( getWindow(), e1, getResourceString( "errSavePrefs" ));
+			BasicWindowHandler.showErrorDialog( getWindow(), e1, getResourceString( "errSavePrefs" ));
 			return false;
 		}
 		

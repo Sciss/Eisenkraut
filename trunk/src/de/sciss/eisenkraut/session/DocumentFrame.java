@@ -1845,7 +1845,7 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 	
 	public void displayError( Exception e, String processName )
 	{
-		GUIUtil.displayError( getWindow(), e, processName );
+		BasicWindowHandler.showErrorDialog( getWindow(), e, processName );
 	}
 
 	protected void updateAFDGadget()
@@ -2352,14 +2352,16 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 			final PathField[]			ggPathFields;
 			final int[]					channelsUsed	= new int[ protoType.length ];
 			final JCheckBox				ggOpenAfterSave;
+			final String				prefsDirKey		= selectionSettings ? PrefsUtil.KEY_FILESAVESELDIR : PrefsUtil.KEY_FILESAVEDIR;
 			final JPanel				p;
 			int							filesUsed		= 0;
-			File						f, f2;
+			File						f; // , f2;
 			String[]					queryOptions	= { getResourceString( "buttonSave" ),
 														  	getResourceString( "buttonCancel" )};
 			int							i, result;
 			String						str;
 			JLabel						lb;
+			String						fileName, dirName;
 			boolean						setFocus		= false;
 			int							y				= 0;
 			
@@ -2390,20 +2392,17 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 				filesUsed++;
 				ggPathFields[ j ] = new PathField( PathField.TYPE_OUTPUTFILE, getValue( NAME ).toString() );
 				if( protoType[ j ].file == null ) {
-					f	= new File( System.getProperty( "user.home" ));
-					f2	= new File( f, "Desktop" );
-					ggPathFields[ j ].setPath( new File( f2.isDirectory() ? f2 : f, getResourceString( "frameUntitled" )));
+					fileName	= getResourceString( "frameUntitled" ) + (ggPathFields.length > 1 ? "-" + (j+1) : "");
+				} else if( asCopySettings || selectionSettings ) {
+					str	= protoType[ j ].file.getName();
+					i	= str.lastIndexOf( '.' );
+					if( i == -1 ) i = str.length();
+					fileName = str.substring( 0, i ) + (selectionSettings ? getResourceString( "fileDlgCut" ) : " " + getResourceString( "fileDlgCopy" )); // suffix is appended by affp!
 				} else {
-					if( asCopySettings || selectionSettings ) {
-						str	= protoType[ j ].file.getName();
-						i	= str.lastIndexOf( '.' );
-						if( i == -1 ) i = str.length();
-						ggPathFields[ j ].setPath( new File( protoType[ j ].file.getParentFile(), str.substring( 0, i ) +
-							 (selectionSettings ? getResourceString( "fileDlgCut" ) : " " + getResourceString( "fileDlgCopy" )))); // suffix is appended by affp!
-					} else {
-						ggPathFields[ j ].setPath( protoType[ j ].file );
-					}
+					fileName = protoType[ j ].file.getName();
 				}
+				dirName = app.getUserPrefs().get( prefsDirKey, protoType[ j ].file == null ? System.getProperty( "user.home" ) : protoType[ j ].file.getParent() );
+				ggPathFields[ j ].setPath( new File( dirName, fileName ));
 				affp.automaticFileSuffix( ggPathFields[ j ] );
 				if( (protoType[ j ].file == null) || asCopySettings || selectionSettings ) {	// create non-existent file name
 					ggPathFields[ j ].setPath( IOUtil.nonExistentFileVariant( ggPathFields[ j ].getPath(), -1,
@@ -2445,6 +2444,11 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 			}
 
 			if( result == 0 ) {
+				// save dir prefs
+				if( ggPathFields.length > 0 ) {
+					app.getUserPrefs().put( prefsDirKey, ggPathFields[ 0 ].getPath().getParent() );
+				}
+				
 				afds = new AudioFileDescr[ filesUsed ];
 				for( int j = 0, k = 0; j < ggPathFields.length; j++ ) {
 					if( channelsUsed[ j ] == 0 ) continue;
@@ -2510,7 +2514,7 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 				recDlg	= new RecorderDialog( doc );
 			}
 			catch( IOException e1 ) {
-				GUIUtil.displayError( getWindow(), e1, getValue( NAME ).toString() );
+				BasicWindowHandler.showErrorDialog( getWindow(), e1, getValue( NAME ).toString() );
 				return;
 			}
 			recFile	= recDlg.getResult();

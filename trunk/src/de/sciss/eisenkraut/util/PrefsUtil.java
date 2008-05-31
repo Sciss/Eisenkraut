@@ -92,14 +92,38 @@ public class PrefsUtil
 	 */
 	public static final String KEY_VERSION	= "version";	// double : app version
 
+//	/**
+//	 *  Value: String representing the path list of
+//	 *  a user's set favourite directories. See PathList
+//	 *  and PathField documentation.<br>
+//	 *  Has default value: no!<br>
+//	 *  Node: root
+//	 */
+//	public static final String KEY_USERPATHS= "usrpaths";	// string : path list
+
 	/**
-	 *  Value: String representing the path list of
-	 *  a user's set favourite directories. See PathList
-	 *  and PathField documentation.<br>
+	 *  Value: String representing the path of
+	 *  the last used directory for opening a file.<br>
 	 *  Has default value: no!<br>
 	 *  Node: root
 	 */
-	public static final String KEY_USERPATHS= "usrpaths";	// string : path list
+	public static final String KEY_FILEOPENDIR = "fileopendir";	// string : path
+
+	/**
+	 *  Value: String representing the path of
+	 *  the last used directory for saving a file.<br>
+	 *  Has default value: no!<br>
+	 *  Node: root
+	 */
+	public static final String KEY_FILESAVEDIR = "filesavedir";	// string : path
+
+	/**
+	 *  Value: String representing the path of
+	 *  the last used directory for saving a selection of a file.<br>
+	 *  Has default value: no!<br>
+	 *  Node: root
+	 */
+	public static final String KEY_FILESAVESELDIR = "filesaveseldir";	// string : path
 
 	/**
 	 *  Value: Boolean stating whether frame bounds

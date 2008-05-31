@@ -90,6 +90,7 @@ import de.sciss.app.DynamicAncestorAdapter;
 import de.sciss.app.DynamicPrefChangeManager;
 import de.sciss.app.GraphicsHandler;
 import de.sciss.common.BasicMenuFactory;
+import de.sciss.common.BasicWindowHandler;
 import de.sciss.gui.CoverGrowBox;
 import de.sciss.gui.DoClickAction;
 import de.sciss.gui.GUIUtil;
@@ -790,7 +791,7 @@ disposeRecorder();
 						ct.recreateFile();
 					}
 					catch( IOException e1 ) {
-						GUIUtil.displayError( enc_this, e1, getTitle() );
+						BasicWindowHandler.showErrorDialog( enc_this, e1, getTitle() );
 					}
 				}
 			}
@@ -971,7 +972,7 @@ this.busInternal = busInternal;
 					ct.recreateFile();
 				}
 				catch( IOException e1 ) {
-					GUIUtil.displayError( enc_this, e1, getValue( NAME ).toString() );
+					BasicWindowHandler.showErrorDialog( enc_this, e1, getValue( NAME ).toString() );
 					return;
 				}
 			}

@@ -63,7 +63,6 @@ import de.sciss.common.BasicWindowHandler;
 import de.sciss.common.ProcessingThread;
 import de.sciss.gui.AbstractWindowHandler;
 import de.sciss.gui.BooleanPrefsMenuAction;
-import de.sciss.gui.GUIUtil;
 import de.sciss.gui.IntPrefsMenuAction;
 import de.sciss.gui.MenuAction;
 import de.sciss.gui.MenuCheckItem;
@@ -96,7 +95,7 @@ import de.sciss.jcollider.Server;
  *  <code>Main</code> class.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
+ *  @version	0.70, 31-May-08
  *
  *  @see	de.sciss.eisenkraut.Main#menuFactory
  */
@@ -580,7 +579,7 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 				return doc;
 			}
 			catch( IOException e1 ) {	// should never happen
-				GUIUtil.displayError( null, e1, getValue( Action.NAME ).toString() );
+				BasicWindowHandler.showErrorDialog( null, e1, getValue( Action.NAME ).toString() );
 				return null;
 			}
 		}
@@ -617,18 +616,22 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 			final String			strFile, strDir;
 			final AbstractWindow	w		= (AbstractWindow) getApplication().getComponent( Main.COMP_MAIN );
 			final Frame				frame	= (w.getWindow() instanceof Frame) ? (Frame) w.getWindow() : null;
+			final Preferences		prefs	= getApplication().getUserPrefs();
 
 //System.err.println( "frame : "+frame );
 
 			fDlg	= new FileDialog( frame, getResourceString( "fileDlgOpen" ), FileDialog.LOAD );
 //			fDlg.setFilenameFilter( doc );
-			// fDlg.setDirectory();
+			fDlg.setDirectory( prefs.get( PrefsUtil.KEY_FILEOPENDIR, System.getProperty( "user.home" )));
 			// fDlg.setFile();
 			fDlg.setVisible( true );
 			strDir	= fDlg.getDirectory();
 			strFile	= fDlg.getFile();
 			
 			if( strFile == null ) return null;   // means the dialog was cancelled
+			
+			// save dir prefs
+			prefs.put( PrefsUtil.KEY_FILEOPENDIR, strDir );
 
 			return( new File( strDir, strFile ));
 		}
@@ -661,7 +664,7 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 				doc.createFrame();	// must be performed after the doc was added
 			}
 			catch( IOException e1 ) {
-				GUIUtil.displayError( null, e1, getValue( Action.NAME ).toString() );
+				BasicWindowHandler.showErrorDialog( null, e1, getValue( Action.NAME ).toString() );
 			}
 		}
 	}
@@ -680,8 +683,8 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 			File[] fs = queryFiles();
 			if( fs != null ) {
 				if( fs.length == 0 ) {
-					JOptionPane.showMessageDialog( null, getResourceString( "errFileSelectionEmpty" ),
-												   getValue( NAME ).toString(), JOptionPane.ERROR_MESSAGE );
+					final JOptionPane op = new JOptionPane( getResourceString( "errFileSelectionEmpty" ), JOptionPane.ERROR_MESSAGE );
+					BasicWindowHandler.showDialog( op, null, getValue( NAME ).toString() );
 					return;
 				}
 				perform( fs );
@@ -693,13 +696,21 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 			final JFileChooser	fDlg	= new JFileChooser();
 			final int			result;
 			final Component		c		= ((AbstractWindow) getApplication().getComponent( Main.COMP_MAIN )).getWindow();
+			final Preferences	prefs	= getApplication().getUserPrefs();
+			final File[]		files;
 
 			fDlg.setMultiSelectionEnabled( true );
 			fDlg.setDialogTitle( getValue( Action.NAME ).toString() );
+			fDlg.setCurrentDirectory( new File( prefs.get( PrefsUtil.KEY_FILEOPENDIR, System.getProperty( "user.home" ))));
 			result	= fDlg.showOpenDialog( c );
 			
 			if( result == JFileChooser.APPROVE_OPTION ) {
-				return fDlg.getSelectedFiles();
+				files = fDlg.getSelectedFiles();
+				// save dir prefs
+				if( files.length > 0 ) {
+					prefs.put( PrefsUtil.KEY_FILEOPENDIR, files[ 0 ].getParent() );
+				}
+				return files;
 			} else {
 				return null;
 			}
@@ -738,7 +749,7 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 				doc.createFrame();	// must be performed after the doc was added
 			}
 			catch( IOException e1 ) {
-				GUIUtil.displayError( null, e1, getValue( Action.NAME ).toString() );
+				BasicWindowHandler.showErrorDialog( null, e1, getValue( Action.NAME ).toString() );
 			}
 		}
 	}

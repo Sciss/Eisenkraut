@@ -702,7 +702,7 @@ final SpringPanel tabAudio = tab;
 						}
 					}
 					catch( BackingStoreException e1 ) {
-						GUIUtil.displayError( getWindow(), e1, getResourceString( "errSavePrefs" ));
+						BasicWindowHandler.showErrorDialog( getWindow(), e1, getResourceString( "errSavePrefs" ));
 					} finally {
 						abtm.fireTableDataChanged();
 						triggerCtrlRoomRefill();
@@ -1113,7 +1113,7 @@ iterRemove:		for( Iterator iter = collAudioBoxConfigs.iterator(); iter.hasNext()
 					}
 				}
 			} catch( BackingStoreException e1 ) {
-				GUIUtil.displayError( getWindow(), e1, getResourceString( "errSavePrefs" ));
+				BasicWindowHandler.showErrorDialog( getWindow(), e1, getResourceString( "errSavePrefs" ));
 			} finally {
 				abtm.fireTableDataChanged();
 				triggerCtrlRoomRefill();
@@ -1176,7 +1176,7 @@ iterRemove:		for( Iterator iter = collAudioBoxConfigs.iterator(); iter.hasNext()
 			arrayNames = abPrefs.childrenNames();
 		}
 		catch( BackingStoreException e1 ) {
-			GUIUtil.displayError( getWindow(), e1, getResourceString( "errLoadPrefs" ));
+			BasicWindowHandler.showErrorDialog( getWindow(), e1, getResourceString( "errLoadPrefs" ));
 			return;
 		}
 			

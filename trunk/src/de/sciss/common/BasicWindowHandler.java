@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
@@ -432,7 +433,37 @@ extends AbstractWindowHandler
 		}
 		return result;
 	}
+
+	public static void showErrorDialog( Component component, Exception exception, String title )
+	{
+		final StringBuffer	strBuf  = new StringBuffer( GUIUtil.getResourceString( "errException" ));
+		final JOptionPane	op;
+		String				message = exception.getClass().getName() + " - " + exception.getLocalizedMessage();
+		StringTokenizer		tok;
+		int					lineLen = 0;
+		String				word;
+		String[]			options = { GUIUtil.getResourceString( "buttonOk" ),
+										GUIUtil.getResourceString( "optionDlgStack" )};
 	
+		if( message == null ) message = exception.getClass().getName();
+		tok = new StringTokenizer( message );
+		strBuf.append( ":\n" );
+		while( tok.hasMoreTokens() ) {
+			word = tok.nextToken();
+			if( lineLen > 0 && lineLen + word.length() > 40 ) {
+				strBuf.append( "\n" );
+				lineLen = 0;
+			}
+			strBuf.append( word );
+			strBuf.append( ' ' );
+			lineLen += word.length() + 1;
+		}
+		op = new JOptionPane( strBuf.toString(), JOptionPane.ERROR_MESSAGE, JOptionPane.YES_NO_OPTION, null, options, options[ 0 ]);
+		if( showDialog( op, component, title ) == 1 ) {
+			exception.printStackTrace();
+		}
+	}
+
 	private void instShowDialog( Dialog dlg )
 	{
 //		System.out.println( "instShowDialog" );

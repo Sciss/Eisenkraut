@@ -45,8 +45,8 @@ import javax.swing.event.HyperlinkListener;
 
 import net.roydesign.mac.MRJAdapter;
 
+import de.sciss.common.BasicWindowHandler;
 import de.sciss.eisenkraut.Main;
-import de.sciss.gui.GUIUtil;
 
 /**
  *  A new frame is created and
@@ -142,7 +142,7 @@ implements HyperlinkListener
 				MRJAdapter.openURL( e.getURL().toString() );
 			}
 			catch( Exception e1 ) {
-				GUIUtil.displayError( this, e1, getTitle() );
+				BasicWindowHandler.showErrorDialog( this, e1, getTitle() );
 			}
 		}
 	}

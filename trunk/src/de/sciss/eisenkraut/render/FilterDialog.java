@@ -52,6 +52,7 @@ import de.sciss.app.AbstractApplication;
 import de.sciss.app.Application;
 import de.sciss.app.AbstractCompoundEdit;
 import de.sciss.common.AppWindow;
+import de.sciss.common.BasicWindowHandler;
 import de.sciss.common.ProcessingThread;
 import de.sciss.eisenkraut.Main;
 import de.sciss.eisenkraut.edit.BasicCompoundEdit;
@@ -550,13 +551,13 @@ implements	RenderConsumer, RenderHost,
 				GUIUtil.displayError( getWindow(), e1, app.getResourceString( "errInitPlugIn" ));
 			}
 			catch( IllegalAccessException e2 ) {
-				GUIUtil.displayError( getWindow(), e2, app.getResourceString( "errInitPlugIn" ));
+				BasicWindowHandler.showErrorDialog( getWindow(), e2, app.getResourceString( "errInitPlugIn" ));
 			}
 			catch( ClassNotFoundException e3 ) {
-				GUIUtil.displayError( getWindow(), e3, app.getResourceString( "errInitPlugIn" ));
+				BasicWindowHandler.showErrorDialog( getWindow(), e3, app.getResourceString( "errInitPlugIn" ));
 			}
 			catch( ClassCastException e4 ) {
-				GUIUtil.displayError( getWindow(), e4, app.getResourceString( "errInitPlugIn" ));
+				BasicWindowHandler.showErrorDialog( getWindow(), e4, app.getResourceString( "errInitPlugIn" ));
 			}
 		}
 		return success;
@@ -621,7 +622,7 @@ implements	RenderConsumer, RenderHost,
 		
 		try {
 			if( !invokeProducerBegin( source, plugIn )) {
-				GUIUtil.displayError( getWindow(), new IOException( getResourceString( "errAudioWillLooseSync" )), plugIn.getName() );
+				BasicWindowHandler.showErrorDialog( getWindow(), new IOException( getResourceString( "errAudioWillLooseSync" )), plugIn.getName() );
 				return; // FAILED;
 			}
 //			consStarted			= true;
