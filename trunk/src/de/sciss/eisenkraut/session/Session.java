@@ -1517,7 +1517,7 @@ tryRename:					  {
 							ti.trail.editInsert( this, insertSpan, edit );
 							if( cutTimeline ) ti.trail.editRemove( this, cutTimelineSpan, edit );
 //							} else if( (mode == EDIT_OVERWRITE) && (pasteAudio || !isAudio) ) { // Audio needs to be cleared even in Mix mode!
-						} else if( pasteAudio || !isAudio ) { // Audio needs to be cleared even in Mix mode!
+						} else if( pasteAudio || ((mode == EDIT_OVERWRITE) && !isAudio) ) { // Audio needs to be cleared even in Mix mode!
 							ti.trail.editClear( this, insertSpan, edit );
 						}
 						
