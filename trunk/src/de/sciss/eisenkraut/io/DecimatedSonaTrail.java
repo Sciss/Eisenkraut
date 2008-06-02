@@ -920,59 +920,79 @@ Thread.currentThread().setPriority( pri - 2 );
 	{
 		if( DEBUG ) System.err.println( "addAllDep " + union.toString() );
 
-		final DecimatedStake das;
-		final Span extSpan;
-		final long fullrateStop, fullrateLen; // , insertLen;
-		final int numFullBuf;
-		final double progWeight;
-		long pos;
-		long framesWritten = 0;
-		Span tag2;
-		float f1;
-		int len;
+		final DecimatedStake	das;
+		final Span				extSpan;
+		final long				fullrateStop, fullrateLen; // , insertLen;
+		final int				numFullBuf;
+		final double			progWeight;
+		int						inBufOff = 0, nextLen = fftSize >> 1;
+		long					pos;
+		long					framesWritten = 0;
+		Span					tag2;
+//		float					f1;
+		int						len;
 
 		synchronized( fileSync ) {
 			das = alloc( union );
 		}
-		extSpan = das.getSpan();
-		pos = extSpan.getStart();
-		// insertLen = extSpan.getLength();
-		fullrateStop = Math.min( extSpan.getStop(), fullScale.editGetSpan( ce ).stop );
-		fullrateLen = fullrateStop - extSpan.getStart();
-		progWeight = 1.0 / fullrateLen;
-		numFullBuf = (int) (fullrateLen >> MAXSHIFT);
-		pos = extSpan.getStart();
+		extSpan			= das.getSpan();
+		pos				= extSpan.start;
+		// insertLen	= extSpan.getLength();
+		fullrateStop	= Math.min( extSpan.stop, fullScale.editGetSpan( ce ).stop );
+		fullrateLen		= fullrateStop - extSpan.start;
+		progWeight		= 1.0 / fullrateLen;
+//		numFullBuf		= (int) (fullrateLen >> MAXSHIFT);
+		numFullBuf		= (int) ((fullrateLen - fftSize + stepSize + stepSize - 1) / stepSize);
+//		numFullBuf		= (int) ((fullrateLen + stepSize - 1) / stepSize);
 
 		synchronized( bufSync ) {
 			flushProgression();
 			createBuffers();
 
 			for( int i = 0; i < numFullBuf; i++ ) {
-				tag2 = new Span( pos, pos + MAXCOARSE );
-				fullScale.readFrames( tmpBuf, 0, tag2, ce );
-				subsampleWrite( tmpBuf, tmpBuf, das, MAXCOARSE, null, 0 );
-				pos += MAXCOARSE;
-				framesWritten += MAXCOARSE;
-
-				setProgression( framesWritten, progWeight );
-			}
-
-			len = (int) (fullrateStop - pos);
-			if( len > 0 ) {
+				len = (int) Math.min( nextLen, fullrateStop - pos ); 
 				tag2 = new Span( pos, pos + len );
-				fullScale.readFrames( tmpBuf, 0, tag2, ce );
-				for( int ch = 0; ch < fullChannels; ch++ ) {
-					f1 = tmpBuf[ ch ][ len - 1 ];
-					for( int i = len; i < MAXCOARSE; i++ ) {
-						tmpBuf[ ch ][ i ] = f1;
+//				fullScale.readFrames( tmpBuf, 0, tag2, ce );
+				fullScale.readFrames( tmpBuf, fftSize - nextLen, tag2, null );
+				if( len < nextLen ) {
+					for( int ch = 0; ch < fullChannels; ch++ ) {
+						for( int j = (inBufOff + len) % tmpBufSize, k = nextLen - len; k >= 0; k-- ) {
+							tmpBuf[ ch ][ j ] = 0f;
+							if( ++j == tmpBufSize ) j = 0;
+						}
 					}
 				}
-				subsampleWrite( tmpBuf, tmpBuf, das, MAXCOARSE, null, 0 );
-				pos += MAXCOARSE;
-				framesWritten += MAXCOARSE;
+				decimator.decimatePCM( tmpBuf, tmpBuf2, 0, 1, 1 );
+//				subsampleWrite( tmpBuf, tmpBuf, das, MAXCOARSE, null, 0 );
+				das.continueWrite( 0, tmpBuf2, 0, 1 );
+//				pos += MAXCOARSE;
+//				framesWritten += MAXCOARSE;
+				pos += nextLen;
+				inBufOff = (inBufOff + nextLen) % tmpBufSize;
+				nextLen = stepSize;
+				for( int ch = 0; ch < fullChannels; ch++ ) {
+					System.arraycopy( tmpBuf[ ch ], nextLen, tmpBuf[ ch ], 0, fftSize - nextLen );
+				}
 
 				setProgression( framesWritten, progWeight );
 			}
+
+//			len = (int) (fullrateStop - pos);
+//			if( len > 0 ) {
+//				tag2 = new Span( pos, pos + len );
+//				fullScale.readFrames( tmpBuf, 0, tag2, ce );
+//				for( int ch = 0; ch < fullChannels; ch++ ) {
+//					f1 = tmpBuf[ ch ][ len - 1 ];
+//					for( int i = len; i < MAXCOARSE; i++ ) {
+//						tmpBuf[ ch ][ i ] = f1;
+//					}
+//				}
+//				subsampleWrite( tmpBuf, tmpBuf, das, MAXCOARSE, null, 0 );
+//				pos += MAXCOARSE;
+//				framesWritten += MAXCOARSE;
+//
+//				setProgression( framesWritten, progWeight );
+//			}
 		} // synchronized( bufSync )
 
 		// editRemove( source, das.getSpan(), ce );

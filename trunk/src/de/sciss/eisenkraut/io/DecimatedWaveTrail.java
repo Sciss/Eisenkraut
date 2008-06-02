@@ -810,13 +810,12 @@ Thread.currentThread().setPriority( pri - 2 );
 			das = alloc( union );
 		}
 		extSpan = das.getSpan();
-		pos = extSpan.getStart();
+		pos = extSpan.start;
 		// insertLen = extSpan.getLength();
-		fullrateStop = Math.min( extSpan.getStop(), fullScale.editGetSpan( ce ).stop );
-		fullrateLen = fullrateStop - extSpan.getStart();
+		fullrateStop = Math.min( extSpan.stop, fullScale.editGetSpan( ce ).stop );
+		fullrateLen = fullrateStop - extSpan.start;
 		progWeight = 1.0 / fullrateLen;
 		numFullBuf = (int) (fullrateLen >> MAXSHIFT);
-		pos = extSpan.getStart();
 
 		synchronized( bufSync ) {
 			flushProgression();

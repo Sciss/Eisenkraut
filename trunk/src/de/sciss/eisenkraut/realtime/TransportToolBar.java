@@ -460,10 +460,12 @@ msgPane.add( ggCurrent );
 //			// XXX sync
 //			ggPosCombo.addItem( new StringItem( new Param( doc.timeline.getPosition() / doc.timeline.getRate(), ParamSpace.TIME | ParamSpace.SECS | ParamSpace.HHMMSS ).toString(), "Current" ));
 
-			result = JOptionPane.showOptionDialog( BasicWindowHandler.getWindowAncestor( lbTime ), msgPane,
-				app.getResourceString( "inputDlgGoToTime" ),
-				JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null );
-
+			final JOptionPane op = new JOptionPane( msgPane, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION );
+//			result = JOptionPane.showOptionDialog( BasicWindowHandler.getWindowAncestor( lbTime ), msgPane,
+//				app.getResourceString( "inputDlgGoToTime" ),
+//				JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null );
+			result = BasicWindowHandler.showDialog( op, BasicWindowHandler.getWindowAncestor( lbTime ), app.getResourceString( "inputDlgGoToTime" ));
+			
 			if( result == JOptionPane.OK_OPTION ) {
 				value			= ggPosition.getValue();
 				space			= ggPosition.getSpace();

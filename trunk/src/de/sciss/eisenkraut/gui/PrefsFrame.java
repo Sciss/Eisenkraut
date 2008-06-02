@@ -175,7 +175,7 @@ implements SwingConstants
 		final List						collAudioAdvanced;
 		SpringPanel						tab;
 		PrefParamField					ggParam;
-		BasicPathField						ggPath;
+		BasicPathField					ggPath;
 		PrefCheckBox					ggCheckBox;
         PrefComboBox					ggChoice;
 		JTabbedPane						ggTabPane;
@@ -562,6 +562,17 @@ final SpringPanel tabAudio = tab;
 		tab		= createTab();
 		
 		row		= 0;
+		key		= PrefsUtil.KEY_SONAENABLED;
+//		lb		= new JLabel( "Enable Sonagramme Option (Experimental!)", TRAILING );
+//		tab.gridAdd( lb, 0, row );
+		ggCheckBox = new PrefCheckBox( "Enable Sonagramme Option (Experimental!)" );
+		ggCheckBox.setPreferences( prefs, key );
+		tab.gridAdd( ggCheckBox, 0, row, 2, 1 );
+
+		row++;
+		tab.gridAdd( new JLabel( " " ), 0, row );
+
+		row++;
 		key		= PrefsUtil.NODE_SONAGRAM;
 		key2	= "prefsSonaSettings";
 		lb		= new JLabel( getResourceString( key2 ), CENTER );
@@ -1046,12 +1057,16 @@ iterRemove:		for( Iterator iter = collAudioBoxConfigs.iterator(); iter.hasNext()
 		ggSpinner.setActive( true );
 //		dlg.setVisible( true );		
 
-		result = JOptionPane.showOptionDialog( getWindow(), pane,
-				getResourceString( "prefsAudioDevicesAssistent" ),
-				JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, 
-				new ImageIcon( GUIUtil.class.getResource( "assistent_64x64.png" )),
-				null, null );
+		final JOptionPane op = new JOptionPane( pane,
+		                                        JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION,
+		                                        new ImageIcon( GUIUtil.class.getResource( "assistent_64x64.png" )));
+//		result = JOptionPane.showOptionDialog( getWindow(), pane,
+//				getResourceString( "prefsAudioDevicesAssistent" ),
+//				JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, 
+//				new ImageIcon( GUIUtil.class.getResource( "assistent_64x64.png" )),
+//				null, null );
 //		dlg = op.createDialog( getWindow(), getResourceString( "prefsAudioDevicesAssistent" ) );
+		result = BasicWindowHandler.showDialog( op, getWindow(), getResourceString( "prefsAudioDevicesAssistent" ));
 
 		synchronized( threadRunning ) {
 			if( threadRunning.isSet() ) {  // i.e. premature dialog cancel
@@ -1220,7 +1235,9 @@ iterRemove:		for( Iterator iter = collAudioBoxConfigs.iterator(); iter.hasNext()
 			final String newValue = pes.getPreferenceNode().get( pes.getPreferenceKey(), initialValue );
 		
 			if( !newValue.equals( initialValue ) && !haveWarned.isSet() ) {
-				JOptionPane.showMessageDialog( c, text, title, JOptionPane.INFORMATION_MESSAGE );
+				final JOptionPane op = new JOptionPane( text, JOptionPane.INFORMATION_MESSAGE );
+//				JOptionPane.showMessageDialog( c, text, title, JOptionPane.INFORMATION_MESSAGE );
+				BasicWindowHandler.showDialog( op, c, title );
 				haveWarned.set( true );
 			}
 		}

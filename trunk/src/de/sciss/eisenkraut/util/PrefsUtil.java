@@ -340,6 +340,8 @@ public class PrefsUtil
 	 *  Child node of view prefs
 	 */
 	public static final String NODE_SONAGRAM	= "sonagram";
+	
+	public static final String KEY_SONAENABLED	= "sonaenabled";
 
 	public static List createDefaults( Preferences mainPrefs, double lastVersion )
 	{

@@ -942,7 +942,9 @@ prodLp:		while( !ProcessingThread.shouldCancel() ) {
 			if( proc.getReturnCode() == FAILED ) {
 				final Object message = proc.getClientArg( "error" );
 				if( message != null ) {
-					JOptionPane.showMessageDialog( getWindow(), message, plugIn == null ? null : plugIn.getName(), JOptionPane.ERROR_MESSAGE );
+					final JOptionPane op = new JOptionPane( message, JOptionPane.ERROR_MESSAGE );
+//					JOptionPane.showMessageDialog( getWindow(), message, plugIn == null ? null : plugIn.getName(), JOptionPane.ERROR_MESSAGE );
+					BasicWindowHandler.showDialog( op, getWindow(), plugIn == null ? null : plugIn.getName() );
 				}
 			}
 		}

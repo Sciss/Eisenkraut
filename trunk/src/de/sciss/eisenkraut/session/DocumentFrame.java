@@ -1140,8 +1140,10 @@ bbb.add( markAxisHeader );
 		if( writeProtected && !wpHaveWarned && doc.isDirty() ) {
 //			MutableIcon warnIcon = new MutableIcon( 128 );
 //			warnIcon.setID( MutableIcon.WRITE_PROTECTED );
-			JOptionPane.showMessageDialog( getWindow(), getResourceString( "warnWriteProtected" ),
-				getResourceString( "msgDlgWarn" ), JOptionPane.WARNING_MESSAGE, null );
+			final JOptionPane op = new JOptionPane( getResourceString( "warnWriteProtected" ), JOptionPane.WARNING_MESSAGE );
+//			JOptionPane.showMessageDialog( getWindow(), getResourceString( "warnWriteProtected" ),
+//				getResourceString( "msgDlgWarn" ), JOptionPane.WARNING_MESSAGE, null );
+			BasicWindowHandler.showDialog( op, getWindow(), getResourceString( "msgDlgWarn" ));
 			wpHaveWarned = true;
 		}
 	}
@@ -1451,7 +1453,8 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 				}
 			});
 		}
-		d.setVisible( true );
+		BasicWindowHandler.showDialog( d );
+//		d.setVisible( true );
 		if( dont.isSet() ) {
 			choice = 2;
 		} else {
@@ -1509,9 +1512,14 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 			name = displayAFD.file.getName();
 		}
 		
-		choice = JOptionPane.showConfirmDialog( getWindow(), name + " :\n" + getResourceString( "optionDlgProcessing" ) +
-		                                        "\n(" + doc.getProcessName() + ")?",
-											    actionName, JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE );
+		final JOptionPane op = new JOptionPane( name + " :\n" + getResourceString( "optionDlgProcessing" ) +
+		                                        "\n(" + doc.getProcessName() + ")?", JOptionPane.WARNING_MESSAGE,
+		                                        JOptionPane.YES_NO_OPTION );
+//		choice = JOptionPane.showConfirmDialog( getWindow(), name + " :\n" + getResourceString( "optionDlgProcessing" ) +
+//		                                        "\n(" + doc.getProcessName() + ")?",
+//											    actionName, JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE );
+		choice = BasicWindowHandler.showDialog( op, getWindow(), actionName );
+		
 		switch( choice ) {
 		case JOptionPane.CLOSED_OPTION:
 		case JOptionPane.NO_OPTION:
@@ -2435,9 +2443,11 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 			p			= new JPanel( new BorderLayout() );
 			p.add( msgPane, BorderLayout.NORTH );
 
-			result		= JOptionPane.showOptionDialog( getWindow(), p, getValue( NAME ).toString(),
-														JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
-														null, queryOptions, queryOptions[ 0 ]);
+			final JOptionPane op = new JOptionPane( p, JOptionPane.QUESTION_MESSAGE, JOptionPane.YES_NO_OPTION, null, queryOptions, queryOptions[ 0 ]);
+//			result		= JOptionPane.showOptionDialog( getWindow(), p, getValue( NAME ).toString(),
+//														JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
+//														null, queryOptions, queryOptions[ 0 ]);
+			result = BasicWindowHandler.showDialog( op, getWindow(), getValue( NAME ).toString() );
 
 			if( ggOpenAfterSave != null ) {
 				openAfterSaveSettings.set( ggOpenAfterSave.isSelected() );
@@ -2456,10 +2466,15 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 					if( f.exists() ) {
 						queryOptions = new String[] { getResourceString( "buttonOverwrite" ),
 													  getResourceString( "buttonCancel" )};
-						result = JOptionPane.showOptionDialog( getWindow(), getResourceString( "warnFileExists" ) +
-							":\n" + f.getAbsolutePath() + "\n" + getResourceString( "warnOverwriteFile" ),
-							getValue( NAME ).toString(), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE,
-							null, queryOptions, queryOptions[1] );
+						final JOptionPane op2 = new JOptionPane( getResourceString( "warnFileExists" ) +
+						            							":\n" + f.getAbsolutePath() + "\n" + getResourceString( "warnOverwriteFile" ),
+						            							JOptionPane.WARNING_MESSAGE, JOptionPane.YES_NO_OPTION,
+						            							null, queryOptions, queryOptions[1] );
+//						result = JOptionPane.showOptionDialog( getWindow(), getResourceString( "warnFileExists" ) +
+//							":\n" + f.getAbsolutePath() + "\n" + getResourceString( "warnOverwriteFile" ),
+//							getValue( NAME ).toString(), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE,
+//							null, queryOptions, queryOptions[1] );
+						result = BasicWindowHandler.showDialog( op2, getWindow(), getValue( NAME ).toString() );
 						if( result != 0 ) return null;
 					}
 					afds[ k ]		= new AudioFileDescr( protoType[ j ]);
@@ -2571,9 +2586,12 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 		{
 			final int		choice;
 			final Object[]	options	= new String[] { getResourceString( "buttonKeepFile" ), getResourceString( "buttonDeleteFile" )};
-			choice = JOptionPane.showOptionDialog( getWindow(), getResourceString( "optionDlgKeepRec1" ) + path.getAbsolutePath() + getResourceString( "optionDlgKeepRec2" ),
-					   getValue( NAME ).toString(), JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE, null,
-					   options, options[ 0 ]);
+			final JOptionPane op = new JOptionPane( getResourceString( "optionDlgKeepRec1" ) + path.getAbsolutePath() + getResourceString( "optionDlgKeepRec2" ),
+			                                        JOptionPane.ERROR_MESSAGE, JOptionPane.YES_NO_OPTION, null, options, options[ 0 ]);
+//			choice = JOptionPane.showOptionDialog( getWindow(), getResourceString( "optionDlgKeepRec1" ) + path.getAbsolutePath() + getResourceString( "optionDlgKeepRec2" ),
+//					   getValue( NAME ).toString(), JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE, null,
+//					   options, options[ 0 ]);
+			choice = BasicWindowHandler.showDialog( op, getWindow(), getValue( NAME ).toString() );
 			if( choice == 1 ) {
 				deleteFile( path );
 			}
@@ -2582,8 +2600,10 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 		protected void deleteFile( File path )
 		{
 			if( !path.delete() ) {
-				JOptionPane.showMessageDialog( getWindow(), path.getAbsolutePath() + ":\n" + getResourceString( "errDeleteFile" ), getValue( NAME ).toString(), 
-					JOptionPane.WARNING_MESSAGE );
+				final JOptionPane op = new JOptionPane( path.getAbsolutePath() + ":\n" + getResourceString( "errDeleteFile" ), JOptionPane.WARNING_MESSAGE );
+//				JOptionPane.showMessageDialog( getWindow(), path.getAbsolutePath() + ":\n" + getResourceString( "errDeleteFile" ), getValue( NAME ).toString(), 
+//					JOptionPane.WARNING_MESSAGE );
+				BasicWindowHandler.showDialog( op, getWindow(), getValue( NAME ).toString() );
 			}
 		}
 	} // class actionInsertRecClass

@@ -65,6 +65,7 @@ import de.sciss.app.DocumentHandler;
 import de.sciss.app.DocumentListener;
 import de.sciss.app.DynamicListening;
 import de.sciss.common.AppWindow;
+import de.sciss.common.BasicWindowHandler;
 import de.sciss.gui.AbstractWindowHandler;
 import de.sciss.gui.MultiStateButton;
 import de.sciss.gui.PeakMeter;
@@ -155,7 +156,9 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
 			{
 				final Server server = superCollider.getServer();
 				if( (server != null) && server.isRunning() ) {
-					if( JOptionPane.showConfirmDialog( getWindow(), getResourceString( "optionDlgAudioBoxReboot" ), null, JOptionPane.YES_NO_OPTION ) == 0 ) {
+					final JOptionPane op = new JOptionPane( getResourceString( "optionDlgAudioBoxReboot" ), JOptionPane.QUESTION_MESSAGE, JOptionPane.YES_NO_OPTION );
+//					if( JOptionPane.showConfirmDialog( getWindow(), getResourceString( "optionDlgAudioBoxReboot" ), null, JOptionPane.YES_NO_OPTION ) == 0 ) {
+					if( BasicWindowHandler.showDialog( op, getWindow(), null ) == 0 ) {
 //						superCollider.addListener( new ServerListener() {
 //						    public abstract void serverAction( ServerEvent e )
 //							{

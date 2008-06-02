@@ -41,6 +41,8 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.StringTokenizer;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
@@ -57,6 +59,7 @@ import de.sciss.eisenkraut.util.PrefsUtil;
 
 import de.sciss.app.AbstractApplication;
 import de.sciss.app.AbstractWindow;
+import de.sciss.app.DynamicPrefChangeManager;
 import de.sciss.common.BasicApplication;
 import de.sciss.common.BasicMenuFactory;
 import de.sciss.common.BasicWindowHandler;
@@ -336,6 +339,16 @@ if( doc.getFrame() == null ) {
 		smg.add( new MenuRadioItem( rg, "freqspect", ia ));
 		ia.setRadioGroup( rg );
 		ia.setPreferences( prefs, PrefsUtil.KEY_VERTSCALE );
+		final IntPrefsMenuAction freqSpectAction = ia;
+//		ia.setEnabled( prefs.node( PrefsUtil.NODE_VIEW ).getBoolean( PrefsUtil.KEY_SONAENABLED, false ));
+		new DynamicPrefChangeManager( prefs.node( PrefsUtil.NODE_VIEW ), new String[] {
+			PrefsUtil.KEY_SONAENABLED }, new PreferenceChangeListener() {
+			public void preferenceChange( PreferenceChangeEvent pce )
+			{
+				freqSpectAction.setEnabled( prefs.node( PrefsUtil.NODE_VIEW ).getBoolean( PrefsUtil.KEY_SONAENABLED, false ));
+			}
+		}).startListening();
+		
 		mg.add( smg );
 
 		ba			= new BooleanPrefsMenuAction( getResourceString( "menuViewNullLinie" ), null );

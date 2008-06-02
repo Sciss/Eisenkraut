@@ -499,10 +499,13 @@ implements	TimelineListener, MouseListener, MouseMotionListener, KeyListener,
 		timeTrans.setLengthAndRate( doc.timeline.getLength(), doc.timeline.getRate() );
 		
 		updateEditMarker();
-
-		result = JOptionPane.showOptionDialog( BasicWindowHandler.getWindowAncestor( this ),
-											   editMarkerPane, getResourceString( "inputDlgEditMarker" ),
-			JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, editOptions, editOptions[ 2 ]);
+		
+		final JOptionPane op = new JOptionPane( editMarkerPane, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION,
+		                                        null, editOptions, editOptions[ 2 ]);
+//		result = JOptionPane.showOptionDialog( BasicWindowHandler.getWindowAncestor( this ),
+//											   editMarkerPane, getResourceString( "inputDlgEditMarker" ),
+//			JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, editOptions, editOptions[ 2 ]);
+		result = BasicWindowHandler.showDialog( op, BasicWindowHandler.getWindowAncestor( this ), getResourceString( "inputDlgEditMarker" ));
 
 //		if( result == JOptionPane.OK_OPTION ) {
 		if( result == 2 ) {

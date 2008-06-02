@@ -83,6 +83,7 @@ import de.sciss.util.ParamSpace;
 import de.sciss.app.AbstractApplication;
 import de.sciss.app.AbstractCompoundEdit;
 import de.sciss.common.BasicDocument;
+import de.sciss.common.BasicWindowHandler;
 import de.sciss.common.ProcessingThread;
 
 /**
@@ -1905,8 +1906,10 @@ tryRename:					  {
 				ggDuration.setValue( value );
 			}
 
-			result = JOptionPane.showOptionDialog( getFrame() == null ? null : getFrame().getWindow(), msgPane, getValue( NAME ).toString(),
-				JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null );
+			final JOptionPane op = new JOptionPane( msgPane, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION );
+//			result = JOptionPane.showOptionDialog( getFrame() == null ? null : getFrame().getWindow(), msgPane, getValue( NAME ).toString(),
+//				JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null );
+			result = BasicWindowHandler.showDialog( op, getFrame() == null ? null : getFrame().getWindow(), getValue( NAME ).toString() );
 
 			if( result == JOptionPane.OK_OPTION ) {
 				value			= ggDuration.getValue();
