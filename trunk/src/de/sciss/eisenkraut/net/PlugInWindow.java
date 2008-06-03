@@ -9,7 +9,6 @@
 package de.sciss.eisenkraut.net;
 
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -21,9 +20,6 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Action;
 import javax.swing.JComponent;
-//import javax.swing.JScrollPane;
-//import javax.swing.JComponent;
-import javax.swing.JPanel;
 
 import de.sciss.app.AbstractApplication;
 import de.sciss.common.AppWindow;
@@ -85,12 +81,8 @@ extends AppWindow
 			throw new IllegalStateException();
 		}
 
-		final JPanel tempView = new JPanel();
-		final Container c = getContentPane();
-		c.add( tempView );
-		tempView.setPreferredSize( cocoaBounds.getSize() );
+		topView.setPreferredSize( cocoaBounds.getSize() );
 		pack();	// frame is made displayable
-		c.remove( tempView );
 		final Rectangle screenBounds = getWindow().getGraphicsConfiguration().getBounds();
 		final Insets insets = getInsets();
 		setLocation( new Point(
