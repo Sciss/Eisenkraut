@@ -1,0 +1,128 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<title></title>
+<meta name="Generator" content="Cocoa HTML Writer">
+<meta name="CocoaVersion" content="824.47">
+<style type="text/css">
+p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #bf0000}
+p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #000000; min-height: 12.0px}
+p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #000000}
+p.p4 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #007300}
+p.p5 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #606060}
+span.s1 {color: #0000bf}
+span.s2 {color: #000000}
+span.s3 {color: #007300}
+span.s4 {color: #606060}
+span.Apple-tab-span {white-space:pre}
+</style>
+</head>
+<body>
+<p class="p1">// last mod: 03-Jun-08</p>
+<p class="p2"><br></p>
+<p class="p3">(</p>
+<p class="p3">e = <span class="s1">Eisenkraut</span>.default;</p>
+<p class="p3">e.addr.connect;</p>
+<p class="p3">)</p>
+<p class="p2"><br></p>
+<p class="p1">// This example queries all markers</p>
+<p class="p1">// of the active document, and returns</p>
+<p class="p1">// them in the variable ~pos</p>
+<p class="p1">// (a List of marker positions in</p>
+<p class="p1">// sample frames)</p>
+<p class="p3">(</p>
+<p class="p3">~pos = <span class="s1">List</span>.new;</p>
+<p class="p3">fork {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="s1">var</span> msg, rate, num, startIdx, stopIdx;</p>
+<p class="p4"><span class="s2"><span class="Apple-tab-span">	</span>msg = e.query( </span>'/doc/active/timeline'<span class="s2">, </span>\rate<span class="s2"> );</span></p>
+<p class="p3"><span class="Apple-tab-span">	</span>if( msg.notNil, {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>rate = msg[ 0 ];</p>
+<p class="p4"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>msg = e.query( </span>'/doc/active/markers'<span class="s2">, </span>\count<span class="s2"> );</span></p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>if( msg.notNil, {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>num = msg[ 0 ];</p>
+<p class="p5"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>(</span>"Number of markers: "<span class="s2">++num).postln;</span></p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>startIdx = 0;</p>
+<p class="p1"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// maximum 128 markers per query, based on an estimated of maximum marker names ...</p>
+<p class="p1"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// 128 * (32 + 4 + 5) + headerSize = ca. 5000 bytes</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>stopIdx = min( num, startIdx + 128 );</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>while({ startIdx &lt; num }, {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>msg = e.get( <span class="s3">'/doc/active/markers'</span>, [ <span class="s3">\range</span>, startIdx, stopIdx ]);</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>if( msg.notNil, {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>msg.pairsDo({ <span class="s1">arg</span> pos, name;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>(<span class="s4">"Marker '"</span>++name++<span class="s4">"' at frame "</span>++pos++<span class="s4">" = "</span>++(pos/rate).asTimeString( 0.001 )).postln;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>~pos.add( pos );</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>}, {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s4">"timeout"</span>.warn;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>startIdx<span class="Apple-tab-span">	</span>= stopIdx;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>stopIdx<span class="Apple-tab-span">	</span>= min( num, startIdx + 128 );</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>}, {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s4">"timeout"</span>.warn;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
+<p class="p3"><span class="Apple-tab-span">	</span>}, {</p>
+<p class="p5"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>"timeout"<span class="s2">.warn;</span></p>
+<p class="p3"><span class="Apple-tab-span">	</span>});</p>
+<p class="p3">}</p>
+<p class="p3">)</p>
+<p class="p2"><br></p>
+<p class="p1">// You could store t he marker positions as a compile string...</p>
+<p class="p3">f = <span class="s1">File</span>( <span class="s4">"~/Desktop/marks.txt"</span>.standardizePath, <span class="s4">"w"</span> );</p>
+<p class="p3">f.write( ~pos.asCompileString );</p>
+<p class="p3">f.close;</p>
+<p class="p2"><br></p>
+<p class="p2"><br></p>
+<p class="p1">// ...to read them in again at a later point in time...</p>
+<p class="p3">f = <span class="s1">File</span>( <span class="s4">"~/Desktop/marks.txt"</span>.standardizePath, <span class="s4">"r"</span> );</p>
+<p class="p3">~pos = f.readAllString.interpret;</p>
+<p class="p3">f.close;</p>
+<p class="p2"><br></p>
+<p class="p1">// ...and to send them back to an Eisenkraut audio document</p>
+<p class="p3">~pos.clump(128).do({ <span class="s1">arg</span> posList; <span class="s1">var</span> marks; marks = (posList ++ <span class="s4">"Mark"</span>.dup(posList.size)).unlace(posList.size).flatten; e.listSendMsg([ <span class="s3">'/doc/active/markers'</span>, <span class="s3">\add</span> ] ++ marks )});</p>
+<p class="p2"><br></p>
+<p class="p1">// ...or rename them before as to indicate region begins/ends...</p>
+<p class="p3">~pos.clump(128).do({ <span class="s1">arg</span> posList; <span class="s1">var</span> marks; marks = posList.collect({ <span class="s1">arg</span> elem, i; [ elem, if( i.even, <span class="s4">"Beg"</span>, <span class="s4">"End"</span> )]}).flatten; e.listSendMsg([ <span class="s3">'/doc/active/markers'</span>, <span class="s3">\add</span> ] ++ marks )});</p>
+<p class="p2"><br></p>
+<p class="p1">// next, let's place the timeline position at the nearest marker before current position</p>
+<p class="p3">(</p>
+<p class="p3">fork {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="s1">var</span> msg, oldpos, nextIdx, newPos;</p>
+<p class="p4"><span class="s2"><span class="Apple-tab-span">	</span>msg = e.query( </span>'/doc/active/timeline'<span class="s2">, </span>\position<span class="s2"> );</span></p>
+<p class="p3"><span class="Apple-tab-span">	</span>if( msg.notNil, {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>oldpos = msg[ 0 ];</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>msg = e.get( <span class="s3">'/doc/active/markers'</span>, [ <span class="s3">\indexOf</span>, oldpos ]);</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>if( msg.notNil, {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>nextIdx = msg[ 0 ];</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>if( nextIdx &lt; 0, { nextIdx = (nextIdx + 2).neg });</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>if( nextIdx &lt; 0, {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>newPos = 0;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>}, {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>msg = e.get( <span class="s3">'/doc/active/markers'</span>, [ <span class="s3">\at</span>, nextIdx ]);</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>if( msg.notNil, {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>newPos = msg[ 0 ];</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>}, {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s4">"timeout"</span>.warn;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>newPos = -1;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>if( newPos &gt;= 0, {</p>
+<p class="p4"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>e.sendMsg( </span>'/doc/active/timeline'<span class="s2">, </span>\position<span class="s2">, newPos );</span></p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>(<span class="s4">"new position: "</span>++newPos).postln;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>}, {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s4">"timeout"</span>.warn;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
+<p class="p3"><span class="Apple-tab-span">	</span>}, {</p>
+<p class="p5"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>"timeout"<span class="s2">.warn;</span></p>
+<p class="p3"><span class="Apple-tab-span">	</span>});</p>
+<p class="p3">}</p>
+<p class="p3">)</p>
+<p class="p2"><br></p>
+<p class="p2"><br></p>
+<p class="p1">// goodbye to Eisenkraut</p>
+<p class="p3">e.sendMsg( <span class="s3">'/main'</span>, <span class="s3">\quit</span> );</p>
+</body>
+</html>

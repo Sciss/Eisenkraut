@@ -12,7 +12,7 @@
 	<property name="main-class"		value="de.sciss.eisenkraut.Main"/>
 	<property name="lib.dir"		value="libraries"/>
 	<property name="libraries"		value="${lib.dir}/JCollider.jar:${lib.dir}/MRJAdapter.jar:${lib.dir}/NetUtil.jar:${lib.dir}/Normalizer.jar"/>
-	<property name="version"		value="0.70unstable"/>
+	<property name="version"		value="0.70"/>
 	<property name="debug"			value="true"/>
 
 	<target name="clean">
@@ -31,16 +31,18 @@
 		<jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${classes.dir}">
 			<manifest>
 				<attribute name="Main-Class" value="${main-class}" />
-				<!-- <attribute name="Class-Path" value="${libraries}" /> -->
-				<!-- <attribute name="Class-Path" value="libraries/MRJAdapter.jar libraries/JCollider.jar libraries/NetUtil.jar libraries/Normalizer.jar"/> -->
 			</manifest>
 		</jar>
 		<jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${resources.dir}" update="true"/>
-		<!-- <unjar src="${libraries}" dest="${lib.dir}" />
+		<unjar dest="${lib.dir}">
+			<fileset dir="${lib.dir}">
+				<include name="*.jar" />
+			</fileset>
+		</unjar>
 		<jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${lib.dir}" excludes="*.jar" update="true" />
 		<delete includeemptydirs="true">
 			<fileset dir="${lib.dir}" excludes="*.jar" />
-		</delete> -->
+		</delete>
 	</target>
 	<target name="main" depends="clean,compile" />
 	<target name="osx-app" depends="jar">

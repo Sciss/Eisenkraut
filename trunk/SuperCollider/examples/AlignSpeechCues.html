@@ -1,0 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<title></title>
+<meta name="Generator" content="Cocoa HTML Writer">
+<meta name="CocoaVersion" content="824.47">
+<style type="text/css">
+p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #bf0000}
+p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #000000}
+p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #000000; min-height: 12.0px}
+p.p4 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #007300}
+p.p5 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #606060}
+span.s1 {color: #0000bf}
+span.s2 {color: #bf0000}
+span.s3 {color: #606060}
+span.s4 {color: #000000}
+span.s5 {color: #007300}
+span.Apple-tab-span {white-space:pre}
+</style>
+</head>
+<body>
+<p class="p1">// last mod: 03-Jun-08</p>
+<p class="p2">(</p>
+<p class="p2">e = <span class="s1">Eisenkraut</span>.default;</p>
+<p class="p2">e.addr.connect;</p>
+<p class="p2">fork { e.initSwing };</p>
+<p class="p2">)</p>
+<p class="p3"><br></p>
+<p class="p1">// This example will take the current</p>
+<p class="p1">// timeline position of the active document,</p>
+<p class="p1">// add a given cue duration (cueDur) to</p>
+<p class="p1">// it and advance it by inserting silence to</p>
+<p class="p1">// the next integer number of seconds.</p>
+<p class="p1">// a marker is placed to indicate this stopping</p>
+<p class="p1">// point.</p>
+<p class="p2">(</p>
+<p class="p2"><span class="s1">var</span> cueDur = 1.5; <span class="s2">// seconds;</span></p>
+<p class="p2"><span class="s1">var</span> mark = <span class="s1">true</span>;</p>
+<p class="p2">w = <span class="s1">JSCWindow</span>( <span class="s3">"Align"</span>, <span class="s1">Rect</span>( 800, 100, 100, 40 ), resizable: <span class="s1">false</span>, server: e.swing );</p>
+<p class="p2"><span class="s1">JSCButton</span>( w, <span class="s1">Rect</span>( 4, 4, 80, 20 )).states_([[ <span class="s3">"Next Cue"</span> ]] ).canFocus_( <span class="s1">false</span> ).action_({ <span class="s1">arg</span> b;</p>
+<p class="p2">fork {</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="s1">var</span> msg, rate, num, startIdx, stopIdx, start, stop, frames;</p>
+<p class="p4"><span class="s4"><span class="Apple-tab-span">	</span>msg = e.query( </span>'/doc/active/timeline'<span class="s4">, [ </span>\rate<span class="s4">, </span>\position<span class="s4"> ]);</span></p>
+<p class="p2"><span class="Apple-tab-span">	</span>if( msg.notNil, {</p>
+<p class="p1">//<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>msg.postln;</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>start<span class="Apple-tab-span">	</span>= msg[1];</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>frames<span class="Apple-tab-span">	</span>= (cueDur * msg[0] + 0.5).asInteger;</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>stop<span class="Apple-converted-space">  <span class="Apple-tab-span">	</span></span>= (start + frames - 1);</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>frames<span class="Apple-tab-span">	</span>= stop - (stop % frames) - start;</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>[ start, frames ].postln;</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>if( mark, { e.sendMsg( <span class="s5">'/doc/active/markers'</span>, <span class="s5">\add</span>, start, <span class="s3">"Mark"</span> )});</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>if( frames &gt; 0, {</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>e.sendMsg( <span class="s5">'/doc/active'</span>, <span class="s5">\insertSilence</span>, frames );</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>}, {</p>
+<p class="p5"><span class="s4"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>"Already aligned!"<span class="s4">.warn;</span></p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
+<p class="p2"><span class="Apple-tab-span">	</span>}, {</p>
+<p class="p5"><span class="s4"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>"timeout"<span class="s4">.warn;</span></p>
+<p class="p2"><span class="Apple-tab-span">	</span>});</p>
+<p class="p2">}</p>
+<p class="p2">});</p>
+<p class="p2">w.front;</p>
+<p class="p2">)</p>
+<p class="p3"><br></p>
+<p class="p3"><br></p>
+<p class="p1">// trunc end of selection</p>
+<p class="p2">(</p>
+<p class="p2"><span class="s1">var</span> cueDur = 1.5; <span class="s2">// seconds;</span></p>
+<p class="p2"><span class="s1">var</span> mark = <span class="s1">true</span>;</p>
+<p class="p2">w = <span class="s1">JSCWindow</span>( <span class="s3">"Align"</span>, <span class="s1">Rect</span>( 800, 100, 100, 40 ), resizable: <span class="s1">false</span>, server: e.swing );</p>
+<p class="p2"><span class="s1">JSCButton</span>( w, <span class="s1">Rect</span>( 4, 4, 80, 20 )).states_([[ <span class="s3">"Trunc"</span> ]] ).canFocus_( <span class="s1">false</span> ).action_({ <span class="s1">arg</span> b;</p>
+<p class="p2">fork {</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="s1">var</span> msg, rate, num, startIdx, stopIdx, start, stop, frames;</p>
+<p class="p4"><span class="s4"><span class="Apple-tab-span">	</span>msg = e.query( </span>'/doc/active/timeline'<span class="s4">, [ </span>\rate<span class="s4">, </span>\selectionStart<span class="s4">, </span>\selectionStop<span class="s4"> ]);</span></p>
+<p class="p2"><span class="Apple-tab-span">	</span>if( msg.notNil, {</p>
+<p class="p1">//<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>msg.postln;</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>start<span class="Apple-tab-span">	</span>= msg[1];</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>frames<span class="Apple-tab-span">	</span>= (cueDur * msg[0] + 0.5).asInteger;</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>stop<span class="Apple-converted-space">  <span class="Apple-tab-span">	</span></span>= start + frames;</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>frames<span class="Apple-tab-span">	</span>= msg[2] - stop;</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>[ start, frames ].postln;</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>if( frames &gt; 0, {</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>e.sendMsg( <span class="s5">'/doc/active/timeline'</span>, <span class="s5">\select</span>, stop, stop + frames );</p>
+<p class="p4"><span class="s4"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>e.sendMsg( </span>'/doc/active'<span class="s4">, </span>\delete<span class="s4"> );</span></p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>}, {</p>
+<p class="p5"><span class="s4"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>"Too small!"<span class="s4">.warn;</span></p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
+<p class="p2"><span class="Apple-tab-span">	</span>}, {</p>
+<p class="p5"><span class="s4"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>"timeout"<span class="s4">.warn;</span></p>
+<p class="p2"><span class="Apple-tab-span">	</span>});</p>
+<p class="p2">}</p>
+<p class="p2">});</p>
+<p class="p2">w.front;</p>
+<p class="p2">)</p>
+</body>
+</html>

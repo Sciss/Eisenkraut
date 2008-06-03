@@ -210,7 +210,7 @@ implements OSCRouter
 				azi	   %= 360.0;
 			}
 			argIdx++;
-			spread		= Math.max( 0.0, Math.min( 1.0, ((Number) rom.msg.getArg( argIdx )).doubleValue() ));
+			spread		= Math.max( -1.0, Math.min( 1.0, ((Number) rom.msg.getArg( argIdx )).doubleValue() ));
 			getMap().putValue( this, MAP_KEY_PANAZIMUTH, new Double( azi ));
 			getMap().putValue( this, MAP_KEY_PANSPREAD, new Double( spread ));
 		}

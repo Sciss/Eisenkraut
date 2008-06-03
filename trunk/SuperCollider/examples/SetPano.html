@@ -1,0 +1,72 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<title></title>
+<meta name="Generator" content="Cocoa HTML Writer">
+<meta name="CocoaVersion" content="824.47">
+<style type="text/css">
+p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #bf0000}
+p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #000000; min-height: 12.0px}
+p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #000000}
+p.p4 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #007300}
+p.p5 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #606060}
+span.s1 {color: #0000bf}
+span.s2 {color: #606060}
+span.s3 {color: #000000}
+span.s4 {color: #007300}
+span.Apple-tab-span {white-space:pre}
+</style>
+</head>
+<body>
+<p class="p1">// lastmod: 03-Jun-08</p>
+<p class="p2"><br></p>
+<p class="p3">(</p>
+<p class="p3">e = <span class="s1">Eisenkraut</span>.default;</p>
+<p class="p3">e.addr.connect;</p>
+<p class="p3">fork { e.initSwing };</p>
+<p class="p3">)</p>
+<p class="p2"><br></p>
+<p class="p1">// This example provides a usefull</p>
+<p class="p1">// utility to programmtically set</p>
+<p class="p1">// the panorama of each audio channel.</p>
+<p class="p1">// You specify the start angle for</p>
+<p class="p1">// the first channel and an incremental</p>
+<p class="p1">// angle to advance on each successive</p>
+<p class="p1">// channel.</p>
+<p class="p1">// Spread is specified between -1</p>
+<p class="p1">// (minimum spread) to 0 (normal spread)</p>
+<p class="p1">// to 1 (maximum spread).</p>
+<p class="p3">(</p>
+<p class="p3"><span class="s1">var</span> ggStart, ggDelta, ggSpread;</p>
+<p class="p3">w = <span class="s1">EisKPlugInWindow</span>( <span class="s2">"Pan"</span>, <span class="s1">Rect</span>( 800, 100, 160, 100 ), resizable: <span class="s1">false</span>, server: e.swing );</p>
+<p class="p3"><span class="s1">JSCStaticText</span>( w, <span class="s1">Rect</span>( 4, 4, 52, 20 )).string_( <span class="s2">"Azi Start"</span> );</p>
+<p class="p3">ggStart = <span class="s1">JSCNumberBox</span>( w, <span class="s1">Rect</span>( 60, 4, 80, 20 )).value_( -45.0 );</p>
+<p class="p3"><span class="s1">JSCStaticText</span>( w, <span class="s1">Rect</span>( 4, 26, 52, 20 )).string_( <span class="s2">"Azi Delta"</span> );</p>
+<p class="p3">~ggDelta = ggDelta = <span class="s1">JSCNumberBox</span>( w, <span class="s1">Rect</span>( 60, 26, 80, 20 )).value_( 45.0 );</p>
+<p class="p3"><span class="s1">JSCStaticText</span>( w, <span class="s1">Rect</span>( 4, 48, 52, 20 )).string_( <span class="s2">"Spread"</span> );</p>
+<p class="p3">ggSpread = <span class="s1">JSCNumberBox</span>( w, <span class="s1">Rect</span>( 60, 48, 80, 20 )).value_( 0.0 );</p>
+<p class="p3"><span class="s1">JSCButton</span>( w, <span class="s1">Rect</span>( 4, 74, 80, 20 )).states_([[ <span class="s2">"Set Pan"</span> ]] ).canFocus_( <span class="s1">false</span> ).action_({ <span class="s1">arg</span> b; <span class="s1">var</span> aziStart, aziDelta, spread;</p>
+<p class="p3">aziStart = ggStart.value;</p>
+<p class="p3">aziDelta = ggDelta.value;</p>
+<p class="p3">spread = ggSpread.value;</p>
+<p class="p3">fork {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="s1">var</span> msg, rate, num, startIdx, stopIdx, numChannels;</p>
+<p class="p4"><span class="s3"><span class="Apple-tab-span">	</span>msg = e.query( </span>'/doc/active/audio'<span class="s3">, [ </span>\count<span class="s3"> ]);</span></p>
+<p class="p3"><span class="Apple-tab-span">	</span>if( msg.notNil, {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>msg.postln;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>numChannels<span class="Apple-tab-span">	</span>= msg[0];</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>numChannels.do({ <span class="s1">arg</span> ch; e.sendMsg( <span class="s2">"/doc/active/audio/"</span> ++ ch, <span class="s4">\pan</span>, (((ch * aziDelta) + aziStart) % 360).round( 0.1 ), spread )});</p>
+<p class="p3"><span class="Apple-tab-span">	</span>}, {</p>
+<p class="p5"><span class="s3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>"timeout"<span class="s3">.warn;</span></p>
+<p class="p3"><span class="Apple-tab-span">	</span>});</p>
+<p class="p3">}</p>
+<p class="p3">});</p>
+<p class="p3">w.front;</p>
+<p class="p3">)</p>
+<p class="p2"><br></p>
+<p class="p1">// to make a full rotation over 14 channels:</p>
+<p class="p3">~ggDelta.value = 360/14</p>
+</body>
+</html>

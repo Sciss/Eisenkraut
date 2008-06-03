@@ -1,0 +1,222 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<title></title>
+<meta name="Generator" content="Cocoa HTML Writer">
+<meta name="CocoaVersion" content="824.47">
+<style type="text/css">
+p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #bf0000}
+p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #000000; min-height: 12.0px}
+p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #000000}
+p.p4 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #007300}
+p.p5 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #606060}
+span.s1 {color: #0000bf}
+span.s2 {color: #007300}
+span.s3 {color: #000000}
+span.s4 {color: #606060}
+span.Apple-tab-span {white-space:pre}
+</style>
+</head>
+<body>
+<p class="p1">// last mod: 03-Jun-08</p>
+<p class="p2"><br></p>
+<p class="p3">e = <span class="s1">Eisenkraut</span>.default;</p>
+<p class="p2"><br></p>
+<p class="p1">// This example renames</p>
+<p class="p1">// markers of the active document.</p>
+<p class="p1">// It will look for markers</p>
+<p class="p1">// named as specified in the</p>
+<p class="p1">// variable oldName, and will</p>
+<p class="p1">// rename these to the name</p>
+<p class="p1">// specified in the variable newName.</p>
+<p class="p3">(</p>
+<p class="p3">fork {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="s1">var</span> msg, num, startIdx, stopIdx, newMarks, delMarks, oldName, newName;</p>
+<p class="p2"><span class="Apple-tab-span">	</span></p>
+<p class="p3"><span class="Apple-tab-span">	</span>oldName<span class="Apple-tab-span">	</span>= <span class="s2">\Mark</span>;</p>
+<p class="p3"><span class="Apple-tab-span">	</span>newName<span class="Apple-tab-span">	</span>= <span class="s2">\attk</span>;</p>
+<p class="p2"><span class="Apple-tab-span">	</span></p>
+<p class="p3"><span class="Apple-tab-span">	</span>newMarks<span class="Apple-tab-span">	</span>= <span class="s1">List</span>.new;</p>
+<p class="p3"><span class="Apple-tab-span">	</span>delMarks<span class="Apple-tab-span">	</span>= <span class="s1">List</span>.new;</p>
+<p class="p4"><span class="s3"><span class="Apple-tab-span">	</span>msg = e.query( </span>'/doc/active/markers'<span class="s3">, </span>\count<span class="s3"> );</span></p>
+<p class="p3"><span class="Apple-tab-span">	</span>if( msg.notNil, {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>num = msg[ 0 ];</p>
+<p class="p5"><span class="s3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>(</span>"Number of markers: "<span class="s3">++num).postln;</span></p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></p>
+<p class="p1"><span class="s3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// read markers</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>startIdx = 0;</p>
+<p class="p1"><span class="s3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// maximum 128 markers per query, based on an estimated of maximum marker names ...</p>
+<p class="p1"><span class="s3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// 128 * (32 + 4 + 5) + headerSize = ca. 5000 bytes</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>stopIdx = min( num, startIdx + 128 );</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>while({ startIdx &lt; num }, {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>msg = e.get( <span class="s2">'/doc/active/markers'</span>, [ <span class="s2">\range</span>, startIdx, stopIdx ]);</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>if( msg.notNil, {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>msg.pairsDo({ <span class="s1">arg</span> pos, name, i;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>if( name.asSymbol === oldName, {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>newMarks.add( pos );</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>newMarks.add( newName );</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>delMarks.add( (i &gt;&gt; 1) + startIdx );</p>
+<p class="p1">//<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>}, {</p>
+<p class="p1">//<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>("Not our marker : '"++name++"'").inform;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>}, {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s4">"timeout"</span>.warn;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>startIdx<span class="Apple-tab-span">	</span>= stopIdx;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>stopIdx<span class="Apple-tab-span">	</span>= min( num, startIdx + 128 );</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></p>
+<p class="p1"><span class="s3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// clear markers</p>
+<p class="p2"><br></p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>startIdx<span class="Apple-tab-span">	</span>= 0;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>num<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>= delMarks.size;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>stopIdx<span class="Apple-tab-span">	</span>= min( num, startIdx + 1024 );</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>while({ startIdx &lt; num }, {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>e.listSendMsg([ <span class="s2">'/doc/active/markers'</span>, <span class="s2">\remove</span>, <span class="s2">\at</span>, delMarks.copyRange( startIdx, stopIdx - 1 )].flatten );</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>startIdx<span class="Apple-tab-span">	</span>= stopIdx;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>stopIdx<span class="Apple-tab-span">	</span>= min( num, startIdx + 1024 );</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="s3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// write markers</p>
+<p class="p2"><br></p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>startIdx<span class="Apple-tab-span">	</span>= 0;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>num<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>= newMarks.size;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>stopIdx<span class="Apple-tab-span">	</span>= min( num, startIdx + 256 );</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>while({ startIdx &lt; num }, {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>e.listSendMsg([ <span class="s2">'/doc/active/markers'</span>, <span class="s2">\add</span>, newMarks.copyRange( startIdx, stopIdx - 1 )].flatten );</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>startIdx<span class="Apple-tab-span">	</span>= stopIdx;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>stopIdx<span class="Apple-tab-span">	</span>= min( num, startIdx + 256 );</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></p>
+<p class="p3"><span class="Apple-tab-span">	</span>}, {</p>
+<p class="p5"><span class="s3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>"timeout"<span class="s3">.warn;</span></p>
+<p class="p3"><span class="Apple-tab-span">	</span>});</p>
+<p class="p3">}</p>
+<ul>
+<li style="margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #000000">)</li>
+<li style="margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #000000; min-height: 12.0px"><br></li>
+<li style="margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #000000; min-height: 12.0px"><br></li>
+</ul>
+<p class="p1">// This example will</p>
+<p class="p1">// delete duplicate markers,</p>
+<p class="p1">// that is markers whose</p>
+<p class="p1">// name and position are equal.</p>
+<p class="p1">// It will also print warnings</p>
+<p class="p1">// if two markers share the same</p>
+<p class="p1">// position but have different names.</p>
+<p class="p3">(</p>
+<p class="p3">fork {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="s1">var</span> msg, num, startIdx, stopIdx, newMarks, delMarks, lastName , lastPos;</p>
+<p class="p2"><span class="Apple-tab-span">	</span></p>
+<p class="p3"><span class="Apple-tab-span">	</span>newMarks<span class="Apple-tab-span">	</span>= <span class="s1">List</span>.new;</p>
+<p class="p3"><span class="Apple-tab-span">	</span>delMarks<span class="Apple-tab-span">	</span>= <span class="s1">List</span>.new;</p>
+<p class="p4"><span class="s3"><span class="Apple-tab-span">	</span>msg = e.query( </span>'/doc/active/markers'<span class="s3">, </span>\count<span class="s3"> );</span></p>
+<p class="p3"><span class="Apple-tab-span">	</span>if( msg.notNil, {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>num = msg[ 0 ];</p>
+<p class="p5"><span class="s3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>(</span>"Number of markers: "<span class="s3">++num).postln;</span></p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></p>
+<p class="p1"><span class="s3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// read markers</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>startIdx = 0;</p>
+<p class="p1"><span class="s3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// maximum 128 markers per query, based on an estimated of maximum marker names ...</p>
+<p class="p1"><span class="s3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// 128 * (32 + 4 + 5) + headerSize = ca. 5000 bytes</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>stopIdx = min( num, startIdx + 128 );</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>lastName = <span class="s1">nil</span>;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>lastPos<span class="Apple-converted-space">  </span>= -1;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>while({ startIdx &lt; num }, {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>msg = e.get( <span class="s2">'/doc/active/markers'</span>, [ <span class="s2">\range</span>, startIdx, stopIdx ]);</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>if( msg.notNil, {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>msg.pairsDo({ <span class="s1">arg</span> pos, name, i;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>name = name.asSymbol;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>if( pos === lastPos, {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>if( name === lastName, {</p>
+<p class="p5"><span class="s3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>(</span>"Deleting duplicate pos "<span class="s3">++pos).inform;</span></p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>delMarks.add( (i &gt;&gt; 1) + startIdx );</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>}, {</p>
+<p class="p5"><span class="s3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>(</span>"Warning: duplicate pos "<span class="s3">++pos++</span>" with different names ('"<span class="s3">++lastName++</span>"', '"<span class="s3">++name++</span>"')"<span class="s3">).inform;</span></p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>lastName = name;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>lastPos<span class="Apple-converted-space">  </span>= pos;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>}, {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s4">"timeout"</span>.warn;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>startIdx<span class="Apple-tab-span">	</span>= stopIdx;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>stopIdx<span class="Apple-tab-span">	</span>= min( num, startIdx + 128 );</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></p>
+<p class="p1"><span class="s3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// clear markers</p>
+<p class="p2"><br></p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>startIdx<span class="Apple-tab-span">	</span>= 0;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>num<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>= delMarks.size;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>stopIdx<span class="Apple-tab-span">	</span>= min( num, startIdx + 1024 );</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>while({ startIdx &lt; num }, {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>e.listSendMsg([ <span class="s2">'/doc/active/markers'</span>, <span class="s2">\remove</span>, <span class="s2">\at</span>, delMarks.copyRange( startIdx, stopIdx - 1 )].flatten );</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>startIdx<span class="Apple-tab-span">	</span>= stopIdx;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>stopIdx<span class="Apple-tab-span">	</span>= min( num, startIdx + 1024 );</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></p>
+<p class="p3"><span class="Apple-tab-span">	</span>}, {</p>
+<p class="p5"><span class="s3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>"timeout"<span class="s3">.warn;</span></p>
+<p class="p3"><span class="Apple-tab-span">	</span>});</p>
+<p class="p3">}</p>
+<ul>
+<li style="margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #000000">)</li>
+<li style="margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #000000; min-height: 12.0px"><br></li>
+<li style="margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #000000; min-height: 12.0px"><br></li>
+</ul>
+<p class="p1">// This example will create markers</p>
+<p class="p1">// at the border (start and stop position)</p>
+<p class="p1">// of the current selection (using a GUI)</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="s3">fork { e.initSwing };</span> // make sure SwingOSC is initialized</p>
+<p class="p3">(</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="s1">var</span> w, ggLeftName, ggRightName, flow;</p>
+<p class="p2"><span class="Apple-tab-span">	</span></p>
+<p class="p3"><span class="Apple-tab-span">	</span>w = <span class="s1">EisKPlugInWindow</span>( <span class="s4">"Markers for Selection"</span>, <span class="s1">Rect</span>( 400, 700, 300, 100 ), server: e.swing );</p>
+<p class="p3"><span class="Apple-tab-span">	</span>flow = <span class="s1">FlowLayout</span>( w.view.bounds );</p>
+<p class="p3"><span class="Apple-tab-span">	</span>w.view.decorator = flow;</p>
+<p class="p2"><span class="Apple-tab-span">	</span></p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="s1">JSCStaticText</span>( w, <span class="s1">Rect</span>( 0, 0, 80, 24 ))</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>.string_( <span class="s4">"Left Name"</span> );</p>
+<p class="p3"><span class="Apple-tab-span">	</span>ggLeftName = <span class="s1">JSCTextField</span>( w, <span class="s1">Rect</span>( 0, 0, 120, 24 ))</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>.string_( <span class="s4">"Left"</span> );</p>
+<p class="p3"><span class="Apple-tab-span">	</span>flow.nextLine;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="s1">JSCStaticText</span>( w, <span class="s1">Rect</span>( 0, 0, 80, 24 ))</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>.string_( <span class="s4">"Right Name"</span> );</p>
+<p class="p3"><span class="Apple-tab-span">	</span>ggRightName = <span class="s1">JSCTextField</span>( w, <span class="s1">Rect</span>( 0, 0, 120, 24 ))</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>.string_( <span class="s4">"Rght"</span> );</p>
+<p class="p3"><span class="Apple-tab-span">	</span>flow.nextLine;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="s1">JSCStaticText</span>( w, <span class="s1">Rect</span>( 0, 0, 80, 24 ));</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="s1">JSCButton</span>( w, <span class="s1">Rect</span>( 0, 0, 120, 24 ))</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>.states_([[ <span class="s4">"Place"</span> ]])</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>.action_({ <span class="s1">arg</span> b;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s1">var</span> leftN, rightN, msg, start, stop;</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>leftN<span class="Apple-tab-span">	</span>= ggLeftName.string;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>rightN<span class="Apple-tab-span">	</span>= ggRightName.string;</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>fork {</p>
+<p class="p4"><span class="s3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>msg = e.query( </span>'/doc/active/timeline'<span class="s3">, [ </span>\selectionStart<span class="s3">, </span>\selectionStop<span class="s3"> ]);</span></p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>if( msg.notNil, {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>start = msg[ 0 ];</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>stop<span class="Apple-converted-space">  </span>= msg[ 1 ];</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>(<span class="s4">"Selection: "</span> ++ start ++ <span class="s4">" ... "</span> ++ stop).inform;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>if( stop &gt; start, {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>e.sendMsg( <span class="s2">'/doc/active/markers'</span>, <span class="s2">\add</span>, start, leftN, stop, rightN );</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>}, {</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s4">"timeout"</span>.warn;</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>};</p>
+<p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
+<p class="p2"><span class="Apple-tab-span">	</span></p>
+<p class="p3"><span class="Apple-tab-span">	</span>w.front;</p>
+<p class="p3">)</p>
+</body>
+</html>
