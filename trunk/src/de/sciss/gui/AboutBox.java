@@ -79,8 +79,8 @@ implements HyperlinkListener
 		final de.sciss.app.Application	app		= AbstractApplication.getApplication();
 //		final char						sep		= File.separatorChar;
 
-//		setApplicationIcon( new ImageIcon( app.getClass().getResource( "application.png" )));
-		setApplicationIcon( new ImageIcon( "images" + File.separator + "application.png" ));
+		setApplicationIcon( new ImageIcon( app.getClass().getResource( "application.png" )));
+//		setApplicationIcon( new ImageIcon( "images" + File.separator + "application.png" ));
 		setCopyright( app.getResourceString( "copyright" ));
 		setHyperlinkListener( this );
 		credits.append( app.getResourceString( "credits" ));

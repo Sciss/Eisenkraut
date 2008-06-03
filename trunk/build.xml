@@ -7,7 +7,8 @@
 	<property name="build.dir"		value="build"/>
 	<property name="dist.dir"		value="dist"/>
 	<property name="classes.dir"	value="${build.dir}/classes"/>
-	<property name="jar.dir"		value="${build.dir}"/>
+<!-- <property name="jar.dir"		value="${build.dir}"/> -->
+	<property name="jar.dir"		value="."/>
 	<property name="resources.dir"	value="resources"/>
 	<property name="main-class"		value="de.sciss.eisenkraut.Main"/>
 	<property name="lib.dir"		value="libraries"/>
