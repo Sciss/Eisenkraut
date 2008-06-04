@@ -2,7 +2,7 @@
  *  PrefsUtil.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2007 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2008 Hanns Holger Rutz. All rights reserved.
  *
  *	This software is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -78,7 +78,7 @@ import de.sciss.util.ParamSpace;
  *	and importing and exporting from/to XML.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 21-Apr-08
+ *  @version	0.70, 04-Jun-08
  */
 public class PrefsUtil
 {
@@ -458,9 +458,11 @@ public class PrefsUtil
 		if( childPrefs.get( KEY_SUPERCOLLIDERAPP, null ) == null ) {
 			f	= findFile( isWindows ? "scsynth.exe" : "scsynth", new String[] {
 				fs + "Applications" + fs + "SuperCollider_f",
+				fs + "Applications" + fs + "SuperCollider",
 				fs + "usr" + fs + "local" + fs + "bin",
 				fs + "usr" + fs + "bin",
-				"C:\\Program Files\\SuperCollider_f"
+				"C:\\Program Files\\SuperCollider_f",
+				"C:\\Program Files\\PsyCollider"
 			});
 			if( f == null ) {
 				if( isMacOS ) {
