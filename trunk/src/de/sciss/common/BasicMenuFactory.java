@@ -81,7 +81,7 @@ import de.sciss.util.Flag;
  *  <code>Main</code> class.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
+ *  @version	0.71, 11-Jun-08
  *
  *  @see	de.sciss.eisenkraut.Main#menuFactory
  */
@@ -234,8 +234,10 @@ implements DocumentListener
 		mgRecent.addSeparator();
 		mgRecent.add( new MenuItem( "clearRecent", actionClearRecent ));
 		mg.add( mgRecent );
-		mg.add( new MenuItem( "close", getResourceString( "menuClose" ), KeyStroke.getKeyStroke( KeyEvent.VK_W, MENU_SHORTCUT )));
-		mg.add( new MenuItem( "closeAll", actionCloseAll ));
+		if( root.getDocumentHandler().isMultiDocumentApplication() ) {
+			mg.add( new MenuItem( "close", getResourceString( "menuClose" ), KeyStroke.getKeyStroke( KeyEvent.VK_W, MENU_SHORTCUT )));
+			mg.add( new MenuItem( "closeAll", actionCloseAll ));
+		}
 		mg.add( new MenuSeparator() );
 //		smg	= new MenuGroup( "import", getResourceString( "menuImport" ));
 //		smg.add( new MenuItem( "markers", getResourceString( "menuImportMarkers" )));
@@ -393,7 +395,7 @@ implements DocumentListener
 		private File	path;
 
 		// new action with path set to null
-		protected ActionOpenRecent( String text, File path )
+		public ActionOpenRecent( String text, File path )
 		{
 			super( text == null ? IOUtil.abbreviate( path.getAbsolutePath(), 40 ) : text );
 			setPath( path );

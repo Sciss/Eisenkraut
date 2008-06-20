@@ -6,7 +6,7 @@
 //  Copyright 2006 __MyCompanyName__. All rights reserved.
 //
 
-package de.sciss.eisenkraut.gui;
+package de.sciss.gui;
 
 import java.awt.Color;
 import java.awt.GradientPaint;

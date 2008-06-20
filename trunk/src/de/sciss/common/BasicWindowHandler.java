@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
 
@@ -62,7 +63,6 @@ import net.roydesign.mac.MRJAdapter;
 import de.sciss.app.AbstractApplication;
 import de.sciss.app.AbstractWindow;
 import de.sciss.app.WindowHandler;
-import de.sciss.eisenkraut.util.PrefsUtil;
 import de.sciss.gui.AbstractWindowHandler;
 import de.sciss.gui.FloatingPaletteHandler;
 import de.sciss.gui.GUIUtil;
@@ -74,7 +74,7 @@ import de.sciss.gui.WindowListenerWrapper;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-May-08
+ *  @version	0.71, 10-Jun-08
  */
 public class BasicWindowHandler
 extends AbstractWindowHandler
@@ -128,7 +128,7 @@ extends AbstractWindowHandler
 		
 		final Preferences	prefs	= root.getUserPrefs();
 		final boolean		lafDeco = prefs.getBoolean( KEY_LAFDECORATION, false );
-		final Rectangle		oScreen	= PrefsUtil.stringToRectangle( prefs.get( KEY_SCREENSPACE, null ));
+		final Rectangle		oScreen	= stringToRectangle( prefs.get( KEY_SCREENSPACE, null ));
 		final Rectangle		nScreen;
 		JFrame.setDefaultLookAndFeelDecorated( lafDeco );
 		
@@ -159,7 +159,7 @@ extends AbstractWindowHandler
 		
 		nScreen		= calcOuterBounds();
 		autoCollect	= !nScreen.equals( oScreen );
-		prefs.put( KEY_SCREENSPACE, PrefsUtil.rectangleToString( nScreen ));
+		prefs.put( KEY_SCREENSPACE, rectangleToString( nScreen ));
 		actionCollect = new ActionCollect( root.getResourceString( "menuCollectWindows" ));
 //System.out.println( "autoCollect = " + autoCollect );
 		
@@ -345,6 +345,28 @@ extends AbstractWindowHandler
 //		return actionCollect;
 //	}
 	
+	private static Rectangle stringToRectangle( String value )
+	{
+		Rectangle				rect	= null;
+		final StringTokenizer	tok;
+		
+		if( value != null ) {
+			try {
+				tok		= new StringTokenizer( value );
+				rect	= new Rectangle( Integer.parseInt( tok.nextToken() ), Integer.parseInt( tok.nextToken() ),
+										 Integer.parseInt( tok.nextToken() ), Integer.parseInt( tok.nextToken() ));
+			}
+			catch( NoSuchElementException e1 ) { e1.printStackTrace(); }
+			catch( NumberFormatException e2 ) { e2.printStackTrace(); }
+		}
+		return rect;
+	}
+
+	private static String rectangleToString( Rectangle value )
+	{
+		return( value != null ? (value.x + " " + value.y + " " + value.width + " " + value.height) : null );
+	}
+
 	protected Rectangle calcOuterBounds()
 	{
 		final Rectangle	outerBounds;

@@ -249,26 +249,6 @@ implements	RenderConsumer, RenderHost,
 		return panel;
 	}
 
-//	protected List getProducerTypes()
-//	{
-//		if( collProducerTypes.isEmpty() ) {
-//			Hashtable h;
-//			h = new Hashtable();
-//			h.put( Main.KEY_CLASSNAME, "de.sciss.meloncillo.render.TimeWarpFilter" );
-//			h.put( Main.KEY_HUMANREADABLENAME, "Time Warp" );
-//			collProducerTypes.add( h );
-//			h = new Hashtable();
-//			h.put( Main.KEY_CLASSNAME, "de.sciss.meloncillo.render.VectorTransformFilter" );
-//			h.put( Main.KEY_HUMANREADABLENAME, "Vector Transformation" );
-//			collProducerTypes.add( h );
-//			h = new Hashtable();
-//			h.put( Main.KEY_CLASSNAME, "de.sciss.meloncillo.render.LispFilter" );
-//			h.put( Main.KEY_HUMANREADABLENAME, "Lisp Plug-In" );
-//			collProducerTypes.add( h );
-//		}
-//		return collProducerTypes;
-//	}
-
 	/*
 	 *	@synchronization	attemptShared on DOOR_TIME
 	 */

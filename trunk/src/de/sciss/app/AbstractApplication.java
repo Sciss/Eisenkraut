@@ -145,7 +145,7 @@ implements de.sciss.app.Application
 	 *	Returns the system's clipboard, or a local
 	 *	clipboard if security permits to retrieve the system clipboard.
 	 */
-	public Clipboard getClipboard()
+	public final Clipboard getClipboard()
 	{
 		if( clipboard == null ) {
 			try {
@@ -162,7 +162,7 @@ implements de.sciss.app.Application
 	/**
 	 *	@synchronization	this method is synchronized
 	 */
-	public Object getComponent( Object key )
+	public final Object getComponent( Object key )
 	{
 		synchronized( mapComponents ) {
 			return mapComponents.get( key );
@@ -172,7 +172,7 @@ implements de.sciss.app.Application
 	/**
 	 *	@synchronization	this method is synchronized
 	 */
-	public void addComponent( Object key, Object component )
+	public final void addComponent( Object key, Object component )
 	{
 		synchronized( mapComponents ) {
 			mapComponents.put( key, component );
@@ -182,7 +182,7 @@ implements de.sciss.app.Application
 	/**
 	 *	@synchronization	this method is synchronized
 	 */
-	public void removeComponent( Object key )
+	public final void removeComponent( Object key )
 	{
 		synchronized( mapComponents ) {
 			mapComponents.remove( key );

@@ -42,7 +42,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -91,12 +90,10 @@ import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
-import javax.swing.LookAndFeel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.TransferHandler;
-import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.undo.CompoundEdit;
@@ -119,7 +116,6 @@ import de.sciss.eisenkraut.gui.AbstractTool;
 import de.sciss.eisenkraut.gui.AudioFileInfoPalette;
 import de.sciss.eisenkraut.gui.Axis;
 import de.sciss.eisenkraut.gui.CrossfadePanel;
-import de.sciss.eisenkraut.gui.GradientPanel;
 import de.sciss.eisenkraut.gui.GraphicsUtil;
 import de.sciss.eisenkraut.gui.MenuFactory;
 import de.sciss.eisenkraut.gui.ObserverPalette;
@@ -159,6 +155,7 @@ import de.sciss.gui.ComponentBoundsRestrictor;
 import de.sciss.gui.ComponentHost;
 import de.sciss.gui.CoverGrowBox;
 import de.sciss.gui.GUIUtil;
+import de.sciss.gui.GradientPanel;
 import de.sciss.gui.MenuAction;
 import de.sciss.gui.MenuRoot;
 import de.sciss.gui.ModificationButton;
@@ -372,10 +369,7 @@ implements ProgressComponent, TimelineListener,
 			InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK : BasicMenuFactory.MENU_SHORTCUT;	// META on Mac, CTRL+SHIFT on PC
 		final TopPainter				trackPainter;
 		final MenuRoot					mr;
-		final GradientPanel				topPane		= new GradientPanel();
-		final LookAndFeel				laf			= UIManager.getLookAndFeel();
-		final boolean					isAqua		= laf == null ? false : laf.getID().equals( "Aqua" );
-		final GradientPaint				grad		= isAqua ? new GradientPaint( 0f, 0f, new Color( 0xF3, 0xF3, 0xF3 ), 0f, 69f, new Color( 0xC4, 0xC4, 0xC4 )) : null;
+		final JPanel					topPane		= GUIUtil.createGradientPanel();
 		final DocumentFrame				enc_this	= this;
 		Box								box;
 
@@ -384,9 +378,6 @@ implements ProgressComponent, TimelineListener,
 		timeTB		= new TimelineToolBar( doc );
 		transTB		= new TransportToolBar( doc );
 
-		topPane.setLayout( new BoxLayout( topPane, BoxLayout.X_AXIS ));
-		topPane.setGradient( grad );
-		
 		wavePanel			= new ComponentHost();
         timeAxis			= new TimelineAxis( doc, wavePanel );
 		markAxis			= new MarkerAxis( doc, wavePanel );
@@ -410,10 +401,10 @@ implements ProgressComponent, TimelineListener,
 		channelHeaderPanel.setLayout( new BoxLayout( channelHeaderPanel, BoxLayout.X_AXIS ));
 final Box bbb = Box.createVerticalBox();
 //bbb.add( Box.createVerticalStrut( timeAxis.getPreferredSize().height ));
-final GradientPanel gp = new GradientPanel();
+final GradientPanel gp = GUIUtil.createGradientPanel();
 gp.setBottomBorder( true );
-gp.setGradient( grad );
 //GUIUtil.constrainHeight( gp, timeAxis.getPreferredSize().height );
+gp.setLayout( null );
 gp.setPreferredSize( new Dimension( 0, timeAxis.getPreferredSize().height ));
 bbb.add( gp );
 bbb.add( markAxisHeader );

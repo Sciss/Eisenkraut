@@ -34,10 +34,12 @@
 package de.sciss.gui;
 
 import java.applet.Applet;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GradientPaint;
 import java.awt.GraphicsEnvironment;
 import java.awt.IllegalComponentStateException;
 import java.awt.Point;
@@ -50,15 +52,19 @@ import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
+import javax.swing.LookAndFeel;
 import javax.swing.Spring;
 import javax.swing.SpringLayout;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.AncestorEvent;
 
 import de.sciss.app.AncestorAdapter;
@@ -69,7 +75,7 @@ import de.sciss.app.PreferenceEntrySync;
  *  for common Swing / GUI operations
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.37, 19-Mar-08
+ *  @version	0.38, 20-Jun-08
  */
 public class GUIUtil
 {
@@ -431,6 +437,20 @@ public class GUIUtil
 			icnNoWrite = new ImageIcon( GUIUtil.class.getResource( "nowrite.png" ));
 		}
 		return icnNoWrite;
+	}
+	
+	public static GradientPanel createGradientPanel()
+	{
+		final GradientPanel		gp		= new GradientPanel();
+		final LookAndFeel		laf		= UIManager.getLookAndFeel();
+		final boolean			isAqua	= laf == null ? false : laf.getID().equals( "Aqua" );
+		final GradientPaint		grad	= isAqua ? new GradientPaint( 0f, 0f, new Color( 0xF3, 0xF3, 0xF3 ), 0f, 69f, new Color( 0xC4, 0xC4, 0xC4 )) : null;
+		
+		gp.setLayout( new BoxLayout( gp, BoxLayout.X_AXIS ));
+		gp.setGradient( grad );
+		gp.setBorder( BorderFactory.createEmptyBorder( 2, 2, 2, 2 ));
+
+		return gp;
 	}
 	
 	/**

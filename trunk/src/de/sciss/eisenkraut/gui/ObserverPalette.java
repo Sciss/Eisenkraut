@@ -221,11 +221,6 @@ implements	ParamField.Listener, TimelineListener, DynamicListening, DocumentList
 		return true;
 	}
 
-	protected boolean restoreVisibility()
-	{
-		return true;
-	}
-
 	protected Point2D getPreferredLocation()
 	{
 		return new Point2D.Float( 0.95f, 0.8f );

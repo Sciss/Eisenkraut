@@ -262,8 +262,6 @@ implements SwingConstants
        	key		= BasicWindowHandler.KEY_LAFDECORATION;
 		key2	= "prefsLAFDecoration";
 		title	= getResourceString( key2 );
-//		lb		= new JLabel( title, JLabel.TRAILING );
-//		tab.gridAdd( lb, 0, row );
 		ggCheckBox  = new PrefCheckBox( title );
 		ggCheckBox.setPreferences( prefs, key );
 		tab.gridAdd( ggCheckBox, 1, row, -1, 1 );
@@ -273,8 +271,6 @@ implements SwingConstants
        	key		= BasicWindowHandler.KEY_INTERNALFRAMES;
 		key2	= "prefsInternalFrames";
 		title	= getResourceString( key2 );
-//		lb		= new JLabel( title, JLabel.TRAILING );
-//		tab.gridAdd( lb, 0, row );
 		ggCheckBox  = new PrefCheckBox( title );
 		ggCheckBox.setPreferences( prefs, key );
 		tab.gridAdd( ggCheckBox, 1, row, -1, 1 );
@@ -283,8 +279,6 @@ implements SwingConstants
 		row++;
        	key		= CoverGrowBox.KEY_INTRUDINGSIZE;
 		key2	= "prefsIntrudingSize";
-//		lb		= new JLabel( getResourceString( key2 ), JLabel.TRAILING );
-//		tab.gridAdd( lb, 0, row );
 		ggCheckBox  = new PrefCheckBox( getResourceString( key2 ));
 		ggCheckBox.setPreferences( prefs, key );
 		tab.gridAdd( ggCheckBox, 1, row, -1, 1 );
@@ -292,8 +286,6 @@ implements SwingConstants
 		row++;
        	key		= BasicWindowHandler.KEY_FLOATINGPALETTES;
 		key2	= "prefsFloatingPalettes";
-//		lb		= new JLabel( getResourceString( key2 ), JLabel.TRAILING );
-//		tab.gridAdd( lb, 0, row );
 		ggCheckBox  = new PrefCheckBox( getResourceString( key2 ));
 		ggCheckBox.setPreferences( prefs, key );
 		tab.gridAdd( ggCheckBox, 1, row, -1, 1 );

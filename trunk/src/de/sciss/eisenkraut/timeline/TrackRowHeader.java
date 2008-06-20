@@ -48,11 +48,11 @@ import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.UndoManager;
 
 import de.sciss.eisenkraut.edit.EditSetSessionObjects;
-import de.sciss.eisenkraut.gui.GradientPanel;
 import de.sciss.eisenkraut.gui.GraphicsUtil;
 import de.sciss.eisenkraut.session.SessionCollection;
 import de.sciss.eisenkraut.session.SessionObject;
 import de.sciss.eisenkraut.util.MapManager;
+import de.sciss.gui.GradientPanel;
 
 import de.sciss.app.AbstractApplication;
 import de.sciss.app.DynamicAncestorAdapter;
@@ -72,7 +72,7 @@ import de.sciss.util.Disposable;
  *	carry insert effects and the like.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 11-Mar-06
+ *  @version	0.70, 20-Jun-08
  */
 public class TrackRowHeader
 extends JPanel

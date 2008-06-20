@@ -42,13 +42,13 @@ import de.sciss.app.AbstractWindow;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 30-Aug-06
+ *  @version	0.71, 19-Jun-08
  */
 public class MenuGroup
 extends MenuItem // implements MenuNode
 {
-	protected final List		collElements	= new ArrayList();
-	protected final Map			mapElements		= new HashMap();	// key = (String) id, value = (MenuNode) element
+	protected final List	collElements	= new ArrayList();
+	protected final Map		mapElements		= new HashMap();	// key = (String) id, value = (MenuNode) element
 	
 	public MenuGroup( String id, Action a )
 	{
@@ -170,6 +170,7 @@ extends MenuItem // implements MenuNode
 
 	public void putMimic( String id, AbstractWindow w, Action a )
 	{
+		if( a == null ) return;
 		final MenuItem mi = (MenuItem) get( id );
 		if( mi == null ) throw new NullPointerException( id );
 
@@ -177,11 +178,21 @@ extends MenuItem // implements MenuNode
 		a.putValue( Action.NAME, src.getValue( Action.NAME ));
 		a.putValue( Action.SMALL_ICON, src.getValue( Action.SMALL_ICON ));
 		a.putValue( Action.ACCELERATOR_KEY, src.getValue( Action.ACCELERATOR_KEY ));
-		a.putValue( Action.MNEMONIC_KEY, src.getValue( Action.MNEMONIC_KEY ));
+		putNoNullNull( src, a, Action.MNEMONIC_KEY );
+//		a.putValue( Action.MNEMONIC_KEY, src.getValue( Action.MNEMONIC_KEY ));
 		a.putValue( Action.SHORT_DESCRIPTION, src.getValue( Action.SHORT_DESCRIPTION ));
 		a.putValue( Action.LONG_DESCRIPTION, src.getValue( Action.LONG_DESCRIPTION ));
 		
 		mi.put( w, a );
+	}
+	
+	// due to bug in java 1.5 JMenuItem
+	private void putNoNullNull( Action src, Action dst, String key )
+	{
+		final Object srcVal = src.getValue( key );
+		final Object dstVal	= dst.getValue( key );
+		if( (srcVal == null) && (dstVal == null) ) return;
+		dst.putValue(  key, srcVal );
 	}
 
 	public void put( String id, AbstractWindow w, Action a )
