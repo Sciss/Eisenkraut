@@ -33,6 +33,16 @@ li.none {
 	list-style-type:none;
 }
 
+tt {
+	outline-width: 2pt;
+	outline-color: #808080;
+	outline-style: outset;
+	padding-left: 2pt;
+	padding-right: 2pt;
+	background: #EEEEEE;
+	font-family: Courier;
+}
+
 li {
 /*	list-style-type:none; */
 	list-style-image:url(list.gif);

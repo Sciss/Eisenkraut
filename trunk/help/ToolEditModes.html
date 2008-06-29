@@ -1,0 +1,29 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Edit Modes</title>
+<LINK REL="stylesheet" TYPE="text/css" HREF="stylesheet.css">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+</head>
+<body>
+<h1><IMG SRC="iconEditModes.png" ALT="">&nbsp;Edit Modes</h1>
+<p>
+There are three edit modes which can be toggled with keyboard <tt>F1</tt>, <tt>F2</tt>, and <tt>F3</tt>. They control how cut / delete and paste operations are performed.
+</p>
+<h2>Insert Mode</h2>
+<P>
+This is the standard mode. Cutting or deleting a selected chunk will remove it and abridge the parts to the left and the right of the selection span. It is not possible to cut, delete, or paste in this mode if only part of the audio file's channels are selected &ndash; either all or no audio channels must be selected.
+</P>
+<P>
+When pasting, a time chunk of the clipboard object's size is inserted at the timeline position.
+</P>
+<h2>Overwrite Mode</h2>
+<P>
+In this mode, the timeline is left unchanged when performing edit operations. When cutting or deleting, the selected audio chunks are cleared (i.e. replaced by silence). When pasting, the clipboard material overwrites the audio material starting at the timeline position.
+</P>
+<h2>Mix Mode</h2>
+<P>
+Cutting and deleting in this mode works the same as in overwrite mode. However, when pasting, the clipboard material is added (&quot;mixed&quot;) to the audio material starting at the timeline position.
+</P>
+</body>
+</html>
