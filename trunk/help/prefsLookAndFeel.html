@@ -11,16 +11,19 @@
 Eisenkraut is written in Java<small>(tm)</small> which is completely platform independant. This raises the need for a graphical user interface (GUI) to be independant of the platform's native look-and-feel. For the user this may appear to be an inconvenience, however Java allows you to switch to different look-and-feels. On MacOS, for example, a very smooth integration into the native Aqua interface is achieved through the 'Mac OS X' look-and-feel. Similarily, on Windows and Linux recent versions of Sun's VM include look-and-feels for Windows XP or Gnome.
 </p><p>
 You can easily install other look-and-feels. For example,
-a very nice looking free one is 'Metouia', a sourceforge project located at
-<A HREF="http://mlf.sourceforge.net/index.php?home" CLASS="ext">mlf.sourceforge.net</A>. The .jar file
-needs to be installed somewhere in the classpath, e.g. on Mac OS put it into
-<code>&quot;/System/Library/Java/Extensions&quot;</code>, and two lines need to be added to the file
+a very nice looking free one is 'Substance', an open source project located at
+<A HREF="http://substance.dev.java.net/" CLASS="ext">substance.dev.java.net</A>. The .jar file needs to be installed somewhere in the classpath, e.g. on Mac&nbsp;OS&nbsp; put it into <code>&quot;/Library/Java/Extensions&quot;</code>, and a few lines need to be added to the file
 <code>&quot;swing.properties&quot;</code> which resides in <code>&quot;$JAVAHOME/lib&quot;</code> (on Mac OS X, <code>$JAVAHOME</code> corresponds to the alias <code>/System/Library/Frameworks/JavaVM.framework/Home</code>):
 </p>
 <pre>
-swing.installedlaf.metouia.name=Metouia
-swing.installedlaf.metouia.class=net.sourceforge.mlf.metouia.MetouiaLookAndFeel
+swing.installedlafs=...,substbusiness,substraven
+...
+swing.installedlaf.substbusiness.name=Substance Business
+swing.installedlaf.substbusiness.class=org.jvnet.substance.skin.SubstanceBusinessLookAndFeel
+swing.installedlaf.substraven.name=Substance Raven Graphite
+swing.installedlaf.substraven.class=org.jvnet.substance.skin.SubstanceRavenGraphiteLookAndFeel
 </pre>
+<P><A HREF="swing.properties">Here</A> is a sample file for <code>swing.properties</code>.</P>
 <h3>Look-and-Feel class</h3>
 <p>
 Which look-and-feel classes are used can be specified in the Look-and-Feel choice box. All the look-and-feels listed in the <code>&quot;swing.properties&quot;</code> file appear here.</P>
