@@ -41,11 +41,13 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Stroke;
+import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.StringSelection;
@@ -332,6 +334,19 @@ implements ProgressComponent, TimelineListener,
 	private static final String				KEY_TRACKSIZE	= "tracksize";
 	
 	private int								verticalScale;
+	
+	protected static final Cursor[]			zoomCsr;
+	
+	static {
+		final Toolkit tk		= Toolkit.getDefaultToolkit();
+		final Point   hotSpot	= new Point( 6, 6 );
+		zoomCsr					= new Cursor[] {
+			tk.createCustomCursor( tk.createImage(
+			    ToolAction.class.getResource( "zoomin.png" )), hotSpot, "zoom-in" ),
+			tk.createCustomCursor( tk.createImage(
+				ToolAction.class.getResource( "zoomout.png" )), hotSpot, "zoom-out" )
+		};
+	}
 
 	/**
 	 *  Constructs a new timeline window with
@@ -3690,6 +3705,8 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 		private long					position;
 		private final javax.swing.Timer	zoomTimer;
 		protected final Rectangle		zoomRect	= new Rectangle();
+		private MenuAction actionZoomIn		= null;
+		private MenuAction actionZoomOut	= null;
 
 		protected TimelineZoomTool()
 		{
@@ -3699,6 +3716,42 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 					setZoomRect( zoomRect );
 				}
 			});
+		}
+
+		public void toolAcquired( final Component c )
+		{
+			super.toolAcquired( c );
+			c.setCursor( zoomCsr[ 0 ]);
+//			c.addKeyListener( this );
+			if( c instanceof JComponent ) {
+				final JComponent jc = (JComponent) c;
+				if( actionZoomOut == null ) actionZoomOut = new MenuAction( "zoomOut",
+				  KeyStroke.getKeyStroke( KeyEvent.VK_ALT, InputEvent.ALT_DOWN_MASK, false )) {
+					public void actionPerformed( ActionEvent e ) {
+//						System.out.println( "DOWN" );
+						c.setCursor( zoomCsr[ 1 ]);
+					}
+				};
+				if( actionZoomIn == null ) actionZoomIn = new MenuAction( "zoomIn",
+				 	KeyStroke.getKeyStroke( KeyEvent.VK_ALT, 0, true )) {
+					public void actionPerformed( ActionEvent e ) {
+//						System.out.println( "UP" );
+						c.setCursor( zoomCsr[ 0 ]);
+					}
+				};
+				actionZoomOut.installOn( jc, JComponent.WHEN_IN_FOCUSED_WINDOW );
+				actionZoomIn.installOn( jc, JComponent.WHEN_IN_FOCUSED_WINDOW );
+			}
+		}
+
+		public void toolDismissed( Component c )
+		{
+			super.toolDismissed( c );
+			if( c instanceof JComponent ) {
+				final JComponent jc = (JComponent) c;
+				if( actionZoomOut != null ) actionZoomOut.deinstallFrom( jc, JComponent.WHEN_IN_FOCUSED_WINDOW );
+				if( actionZoomIn != null ) actionZoomIn.deinstallFrom( jc, JComponent.WHEN_IN_FOCUSED_WINDOW );
+			}
 		}
 
 		public void paintOnTop( Graphics2D g )
@@ -3770,7 +3823,7 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 
 			if( !e.isAltDown() ) clickZoom( 0.5f, e );
 		}
-
+		
 		private void clickZoom( float factor, MouseEvent e )
 		{
 			long	pos, visiLen, start, stop;

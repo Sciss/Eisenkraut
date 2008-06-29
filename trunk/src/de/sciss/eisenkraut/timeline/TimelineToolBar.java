@@ -145,8 +145,22 @@ GUIUtil.createKeyAction( toggle, KeyStroke.getKeyStroke( KeyEvent.VK_F1 + i, 0 )
 		button			= actionBlending.getButton();
 //		root.menuFactory.addGlobalKeyCommand( new DoClickAction( toggle, KeyStroke.getKeyStroke( KeyEvent.VK_CAPS_LOCK, 0 )));
 GUIUtil.createKeyAction( button, KeyStroke.getKeyStroke( KeyEvent.VK_CAPS_LOCK, 0 ));
-//        HelpGlassPane.setHelp( toggle, "ToolBlending" );
-//        addToggleButton( toggle, 1 );
+
+// ... DOESN'T WORK
+//		try {
+//			final Robot r = new Robot();
+//			button.getInputMap( JComponent.WHEN_IN_FOCUSED_WINDOW ).put( KeyStroke.getKeyStroke( KeyEvent.VK_CAPS_LOCK, 0 ), "shortcut" );
+//			button.getActionMap().put( "shortcut", new DoClickAction( button ) {
+//				public void validActionPerformed( ActionEvent e )
+//				{
+//					super.validActionPerformed( e );
+//					r.keyRelease( KeyEvent.VK_CAPS_LOCK );
+//					r.keyPress( KeyEvent.VK_CAPS_LOCK );
+//					r.keyRelease( KeyEvent.VK_CAPS_LOCK );
+//				}
+//			});
+//		}
+//		catch( AWTException e1 ) { /* ignored */ }
 
 //final JComboBox ggCombo = new JComboBox() {
 //	public void setBackground( Color c )

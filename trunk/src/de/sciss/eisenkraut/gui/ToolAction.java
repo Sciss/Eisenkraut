@@ -46,7 +46,7 @@ import javax.swing.Icon;
  *  doesn't do anything at the moment.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
+ *  @version	0.70, 30-Jun-08
  */
 public class ToolAction
 extends AbstractAction
