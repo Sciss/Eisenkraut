@@ -54,7 +54,7 @@ import de.sciss.io.Span;
 import de.sciss.util.ListEnum;
 
 /**
- *	@version	0.21, 19-Apr-08
+ *	@version	0.21, 28-Jun-08
  *	@author		Hanns Holger Rutz
  *
  *	@todo		addPerform( new Edit-Dispatch ) ueberpruefen (evtl. redundant)
@@ -79,8 +79,6 @@ implements Trail, EventManager.Processor
 	
 	private EventManager				elm					= null;		// lazy creation
 	private List						dependants			= null;		// lazy creation
-
-//	protected final BasicTrail			enc_this			= this;
 
 	// Element : Trail
 	

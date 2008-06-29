@@ -3,31 +3,39 @@
 <head>
 <title>Menu Reference</title>
 <LINK REL="stylesheet" TYPE="text/css" HREF="stylesheet.css">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
 </head>
 <body>
 <h1>Menu Reference</h1>
-<BLOCKQUOTE>
-addendum v0.5 : multiple files can be opened. there is a close and close-all item in the file menu. the supercollider window is now known as the <A HREF="MainFrame.html">main window</A>. there is no separate transport window, every soundfile has it's own transport attached to its waveform window (you can playback several sound files at once!). the view menu has a new item &quot;Markers&quot;. an <A HREF="IOSetup.html">I/O setup</A> item has been added to the window menu.	
-</BLOCKQUOTE>
 <P>Scroll down for <A HREF="#File" CLASS="anchor">File</A> | <A HREF="#Edit" CLASS="anchor">Edit</A> | <A HREF="#Timeline" CLASS="anchor">Timeline</A> | <A HREF="#Process" CLASS="anchor">Process</A> | <A HREF="#Operation" CLASS="anchor">Operation</A> | <A HREF="#View" CLASS="anchor">View</A> | <A HREF="#Window" CLASS="anchor">Window</A> | <A HREF="#Debug" CLASS="anchor">Debug</A> | <A HREF="#Help" CLASS="anchor">Help</A></P>
-<H3></A>Eisenkraut menu</H3>
+<H3>Eisenkraut menu</H3>
 <P>
 On Mac OS X, this menu carries the items to open the about dialog, to open the <A HREF="PrefsFrame.html">preferences pane</A> and to quit the application. On other platforms, the about item appears in the <A HREF="#Help" CLASS="anchor">Help</A> menu, the preferences item appears in the <A HREF="#Edit" CLASS="anchor">Edit</A> menu, the quit item is listed in the <A HREF="#File" CLASS="anchor">File</A> menu.
 </P>
 <H3><A NAME="File"></A>File menu</H3>
 <UL>
-<LI><B>Open</B> : replaces the current document with a new sound file, prompted by a dialog. In this version, only one sound file can be open at a time.</LI>
-<LI><B>Open Recent</B> : the submenu contains the last eight sound files used for quick re-opening. &quot;Clear Menu&quot; will empty the list.<HR WIDTH="20%"></LI>
-<LI><B>Save (As)</B> : saves any changes made to the current file. if you choose &quot;Save As&quot;, a dialog pops up to enter the new file name and format. To browse the harddisk, click on the small folder icon in this dialog.</LI>
+<LI><B>New -&gt; Empty Document</B> : allows you to create a new empty untitled document, suitable for pasting content into from other documents, or for adding live recordings via the Timeline -&gt; Insert Recording action.</LI>
+<LI><B>New -&gt; Document from Selection</B> : enabled whenever you have made a selection in the active document. This will copy the active selection and paste it into a new untitled document. You can also use this to extract certain channels from a document, by only selecting particular channels (Shift+Click on the names of the channels you with to exclude).</LI>
+<LI><B>Open</B> : opens a dialog for you to select a sound file. That file is opened in a new window. Multichannel files need to be in interleaved format.</LI>
+<LI><B>Open Multiple Mono</B> : allows you to open multichannel sound that are splitted into separate files for each channel. Opens a dialog for you to select all belonging files of the sound. The files need to have the same length, sample rate and encoding. The files are opened as a compound object in a new window. Hint: the default file dialog used on Mac OS X is very bad. You might want to install the <A HREF="http://www.randelshofer.ch/quaqua/" CLASS="ext">Quaqua</A> file chooser.</LI>
+<LI><B>Open Recent</B> : the submenu contains the last eight sound files used for quick re-opening. &quot;Clear Menu&quot; will empty the list.</LI>
+<LI><B>Close</B> : closes the current document (asks for confirmation if the file contains unsaved changes)</LI>
+<LI><B>Close All</B> : closes all documents (asks for confirmation for any file which contains unsaved changes)</LI>
+<LI CLASS="none"><HR WIDTH="20%"></LI>
+<LI><B>Save (As)</B> : saves any changes made to the active document. if you choose &quot;Save As&quot;, a dialog pops up to enter the new file name and format. To browse the harddisk, click on the small folder icon in this dialog.</LI>
+<LI><B>Save a Copy As</B> : prompts for a new file name to save a copy of the active document (including all edits). An option can be checked to open this new file as a separate document. The file currently open is not affected and not overwritten.</LI>
+<LI><B>Save Selection As</B> : this item is available if you have made a selection in the active document. It prompts for a new file name to save the currently selected part of the document (including all edits). An option can be checked to open this new file as a separate document. The file currently open is not affected and not overwritten. You can also use this to extract certain channels from a document, by only selecting particular channels (Shift+Click on the names of the channels you with to exclude).</LI>
 </UL>
 <H3><A NAME="Edit"></A>Edit menu</H3>
 <UL>
 <LI><B>Undo</B> : makes the last editing operation undone. the number of undoable steps is not limited. once a soundfile is opened or saved, the undo buffer is erased.</LI>
-<LI><B>Redo</B> : when undo was invoked and no new editing has been performed, it is possible to redo the undone steps.<HR WIDTH="20%"></LI>
+<LI><B>Redo</B> : when undo was invoked and no new editing has been performed, it is possible to redo the undone steps.</LI>
+<LI CLASS="none"><HR WIDTH="20%"></LI>
 <LI><B>Cut</B> : what this item does, depends on the window that is focussed. for the <A HREF="TimelineFrame.html">waveform frame</A>, the selected time span is removed and put in the clipboard.</LI>
 <LI><B>Copy</B> : what this item does, depends on the window that is focussed. for the <A HREF="TimelineFrame.html">waveform frame</A>, the selected time span is put in the clipboard.</LI>
 <LI><B>Paste</B> : what this item does, depends on the window that is focussed. for the <A HREF="TimelineFrame.html">waveform frame</A>, if soundfile portions had been put in the clipboard, they get pasted in at the current timeline position. note that in the paste operation, the current timeline selection is ignored, the material is always inserted, it never overwrites parts of the timeline. if you wish to overwrite a part, delete the old content first, then choose paste.</LI>
-<LI><B>Delete</B> : what this item does, depends on the window that is focussed. for the <A HREF="TimelineFrame.html">waveform frame</A>, the selected time span is removed.<HR WIDTH="20%"></LI>
+<LI><B>Delete</B> : what this item does, depends on the window that is focussed. for the <A HREF="TimelineFrame.html">waveform frame</A>, the selected time span is removed.</LI>
+<LI CLASS="none"><HR WIDTH="20%"></LI>
 <LI><B>Select All</B> : what this item does, depends on the window that is focussed. for the <A HREF="TimelineFrame.html">waveform frame</A>, the selected time span is set to the whole soundfile extent.</LI>
 </UL>
 <H3><A NAME="Timeline"></A>Timeline menu</H3>
@@ -56,7 +64,7 @@ On Mac OS X, this menu carries the items to open the about dialog, to open the <
 <LI><B>Time Units</B> : what the horizontal timeline axis ruler should display (minutes:seconds.milliseconds or sample frames). doesn't yet affect observer palette or go-to-time dialog.</LI>
 <LI><B>Null Linie</B> : if checked, a dooted yellow line in the waveform display indicates the zero crossing line.</LI>
 <LI><B>Vertical Rulers</B> : if checked, a vertical (amplitude axis) ruler is displayed next to each channel, indicating the vertical zoom (shown in percent).</LI>
-<UL>
+</UL>
 <H3><A NAME="Window"></A>Window menu</H3>
 <UL>
 <LI><B>Transport</B> (<code>Meta+Numpad-1</code>) : opens the <A HREF="TransportPalette.html">transport palette</A> and brings it to the front.</LI>
@@ -67,7 +75,8 @@ On Mac OS X, this menu carries the items to open the about dialog, to open the <
 <H3><A NAME="Help"></A>Help menu</H3>
 <UL>
 <LI><B>Eisenkraut Help</B> : opens the <A HREF="HelpHTMLPane.html">help viewer</A> and shows the <A HREF="index.html">help index</A>.</LI>
-<LI><B>Keyboard Shortcuts</B> : opens the <A HREF="HelpHTMLPane.html">help viewer</A> and shows the <A HREF="Shortcuts.html">keyboard shortcuts</A>.<HR WIDTH="20%"></LI>
+<LI><B>Keyboard Shortcuts</B> : opens the <A HREF="HelpHTMLPane.html">help viewer</A> and shows the <A HREF="Shortcuts.html">keyboard shortcuts</A>.</LI>
+<LI CLASS="none"><HR WIDTH="20%"></LI>
 <LI><B>Open Eisenkraut Website</B> : opens the application home page in the system's default web browser.</LI>
 </UL>
 </body>

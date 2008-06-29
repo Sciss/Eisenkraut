@@ -179,7 +179,7 @@ import org.unicode.Normalizer;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 29-Apr-08
+ *  @version	0.70, 28-Jun-08
  */
 public class DocumentFrame
 extends AppWindow
@@ -252,8 +252,6 @@ implements ProgressComponent, TimelineListener,
 	private final ActionVerticalZoom		actionIncVertMin, actionDecVertMin;
 
 	private final AbstractWindow.Adapter	winListener;
-
-//	private	final DocumentFrame				enc_this				= this;
 
 	private final JLabel					lbWriteProtected;
 	private boolean							writeProtected			= false;
@@ -370,7 +368,6 @@ implements ProgressComponent, TimelineListener,
 		final TopPainter				trackPainter;
 		final MenuRoot					mr;
 		final JPanel					topPane		= GUIUtil.createGradientPanel();
-		final DocumentFrame				enc_this	= this;
 		Box								box;
 
 		internalFrames		= app.getWindowHandler().usesInternalFrames();
@@ -691,10 +688,9 @@ bbb.add( markAxisHeader );
 			{
 				// need to check 'disposed' to avoid runtime exception in doc handler if document was just closed
 				if( !disposed ) {
-//System.err.println( "DocumentFrame.winListener.windowActivated(). hashCode = "+enc_this.hashCode() );
-					app.getDocumentHandler().setActiveDocument( enc_this, doc );
+					app.getDocumentHandler().setActiveDocument( DocumentFrame.this, doc );
 //					app.getMenuFactory().setSelectedWindow( actionShowWindow );
-					((BasicWindowHandler) app.getWindowHandler()).setMenuBarBorrower( enc_this );
+					((BasicWindowHandler) app.getWindowHandler()).setMenuBarBorrower( DocumentFrame.this );
 //				actionShowWindow.setSelected( true );
 				}
 			}

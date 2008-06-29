@@ -123,7 +123,7 @@ import de.sciss.util.ParamSpace;
  *  application and session preferences
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-May-08
+ *  @version	0.70, 28-Jun-08
  */
 public class PrefsFrame
 extends AppWindow
@@ -141,8 +141,6 @@ implements SwingConstants
 	protected final Set				setAudioBoxNames	= new HashSet();
 	protected static final String[]	audioBoxColNames	= { "prefsAudioDevice", "prefsAudioInputChannels", "prefsAudioOutputChannels", "prefsAudioDeviceActive" };
 	
-//	private final PrefsFrame		enc_this			= this;
-
 	private static final StringItem[] RATE_ITEMS = {
 		new StringItem( new Param( 0, ParamSpace.FREQ | ParamSpace.HERTZ ).toString(), "System Default" ),
 //		new StringItem( new Param( 32000, ParamSpace.FREQ | ParamSpace.HERTZ ).toString(), "32 kHz" ),

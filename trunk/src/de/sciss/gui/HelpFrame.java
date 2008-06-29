@@ -66,10 +66,9 @@ import de.sciss.app.WindowHandler;
  *  pages.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.19, 19-Aug-06
+ *  @version	0.19, 28-Jun-08
  */
 public class HelpFrame
-// extends JFrame // BasicFrame
 implements HyperlinkListener, PropertyChangeListener
 {
 	/**
@@ -107,7 +106,6 @@ implements HyperlinkListener, PropertyChangeListener
         Box									buttonPanel;
 		final JButton						ggClose;
         JScrollPane							ggScroll;
-//		final HelpFrame						enc_this = this;
 		
 		plainTitle	= GUIUtil.getResourceString( "frameHelp" );
 		

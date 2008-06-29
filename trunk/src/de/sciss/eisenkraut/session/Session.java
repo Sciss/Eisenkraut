@@ -155,8 +155,6 @@ implements OSCRouter
 	private final UndoManager				undo			= new UndoManager( this );
 	private boolean							dirty			= false;
 
-	protected final Session					enc_this		= this;
-
 	public static final int					EDIT_INSERT		= 0;
 	public static final int					EDIT_OVERWRITE	= 1;
 	public static final int					EDIT_MIX		= 2;
@@ -1070,7 +1068,7 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 //			pt				= new ProcessingThread( this, getFrame(), bird, name, args, Session.DOOR_ALL );
 			proc				= new ProcessingThread( this, getFrame(), name );
 			proc.putClientArg( "afds", descrs );
-			proc.putClientArg( "doc", enc_this );
+			proc.putClientArg( "doc", Session.this );
 			proc.putClientArg( "asCopy", new Boolean( asCopy ));
 			proc.putClientArg( "chanMap", channelMap );
 			proc.putClientArg( "markers", new Boolean( saveMarkers ));
@@ -1296,7 +1294,7 @@ tryRename:					  {
 				span = timeline.getSelectionSpan();
 				if( span.isEmpty() ) return null;
 
-				return new ClipboardTrackList( enc_this );
+				return new ClipboardTrackList( Session.this );
 //			}
 //			finally {
 //				bird.releaseShared( Session.DOOR_TIME | Session.DOOR_TRACKS );
@@ -1453,7 +1451,7 @@ tryRename:					  {
 			edit			= new BasicCompoundEdit( name );
 			oldSelSpan		= timeline.getSelectionSpan();
 			if( !oldSelSpan.isEmpty() ) { // deselect
-				edit.addPerform( TimelineVisualEdit.select( this, enc_this, new Span() ));
+				edit.addPerform( TimelineVisualEdit.select( this, Session.this, new Span() ));
 			}
 
 			proc	= new ProcessingThread( this, getFrame(), name );
@@ -1570,14 +1568,14 @@ tryRename:					  {
 			
 			if( (context.getReturnCode() == DONE) ) {
 				if( expTimeline && (pasteLength != 0) ) {	// adjust timeline
-					edit.addPerform( new EditSetTimelineLength( this, enc_this, timeline.getLength() + pasteLength ));
+					edit.addPerform( new EditSetTimelineLength( this, Session.this, timeline.getLength() + pasteLength ));
 					if( timeline.getVisibleSpan().isEmpty() ) {
-						edit.addPerform( TimelineVisualEdit.scroll( this, enc_this, insertSpan ));
+						edit.addPerform( TimelineVisualEdit.scroll( this, Session.this, insertSpan ));
 					}
 				}
 				if( !insertSpan.isEmpty() ) {
-					edit.addPerform( TimelineVisualEdit.select( this, enc_this, insertSpan ));
-					edit.addPerform( TimelineVisualEdit.position( this, enc_this, insertSpan.stop ));
+					edit.addPerform( TimelineVisualEdit.select( this, Session.this, insertSpan ));
+					edit.addPerform( TimelineVisualEdit.position( this, Session.this, insertSpan.stop ));
 				}
 
 				edit.perform();
@@ -1699,19 +1697,19 @@ tryRename:					  {
 			selSpan				= timeline.getSelectionSpan();
 			
 			if( (mode == EDIT_INSERT) && !selSpan.isEmpty() ) {
-				edit.addPerform( TimelineVisualEdit.position( this, enc_this, span.start ));
-				edit.addPerform( TimelineVisualEdit.select( this, enc_this, new Span() ));
+				edit.addPerform( TimelineVisualEdit.position( this, Session.this, span.start ));
+				edit.addPerform( TimelineVisualEdit.select( this, Session.this, new Span() ));
 			}
 			if( cutTimeline ) {
 				visiSpan = timeline.getVisibleSpan();
 				if( visiSpan.stop > span.start ) {
 					if( visiSpan.stop > newDocLength ) {
 						visiSpan = new Span( Math.max( 0, newDocLength - visiSpan.getLength() ), newDocLength );
-						TimelineVisualEdit tve = TimelineVisualEdit.scroll( this, enc_this, visiSpan );
+						TimelineVisualEdit tve = TimelineVisualEdit.scroll( this, Session.this, visiSpan );
 						edit.addPerform( tve );
 					} // else visiSpan untouched
 				}
-				edit.addPerform( new EditSetTimelineLength( this, enc_this, newDocLength ));
+				edit.addPerform( new EditSetTimelineLength( this, Session.this, newDocLength ));
 			}
 
 			final ProcessingThread proc = new ProcessingThread( this, getFrame(), name );
@@ -1829,8 +1827,8 @@ tryRename:					  {
 				deleteAfter		= new Span( selSpan.stop, timeline.getLength() );
 
 				// deselect
-				edit.addPerform( TimelineVisualEdit.select( this, enc_this, new Span() ));
-				edit.addPerform( TimelineVisualEdit.position( this, enc_this, 0 ));
+				edit.addPerform( TimelineVisualEdit.select( this, Session.this, new Span() ));
+				edit.addPerform( TimelineVisualEdit.position( this, Session.this, 0 ));
 
 				if( !deleteAfter.isEmpty() || !deleteBefore.isEmpty() ) {
 					for( int i = 0; i < tis.size(); i++ ) {
@@ -1846,8 +1844,8 @@ tryRename:					  {
 					}
 				}
 
-				edit.addPerform( new EditSetTimelineLength( this, enc_this, selSpan.getLength() ));
-				edit.addPerform( TimelineVisualEdit.select( this, enc_this, selSpan.shift( -selSpan.start )));
+				edit.addPerform( new EditSetTimelineLength( this, Session.this, selSpan.getLength() ));
+				edit.addPerform( TimelineVisualEdit.select( this, Session.this, selSpan.shift( -selSpan.start )));
 
 				edit.perform();
 				edit.end();
@@ -1942,7 +1940,7 @@ tryRename:					  {
 			insertSpan	= new Span( pos, pos + numFrames );
 
 			if( !oldSelSpan.isEmpty() ) { // deselect
-				edit.addPerform( TimelineVisualEdit.select( this, enc_this, new Span() ));
+				edit.addPerform( TimelineVisualEdit.select( this, Session.this, new Span() ));
 			}
 
 			proc.putClientArg( "tis", Track.getInfos( selectedTracks.getAll(), tracks.getAll() ));
@@ -1987,14 +1985,14 @@ tryRename:					  {
 
 			if( context.getReturnCode() == DONE ) {
 				if( !insertSpan.isEmpty() ) {	// adjust timeline
-					edit.addPerform( new EditSetTimelineLength( this, enc_this, timeline.getLength() + insertSpan.getLength() ));
+					edit.addPerform( new EditSetTimelineLength( this, Session.this, timeline.getLength() + insertSpan.getLength() ));
 					if( timeline.getVisibleSpan().isEmpty() ) {
-						edit.addPerform( TimelineVisualEdit.scroll( this, enc_this, insertSpan ));
+						edit.addPerform( TimelineVisualEdit.scroll( this, Session.this, insertSpan ));
 					}
 				}
 				if( !insertSpan.isEmpty() ) {
-					edit.addPerform( TimelineVisualEdit.select( this, enc_this, insertSpan ));
-					edit.addPerform( TimelineVisualEdit.position( this, enc_this, insertSpan.stop ));
+					edit.addPerform( TimelineVisualEdit.select( this, Session.this, insertSpan ));
+					edit.addPerform( TimelineVisualEdit.position( this, Session.this, insertSpan.stop ));
 				}
 				edit.perform();
 				edit.end();

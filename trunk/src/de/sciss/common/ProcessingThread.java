@@ -58,7 +58,7 @@ import de.sciss.util.Disposable;
  *  displaying messages and exceptions.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 12-Nov-06
+ *  @version	0.70, 28-Jun-08
  */
 public class ProcessingThread
 //extends Thread
@@ -120,8 +120,6 @@ implements Runnable, EventManager.Processor, ActionListener, Disposable	// , Pro
 //		this.lm				= lm;
 //		this.requiredDoors  = requiredDoors;
 		
-		final ProcessingThread enc_this	= this;
-
 		// the progress update is called
 		// from the rendering thread using
 		// EventQueue.invokeLater( Runnable t )
@@ -141,12 +139,12 @@ implements Runnable, EventManager.Processor, ActionListener, Disposable	// , Pro
 //				final boolean success = (returnCode == Client.DONE) || (returnCode == Client.CANCELLED);
 
 				pc.finishProgression( returnCode );
-				pc.removeCancelListener( enc_this );
-//				client.processFinished( enc_this, clientArg );
-				client.processFinished( enc_this );
+				pc.removeCancelListener( ProcessingThread.this );
+//				client.processFinished( ProcessingThread.this, clientArg );
+				client.processFinished( ProcessingThread.this );
 				synchronized( sync ) {
-					if( elm != null ) elm.dispatchEvent( new ProcessingThread.Event( enc_this,
-						ProcessingThread.Event.STOPPED, System.currentTimeMillis(), enc_this ));
+					if( elm != null ) elm.dispatchEvent( new ProcessingThread.Event( ProcessingThread.this,
+						ProcessingThread.Event.STOPPED, System.currentTimeMillis(), ProcessingThread.this ));
 				}
 				if( (returnCode == ProgressComponent.FAILED) && (exception != null) ) {
 					pc.displayError( exception, name );

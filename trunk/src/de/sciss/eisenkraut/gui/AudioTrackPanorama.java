@@ -59,7 +59,7 @@ import de.sciss.util.Disposable;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 13-Oct-06
+ *  @version	0.70, 28-Jun-08
  */
 public class AudioTrackPanorama
 implements Disposable
@@ -81,7 +81,6 @@ implements Disposable
 
 	public AudioTrackPanorama( final AudioTrack t, SessionCollection tracks )
 	{
-		final Object		enc_this	= this;
 		final Application	app			= AbstractApplication.getApplication();
 		
 		audioPrefs	= app.getUserPrefs().node( PrefsUtil.NODE_AUDIO );
@@ -95,8 +94,8 @@ implements Disposable
 			public void actionPerformed( ActionEvent e )
 			{
 				if( pan != null ) {
-					t.getMap().putValue( enc_this, AudioTrack.MAP_KEY_PANAZIMUTH, new Double( pan.getAzimuth() ));
-					t.getMap().putValue( enc_this, AudioTrack.MAP_KEY_PANSPREAD,  new Double( pan.getSpread() ));
+					t.getMap().putValue( AudioTrackPanorama.this, AudioTrack.MAP_KEY_PANAZIMUTH, new Double( pan.getAzimuth() ));
+					t.getMap().putValue( AudioTrackPanorama.this, AudioTrack.MAP_KEY_PANSPREAD,  new Double( pan.getSpread() ));
 				}
 			}
 		};
@@ -113,7 +112,7 @@ implements Disposable
 
 			public void sessionObjectMapChanged( SessionCollection.Event e )
 			{
-				if( (e.getSource() != enc_this) && (pan != null) && e.collectionContains( t ) &&
+				if( (e.getSource() != AudioTrackPanorama.this) && (pan != null) && e.collectionContains( t ) &&
 				    (e.setContains( AudioTrack.MAP_KEY_PANAZIMUTH ) || e.setContains( AudioTrack.MAP_KEY_PANSPREAD ))) {
 
 					setAzimuthAndSpread();

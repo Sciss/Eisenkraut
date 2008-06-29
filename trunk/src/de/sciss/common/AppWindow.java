@@ -548,7 +548,6 @@ implements AbstractWindow
 		}
 //		AbstractApplication.getApplication().addComponent( getClass().getName(), this );
 		
-//		final AbstractWindow enc_this = this;
 		winListener = new AbstractWindow.Adapter() {
 			public void windowOpened( AbstractWindow.Event e )
 			{
@@ -587,11 +586,11 @@ implements AbstractWindow
 					if( tempFloating ) {
 						if( jif == null ) {
 //System.out.println( "activ " + enc_getClass().getName() );
-////							wh.removeWindow( enc_this, null );
+////							wh.removeWindow( AbstractWindow.this, null );
 tempFloatingTimer.restart();
 //							GUIUtil.setAlwaysOnTop( getWindow(), true );
 ////							floating = true;
-////							wh.addWindow( enc_this, null );
+////							wh.addWindow( AbstractWindow.this, null );
 						} else {
 							jif.setLayer( JLayeredPane.MODAL_LAYER );
 						}
@@ -627,11 +626,11 @@ tempFloatingTimer.restart();
 					if( tempFloating ) {
 						if( jif == null ) {
 //System.out.println( "deact " + enc_getClass().getName() );
-//							wh.removeWindow( enc_this, null );
+//							wh.removeWindow( AbstractWindow.this, null );
 							GUIUtil.setAlwaysOnTop( getWindow(), false );
 tempFloatingTimer.stop();
 //							floating = false;
-//							wh.addWindow( enc_this, null );
+//							wh.addWindow( AbstractWindow.this, null );
 
 // find the new active window (is valid only after
 // the next event cycle) and re-put it in the front\

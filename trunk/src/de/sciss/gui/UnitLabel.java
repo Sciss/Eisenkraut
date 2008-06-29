@@ -69,7 +69,7 @@ import javax.swing.MenuElement;
  *	which uses a text and/or icon label as renderer and not a button.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.32, 17-Apr-07
+ *  @version	0.33, 28-Jun-08
  *
  *	@see		ParamField
  */
@@ -86,7 +86,6 @@ implements Icon, PropertyChangeListener
 	private final Color				colrLab		= null;
 	private final Color				colrLabD	= new Color( 0x00, 0x00, 0x00, 0x7F );
 
-	protected final UnitLabel		enc_this	= this;
 	protected final JPopupMenu		pop			= new JPopupMenu();
 	private final ButtonGroup		bg			= new ButtonGroup();
 
@@ -116,7 +115,7 @@ implements Icon, PropertyChangeListener
 						((UnitAction) units.get( (selectedIdx + 1) % units.size() )).setLabel();
 						((JCheckBoxMenuItem) pop.getComponent( selectedIdx )).setSelected( true );
 					} else {
-						pop.show( enc_this, 0, enc_this.getHeight() );
+						pop.show( UnitLabel.this, 0, UnitLabel.this.getHeight() );
 					}
 				}
 			}
@@ -381,7 +380,7 @@ implements Icon, PropertyChangeListener
 		{
 			super( name );
 			this.name	= name;
-			this.icon	= new CompoundIcon( null, enc_this, enc_this.getIconTextGap() );
+			this.icon	= new CompoundIcon( null, UnitLabel.this, UnitLabel.this.getIconTextGap() );
 		}
 
 		protected UnitAction( Icon icon )
@@ -389,14 +388,14 @@ implements Icon, PropertyChangeListener
 			super();
 			putValue( SMALL_ICON, icon );
 			this.name	= null;
-			this.icon	= new CompoundIcon( icon, enc_this, enc_this.getIconTextGap() );
+			this.icon	= new CompoundIcon( icon, UnitLabel.this, UnitLabel.this.getIconTextGap() );
 		}
 
 		protected UnitAction( String name, Icon icon )
 		{
 			super( name, icon );
 			this.name	= name;
-			this.icon	= new CompoundIcon( icon, enc_this, enc_this.getIconTextGap() );
+			this.icon	= new CompoundIcon( icon, UnitLabel.this, UnitLabel.this.getIconTextGap() );
 		}
 	
 		public void actionPerformed( ActionEvent e )
@@ -406,10 +405,10 @@ implements Icon, PropertyChangeListener
 		
 		protected void setLabel()
 		{
-			enc_this.setText( name );
-			enc_this.setIcon( icon );
-			final int newIndex	= enc_this.units.indexOf( this );
-			if( newIndex != enc_this.selectedIdx ) {
+			UnitLabel.this.setText( name );
+			UnitLabel.this.setIcon( icon );
+			final int newIndex	= UnitLabel.this.units.indexOf( this );
+			if( newIndex != UnitLabel.this.selectedIdx ) {
 				selectedIdx = newIndex;
 				fireUnitChanged();
 			}
@@ -420,7 +419,7 @@ implements Icon, PropertyChangeListener
 			int w, h;
 			
 			if( name != null ) {
-				w	= fntMetr.stringWidth( name ) + enc_this.getIconTextGap();
+				w	= fntMetr.stringWidth( name ) + UnitLabel.this.getIconTextGap();
 				h	= fntMetr.getHeight();
 			} else {
 				w	= 0;

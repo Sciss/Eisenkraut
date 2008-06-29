@@ -51,25 +51,21 @@ import de.sciss.util.Disposable;
  *	A GUI component showing a time position.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
+ *  @version	0.70, 28-Jun-08
  */
 public class TimeLabel
 extends JPanel
 implements Disposable
 {
-//	private long				resetWhen;
 	private final TimeFormat	frmt;
 	protected String			text;
-//	private Color				colr			= Color.black;
 
 	protected static final Font	fntMono;
 	protected boolean			dimsKnown		= false;
 	protected int				textWidth, textHeight, textAscent;
 
-//	private static final Color		colrTime		= new Color( 0xD6, 0xDB, 0xBF );
 	private static final Color		colrTime		= new Color( 0xF1, 0xFA, 0xCA );
 
-//	private final JPanel	enc_this	= this;
 	private final Label		lb;
 
 	static {

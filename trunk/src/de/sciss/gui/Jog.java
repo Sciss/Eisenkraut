@@ -57,7 +57,7 @@ import de.sciss.app.BasicEvent;
 import de.sciss.app.EventManager;
 
 /**
- *  @version	0.3, 06-Nov-05
+ *  @version	0.31, 28-Jun-08
  */
 public class Jog
 extends JComponent
@@ -66,13 +66,9 @@ implements PropertyChangeListener, EventManager.Processor
 	// ---- normal colours ----
 	private static final Paint	pntBack			= new GradientPaint( 10,  9, new Color( 235, 235, 235 ),
 																	 10, 19, new Color( 248, 248, 248 ));
-//	private static final Color	colrOutline		= new Color( 0, 0, 0 ); // 0xC0 );
 	private static final Color	colrOutline		= new Color( 40, 40, 40 ); // 0xC0 );
 	private static final Color	colrLight		= new Color( 251, 251, 251 );
 	private static final Color	colrArcLight	= new Color( 255, 255, 255 );
-//	private static final Color	colrArcShadow	= new Color( 0, 0, 0, 0x80 );
-//	private static final Paint	pntArcShadow	= new GradientPaint( 12,  0, new Color( 0, 0, 0, 0xA0 ),
-//																	 8, 15, new Color( 0, 0, 0, 0x00 ));
 	private static final Paint	pntArcShadow	= new GradientPaint( 12,  0, new Color( 40, 40, 40, 0xA0 ),
 																	  8, 15, new Color( 40, 40, 40, 0x00 ));
 	private static final Paint	pntBelly		= new GradientPaint( 0, -3, new Color( 0x58, 0x58, 0x58 ),
@@ -114,7 +110,6 @@ implements PropertyChangeListener, EventManager.Processor
 		updatePreferredSize();
 		setFocusable( true );
 
-		final Jog enc_this = this;
 		final MouseInputAdapter mia = new MouseInputAdapter() {
 			public void mousePressed( MouseEvent e )
 			{
@@ -123,7 +118,7 @@ implements PropertyChangeListener, EventManager.Processor
 				if( !isEnabled() ) return;
 			
 				requestFocus();
-				final Window w = SwingUtilities.getWindowAncestor( enc_this );
+				final Window w = SwingUtilities.getWindowAncestor( Jog.this );
 				if( w != null ) {
 					savedCursor	= w.getCursor();
 					w.setCursor( dragCursor );
@@ -136,7 +131,7 @@ implements PropertyChangeListener, EventManager.Processor
 			{
 				if( !isEnabled() ) return;
 				
-				final Window w = SwingUtilities.getWindowAncestor( enc_this );
+				final Window w = SwingUtilities.getWindowAncestor( Jog.this );
 				if( w != null ) {
 					w.setCursor( savedCursor );
 				}
@@ -241,11 +236,9 @@ g2.translate( 0.5f + in.left, 0.5f + in.top );	// tricky disco to blur the outli
 			g2.fillOval( 2, 3, 16, 16 );
 			g2.setColor( colrLight );
 			g2.fillOval( 5, 1, 9, 10 );
-	//		g2.setColor( colrArcShadow );
 			g2.setPaint( pntArcShadow );
 			g2.setStroke( strkArcShadow );
 			g2.drawOval( 1, 1, 17, 17 );
-	//		g2.drawArc( 1, 1, 17, 17, 0, 180 );
 
 			g2.setStroke( strkArcLight );
 			g2.setColor( colrArcLight );

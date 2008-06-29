@@ -113,7 +113,7 @@ import de.sciss.eisenkraut.session.Session;
 import de.sciss.eisenkraut.util.PrefsUtil;
 
 /**
- *	@version	0.70, 20-Mar-09
+ *	@version	0.70, 28-Jun-08
  *	@author		Hanns Holger Rutz
  */
 public class RecorderDialog
@@ -125,43 +125,32 @@ implements Constants, ServerListener, NodeListener, OSCRouter,
 	private static final String NODE_CONF		= PrefsUtil.NODE_INPUTCONFIGS;
 
 	private static final String KEY_CONFIG		= "config";
-//	private static final String KEY_FORMAT		= "format";
 
 	private final Preferences				audioPrefs;
 	private final Preferences				classPrefs;
 	private final PrefComboBox				ggRecordConfig;
 
 	private RoutingConfig					rCfg;
-//	private float							volume				= 1.0f;
 	protected final Server					server;
 	protected final SuperColliderPlayer		player;
 	
-//	private final List						collMeters			= new ArrayList();
-//	private float[]							meterValues			= new float[ 0 ];
 	protected final ActionRecord			actionRecord;
 	private final ActionStop				actionStop;
 	private final ActionAbort				actionAbort;
 	private final ActionClose				actionClose;
 	protected Context						ct					= null;
 	private final javax.swing.Timer			meterTimer;
-	protected final RecorderDialog			enc_this			= this;
-//	private final OSCListener				cSetNRespBody;
 	protected NodeWatcher					nw;
-//	private final AudioFileFormatPane		affp;
 	protected final TimeoutTimer			timeoutTimer		= new TimeoutTimer( 4000 );
 	private final RecLenTimer				recLenTimer;
 	protected boolean						isRecording			= false;
 
-//	private final Session					doc;
 	protected final DocumentFrame			docFrame;
 	private final int						numChannels;
 	protected final String					encodingString;
 		
 	private File							result				= null;
 	private boolean							stopCommit			= false;	// true to close dlg after stop
-	
-//	private final Runnable					runPeakUpdate;
-//	private float							maxPeak				= Float.NEGATIVE_INFINITY; // 0.0f;
 	
 	private final SuperColliderClient		superCollider;
 	
@@ -306,7 +295,7 @@ implements Constants, ServerListener, NodeListener, OSCRouter,
 //			public void messageReceived( OSCMessage msg, SocketAddress sender, long time )
 //			{
 //				final int		busIndex	= ((Number) msg.getArg( 0 )).intValue();
-//				final Context	ct			= enc_this.ct;	// quasi sync
+//				final Context	ct			= RecorderDialog.this.ct;	// quasi sync
 //				
 //				if( (ct == null) || (busIndex != ct.busMeter.getIndex()) ) return;
 //
@@ -791,7 +780,7 @@ disposeRecorder();
 						ct.recreateFile();
 					}
 					catch( IOException e1 ) {
-						BasicWindowHandler.showErrorDialog( enc_this, e1, getTitle() );
+						BasicWindowHandler.showErrorDialog( RecorderDialog.this, e1, getTitle() );
 					}
 				}
 			}
@@ -972,7 +961,7 @@ this.busInternal = busInternal;
 					ct.recreateFile();
 				}
 				catch( IOException e1 ) {
-					BasicWindowHandler.showErrorDialog( enc_this, e1, getValue( NAME ).toString() );
+					BasicWindowHandler.showErrorDialog( RecorderDialog.this, e1, getValue( NAME ).toString() );
 					return;
 				}
 			}

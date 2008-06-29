@@ -29,6 +29,10 @@ a:hover {
 	text-decoration:underline;	
 }
 
+li.none {
+	list-style-type:none;
+}
+
 li {
 /*	list-style-type:none; */
 	list-style-image:url(list.gif);

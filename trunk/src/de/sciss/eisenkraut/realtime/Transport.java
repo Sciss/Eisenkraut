@@ -68,7 +68,7 @@ import de.sciss.eisenkraut.util.PrefsUtil;
  *	transport listeners are informed about actions.
  * 
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 02-May-08
+ *  @version	0.70, 28-Jun-08
  *
  *	@todo	the methods for adding and removing consumers should
  *			be moved to the realtime host interface?
@@ -106,8 +106,6 @@ implements TimelineListener, OSCRouter, Disposable
 	
 	private static final String			OSC_TRANSPORT = "transport";
 	private final OSCRouter				osc;
-
-	protected final Transport			enc_this		= this;
 
 	// sync : call in event thread!
 	/**

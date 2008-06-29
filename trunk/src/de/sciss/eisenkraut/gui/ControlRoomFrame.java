@@ -84,7 +84,7 @@ import de.sciss.net.OSCBundle;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 10-Apr-08
+ *  @version	0.70, 28-Jun-08
  *
  *	@todo		could use an explicit GroupAnySync for lmm, which would go into SuperColliderClient
  *				so sc-client whould be able to pause master synths according to the sync
@@ -138,7 +138,6 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
 		audioPrefs								= app.getUserPrefs().node( PrefsUtil.NODE_AUDIO );
 //		final Preferences		ocPrefs			= audioPrefs.node( PrefsUtil.NODE_OUTPUTCONFIGS );
 //		final Preferences		abPrefs			= audioPrefs.node( PrefsUtil.NODE_AUDIOBOXES );
-		final ControlRoomFrame	enc_this		= this;
 		final Object			comboProto		= "XXXXXXXX";
 
 		b1				= new SpringPanel( 2, 4, 2, 4 );
@@ -174,7 +173,7 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
 		
 		ggVolume.addChangeListener( new ChangeListener() {
 			public void stateChanged( ChangeEvent e ) {
-				superCollider.setVolume( enc_this, ggVolume.getVolumeLinear() );
+				superCollider.setVolume( ControlRoomFrame.this, ggVolume.getVolumeLinear() );
 //				updateVolumeInfo();
 			}
 		});

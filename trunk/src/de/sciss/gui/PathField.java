@@ -67,7 +67,7 @@ import de.sciss.app.EventManager;
  *  to a different file.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.32, 26-Mar-07
+ *  @version	0.33, 28-Jun-08
  */
 public class PathField
 extends SpringPanel
@@ -747,7 +747,6 @@ implements ActionListener, PathListener, EventManager.Processor
 			
 			final InputMap		inputMap	= getInputMap();
 			final ActionMap		actionMap   = getActionMap();
-			final IOTextField	enc_this	= this;
 			String				s;
 			
 			inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LEFT, myMeta + InputEvent.ALT_MASK ), "abbr" );
@@ -778,7 +777,7 @@ implements ActionListener, PathListener, EventManager.Processor
 			actionMap.put( "lost", new AbstractAction() {
 				public void actionPerformed( ActionEvent e )
 				{
-					final JRootPane rp = SwingUtilities.getRootPane( enc_this );
+					final JRootPane rp = SwingUtilities.getRootPane( IOTextField.this );
 					if( rp != null ) rp.requestFocus();
 				}
 			});

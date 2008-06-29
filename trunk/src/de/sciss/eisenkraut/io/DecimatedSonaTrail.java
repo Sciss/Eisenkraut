@@ -70,7 +70,7 @@ import de.sciss.util.MutableInt;
  * 	the plain FFT approach is still 7.5 times faster than the
  * 	sliding DFT variant... 
  * 
- *	@version	0.70, 25-Apr-08
+ *	@version	0.70, 28-Jun-08
  *	@author		Hanns Holger Rutz
  *
  *	@todo		editing (addAllDep)
@@ -738,13 +738,11 @@ inlineDecim=1;
 		final Span					extSpan;
 		final long					fullrateStop, fullrateLen; // , insertLen;
 		final int					numFullBuf;
-	//	final Object				enc_this	= this;
 		// final CacheManager cm = CacheManager.getInstance();
 		final AbstractCompoundEdit	ce			= null; // XXX
 		final Object				source		= null; // XXX
 		final AudioStake			cacheReadAS;
 		final AudioStake			cacheWriteAS;
-		final DecimatedSonaTrail	enc_this	= this;
 
 		synchronized( fileSync ) {
 			das = allocAsync( union );
@@ -856,7 +854,7 @@ Thread.currentThread().setPriority( pri - 2 );
 							nextTime = time + UPDATE_PERIOD;
 							if( asyncManager != null ) {
 								asyncManager.dispatchEvent( new AsyncEvent(
-									enc_this, AsyncEvent.UPDATE, time, enc_this ));
+									DecimatedSonaTrail.this, AsyncEvent.UPDATE, time, DecimatedSonaTrail.this ));
 							}
 						}
 					}
@@ -900,8 +898,8 @@ Thread.currentThread().setPriority( pri - 2 );
 					}
 
 					if( asyncManager != null ) {
-						asyncManager.dispatchEvent( new AsyncEvent( enc_this,
-							AsyncEvent.FINISHED, System.currentTimeMillis(), enc_this ));
+						asyncManager.dispatchEvent( new AsyncEvent( DecimatedSonaTrail.this,
+							AsyncEvent.FINISHED, System.currentTimeMillis(), DecimatedSonaTrail.this ));
 					}
 					synchronized( threadAsync ) {
 						threadAsync.notifyAll();
