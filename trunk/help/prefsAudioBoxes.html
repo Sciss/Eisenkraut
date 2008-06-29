@@ -19,10 +19,10 @@ this is a parameter used when booting supercollider (<code>-H</code>). it specif
 </P><P>
 to find out what the name of your soundcard or driver is, leave this field blank and boot supercollider. in the text console, you will see a list of soundcards supercollider recognizes, for example <code>&quot;DIGI96&nbsp;PAD&quot;</code>, <code>&quot;Mobile&nbsp;I/O&nbsp;2882&nbsp;[2600]&quot;</code>, <code>&quot;MOTU&nbsp;828&quot;</code>, <code>&quot;Digidesign&nbsp;Hardware&nbsp;(&nbsp;002&nbsp;)&quot;</code> etc. copy and paste the name to the table cell.
 </P>
-<h2>Input Channels</h2>
+<h2>Input Channels (Ins)</h2>
 <p>
 this is a parameter used when booting supercollider (<code>-i</code>). it specifies the number of channels which supercollider links to audio interface inputs. it need not be necessarily the real number of channels your interface has.
-<h2>Output Channels</h2>
+<h2>Output Channels (Outs)</h2>
 <p>
 this is a parameter used when booting supercollider (<code>-o</code>). it specifies the number of channels which supercollider links to audio interface outputs. it need not be necessarily the real number of channels your interface has, but to be able to access all your sound card's channels, this value must be at least as high as the number of your sound card's channels.
 </P><P>
@@ -30,5 +30,9 @@ a value of 8 should be sufficient for the majority of applications. however, som
 </P><P>
 eisenkraut uses a separate <A HREF="IOSetup.html">I/O setup</A> to map logical channels to physical channels. each soundfile channel is played back through a <A HREF="ChannelPanorama.html">panorama processor</A> which is connected to the currently used output configuration. this configuration determines which of your soundcard channels is the &quot;left speaker&quot;, the &quot;right speaker&quot; etc.
 </P>
+<h2>Active</h2>
+<p>
+you can make some audio boxes inactive, so they disappear from the device list in the <A HREF="ControlRoomFrame.html">control room window</A>, while still remaining in the preferences so you can reactivate them anytime without the tiresome process of entering their names and channels.
+</p>
 </body>
 </html>

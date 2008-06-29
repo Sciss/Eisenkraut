@@ -244,6 +244,7 @@ implements OSCRouter // ProgressComponent // , PreferenceChangeListener
         
 		// ---- init look-and-feel ----
 
+		System.setProperty( "swing.aatext", "true" );
 		lookAndFeelUpdate( lafName );
 
 //		JFrame.setDefaultLookAndFeelDecorated( true );

@@ -718,6 +718,7 @@ final SpringPanel tabAudio = tab;
 				showAudioBoxAssistent();
 			}
 		});
+ggAssistent.setEnabled( false );  // XXX ;-(  sadly we didn't get the text output changes to scsynth yet
 		b.add( ggPlus );
 		b.add( ggMinus );
 		b.add( Box.createHorizontalGlue() );

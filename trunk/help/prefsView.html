@@ -8,7 +8,26 @@
 <body>
 <h1>View Prefs</h1>
 <p>
-TO-DO....
+This tab currently only holds the settings for the sonagramme analysis.
 </p>
+<h2>Sonagramme Option</h2>
+<P>
+The sonagramme functionality in version 0.70 is incomplete and experimental, therefore this option is disabled by default. Enabling the option brings up a new item &quot;Frequency Spectrum&quot; in the View-&gt;Vertical Scale menu. If you select this vertical scale option, a sonagramme is calculated and displayed in the document window.
+</P>
+<P>
+Note that currently the sonagramme is neither cached (so will need to be recalculated each time you open a file) nor decimated (meaning display will be very slow and also inaccurate if you zoom out a lot). Also there is no way to change the analysis settings of a document after you have opened it &ndash; you will need to close the document, adjust the preference settings, and re-open the document.
+</P>
+<h2>Sonagram Analysis Settings</h2>
+<P>
+The sonagramme is calculated with a constant-Q transform, yielding a logarithmic frequency resolution. At the moment you cannot zoom into the sonagramme's frequency axis, so in some cases you might want to restrict the frequency range that is analysed, by changing the settings for &quot;Lowest Frequency&quot; and &quot;Highest Frequency&quot;. Note that the highest frequency is automatically trimmed to the Nyquist frequency (sample rate divided by two).
+</P><P>
+The speed of the sonagramme calculation is intrinsically linked to the settings of &quot;Bands per Octave&quot;, &quot;Max. Time Resolution&quot; and &quot;Max. FFT Size&quot;. The higher the bands per octave, the more filters need to be applied, but also the higher the &laquo;Q&raquo; of the filters gets in order to achieve narrow frequency bands, resulting in longer filter coefficients and slower calculation time.
+</P><P>
+The same is true for the &quot;Lowest Frequency&quot; setting: the lower the value is chosen, the longer the bass register filters need to be, the slower the calculation. A pragmatic tradeoff is to limit the Q of the bass filters by choosing a maximum FFT size: For example, a maximum FFT size of 8192 means that no matter how many filter coefficients we would need to produce a proper filter for a given lowest frequency and Q (bands-per-octave), the filter will be made no longer than 8192 taps, so effectively you are reducing the frequency resultion of the bass filter but you get a much faster analysis.
+</P><P>
+The maximum time resolution specifies the window-step size of the analysis and it linearly affects the calculation time. Note that you cannot get infinitely fine time resolution because time resolution naturally decreases with increased frequency resolution, so you only get the highest time resolution for high frequencies while the low frequencies exhibit greater time smearing, no matter how fine you choose the time resolution.
+</P>
+<P>Here is a screenshot of a sonagramme view for the beginning of Pierre Schaeffer's &laquo;L'oiseau&nbsp;RAI&raquo; from 1950:</P>
+<IMG SRC="prefsSonagramme.png" ALT="Sonagramme of Schaeffer's L'oiseau RAI">
 </body>
 </html>

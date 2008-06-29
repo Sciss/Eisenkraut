@@ -7,8 +7,22 @@
 </head>
 <body>
 <h1>OSC Prefs</h1>
-<p>
-TO-DO....
+<P>
+Eisenkraut can be controlled from another application (such as SuperCollider language) through Open Sound Control (OSC). The OSC Server needs to be active for this communication to work.
+</P><P>
+See the <A HREF="osc.html">OSC Reference</A> for a list of commands.
+</P>
+<h2>OSC Server</h2>
+<P>
+OSC requires a network socket which is specified here.  the port which is set to <code>17737</code> by default, is arbitrary but must not conflict with other ports used on the same machine. It may be changed, for example if you need to run more than one instance of Eisenkraut on the same machine.
+</P><P>
+By default, Eisenkraut uses <B>TCP</B> for communication. Generally, TCP is more safe against network drop outs. Alternatively, you can use <B>UDP</B>.
+</P><P>
+Note that there is a general <STRONG>security issue</STRONG> with open network ports on your computer when it is connected to the internet. When you do not have any firewall active that blocks incoming TCP or UDP communication from the internet, it is theoretically possible to use Eisenkraut to write or destroy files on your computer. Moreover, when SwingOSC is launched, the security risk is even higher. Therefore, at the moment the socket is bound to the <B>loopback</B> address, so Eisenkraut can only be controlled from the same machine. This might be configurable in a future version.
+</P>
+<h2>SwingOSC Server</h2>
+<P>
+Eisenkraut can be used with a Java OSC server called SwingOSC. It allows clients to easily integrate custom GUI components into Eisenkraut. Some of the SuperCollider examples make use of SwingOSC. SwingOSC has to be separately installed, partly because you will also most likely want to install its SuperCollider classes. SwingOSC can be downloaded from <A HREF="http://sourceforge.net/projects/swingosc" CLASS="ext">sourceforge.net/projects/swingosc</A> if it is not part of your SuperCollider distribution. Make sure to make this preference point to the <code>&quot;SwingOSC.jar&quot;</code> file in your SwingOSC installation.
 </p>
 </body>
 </html>
