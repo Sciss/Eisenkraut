@@ -1696,7 +1696,7 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 		}
 	}
 
-	public void setZoomRect( Rectangle r )
+	protected void setZoomRect( Rectangle r )
 	{
 		vpZoomRect		= r;
 		vpZoomStrokeIdx	= (vpZoomStrokeIdx + 1) % vpZoomStroke.length;
@@ -1899,13 +1899,7 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 		final boolean	wasEmpty = timelineSel.isEmpty();
 		final boolean	isEmpty;
 	
-//		if( !doc.bird.attemptShared( Session.DOOR_TIME, 250 )) return;
-//		try {
-			timelineSel	= doc.timeline.getSelectionSpan();
-//		}
-//		finally {
-//			doc.bird.releaseShared( Session.DOOR_TIME );
-//		}
+		timelineSel	= doc.timeline.getSelectionSpan();
 
 		updateSelectionAndRepaint();
 		isEmpty	= timelineSel.isEmpty();
@@ -1917,44 +1911,25 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 	// warning : don't call doc.setAudioFileDescr, it will restore the old markers!
 	public void timelineChanged( TimelineEvent e )
     {
-//		if( !doc.bird.attemptExclusive( Session.DOOR_ALL, 250 )) return;
-//		try {
-			timelineRate				= doc.timeline.getRate();
-			timelineLen					= doc.timeline.getLength();
-			playTimer.setDelay( Math.min( (int) (1000 / (vpScale * timelineRate * playRate)), 33 ));
-			updateAFDGadget();
-			updateOverviews( false, true );
-//		}
-//		finally {
-//			doc.bird.releaseExclusive( Session.DOOR_ALL );
-//		}
+		timelineRate				= doc.timeline.getRate();
+		timelineLen					= doc.timeline.getLength();
+		playTimer.setDelay( Math.min( (int) (1000 / (vpScale * timelineRate * playRate)), 33 ));
+		updateAFDGadget();
+		updateOverviews( false, true );
     }
 
 	public void timelinePositioned( TimelineEvent e )
 	{
-//		if( !doc.bird.attemptShared( Session.DOOR_TIME, 250 )) return;
-//		try {
-			timelinePos = doc.timeline.getPosition();
-//		}
-//		finally {
-//			doc.bird.releaseShared( Session.DOOR_TIME );
-//		}
+		timelinePos = doc.timeline.getPosition();
 		
 		updatePositionAndRepaint();
-//		scroll.setPosition( timelinePos, 0, TimelineScroll.TYPE_UNKNOWN );
 		scroll.setPosition( timelinePos, 0, pointerTool.validDrag ?
 			TimelineScroll.TYPE_DRAG : TimelineScroll.TYPE_UNKNOWN );
 	}
 
     public void timelineScrolled( TimelineEvent e )
     {
-//		if( !doc.bird.attemptShared( Session.DOOR_TIME, 250 )) return;
-//		try {
-			timelineVis	= doc.timeline.getVisibleSpan();
-//		}
-//		finally {
-//			doc.bird.releaseShared( Session.DOOR_TIME );
-//		}
+    	timelineVis	= doc.timeline.getVisibleSpan();
 
 		updateOverviews( false, true );
 		updateTransformsAndRepaint( false );

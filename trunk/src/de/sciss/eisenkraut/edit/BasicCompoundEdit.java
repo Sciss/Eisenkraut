@@ -34,7 +34,7 @@ import de.sciss.app.AbstractCompoundEdit;
 
 /**
  *  This subclass of <code>SyncCompoundEdit</code> is 
- *  the most basic extension ob the abstract class
+ *  the most basic extension of the abstract class
  *  which simply puts empty bodies for the abstract methods.
  *
  *  @author			Hanns Holger Rutz

@@ -1,6 +1,6 @@
 /*
  *  RecessedBorder.java
- *  Eisenkraut
+ *  (de.sciss.gui package)
  *
  *  Copyright (c) 2004-2008 Hanns Holger Rutz. All rights reserved.
  *
@@ -25,9 +25,10 @@
  *
  *  Changelog:
  *		15-Apr-06	created
+ *		03-Jul-08	copied from EisK
  */
 
-package de.sciss.eisenkraut.gui;
+package de.sciss.gui;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -48,7 +49,7 @@ import javax.swing.border.AbstractBorder;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
+ *  @version	0.71, 03-Jul-08
  */
 public class RecessedBorder
 extends AbstractBorder
@@ -58,15 +59,10 @@ extends AbstractBorder
 
 	private static final Color colrDark		= new Color( 0x00, 0x00, 0x00, 0x88 );
 	private static final Color colrLight	= new Color( 0xFF, 0xFF, 0xFF, 0xD8 );
-//	private static final Color colrLight	= new Color( 0xFF, 0x00, 0x00, 0xFF );
-//	private static final Color colrDark2	= new Color( 0x00, 0x00, 0x00, 0x38 );
-//	private static final Color colrClearD	= new Color( 0x00, 0x00, 0x00, 0x00 );
-//	private static final Color colrClearL	= Color.white; // new Color( 0xFF, 0xFF, 0xFF, 0x00 );
 	private static final Stroke	strkOutline	= new BasicStroke( 1.0f );
 	private static final Stroke	strkInline	= new BasicStroke( 2.0f );
 	
 	private Color	colrBg		= Color.black;
-//	private Paint	pntInline, pntOutlineT, pntOutlineB;
 
 	private Shape	shpBg, shpInline, shpOutline;
 
@@ -111,13 +107,6 @@ extends AbstractBorder
 		g2.translate( x, y );
 	
 		if( (width != recentWidth) || (height != recentHeight) ) {
-//			if( height != recentHeight ) {
-//				final int hh	= height >> 1;
-//				pntOutlineT		= new GradientPaint( 0, 0, colrDark, 0, hh, colrClearD );
-//				pntOutlineB		= new GradientPaint( 0, hh, colrClearL, 0, height - 2, colrLight );
-//				pntInline		= new GradientPaint( 0, 0, colrDark2, 0, hh, colrClearD );
-//			}
-			
 			final RectangularShape	r	= new RoundRectangle2D.Float( 1.0f, 0.5f, width - 2f, height - 1.5f, diameter, diameter );
 			final RectangularShape	r2	= new RoundRectangle2D.Float( 0.5f, 0, width - 1.5f, height - 1, diameter, diameter );
 			final Area				a	= new Area( r );
@@ -133,13 +122,9 @@ extends AbstractBorder
 		}
 							
 		g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
-//		g2.setPaint( pntOutlineT );
 		g2.setPaint( colrDark );
 		g2.fill( shpOutline );
-//		g2.setPaint( pntOutlineB );
-//		g2.fill( shpOutline );
 		g2.translate( 1, 1 );
-//		g2.setPaint( pntInline );
 		g2.setPaint( colrLight );
 		g2.fill( shpInline );
 		g2.translate( -1, -1 );

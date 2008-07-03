@@ -69,6 +69,7 @@ import de.sciss.common.BasicWindowHandler;
 import de.sciss.gui.AbstractWindowHandler;
 import de.sciss.gui.MultiStateButton;
 import de.sciss.gui.PeakMeter;
+import de.sciss.gui.PeakMeterGroup;
 import de.sciss.gui.PrefComboBox;
 import de.sciss.gui.SpringPanel;
 import de.sciss.gui.StringItem;
