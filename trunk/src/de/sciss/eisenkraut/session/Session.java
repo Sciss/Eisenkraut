@@ -667,9 +667,10 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 			return doc;
 		}
 		catch( IOException e1 ) {
-			if( doc != null ) {
-				doc.dispose();
-			} else if( at != null ) {
+//			if( doc != null ) {
+//				doc.dispose();
+//			} else
+			if( at != null ) {
 				at.dispose();
 			} else {
 				af.cleanUp();
@@ -718,9 +719,10 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 			return doc;
 		}
 		catch( IOException e1 ) {
-			if( doc != null ) {
-				doc.dispose();
-			} else if( at != null ) {
+//			if( doc != null ) {
+//				doc.dispose();
+//			} else
+			if( at != null ) {
 				at.dispose();
 			} else {
 				for( int i = 0; i < paths.length; i++ ) {

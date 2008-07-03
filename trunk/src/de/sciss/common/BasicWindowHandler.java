@@ -460,25 +460,25 @@ extends AbstractWindowHandler
 	{
 		final StringBuffer	strBuf  = new StringBuffer( GUIUtil.getResourceString( "errException" ));
 		final JOptionPane	op;
-		String				message = exception.getClass().getName() + " - " + exception.getLocalizedMessage();
-		StringTokenizer		tok;
-		int					lineLen = 0;
-		String				word;
 		String[]			options = { GUIUtil.getResourceString( "buttonOk" ),
 										GUIUtil.getResourceString( "optionDlgStack" )};
 	
-		if( message == null ) message = exception.getClass().getName();
-		tok = new StringTokenizer( message );
-		strBuf.append( ":\n" );
-		while( tok.hasMoreTokens() ) {
-			word = tok.nextToken();
-			if( lineLen > 0 && lineLen + word.length() > 40 ) {
-				strBuf.append( "\n" );
-				lineLen = 0;
+		if( exception != null ) {
+			final String			message = exception.getClass().getName() + " - " + exception.getLocalizedMessage();
+			final StringTokenizer	tok		= new StringTokenizer( message );
+			int						lineLen = 0;
+			String					word;
+			strBuf.append( ":\n" );
+			while( tok.hasMoreTokens() ) {
+				word = tok.nextToken();
+				if( lineLen > 0 && lineLen + word.length() > 40 ) {
+					strBuf.append( "\n" );
+					lineLen = 0;
+				}
+				strBuf.append( word );
+				strBuf.append( ' ' );
+				lineLen += word.length() + 1;
 			}
-			strBuf.append( word );
-			strBuf.append( ' ' );
-			lineLen += word.length() + 1;
 		}
 		op = new JOptionPane( strBuf.toString(), JOptionPane.ERROR_MESSAGE, JOptionPane.YES_NO_OPTION, null, options, options[ 0 ]);
 		if( showDialog( op, component, title ) == 1 ) {

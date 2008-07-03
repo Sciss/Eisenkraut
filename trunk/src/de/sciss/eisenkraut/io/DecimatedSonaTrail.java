@@ -464,7 +464,8 @@ long screenOffX = 0;
 		} catch( IOException e1 ) {
 			System.err.println( e1 );
 		}
-		if( bufImg != null ) bufImg.flush();
+//		if( bufImg != null )
+		bufImg.flush();
 	}
 
 	/**
@@ -741,8 +742,8 @@ inlineDecim=1;
 		// final CacheManager cm = CacheManager.getInstance();
 		final AbstractCompoundEdit	ce			= null; // XXX
 		final Object				source		= null; // XXX
-		final AudioStake			cacheReadAS;
-		final AudioStake			cacheWriteAS;
+//		final AudioStake			cacheReadAS;
+//		final AudioStake			cacheWriteAS;
 
 		synchronized( fileSync ) {
 			das = allocAsync( union );
@@ -753,18 +754,18 @@ inlineDecim=1;
 		fullrateStop	= Math.min( extSpan.getStop(), fullScale.editGetSpan( ce ).stop );
 		fullrateLen		= fullrateStop - extSpan.getStart();
 
-		cacheReadAS		= null; // openCacheForRead( model );
-		if( cacheReadAS == null ) {
-			// cacheWriteAS = fullScale.openCacheForWrite( model,
-			// decimHelps[ 0 ].fullrateToSubsample( union.getLength() ));
-			cacheWriteAS = null; // openCacheForWrite( model, (fullrateLen + MAXCEILADD) & MAXMASK );
+//		cacheReadAS		= null; // openCacheForRead( model );
+//		if( cacheReadAS == null ) {
+//			// cacheWriteAS = fullScale.openCacheForWrite( model,
+//			// decimHelps[ 0 ].fullrateToSubsample( union.getLength() ));
+//			cacheWriteAS = null; // openCacheForWrite( model, (fullrateLen + MAXCEILADD) & MAXMASK );
 //			numFullBuf	= (int) (fullrateLen >> MAXSHIFT);
 			numFullBuf	= (int) ((fullrateLen - fftSize + stepSize + stepSize - 1) / stepSize);
-		} else {
-			// cached files always have integer fullBufs!
-			numFullBuf	= (int) ((fullrateLen + MAXCEILADD) >> MAXSHIFT);
-			cacheWriteAS = null;
-		}
+//		} else {
+//			// cached files always have integer fullBufs!
+//			numFullBuf	= (int) ((fullrateLen + MAXCEILADD) >> MAXSHIFT);
+//			cacheWriteAS = null;
+//		}
 
 		synchronized( bufSync ) {
 			createBuffers();
@@ -784,7 +785,7 @@ Thread.currentThread().setPriority( pri - 2 );
 				long				pos;
 				// long framesWritten = 0;
 				long				framesWrittenCache	= 0;
-				boolean				cacheWriteComplete	= false;
+//				boolean				cacheWriteComplete	= false;
 				Span				tag2;
 				int					len;
 				long				time;
@@ -797,11 +798,11 @@ Thread.currentThread().setPriority( pri - 2 );
 				int					inBufOff = 0, nextLen = fftSize >> 1;
 				long				nextTime			= System.currentTimeMillis() + UPDATE_PERIOD;
 
-				if( cacheReadAS != null ) {
-					pos = decimHelps[ 0 ].fullrateToSubsample( extSpan.getStart() ); // XXX
-				} else {
+//				if( cacheReadAS != null ) {
+//					pos = decimHelps[ 0 ].fullrateToSubsample( extSpan.getStart() ); // XXX
+//				} else {
 					pos = extSpan.getStart();
-				}
+//				}
 //				minCoarse = MAXCOARSE >> decimHelps[ 0 ].shift;
 
 				try {
@@ -833,10 +834,10 @@ Thread.currentThread().setPriority( pri - 2 );
 //							if( ++outBufOff == 1 ) {
 //								das.continueWrite( 0, tmpBuf2, 0, outBufOff );
 								das.continueWrite( 0, tmpBuf2, 0, 1 );
-								if( cacheWriteAS != null ) {
-//									cacheWriteAS.writeFrames( tmpBuf2, 0, new Span( framesWrittenCache, framesWrittenCache + outBufOff ));
-									cacheWriteAS.writeFrames( tmpBuf2, 0, new Span( framesWrittenCache, framesWrittenCache + 1 ));
-								}
+//								if( cacheWriteAS != null ) {
+////									cacheWriteAS.writeFrames( tmpBuf2, 0, new Span( framesWrittenCache, framesWrittenCache + outBufOff ));
+//									cacheWriteAS.writeFrames( tmpBuf2, 0, new Span( framesWrittenCache, framesWrittenCache + 1 ));
+//								}
 //								framesWrittenCache += outBufOff;
 								framesWrittenCache++;
 //								outBufOff = 0;
@@ -879,23 +880,23 @@ Thread.currentThread().setPriority( pri - 2 );
 					e1.printStackTrace();
 				} finally {
 //					System.out.println( "finally" );
-					if( cacheReadAS != null ) {
-						cacheReadAS.cleanUp();
-						cacheReadAS.dispose(); // !!!
-					}
-					if( cacheWriteAS != null ) {
-						cacheWriteAS.cleanUp();
-						cacheWriteAS.dispose(); // !!!
-						if( !cacheWriteComplete ) { // indicates process was aborted ...
-							final File[] f = createCacheFileNames();
-							if( f != null ) { // ... therefore delete incomplete cache files!
-								for( int i = 0; i < f.length; i++ ) {
-									if( !f[ i ].delete() ) f[ i ].deleteOnExit();
-									// cm.removeFile( f[ i ]);
-								}
-							}
-						}
-					}
+//					if( cacheReadAS != null ) {
+//						cacheReadAS.cleanUp();
+//						cacheReadAS.dispose(); // !!!
+//					}
+//					if( cacheWriteAS != null ) {
+//						cacheWriteAS.cleanUp();
+//						cacheWriteAS.dispose(); // !!!
+//						if( !cacheWriteComplete ) { // indicates process was aborted ...
+//							final File[] f = createCacheFileNames();
+//							if( f != null ) { // ... therefore delete incomplete cache files!
+//								for( int i = 0; i < f.length; i++ ) {
+//									if( !f[ i ].delete() ) f[ i ].deleteOnExit();
+//									// cm.removeFile( f[ i ]);
+//								}
+//							}
+//						}
+//					}
 
 					if( asyncManager != null ) {
 						asyncManager.dispatchEvent( new AsyncEvent( DecimatedSonaTrail.this,

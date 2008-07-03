@@ -75,11 +75,11 @@ import de.sciss.app.PreferenceEntrySync;
  *  for common Swing / GUI operations
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.38, 20-Jun-08
+ *  @version	0.39, 03-Jul-08
  */
 public class GUIUtil
 {
-	private static final double VERSION	= 0.37;
+	private static final double VERSION	= 0.39;
 	private static final ResourceBundle resBundle = ResourceBundle.getBundle( "GUIUtilStrings" );
 	private static final Preferences prefs = Preferences.userNodeForPackage( GUIUtil.class );
 
@@ -125,26 +125,26 @@ public class GUIUtil
 	 */
 	public static void displayError( Component component, Exception exception, String title )
 	{
-		String							message = exception.getClass().getName() + " - " + exception.getLocalizedMessage();
-		StringTokenizer					tok;
-		final StringBuffer				strBuf  = new StringBuffer( GUIUtil.getResourceString( "errException" ));
-		int								lineLen = 0;
-		String							word;
-		String[]						options = { GUIUtil.getResourceString( "buttonOk" ),
-													GUIUtil.getResourceString( "optionDlgStack" )};
+		final StringBuffer		strBuf  = new StringBuffer( GUIUtil.getResourceString( "errException" ));
+		String[]				options = { GUIUtil.getResourceString( "buttonOk" ),
+											GUIUtil.getResourceString( "optionDlgStack" )};
 	
-		if( message == null ) message = exception.getClass().getName();
-		tok = new StringTokenizer( message );
-		strBuf.append( ":\n" );
-		while( tok.hasMoreTokens() ) {
-			word = tok.nextToken();
-			if( lineLen > 0 && lineLen + word.length() > 40 ) {
-				strBuf.append( "\n" );
-				lineLen = 0;
+		if( exception != null ) {
+			final String			message	= exception.getClass().getName() + " - " + exception.getLocalizedMessage();
+			final StringTokenizer	tok		= new StringTokenizer( message );
+			int						lineLen = 0;
+			String					word;
+			strBuf.append( ":\n" );
+			while( tok.hasMoreTokens() ) {
+				word = tok.nextToken();
+				if( lineLen > 0 && lineLen + word.length() > 40 ) {
+					strBuf.append( "\n" );
+					lineLen = 0;
+				}
+				strBuf.append( word );
+				strBuf.append( ' ' );
+				lineLen += word.length() + 1;
 			}
-			strBuf.append( word );
-			strBuf.append( ' ' );
-			lineLen += word.length() + 1;
 		}
 		if( JOptionPane.showOptionDialog( component, strBuf.toString(), title, JOptionPane.YES_NO_OPTION,
 									      JOptionPane.ERROR_MESSAGE, null, options, options[0] ) == 1 ) {
