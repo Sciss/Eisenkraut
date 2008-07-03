@@ -42,6 +42,7 @@ import javax.swing.Timer;
 
 import de.sciss.app.BasicEvent;
 import de.sciss.app.EventManager;
+import de.sciss.gui.PeakMeterView;
 import de.sciss.jcollider.Bus;
 import de.sciss.jcollider.Constants;
 import de.sciss.jcollider.Group;
@@ -57,7 +58,7 @@ import de.sciss.net.OSCMessage;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 28-Apr-08
+ *  @version	0.70, 03-Jul-08
  */
 public class MeterManager
 implements OSCListener, Constants, ServerListener, ActionListener,
@@ -66,18 +67,11 @@ implements OSCListener, Constants, ServerListener, ActionListener,
 	private List					collAllClients		= new ArrayList();
 	private List					collActiveClients	= new ArrayList();
 	private Map						mapClients			= new HashMap();	// key = MeterListener, value = MeterClient
-//	private boolean					meterListening		= false;
-//	private boolean					keepMetering		= false;
-//	private long					lastMeterInfo		= 0;	// used to stop listening
-//	
-//	private static final int		MAXFALLTIME			= 5000;
 
 	private Server					server				= null;
 	
 	private Bus						bus					= null;
 	private Group					grp					= null;
-	
-//	private final Object			sync				= new Object();
 	
 	private int						numCtrlChans		= 0;
 	
@@ -107,15 +101,12 @@ implements OSCListener, Constants, ServerListener, ActionListener,
 
 	private void meterBang()
 	{
-//		synchronized( sync ) {
-			if( (server != null) && (meterBangBndl != null) ) {
-				try {
-//					if( meterListening ) server.sendBundle( meterBangBndl );
-					server.sendBundle( meterBangBndl );
-				}
-				catch( IOException e1 ) { /* don't print coz the frequency might be high */ }
+		if( (server != null) && (meterBangBndl != null) ) {
+			try {
+				server.sendBundle( meterBangBndl );
 			}
-//		}
+			catch( IOException e1 ) { /* don't print coz the frequency might be high */ }
+		}
 	}
 
 	// ------------- ActionListener interface -------------
@@ -129,20 +120,18 @@ implements OSCListener, Constants, ServerListener, ActionListener,
 
 	public void serverAction( ServerEvent e )
 	{
-//		synchronized( sync ) {	
-			switch( e.getID() ) {
-			case ServerEvent.STOPPED:
-				setServer( null );
-				break;
-				
-			case ServerEvent.RUNNING:
-				setServer( e.getServer() );
-				break;
-				
-			default:
-				break;
-			}
-//		}
+		switch( e.getID() ) {
+		case ServerEvent.STOPPED:
+			setServer( null );
+			break;
+			
+		case ServerEvent.RUNNING:
+			setServer( e.getServer() );
+			break;
+			
+		default:
+			break;
+		}
 	}
 
 	// ----------------- OSCListener interface -----------------
@@ -154,35 +143,34 @@ implements OSCListener, Constants, ServerListener, ActionListener,
 
 	// ----------------- EventManager.Processor interface -----------------
 
-	public void processEvent( BasicEvent e )
+	public void processEvent( BasicEvent be )
 	{
-		final OSCMessage	msg			= ((Event) e).msg;
+		final Event			e			= (Event) be;
+		final OSCMessage	msg			= e.msg;
 		final int			busIndex	= ((Number) msg.getArg( 0 )).intValue();
 		final int			numVals		= ((Number) msg.getArg( 1 )).intValue();
+// getWhen doesn't provide a valid value i think
+//		final long			time		= e.getWhen(); 
+		final long			time		= System.currentTimeMillis(); 
 		Client				mc;	
-		
-//		synchronized( sync ) {
-			if( (bus == null) || (busIndex != bus.getIndex()) ) return;
+	
+		if( (bus == null) || (busIndex != bus.getIndex()) ) return;
 
-			for( int i = 0; i < collActiveClients.size(); i++ ) {
-				mc	= (Client) collActiveClients.get( i );
-				if( !mc.task ) continue;
-//				for( int j = 0, off = mc.cOffset; (j < mc.cNum) && (off < numVals); j++, off++ ) {
-//					mc.peakRMSPairs[ j ] = ((Number) msg.getArg( off + 2 )).floatValue();
-//				}
-				for( int j = 0, k = 0, m = numVals + 2, off = mc.cOffset + 2; (k < mc.cNum) && (off < m); j++ ) {
-					if( mc.channels[ j ] >= 0 ) {
-						mc.peakRMSPairs[ k++ ] = ((Number) msg.getArg( off++ )).floatValue();
-						mc.peakRMSPairs[ k++ ] = ((Number) msg.getArg( off++ )).floatValue();
-					} else {
-						mc.peakRMSPairs[ k++ ] = 0f;
-						mc.peakRMSPairs[ k++ ] = 0f;
-						off += 2;
-					}
+		for( int i = 0; i < collActiveClients.size(); i++ ) {
+			mc	= (Client) collActiveClients.get( i );
+			if( !mc.task ) continue;
+			for( int j = 0, k = 0, m = numVals + 2, off = mc.cOffset + 2; (k < mc.cNum) && (off < m); j++ ) {
+				if( mc.channels[ j ] >= 0 ) {
+					mc.peakRMSPairs[ k++ ] = ((Number) msg.getArg( off++ )).floatValue();
+					mc.peakRMSPairs[ k++ ] = ((Number) msg.getArg( off++ )).floatValue();
+				} else {
+					mc.peakRMSPairs[ k++ ] = 0f;
+					mc.peakRMSPairs[ k++ ] = 0f;
+					off += 2;
 				}
-				mc.ml.meterUpdate( mc.peakRMSPairs );
 			}
-//		}
+			mc.view.meterUpdate( mc.peakRMSPairs, 0, time );
+		}
 	}
 
 	private static void printError( String name, Throwable t )
@@ -190,7 +178,6 @@ implements OSCListener, Constants, ServerListener, ActionListener,
 		System.err.println( name + " : " + t.getClass().getName() + " : " + t.getLocalizedMessage() );
 	}
 
-	// @synchronization	must be called with sync on sync
 	private void disposeServer()
 	{
 		Client mc;
@@ -228,11 +215,8 @@ implements OSCListener, Constants, ServerListener, ActionListener,
 		meterBangBndl	= null;
 	}
 	
-	// @synchronization	must be called with sync on sync
 	private void setServer( Server s )
 	{
-//		if( !Thread.holdsLock( sync )) throw new IllegalMonitorStateException();
-	
 		Client mc;
 
 		disposeServer();
@@ -252,124 +236,106 @@ implements OSCListener, Constants, ServerListener, ActionListener,
 		resortClients();
 	}
 	
-	public void setListenerTask( MeterListener ml, boolean task, OSCBundle bndl )
+	public void setListenerTask( PeakMeterView view, boolean task, OSCBundle bndl )
 	{
 		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
 
-//		synchronized( sync ) {
-			final Client mc = (Client) mapClients.get( ml );
-			if( mc == null ) return;
-			if( mc.task != task ) {
-				mc.task	= task;
-				if( mc.server == server ) {
-					final boolean weCreated = bndl == null;
-					if( weCreated ) bndl = new OSCBundle();
-					for( int j = 0; j < mc.synths.length; j++ ) {
-						if( mc.synths[ j ] != null ) {
-							bndl.addPacket( mc.synths[ j ].runMsg( task ));
-//System.err.println( mc.synths[ j ].toString() + " -> runMsg( "+task+" )" );
-						}
+		final Client mc = (Client) mapClients.get( view );
+		if( mc == null ) return;
+		if( mc.task != task ) {
+			mc.task	= task;
+			if( mc.server == server ) {
+				final boolean weCreated = bndl == null;
+				if( weCreated ) bndl = new OSCBundle();
+				for( int j = 0; j < mc.synths.length; j++ ) {
+					if( mc.synths[ j ] != null ) {
+						bndl.addPacket( mc.synths[ j ].runMsg( task ));
 					}
-					if( weCreated && (bndl.getPacketCount() > 0) ) {
-						try {
-							server.sendBundle( bndl );
-						}
-						catch( IOException e1 ) {
-							printError( "setListenerTask", e1 );
-						}
+				}
+				if( weCreated && (bndl.getPacketCount() > 0) ) {
+					try {
+						server.sendBundle( bndl );
 					}
-//System.err.println( "numPackets "+bndl.getPacketCount() + "; task = "+task );
-					if( task ) {
-						if( ++numTask == 1 ) {
-//System.err.println( "numTask == 1" );
-							meterTimer.restart();
-						}
-					} else {
-						if( --numTask == 0 ) {
-//System.err.println( "numTask == 0" );
-							meterTimer.stop();
-						}
+					catch( IOException e1 ) {
+						printError( "setListenerTask", e1 );
+					}
+				}
+				if( task ) {
+					if( ++numTask == 1 ) {
+						meterTimer.restart();
+					}
+				} else {
+					if( --numTask == 0 ) {
+						meterTimer.stop();
 					}
 				}
 			}
-//		}
+		}
 	}
 
-	public void addListener( MeterListener ml, Bus b, Group g, boolean task )
+	public void addListener( PeakMeterView ml, Bus b, Group g, boolean task )
 	{
 		final int[] channels = new int[ b.getNumChannels() ];
 
-//System.err.println( "addListener( "+ml+", "+b+", "+g );
-		
 		for( int i = 0, j = b.getIndex(); i < channels.length; ) {
 			channels[ i++ ] = j++;
 		}
 		addListener( ml, b.getServer(), channels, g, task );
 	}
 
-	public void addListener( MeterListener ml, Server s, int[] channels, Group g, boolean task )
+	public void addListener( PeakMeterView ml, Server s, int[] channels, Group g, boolean task )
 	{
 		final Client mc;
 
-//Thread.dumpStack();
-//System.err.println( "addListener( "+ml+", "+channels.length+", "+g );
 		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
-		
-//		synchronized( sync ) {
-			mc = new Client( ml, s, channels, g, task );
-//System.err.println( "add "+ml+"; bus "+b );
-			if( mapClients.put( ml, mc ) != null ) throw new IllegalArgumentException( "MeterListener was already registered" );
-			collAllClients.add( mc );
-			if( mc.server == server ) {
-				collActiveClients.add( mc );
-				resortClients();
-			}
-//		}
+	
+		mc = new Client( ml, s, channels, g, task );
+		if( mapClients.put( ml, mc ) != null ) throw new IllegalArgumentException( "MeterListener was already registered" );
+		collAllClients.add( mc );
+		if( mc.server == server ) {
+			collActiveClients.add( mc );
+			resortClients();
+		}
 	}
 	
-	public void removeListener( MeterListener ml )
+	public void removeListener( PeakMeterView view )
 	{
 		final Client	mc;
 		final OSCBundle		bndl;
 		
 		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
 
-//		synchronized( sync ) {
-			mc = (Client) mapClients.remove( ml );
-			if( mc == null ) return;
-			collAllClients.remove( mc );
-			if( collActiveClients.remove( mc )) {
-				bndl = new OSCBundle();
-				for( int i = 0; i < mc.synths.length; i++ ) {
-					if( mc.synths[ i ] != null ) {
-						bndl.addPacket( mc.synths[ i ].freeMsg() );
-						mc.synths[ i ] = null;
-					}
-				}
-				if( bndl.getPacketCount() > 0 ) {
-					try {
-						if( server.isRunning() ) server.sendBundle( bndl );
-						resortClients();
-					}
-					catch( IOException e1 ) {
-						printError( "removeMeterListener", e1 );
-					}
+		mc = (Client) mapClients.remove( view );
+		if( mc == null ) return;
+		collAllClients.remove( mc );
+		if( collActiveClients.remove( mc )) {
+			bndl = new OSCBundle();
+			for( int i = 0; i < mc.synths.length; i++ ) {
+				if( mc.synths[ i ] != null ) {
+					bndl.addPacket( mc.synths[ i ].freeMsg() );
+					mc.synths[ i ] = null;
 				}
 			}
-//		}
+			if( bndl.getPacketCount() > 0 ) {
+				try {
+					if( server.isRunning() ) server.sendBundle( bndl );
+					resortClients();
+				}
+				catch( IOException e1 ) {
+					printError( "removeMeterListener", e1 );
+				}
+			}
+		}
 	}
 	
-	// @synchronization	must be called with sync on sync
 	private void resortClients()
 	{
-//		if( !Thread.holdsLock( sync )) throw new IllegalMonitorStateException();
-
 		final NodeWatcher	nw;
 		int					off	= 0;
 		OSCBundle			bndl;
 		Group				g;
 		boolean				haveGrpTrig	= false;
-		Client			mc;
+		Client				mc;
 		int					srcChan;
 	
 		meterTimer.stop();
@@ -411,11 +377,8 @@ implements OSCListener, Constants, ServerListener, ActionListener,
 			catch( IOException e1 ) {
 				numCtrlChans	= 0;
 				printError( "resortClients", e1 );
-// e1.printStackTrace();
 			}
 		}
-		
-//		System.err.println( "numCtrlChans = "+numCtrlChans );
 		
 		numTask = 0;
 		
@@ -431,7 +394,6 @@ implements OSCListener, Constants, ServerListener, ActionListener,
 
 					for( int i = 0; i < collActiveClients.size(); i++ ) {
 						mc	= (Client) collActiveClients.get( i );
-//System.err.println( "i = "+i+"; mc = "+mc );
 						if( mc.task ) numTask++;
 						if( mc.g != null ) {
 							g	= mc.g;
@@ -460,7 +422,6 @@ implements OSCListener, Constants, ServerListener, ActionListener,
 									srcChan,    m }, kAddToTail ));
 								if( !mc.task ) {
 									bndl.addPacket( mc.synths[ j ].runMsg( false ));
-//System.err.println( mc.synths[ j ].toString() + " -> runMsg( "+mc.task+" )" );
 								}
 								nw.register( mc.synths[ j ]);
 							}
@@ -517,7 +478,6 @@ implements OSCListener, Constants, ServerListener, ActionListener,
 						    ((Number) omsg.getArg( i )).floatValue() ));
 					}
 					msg = new OSCMessage( msg.getName(), fuseArgs );
-//System.out.println( "FUSE!" );
 					return true;
 				}
 			}
@@ -527,19 +487,19 @@ implements OSCListener, Constants, ServerListener, ActionListener,
 	
 	private static class Client
 	{
-		protected final float[]		peakRMSPairs;
-		protected final int			cNum;
-		protected int				cOffset;
-		protected final MeterListener ml;
-		protected final int[]		channels;
-		protected final Group		g;
-		protected final Synth[]		synths;
-		protected final Server		server;
-		protected boolean			task;
+		protected final float[]			peakRMSPairs;
+		protected final int				cNum;
+		protected int					cOffset;
+		protected final PeakMeterView	view;
+		protected final int[]			channels;
+		protected final Group			g;
+		protected final Synth[]			synths;
+		protected final Server			server;
+		protected boolean				task;
 		
-		protected Client( MeterListener ml, Server server, int[] channels, Group g, boolean task )
+		protected Client( PeakMeterView view, Server server, int[] channels, Group g, boolean task )
 		{
-			this.ml			= ml;
+			this.view		= view;
 			this.server		= server;
 			this.channels	= channels;
 			this.g			= g;
@@ -564,7 +524,7 @@ implements OSCListener, Constants, ServerListener, ActionListener,
 				sb.append( channels[ i ]);
 			}
 			sb.append( " ]" );
-			return( "MeterClient( "+ml+", "+server+", " + sb.toString() + ", " + g + ", " + task + " )" );
+			return( "MeterClient( "+view+", "+server+", " + sb.toString() + ", " + g + ", " + task + " )" );
 		}
 	}
 }

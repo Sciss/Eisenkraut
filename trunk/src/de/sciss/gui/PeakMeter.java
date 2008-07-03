@@ -57,14 +57,14 @@ import de.sciss.util.Disposable;
  *	for a smooth look.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 28-Apr-08
+ *  @version	0.70, 03-Jul-08
  *
  *	@todo	allow linear display (now it's hard coded logarithmic)
  *	@todo	add optional horizontal orientation
  */
 public class PeakMeter
 extends JComponent
-implements Disposable
+implements PeakMeterView, Disposable
 {
 	public static final int		DEFAULT_HOLD_DUR = 2500;
 
@@ -121,18 +121,11 @@ implements Disposable
 
 	private int					yHold, yPeak, yRMS;
 	
-//	private boolean				ttEnabled		= false;
-//	private float				ttPeak			= Float.NEGATIVE_INFINITY;
-//	private boolean				ttUpdate		= false;
-//	private MouseAdapter		ma				= null;
-	
-//	private Object				sync			= new Object();
-	
 	private int					yPeakPainted	= 0;
 	private int					yRMSPainted		= 0;
 	private int					yHoldPainted	= 0;
 	
-	private boolean				refreshParent		= false;
+	private boolean				refreshParent	= false;
 	
 	private int					ticks			= 0;
 
@@ -157,8 +150,84 @@ implements Disposable
 			}
 		});
 		
-		clear();
+		clearMeter();
 	}
+	
+	// ------------- PeakMeterView interface -------------
+	
+	public int getNumChannels() { return 1; }
+	
+	public boolean meterUpdate( float[] peakRMSPairs, int offset, long time )
+	{
+		final int offset2 = offset + 1;
+		if( offset2 >= peakRMSPairs.length ) return false;
+		return setPeakAndRMS( peakRMSPairs[ offset ], peakRMSPairs[ offset2 ], time );
+	}
+
+	/**
+	 *	Decides whether the peak indicator should be
+	 *	painted or not. By default the indicator is painted.
+	 *
+	 *	@param	onOff	<code>true</code> to have the indicator painted,
+	 *					<code>false</code> to switch it off
+	 */
+	public void setHoldPainted( boolean onOff )
+	{
+		if( holdPainted != onOff ) {
+			holdPainted	= onOff;
+			repaint();
+		}
+	}
+	
+	/**
+	 *	Decides whether the blue RMS bar should be
+	 *	painted or not. By default the bar is painted.
+	 *
+	 *	@param	onOff	<code>true</code> to have the RMS values painted,
+	 *					<code>false</code> to switch them off
+	 */
+	public void setRMSPainted( boolean onOff )
+	{
+		if( rmsPainted != onOff ) {
+			rmsPainted	= onOff;
+			repaint();
+		}
+	}
+	
+	/**
+	 *	Clears the peak, peak hold and rms values
+	 *	immediately (without ballistics). This
+	 *	way the component can be reset when the
+	 *	metering task is stopped without waiting
+	 *	for the bars to fall down.
+	 */
+	public void clearMeter()
+	{
+		final int	w1		= getWidth() - (insets.left + insets.right);
+		final int	h1		= getHeight() - (insets.top + insets.bottom);
+		final int	rh1		= (h1 - 1) & ~1;
+
+		peak		= -160f;
+		rms			= -160f;
+		hold		= -160f;
+		peakToPaint	= -160f;
+		rmsToPaint	= -160f;
+		holdToPaint	= -160f;
+		peakNorm	= -1.0f;
+		rmsNorm		= -1.0f;
+		holdNorm	= -1.0f;
+		holdEnd		= System.currentTimeMillis();
+		yHold		= (rh1 - (int) (holdNorm * rh1) + 1) & ~1;
+		yPeak		= (rh1 - (int) (peakNorm * rh1) + 1) & ~1;
+		yRMS		= Math.max( (rh1 - (int) (rmsNorm  * rh1) + 1) & ~1, yPeak + 4 );
+		if( refreshParent ) {
+			getParent().repaint( insets.left + getX(), insets.top + getY(), w1, h1 );
+		} else {
+			repaint( insets.left, insets.top, w1, h1 );
+		}
+	}
+	
+	// ----------- public methods ----------- 
 	
 	public void setTicks( int ticks )
 	{
@@ -208,36 +277,6 @@ implements Disposable
 //	}
 	
 	/**
-	 *	Decides whether the peak indicator should be
-	 *	painted or not. By default the indicator is painted.
-	 *
-	 *	@param	onOff	<code>true</code> to have the indicator painted,
-	 *					<code>false</code> to switch it off
-	 */
-	public void setHoldPainted( boolean onOff )
-	{
-//		synchronized( sync ) {
-			holdPainted	= onOff;
-			repaint();
-//		}
-	}
-	
-	/**
-	 *	Decides whether the blue RMS bar should be
-	 *	painted or not. By default the bar is painted.
-	 *
-	 *	@param	onOff	<code>true</code> to have the RMS values painted,
-	 *					<code>false</code> to switch them off
-	 */
-	public void setRMSPainted( boolean onOff )
-	{
-//		synchronized( sync ) {
-			rmsPainted	= onOff;
-			repaint();
-//		}
-	}
-	
-	/**
 	 *	Sets the peak indicator hold time. Defaults to 1800 milliseconds.
 	 *
 	 *	@param	millis	new peak hold time in milliseconds. Note that
@@ -264,42 +303,6 @@ implements Disposable
 //		synchronized( sync ) {
 			hold		= -160f;
 			holdNorm	= 0.0f;
-//		}
-	}
-	
-	/**
-	 *	Clears the peak, peak hold and rms values
-	 *	immediately (without ballistics). This
-	 *	way the component can be reset when the
-	 *	metering task is stopped without waiting
-	 *	for the bars to fall down.
-	 */
-	public void clear()
-	{
-		final int	w1		= getWidth() - (insets.left + insets.right);
-		final int	h1		= getHeight() - (insets.top + insets.bottom);
-		final int	rh1		= (h1 - 1) & ~1;
-
-//		System.out.println( "p clear " + hashCode() );
-//		synchronized( sync ) {
-			peak		= -160f;
-			rms			= -160f;
-			hold		= -160f;
-			peakToPaint	= -160f;
-			rmsToPaint	= -160f;
-			holdToPaint	= -160f;
-			peakNorm	= -1.0f;
-			rmsNorm		= -1.0f;
-			holdNorm	= -1.0f;
-			holdEnd		= System.currentTimeMillis();
-			yHold		= (rh1 - (int) (holdNorm * rh1) + 1) & ~1;
-			yPeak		= (rh1 - (int) (peakNorm * rh1) + 1) & ~1;
-			yRMS		= Math.max( (rh1 - (int) (rmsNorm  * rh1) + 1) & ~1, yPeak + 4 );
-			if( refreshParent ) {
-				getParent().repaint( insets.left + getX(), insets.top + getY(), w1, h1 );
-			} else {
-				repaint( insets.left, insets.top, w1, h1 );
-			}
 //		}
 	}
 	
@@ -431,93 +434,64 @@ implements Disposable
 			return paint * 0.005f + 0.3f;	// 0 ... 5 %
 		} else return -1f;
 	}
-
-//	public void setPeakAndRMS( float peak, float rms )
-	public boolean setPeakAndRMS( float peak, float rms, long now )
+	
+	public boolean setPeakAndRMS( float peak, float rms, long time )
 	{
 		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
 		
-//		synchronized( sync ) {
-//			final float		maxFall		= fallSpeed * (lastUpdate - now);	// a negative value
-			final boolean	result;
-			final int		h1;
+		final boolean	result;
+		final int		h1;
 
-	//		if( logarithmic ) {
-				peak		= (float) (Math.log( peak ) * logPeakCorr);
-				if( peak >= this.peak ) {
-					this.peak	= peak;
+//		if( logarithmic ) {
+			peak		= (float) (Math.log( peak ) * logPeakCorr);
+			if( peak >= this.peak ) {
+				this.peak	= peak;
+			} else {
+				// 20 dB in 1500 ms bzw. 40 dB in 2500 ms
+				this.peak = Math.max( peak, this.peak - (time - lastUpdate) * (this.peak > -20f ? 0.013333333333333f : 0.016f ));
+			}
+			peakToPaint	= Math.max( peakToPaint, this.peak );
+			peakNorm 	= paintToNorm( peakToPaint );
+
+			if( rmsPainted ) {
+				rms			= (float) (Math.log( rms ) * logRMSCorr);
+				if( rms > this.rms ) {
+					this.rms	= rms;
 				} else {
-					// 20 dB in 1500 ms bzw. 40 dB in 2500 ms
-					this.peak = Math.max( peak, this.peak - (now - lastUpdate) * (this.peak > -20f ? 0.013333333333333f : 0.016f ));
+					this.rms = Math.max( rms, this.rms - (time - lastUpdate) * (this.rms > -20f ? 0.013333333333333f : 0.016f ));
 				}
-//				this.peak  += Math.max( maxFall, peak - this.peak );
-				peakToPaint	= Math.max( peakToPaint, this.peak );
-//				peakNorm	= Math.max( 0.0f, Math.min( 1.0f, peakToPaint * floorWeight + 1 ));
-				peakNorm 	= paintToNorm( peakToPaint );
-//System.out.println( "paintToNorm( peakToPaint = " + peakToPaint + " -> peakNorm = " + peakNorm );
-				
-				if( rmsPainted ) {
-					rms			= (float) (Math.log( rms ) * logRMSCorr);
-					if( rms > this.rms ) {
-						this.rms	= rms;
-					} else {
-						this.rms = Math.max( rms, this.rms - (now - lastUpdate) * (this.rms > -20f ? 0.013333333333333f : 0.016f ));
-					}
-//					this.rms   += Math.max( maxFall, rms  - this.rms );
-					rmsToPaint	= Math.max( rmsToPaint, this.rms );
-//					rmsNorm		= Math.max( 0.0f, Math.min( 1.0f, rmsToPaint * floorWeight + 1 ));
-					rmsNorm		= paintToNorm( rmsToPaint );
-//System.out.println( "paintToNorm( rmsToPaint = " + rmsToPaint + " -> rmsNorm = " + rmsNorm );
-				}
-				
-				if( holdPainted ) {
-//					if( this.peak >= hold ) {
-					if( this.peak >= hold ) {
+				rmsToPaint	= Math.max( rmsToPaint, this.rms );
+				rmsNorm		= paintToNorm( rmsToPaint );
+			}
+		
+			if( holdPainted ) {
+				if( this.peak >= hold ) {
+					hold	= this.peak;
+					holdEnd	= time + holdDuration;
+				} else if( time > holdEnd ) {
+					if( this.peak > hold ) {
 						hold	= this.peak;
-						holdEnd	= now + holdDuration;
-//						System.out.println( "hold=peak " + hold );
-					} else if( now > holdEnd ) {
-						if( this.peak > hold ) {
-							hold	= this.peak;
-						} else {
-							hold   += (this.hold > -20f ? 0.013333333333333f : 0.016f ) * (lastUpdate - now);
-						}
+					} else {
+						hold   += (this.hold > -20f ? 0.013333333333333f : 0.016f ) * (lastUpdate - time);
 					}
-					holdToPaint	= Math.max( holdToPaint, hold );
-//					holdNorm	= Math.max( 0.0f, Math.min( 1.0f, holdToPaint * floorWeight + 1 ));
-					holdNorm	= paintToNorm( holdToPaint );
-					result		= holdNorm >= 0f;
-//					System.out.println( "holdNorm " + holdNorm );
-				} else {
-					result		= peakNorm >= 0f;
 				}
-//				if( !result) {
-//					holdNorm = -1f;
-//					peakNorm = -1f;
-//					System.out.println( "dang" );
-//				}
-				
-	//		} else {
-	//	
-	//			this.peak	= peak;
-	//			this.rms	= rms;
-	//		}
+				holdToPaint	= Math.max( holdToPaint, hold );
+				holdNorm	= paintToNorm( holdToPaint );
+				result		= holdNorm >= 0f;
+			} else {
+				result		= peakNorm >= 0f;
+			}
 
-			lastUpdate		= now;
+			lastUpdate		= time;
 			h1				= getHeight() - insets.top - insets.bottom;
 			final int rh1	= (h1 - 1) & ~1;
 			recentHeight	= rh1 + 1;
 			
-//			yHold	= ((int) ((1.0f - holdNorm) * recentHeight) + 1) & ~1;
-//			yPeak	= ((int) ((1.0f - peakNorm) * recentHeight) + 1) & ~1;
-//			yRMS	= ((int) ((1.0f - rmsNorm)  * recentHeight) + 1) & ~1;
 			yHold	= (rh1 - (int) (holdNorm * rh1) + 1) & ~1;
 			yPeak	= (rh1 - (int) (peakNorm * rh1) + 1) & ~1;
 			yRMS	= Math.max( (rh1 - (int) (rmsNorm  * rh1) + 1) & ~1, yPeak + 2 );
 
-// System.out.println( "JA : yPeak = " + yPeak + ", yRMS = " + yRMS + ", yHold = " + yHold + " ;; " + this.peak + ", " + peakToPaint + ", " + peakNorm );
-
-			 if( (yPeak != yPeakPainted) || (yRMS != yRMSPainted) || (yHold != yHoldPainted) ) {
+			if( (yPeak != yPeakPainted) || (yRMS != yRMSPainted) || (yHold != yHoldPainted) ) {
 				final int minY, maxY;
 				
 				if( holdPainted ) {
@@ -537,13 +511,6 @@ implements Disposable
 					}
 				}
 
-//				if( refreshParent ) {
-//					getParent().repaint( insets.left + getX(), insets.top + (recentHeight - h1) + minY + getY(), getWidth() - insets.left - insets.right,
-//										 maxY - minY );
-//				} else {
-//					repaint( insets.left, insets.top + (recentHeight - h1) + minY, getWidth() - insets.left - insets.right,
-//							 maxY - minY );
-//				}
 				if( refreshParent ) {
 					getParent().repaint( insets.left + getX(), insets.top + (recentHeight - h1) + minY + getY(), getWidth() - insets.left - insets.right,
 										 maxY - minY );
@@ -552,15 +519,10 @@ implements Disposable
 							 maxY - minY );
 				}
 			} else {
-// System.out.println( "NO " + yPeak + ", " + yRMS + ", " + yHold + " ;; " + this.peak + ", " + peakToPaint + ", " + peakNorm ); 			
 				peakToPaint		= -160f;
 				rmsToPaint		= -160f;
 				holdToPaint		= -160f;
 			}
-//			if( ttUpdate && (ttPeak != peak) ) {
-//				ttPeak = peak;
-//				setToolTipText( String.valueOf( ttPeak ));
-//			}
 			
 			return result;
 //		}

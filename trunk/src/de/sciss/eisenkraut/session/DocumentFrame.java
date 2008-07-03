@@ -163,6 +163,7 @@ import de.sciss.gui.MenuRoot;
 import de.sciss.gui.ModificationButton;
 import de.sciss.gui.PathField;
 import de.sciss.gui.PeakMeter;
+import de.sciss.gui.PeakMeterGroup;
 import de.sciss.gui.ProgressComponent;
 import de.sciss.gui.SpringPanel;
 import de.sciss.gui.StretchedGridLayout;
@@ -1260,7 +1261,7 @@ newLp:		for( int ch = 0; ch < newChannels; ch++ ) {
 				meters[ ch ] = (PeakMeter) collChannelMeters.get( ch );
 			}
 			channelMeters	= meters;
-			lmm.setMeters( meters );
+			lmm.setView( new PeakMeterGroup( meters ));
 
 //			if( metersPanel.getParent() == null ) waveHeaderView.gridAdd( metersPanel, 1, AUDIOTRACK_OFF, 1, newChannels );
 //		}

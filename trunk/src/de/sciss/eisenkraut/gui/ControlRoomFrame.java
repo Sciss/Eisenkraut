@@ -68,8 +68,7 @@ import de.sciss.common.AppWindow;
 import de.sciss.common.BasicWindowHandler;
 import de.sciss.gui.AbstractWindowHandler;
 import de.sciss.gui.MultiStateButton;
-import de.sciss.gui.PeakMeter;
-import de.sciss.gui.PeakMeterGroup;
+import de.sciss.gui.PeakMeterPanel;
 import de.sciss.gui.PrefComboBox;
 import de.sciss.gui.SpringPanel;
 import de.sciss.gui.StringItem;
@@ -99,21 +98,16 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
 	private final PrefComboBox			ggAudioBox;
 	private final Preferences			audioPrefs;
 
-	private PeakMeter[]					masterMeters;
 	protected final SuperColliderClient	superCollider;
 	private Group						grpMeters;
-//	private final Box					pMeters;
-	private final PeakMeterGroup		pmg;
+	private final PeakMeterPanel		pmg;
 
 	private RoutingConfig				oCfg;
 	
 	private final SpringPanel			b1;
 	protected final VolumeFader			ggVolume;
 	
-//	private final Set					allTransports		= new HashSet();	// element = (Transport)
-//	private final Set					transportsRunning	= new HashSet();
 	private final Map					mapPlayers			= new HashMap();	// key = Session, value = SuperColliderPlayer
-//	private long						timeMetersPause;
 	private final PeakMeterManager		lmm;
 	
 	private final ActionListener		audioBoxListener;
@@ -128,17 +122,13 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
 		superCollider		= SuperColliderClient.getInstance();
 		lmm					= new PeakMeterManager( superCollider.getMeterManager() );
 	
-//		super( AbstractApplication.getApplication().getResourceString( "paletteCtrlRoom" ), HORIZONTAL, false );
 		setTitle( app.getResourceString( "paletteCtrlRoom" ));
 		setResizable( false );
 
 		final Container			cp				= getContentPane();
-//		final JPanel			b1				= new JPanel( new BorderLayout( 0, 2 )); // Box.createVerticalBox();
 		final JPanel			b2				= new JPanel( new BorderLayout() ); // Box.createHorizontalBox();
 		final MultiStateButton	ggLimiter;
 		audioPrefs								= app.getUserPrefs().node( PrefsUtil.NODE_AUDIO );
-//		final Preferences		ocPrefs			= audioPrefs.node( PrefsUtil.NODE_OUTPUTCONFIGS );
-//		final Preferences		abPrefs			= audioPrefs.node( PrefsUtil.NODE_AUDIOBOXES );
 		final Object			comboProto		= "XXXXXXXX";
 
 		b1				= new SpringPanel( 2, 4, 2, 4 );
@@ -157,15 +147,7 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
 				final Server server = superCollider.getServer();
 				if( (server != null) && server.isRunning() ) {
 					final JOptionPane op = new JOptionPane( getResourceString( "optionDlgAudioBoxReboot" ), JOptionPane.QUESTION_MESSAGE, JOptionPane.YES_NO_OPTION );
-//					if( JOptionPane.showConfirmDialog( getWindow(), getResourceString( "optionDlgAudioBoxReboot" ), null, JOptionPane.YES_NO_OPTION ) == 0 ) {
 					if( BasicWindowHandler.showDialog( op, getWindow(), null ) == 0 ) {
-//						superCollider.addListener( new ServerListener() {
-//						    public abstract void serverAction( ServerEvent e )
-//							{
-//								superCollider.boot();
-//							}
-//
-//						superCollider.quit();
 						superCollider.reboot();
 					}
 				}
@@ -175,16 +157,12 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
 		ggVolume.addChangeListener( new ChangeListener() {
 			public void stateChanged( ChangeEvent e ) {
 				superCollider.setVolume( ControlRoomFrame.this, ggVolume.getVolumeLinear() );
-//				updateVolumeInfo();
 			}
 		});
-
-//		ggLimiter	= new JCheckBox( getResourceString( "labelLimiter" ));
 		
 		ggLimiter = new MultiStateButton();
 		ggLimiter.setNumColumns( 8 );
 		ggLimiter.addItem( "Limiter" );
-		//ggLimit2.addItem( "Limiter", Color.black, new Color( 0xE3, 0xFF, 0x9E ), new Color( 0xFC, 0xFF, 0x9E ));
 // NOTE: BUG WITH CUSTOM COMPOSITE ON WIN-XP!!!
 //		ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ), new Color( 0xFA, 0xE7, 0x9D ));
 ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
@@ -195,33 +173,21 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 		});
 		if( superCollider.getLimiter() ) ggLimiter.setSelectedIndex( 1 );
 		
-//		pMeters	= Box.createHorizontalBox();
-//		pMeters.setBackground( Color.black );
-//		pMeters.setBorder( new RecessedBorder() );
-		pmg	= new PeakMeterGroup();
+		pmg	= new PeakMeterPanel();
 		pmg.setBorder( true );
 		pmg.setCaption( true );
 		oCfg = superCollider.getOutputConfig();
 		rebuildMeters();
 		
-//		b2.add( pMeters, BorderLayout.WEST );
 		b2.add( pmg, BorderLayout.WEST );
 		b2.add( ggVolume, BorderLayout.EAST );
 		
-//		b1.add( ggLimiter, BorderLayout.NORTH );
-//		b1.add( b2, BorderLayout.CENTER );
 		b1.gridAdd( ggLimiter, 0, 0, -1, 1 );
 		b1.gridAdd( b2, 0, 1, -1, 1 );
-//		b1.add( new JLabel( getResourceString( "labelGain" )));
 		b1.gridAdd( ggOutputConfig, 0, 2, -1, 1 );
 		b1.gridAdd( ggAudioBox, 0, 3, -1, 1 );
-//		b1.add( b3, BorderLayout.SOUTH );
 		b1.makeCompactGrid();
-//		if( app.getUserPrefs().getBoolean( PrefsUtil.KEY_INTRUDINGSIZE, false )) {
-//    		b3.add( Box.createVerticalStrut( 16 ));
-//        }
-		
-//		b1.setBorder( BorderFactory.createEmptyBorder( 2, 4, 2, 4 ));
+
 		cp.add( b1, BorderLayout.CENTER );
 
 		AbstractWindowHandler.setDeepFont( b1 );
@@ -233,11 +199,6 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 			{
 				startListening();
 			}
-//
-//			public void windowClosed( AbstractWindow.Event e )
-//			{
-//				stopListening();
-//			}
 
 			public void windowClosing( AbstractWindow.Event e )
 			{
@@ -245,7 +206,6 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 				dispose();
 			}
 		});
-
 
 //		DISPOSE_ON_CLOSE doesn't work: the BasicFrame doesn't catch
 //		the visible preferences. instead we hide and then dispose the window!
@@ -288,22 +248,13 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 		}
 		stopListening();
 		
-		for( int i = 0; i < masterMeters.length; i++ ) {
-			masterMeters[ i ].dispose();
-		}
-		
+		pmg.dispose();
 		super.dispose();
 	}
 	
-//	protected void updateVolumeInfo()
-//	{
-//		ggVolume.setToolTipText( String.valueOf( ggVolume.getVolumeDecibels() ));
-//	}
-
 	private void updateVolume()
 	{
 		ggVolume.setVolumeLinear( superCollider.getVolume() );
-//		updateVolumeInfo();
 	}
 
 	private void startMeters()
@@ -313,7 +264,6 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 		final int					numOutputBusChannels;
 		final int[]					channels;
 		final Group					mg			= superCollider.getMasterGroup();
-//		final boolean				task;
 	
 		if( (s == null) || (oCfg == null) || (mg == null) ) return;
 
@@ -325,7 +275,6 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 			} else {
 				channels[ ch ] = -1;
 			}
-//System.err.println( "ch = "+ch+"; map = "+channels[ ch ]);
 		}
 		
 		try {
@@ -339,9 +288,6 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 			}
 			lmm.setGroup( grpMeters );
 			lmm.setInputs( s, channels );
-//			task	= !transportsRunning.isEmpty();
-//			superCollider.getMeterManager().addListener( this, s, channels, grpMeters, task );
-//			timeMetersPause = task ? Long.MAX_VALUE : 0;
 		}
 		catch( IOException e1 ) {
 			printError( "startMeters", e1 );
@@ -351,7 +297,6 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 	private void stopMeters()
 	{
 		lmm.clearInputs();
-//		superCollider.getMeterManager().removeListener( this );
 	}
 
 	private static void printError( String name, Throwable t )
@@ -361,38 +306,18 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 	
 	private void rebuildMeters()
 	{
-//		final PeakMeter[]		meters;
-//		final PeakMeterCaption	caption;
-//		final Border			b1		= BorderFactory.createEmptyBorder( caption.getAscent(), 1, caption.getDescent(), 1 );
-//		final Border			b2		= BorderFactory.createEmptyBorder( 1, 1, 1, 0 ) : BorderFactory.createEmptyBorder( caption.getAscent(), 1, caption.getDescent(), 0 );
-		
 		oCfg	= superCollider.getOutputConfig();
-//		pMeters.removeAll();
 		
 		if( oCfg != null ) {
 			pmg.setNumChannels( oCfg.numChannels );
-//			meters	= new PeakMeter[ oCfg.numChannels ];
-//			caption	= new PeakMeterCaption();
-//			caption.setBorder( BorderFactory.createEmptyBorder( 5, 1, 4, 0 ));
-//			pMeters.add( caption );
-//			for( int ch = 0; ch < meters.length; ch++ ) {
-//				meters[ ch ] = new PeakMeter();
-//				meters[ ch ].setRefreshParent( true );
-//				meters[ ch ].setBorder( BorderFactory.createEmptyBorder( 5, 1, 4, 1 ));
-//				meters[ ch ].setTicks( 101 );
-//				pMeters.add( meters[ ch ]);
-//			}
-//			masterMeters = meters;
-			masterMeters = pmg.getMeters();
 		} else {
 			pmg.setNumChannels( 0 );
-			masterMeters = new PeakMeter[ 0 ];
 		}
 		
 		b1.makeCompactGrid();
 		pack();
 		
-		lmm.setMeters( masterMeters );
+		lmm.setView( pmg );
 	}
 	
 	// @synchronization	must be in event thread
@@ -404,7 +329,6 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 		Document				doc;
 		SuperColliderPlayer		p;
 		
-//		transportsRunning.clear();
 		lmm.clearTaskSyncs();
 		
 		for( int i = 0; i < dh.getDocumentCount(); i++ ) {
@@ -415,10 +339,6 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 					lmm.addTaskSync( p.getOutputSync() );
 					mapPlayers.put( doc, p );
 				}
-//				allTransports.add( t );
-//				mapPlayers.put( doc, t );
-//				t.addTransportListener( this );
-//				if( t.isRunning() ) transportsRunning.add( t );
 			}
 		}
 	}
@@ -430,41 +350,8 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 
 		lmm.clearTaskSyncs();
 		
-//		Transport t;
-//
-//		for( Iterator iter = allTransports.iterator(); iter.hasNext(); ) {
-//			t = (Transport) iter.next();
-//			t.removeTransportListener( this );
-//		}
-//		
-//		allTransports.clear();
-//		transportsRunning.clear();
 		mapPlayers.clear();
 	}
-
-// ---------------- TransportListener interface ---------------- 
-//
-//	public void transportPlay( Transport transport, long pos, double rate )
-//	{
-//		if( allTransports.contains( transport )) {
-//			final boolean wasEmpty = transportsRunning.isEmpty();
-//			transportsRunning.add( transport );
-//			if( wasEmpty ) {
-//				superCollider.getMeterManager().setListenerTask( this, true );
-//				timeMetersPause = Long.MAX_VALUE;
-//			}
-//		}
-//	}
-//	
-//	public void transportStop( Transport transport, long pos )
-//	{
-//		if( transportsRunning.remove( transport ) && transportsRunning.isEmpty() ) {
-//			timeMetersPause = System.currentTimeMillis() + 5000;
-//		}
-//	}
-//
-//	public void transportPosition( Transport transport, long pos, double rate ) {}
-//	public void transportQuit( Transport transport ) {}
 
 // ------------- ServerListener interface -------------
 
@@ -520,18 +407,6 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 				lmm.addTaskSync( p.getOutputSync() );
 				mapPlayers.put( doc, p );
 			}
-//			final boolean	wasEmpty	= transportsRunning.isEmpty();
-//			final Transport	t			= ((Session) e.getDocument()).getTransport();
-//			allTransports.add( t );
-//			mapPlayers.put( e.getDocument(), t );
-//			t.addTransportListener( this );
-//			if( t.isRunning() ) {
-//				transportsRunning.add( t );
-//				if( wasEmpty ) {
-//					superCollider.getMeterManager().setListenerTask( this, true );
-//					timeMetersPause = Long.MAX_VALUE;
-//				}
-//			}
 		}
 	}
 
@@ -539,17 +414,8 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 	{
 		final SuperColliderPlayer p	= (SuperColliderPlayer) mapPlayers.remove( e.getDocument() );
 		if( p != null ) {
-//System.err.println( "removeTaskSync" );
 			lmm.removeTaskSync( p.getOutputSync() );
 		}
-//		if( p == null ) return;
-//			
-//		final boolean	wasEmpty	= transportsRunning.isEmpty();
-//		allTransports.remove( t );
-//		t.removeTransportListener( this );
-//		if( !wasEmpty && transportsRunning.remove( t )) {
-//			timeMetersPause = System.currentTimeMillis() + 5000;
-//		}
 	}
 
 	public void documentFocussed( de.sciss.app.DocumentEvent e ) { /* empty */ }
@@ -578,24 +444,6 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 		superCollider.removeServerListener( this );
     }
 	
-// ---------------- MeterListener interface ---------------- 
-//
-//	public void meterUpdate( float[] peakRMSPairs )
-//	{
-//		final LevelMeter[]	meters		= masterMeters;
-//		final int			numMeters	= Math.min( meters.length, peakRMSPairs.length >> 1 );
-//		final long			now			= System.currentTimeMillis();
-//
-//		if( now > timeMetersPause ) {
-//			superCollider.getMeterManager().setListenerTask( this, false, null );
-//		}
-//
-//		for( int i = 0, j = 0; i < numMeters; i++ ) {
-////			meters[ i ].setPeakAndRMS( peakRMSPairs[ j++ ], peakRMSPairs[ j++ ]);
-//			meters[ i ].setPeakAndRMS( peakRMSPairs[ j++ ], peakRMSPairs[ j++ ], now );
-//		}
-//	}
-
 	private void refillConfigs()
 	{
 		refillIOConfigs();
@@ -606,21 +454,15 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 	{
 		final Preferences	childPrefs;
 		final String[]		cfgIDs;
-//		final String		cfgID	= audioPrefs.get( PrefsUtil.KEY_OUTPUTCONFIG, null );
 		
 		try {
 			if( isListening ) {
 				ggOutputConfig.stopListening();
-//				ggOutputConfig.removeActionListener( ... );
 			}
 			childPrefs	= audioPrefs.node( PrefsUtil.NODE_OUTPUTCONFIGS );
 			cfgIDs		= childPrefs.childrenNames();
 			ggOutputConfig.removeAllItems();
 			for( int i = 0; i < cfgIDs.length; i++ ) {
-//				if( cfgIDs[ i ].equals( cfgID )) {
-//					
-//				}
-//				oCfg = new RoutingConfig( childPrefs.node( cfgID ));
 				ggOutputConfig.addItem( new StringItem( cfgIDs[ i ], childPrefs.node( cfgIDs[ i ]).get( RoutingConfig.KEY_NAME, cfgIDs[ i ])));
 			}
 		}
@@ -630,12 +472,7 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 		finally {
 			if( isListening ) {
 				ggOutputConfig.startListening();
-//				// add ActionListener _after_ startListening() so no superfluous
-//				// event is caught (resulting in the reboot-question-dialog)
-//				ggAudioBox.addActionListener( audioBoxListener );
 			}
-			// so SuperColliderClient is notified
-//			audioPrefs.put( PrefsUtil.KEY_OUTPUTCONFIG, audioPrefs.get( PrefsUtil.KEY_OUTPUTCONFIG, null ));
 		}
 	}
 
@@ -643,8 +480,6 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 	{
 		final Preferences	childPrefs;
 		final String[]		cfgIDs;
-//		final String		oldID;
-//		int					newIdx = -1;
 		Preferences			childPrefs2;
 		
 		try {
@@ -654,20 +489,14 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 			}
 			childPrefs	= audioPrefs.node( PrefsUtil.NODE_AUDIOBOXES );
 			cfgIDs		= childPrefs.childrenNames();
-//			oldID		= audioPrefs.get( PrefsUtil.KEY_AUDIOBOX, null );
 			ggAudioBox.removeAllItems();
 			for( int i = 0; i < cfgIDs.length; i++ ) {
 				childPrefs2 = childPrefs.node( cfgIDs[ i ]);
 				if( childPrefs2.getBoolean( AudioBoxConfig.KEY_ACTIVE, false )) {
 					ggAudioBox.addItem( new StringItem( cfgIDs[ i ],
 						childPrefs2.get( AudioBoxConfig.KEY_NAME, cfgIDs[ i ])));
-//					if( cfgIDs[ i ].equals( oldID )) newIdx = i; // j;
-//					j++;
 				}
 			}
-//System.err.println( "oldID = " + oldID + "; newIdx = "+newIdx );	
-// if( newIdx >= 0 ) ggAudioBox.setSelectedIndex( newIdx );
-//			if( newIdx >= 0 ) audioPrefs.put( PrefsUtil.KEY_AUDIOBOX, cfgIDs[ newIdx ]);
 		}
 		catch( BackingStoreException e1 ) {
 			System.err.println( e1.getClass().getName() + " : " + e1.getLocalizedMessage() );
@@ -682,17 +511,10 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 		}
 	}
 	
-//	protected boolean alwaysPackSize()
-//	{
-//		return false;
-//	}
-
 	protected static String getResourceString( String key )
 	{
 		return AbstractApplication.getApplication().getResourceString( key );
 	}
-	
-	
 	
 //	private static class TestSliderUI
 //	extends javax.swing.plaf.basic.BasicSliderUI
