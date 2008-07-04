@@ -8,7 +8,37 @@
 <body>
 <h1>Control Room Palette</h1>
 <p>
-XXX TO-DO XXX
+The control room window is like the master or control room section of a mixing console. There is no separate master (main) and control room bus in eisenkraut, so their meaning is interchangeable.
+</P>
+<IMG SRC="ControlRoom.png" ALT="Screenshot of the Control Room window">
+<P>
+</P>
+<h2>Output Configuration</h2>
+<P>
+Eisenkraut maintains a set of output configurations which allow you to switch between different set-ups. An output configuration is a mapping from logical master bus channels to physical sound card channels. For example, you might have a stereo configuration that goes to the first two sound card channels, but you might also occasionally need a stereo configuration that plays on your sound card channels 2 and 4. The output configuration also contains panorama information. Configurations can be created and edited in the <A HREF="IOSetup.html">I/O Setup window</A>.
+</P>
+<P>
+All configurations created in the I/O setup appear in this combo box, and you can switch configuration by clicking on the triangle on the right side of the box and choosing the desired configuration from the list.
+</P>
+<h2>Audio Interface</h2>
+<P>
+This combo box contains all audio interfaces (sound cards) that were created in the <A HREF="prefsAudio.html">audio preferences</A>. Choosing an interface from this box will switch the sound card that is used for playback. The SuperCollider server cannot switch sound cards on the fly, so whenever it is running, changing the audio interface will bring up a dialog that asks you if the server should be rebooted. Note that when you choose a sound card that is currently not available, SuperCollider will usually still boot up with a default sound card instead.
+</P>
+<h2>Volume Slider and 0-dB-Indicator</h2>
+<P>
+The slider determines the volume that is applied to all sound files being played back. The maximum boost ist +18&nbsp;dB, while the maximum attenuating goes down to just before -72&nbsp;dB and then will cut down to completely muting the playback (-&#8734;&nbsp;dB). A small black triangle will appear next to the 0&nbsp;dB label whenever the slider is positioned exactly at 0&nbsp;dB, meaning that the signal passes without any boost or attenuation. You can quickly reset the gain to 0&nbsp;dB by <tt>Alt</tt>+<tt>Click</tt> on the slider.
+</P>
+<H2>Limiter</H2>
+<P>
+The limiter is usefull when you are playing back floating-point files whose maximum gain is unknown, so you can be sure to not cause clipping-distortion. It is also usefull when playing back multi-channel files on a stereo configuration, where more than one source channel contributes to the signal on each speaker, potentially bringing the overall volume above the 0 dBFS limit.
+</P><P>
+The limiter is based on SuperCollider's <code>Limiter</code> UGen and it thus completely transparent for signals that are below -0.09&nbsp;dBFS, so you can safely leave the limiter on without degrading audio quality. The lookahead time is 10&nbsp;ms.
+</P>
+<H2>Meters</H2>
+<P>
+Eisenkraut provides high precision master bus meters which indicate peak-hold, instantaneous peak, and RMS energy for each channel. The meter is currently fixed to reflect pre-fader levels, a future version might offer a switch to monitor post-fader signal level.
+</P><P>
+The monitored range is 0&nbsp;dBFS down to -60&nbsp;dBFS. The peak hold time is 2.5&nbsp;seconds. Peak hold and instantaneous peak are calculated from the rectified signal. They fall from 0&nbsp;dBFS to -20&nbsp;dBFS in 1.5&nbsp; seconds, and below fall speed is 40&nbsp;dB per 2.5&nbsp;seconds. The same fall speed is used for the RMS value which is calculated by passing the rectified signal through a first-order lowpass filter whose -60&nbsp;dB point is reached after 100&nbsp;ms.
 </P>
 </body>
 </html>
