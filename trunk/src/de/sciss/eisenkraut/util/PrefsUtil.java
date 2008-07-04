@@ -63,6 +63,8 @@ import de.sciss.app.AbstractApplication;
 import de.sciss.eisenkraut.io.AudioBoxConfig;
 import de.sciss.eisenkraut.io.RoutingConfig;
 import de.sciss.eisenkraut.math.ConstQ;
+import de.sciss.eisenkraut.net.OSCGUI;
+import de.sciss.eisenkraut.net.OSCRoot;
 import de.sciss.gui.CoverGrowBox;
 import de.sciss.io.IOUtil;
 import de.sciss.net.OSCChannel;
@@ -78,7 +80,7 @@ import de.sciss.util.ParamSpace;
  *	and importing and exporting from/to XML.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 04-Jun-08
+ *  @version	0.70, 04-Jul-08
  */
 public class PrefsUtil
 {
@@ -362,10 +364,11 @@ public class PrefsUtil
 		putDontOverwrite( mainPrefs, KEY_LOOKANDFEEL, UIManager.getSystemLookAndFeelClassName() );
 		putBooleanDontOverwrite( mainPrefs, CoverGrowBox.KEY_INTRUDINGSIZE, isMacOS );
 		putBooleanDontOverwrite( mainPrefs, KEY_INSERTIONFOLLOWSPLAY, true );
-		putBooleanDontOverwrite( mainPrefs, KEY_VIEWNULLLINIE, false );
-		putBooleanDontOverwrite( mainPrefs, KEY_VIEWVERTICALRULERS, false );
-		putBooleanDontOverwrite( mainPrefs, KEY_VIEWMARKERS, false );
-		putBooleanDontOverwrite( mainPrefs, KEY_VIEWCHANMETERS, false );
+		putBooleanDontOverwrite( mainPrefs, KEY_VIEWCHANMETERS , true );
+		putBooleanDontOverwrite( mainPrefs, KEY_VIEWMARKERS , true );
+		putBooleanDontOverwrite( mainPrefs, KEY_VIEWNULLLINIE , true );
+		putBooleanDontOverwrite( mainPrefs, KEY_VIEWVERTICALRULERS, true );
+		putBooleanDontOverwrite( mainPrefs, KEY_CATCH, true );
 		
 		putIntDontOverwrite( mainPrefs, KEY_TIMEUNITS, TIME_MINSECS );
 		putIntDontOverwrite( mainPrefs, KEY_VERTSCALE, VSCALE_AMP_LIN );
@@ -384,10 +387,6 @@ public class PrefsUtil
 			if( !childPrefs.nodeExists( NODE_AUDIOBOXES )) {
 				childPrefs2	= childPrefs.node( NODE_AUDIOBOXES );
 				new AudioBoxConfig( value, "Default", 8, 8, true ).toPrefs( childPrefs2.node( value ));
-//				if( isMacOS ) {
-//					value = "builtin";
-//					new AudioBoxConfig( value, "Built-in Audio", 2, 2 ).toPrefs( childPrefs2.node( value ));
-//				}
 			}
 		}
 		catch( BackingStoreException e1 ) {
@@ -395,11 +394,11 @@ public class PrefsUtil
 		}
 
 		putDontOverwrite( childPrefs, KEY_AUDIORATE, new Param( 0, ParamSpace.FREQ | ParamSpace.HERTZ ).toString() );
-		putDontOverwrite( childPrefs, KEY_AUDIOBUSSES, new Param( 128, ParamSpace.NONE ).toString() );
+		putDontOverwrite( childPrefs, KEY_AUDIOBUSSES, new Param( 256, ParamSpace.NONE ).toString() );
 		putDontOverwrite( childPrefs, KEY_SCMEMSIZE, new Param( 8, ParamSpace.NONE ).toString() );
 		putDontOverwrite( childPrefs, KEY_SCBLOCKSIZE, new Param( 64, ParamSpace.NONE ).toString() );
 		putBooleanDontOverwrite( childPrefs, KEY_SCRENDEZVOUS, true );
-		putBooleanDontOverwrite( childPrefs, KEY_AUTOBOOT, false );
+//		putBooleanDontOverwrite( childPrefs, KEY_AUTOBOOT, false );
 
 		// outputconfigs
 		value = "out1to2";
@@ -477,6 +476,26 @@ public class PrefsUtil
 				}
 			}
 			if( f != null ) putDontOverwrite( childPrefs, KEY_SUPERCOLLIDERAPP, f.getAbsolutePath() );
+		}
+
+		value = childPrefs.get( KEY_SUPERCOLLIDERAPP, null );
+		putBooleanDontOverwrite( childPrefs, KEY_AUTOBOOT, (value != null) && new File( value ).isFile() );
+
+		// OSC
+		childPrefs  = OSCRoot.getInstance().getPreferences();
+		if( childPrefs.get( OSCGUI.KEY_SWINGAPP, null ) == null ) {
+			final String[] folders = new String[ value == null ? 2 : 4 ];
+			folders[ 0 ] = fs + "Applications" + fs + "SwingOSC";
+			folders[ 1 ] = "C:\\Program Files\\SwingOSC";
+			if( value != null ) {
+				folders[ 2 ] = new File( value ).getParentFile().getAbsolutePath();
+				folders[ 3 ] = new File( new File( new File( value ).getParentFile(), "SwingOSC" ), "build" ).getAbsolutePath();
+			}
+			f	= findFile( "SwingOSC.jar", folders );
+//			if( f == null ) {
+//				warnings.add( AbstractApplication.getApplication().getResourceString( "errSCSynthAppNotFound" ));
+//			}
+			if( f != null ) putDontOverwrite( childPrefs, OSCGUI.KEY_SWINGAPP, f.getAbsolutePath() );
 		}
 		
 		// view

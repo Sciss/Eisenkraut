@@ -34,6 +34,8 @@ import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
+import java.net.MalformedURLException;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -56,7 +58,7 @@ import de.sciss.eisenkraut.Main;
  *  upon application launch).
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 24-Mar-08
+ *  @version	0.70, 04-Jul-08
  */
 public class WelcomeScreen
 extends JFrame
@@ -73,11 +75,10 @@ implements HyperlinkListener
 		"em { font-weight:bold; font-style:normal; }\n"+
 		"a { color:white;font-weight:bold; }\n"+
 		"p { font-family:\"Lucida Grande\" Helvetica sans-serif;font-size:14pt;padding:4pt 4pt 4pt 4pt;margin:0; }\n"+
-		"--></style></head><body>"+
-		"<p>Welcome to the ";
+		"--></style></head><body><table><tr><td valign=\"top\">";
 		
 	private static final String htmlWelcome2 =
-		" beta version. <B>BETA</B> means it "+
+		"<p>This is a beta version. <B>BETA</B> means it "+
 		"still contains a lot of bugs that can possibly damage your files. Use this at your own risk!</p>"+
 		"<p>This screen pops up because no valid "+
 		"preferences file was found, which suggests that you start this application for the first time. Please take a few "+
@@ -92,7 +93,7 @@ implements HyperlinkListener
 		"but <strong>WITHOUT ANY WARRANTY</strong>; without even the implied warranty of "+
 		"<strong>MERCHANTABILITY</strong> or <strong>FITNESS FOR A PARTICULAR PURPOSE</strong>. See the GNU "+
 		"General Public License for more details.</p>"+
-		"</body></html>";
+		"</td></tr></table></body></html>";
 
 	/**
 	 *  Create and open welcome screen. This
@@ -104,9 +105,19 @@ implements HyperlinkListener
 	public WelcomeScreen( final Main root )
 	{
 		super( "Welcome to " + root.getName() );
-	
+		
 		final Container cp = getContentPane();
-		ggContent = new JEditorPane( "text/html", htmlWelcome1 + root.getName() + htmlWelcome2 );
+		String			img = "";
+		
+		try {
+			img = "<IMG SRC=\"" + new File( new File( "help" ), "application.png" ).getAbsoluteFile().toURL() +
+		    "\" ALT=\"\">";
+		} catch( MalformedURLException e ) { /* ignore */ }
+
+		System.err.println( img );
+		
+		ggContent = new JEditorPane( "text/html", htmlWelcome1 + img + "</td><td><H1>Welcome to " +
+		    root.getName() + "</H1>" + htmlWelcome2 );
 		ggContent.setEditable( false );
 		ggContent.addHyperlinkListener( this );
 		cp.add( ggContent, BorderLayout.CENTER );

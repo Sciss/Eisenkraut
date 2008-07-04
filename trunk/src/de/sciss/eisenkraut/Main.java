@@ -68,6 +68,7 @@ import de.sciss.common.BasicWindowHandler;
 import de.sciss.common.ProcessingThread;
 import de.sciss.gui.GUIUtil;
 import de.sciss.gui.HelpFrame;
+import de.sciss.io.CacheManager;
 import de.sciss.io.IOUtil;
 import de.sciss.util.Flag;
 
@@ -211,6 +212,7 @@ implements OSCRouter // ProgressComponent // , PreferenceChangeListener
 
 		// ---- init prefs ----
 
+		oscServer			= new OSCRoot( prefs.node( OSCRoot.DEFAULT_NODE ), 0x4549 );
 		prefsVersion = prefs.getDouble( PrefsUtil.KEY_VERSION, 0.0 );
 		if( prefsVersion < APP_VERSION ) {
 			warnings = PrefsUtil.createDefaults( prefs, prefsVersion );
@@ -251,10 +253,9 @@ implements OSCRouter // ProgressComponent // , PreferenceChangeListener
 
 		// ---- init infrastructure ----
 		// warning : reihenfolge is crucial
-		oscServer			= new OSCRoot( prefs.node( OSCRoot.DEFAULT_NODE ), 0x4549 );
+//		oscServer			= new OSCRoot( prefs.node( OSCRoot.DEFAULT_NODE ), 0x4549 );
 		osc					= new OSCRouterWrapper( oscServer, this );
-//		cacheManager		= 
-		new PrefCacheManager( prefs.node( PrefCacheManager.DEFAULT_NODE ));
+		final CacheManager cache = new PrefCacheManager( prefs.node( PrefCacheManager.DEFAULT_NODE ));
 		superCollider		= new SuperColliderClient();
 
 		init();
@@ -288,19 +289,22 @@ implements OSCRouter // ProgressComponent // , PreferenceChangeListener
 
 		mainFrame		= new MainFrame();
 		((BasicWindowHandler) getWindowHandler()).setDefaultBorrower( mainFrame );
-//		paletteCtrlRoom =
-		new ControlRoomFrame();
-// 		frameObserver =
-        new ObserverPalette();
+		final AppWindow ctrlRoom	= new ControlRoomFrame();
+		final AppWindow observer	= new ObserverPalette();
 
-		if( prefsVersion == 0.0 ) { // means no preferences found, so display splash screen
+		// means no preferences found, so
+		// do some more default initializations
+		// and display splash screen
+		if( prefsVersion == 0.0 ) {
+			ctrlRoom.setVisible( true );
+			observer.setVisible( true );
+			if( cache.getFolder().isDirectory() ) {
+				cache.setActive( true );
+			}
     		new WelcomeScreen( this );
 		}
 
 		if( warnings != null ) {
-// ZZZ
-//			superCollider.setVisible( true );
-//			superCollider.toFront();
 			for( int i = 0; i < warnings.size(); i++ ) {
 				System.err.println( warnings.get( i ));
 			}
