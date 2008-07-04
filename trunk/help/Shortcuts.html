@@ -11,76 +11,77 @@
 <STRONG>Note:</STRONG> the shortcuts have been mainly designed on Mac OS with German Apple Pro and MacBook keyboards. There may be inconsistencies with other configurations. Please report any problems and I try to fix them.
 </P>
 <P>
-The key modifier <code>Meta</code> is equivalent to the <code>Apple</code> (or <code>Command</code>) key on Mac OS, and <code>Ctrl+Shift</code> on Linux and Windows.</P>
+The key modifier <tt>Meta</tt> is equivalent to the <tt>Apple</tt> (or <tt>Command</tt>) key on Mac OS, and <tt>Ctrl</tt>+<tt>Shift</tt> on Linux and Windows.</P>
 <h3>Document Frame</h3>
 <P>&nbsp;&nbsp;&nbsp;<B><A HREF="TransportTools.html">Transport</A></B>:</P>
 <UL>
-<LI><code>Space</code> or <code>Numpad-0</code> : toggle play / stop</LI>
-<LI><code>Ctrl+Space</code> : play selection</LI>
-<LI><code>Shift+Space</code> : play at half speed</LI>
-<LI><code>Alt+Shift+Space</code> : play at double speed</LI>
-<LI><code>Numpad-/</code> : toggle loop playback</LI>
-<LI><code>Numpad-1 and 2</code> : rewind and fast forward</LI>
-<!-- <LI><code>Numpad-*</code> : enabled / disable <A HREF="RealtimeDialog.html">realtime plug-in</A></LI> -->
+<LI><tt>Space</tt> or <tt>Numpad-0</tt> : toggle play / stop</LI>
+<LI><tt>Ctrl</tt>+<tt>Space</tt> : play selection</LI>
+<LI><tt>Shift</tt>+<tt>Space</tt> : play at half speed</LI>
+<LI><tt>Alt</tt>+<tt>Shift</tt>+<tt>Space</tt> : play at double speed</LI>
+<LI><tt>Numpad-/</tt> : toggle loop playback</LI>
+<LI><tt>Numpad-1 and 2</tt> : rewind and fast forward</LI>
+<!-- <LI><tt>Numpad-*</tt> : enabled / disable <A HREF="RealtimeDialog.html">realtime plug-in</A></LI> -->
 </UL>
 <P>&nbsp;&nbsp;&nbsp;<B>General Editing</B>:</P>
 <UL>
-<LI><code>F1 ... Fn</code> : select tool</LI>
-<LI><code>Escape</code> : cancel tool gesture (depends on selected tool)</LI>
-<LI><code>Caps lock</code> : toggle <A HREF="ToolBlending.html">blending mode</A></LI>
-<LI><code>V</code> : toggle <A HREF="ToolCatch.html">catch mode</A></LI>
+<LI><tt>F1 ... F3</tt> : select <A HREF="ToolEditModes.html">edit mode</A></LI>
+<LI><tt>F5 ... F6</tt> : select <A HREF="TimelineTools.html">tool</A></LI>
+<LI><tt>Escape</tt> : cancel tool gesture (depends on selected tool)</LI>
+<LI><tt>Caps lock</tt> : toggle <A HREF="ToolBlending.html">blending mode</A></LI>
+<LI><tt>V</tt> : toggle <A HREF="ToolCatch.html">catch mode</A></LI>
 </UL>
 <P>&nbsp;&nbsp;&nbsp;<B>Selection and Navigation</B>:</P>
 <UL>
-<LI><code>Return</code> : stop playback and go to start of document</LI>
-<LI><code>Shift+Return</code> : extend selection to document start</LI>
-<LI><code>Alt+Shift+Return</code> : extend selection to document end</LI>
-<LI><code>Cursor Left/Right</code> : scroll to begin/end of selection</LI>
-<LI><code>Cursor Up/Down</code> : set timeline position to selection begin/end and clear selection</LI>
-<LI><code>Alt+Cursor Up/Down</code> : set timeline position to selection begin/end</LI>
-<LI><code>Tab</code> : select next region between adjectant markers</LI>
-<LI><code>Alt+Tab</code> : select previous region between adjectant markers</LI>
-<LI><code>Shift+Tab</code> : extend selection to next marker</LI>
-<LI><code>Alt+Shift+Tab</code> : extend selection to previous marker</LI>
-<LI><code>Alt+F</code> : fit visible span to selection</LI>
-<LI><code>Delete</code> (<code>Backspace</code>) : remove selected time span</LI>
-<LI><code>Meta+A</code> : select whole document span</LI>
-<LI><code>M</code> : drop marker at current timeline position. only effective if marker display is enabled from the view menu.</LI>
-<LI><code>G</code> : open go-to-time dialog</LI>
+<LI><tt>Return</tt> : stop playback and go to start of document</LI>
+<LI><tt>Shift</tt>+<tt>Return</tt> : extend selection to document start</LI>
+<LI><tt>Alt</tt>+<tt>Shift</tt>+<tt>Return</tt> : extend selection to document end</LI>
+<LI><tt>Cursor Left/Right</tt> : scroll to begin/end of selection</LI>
+<LI><tt>Cursor Up/Down</tt> : set timeline position to selection begin/end and clear selection</LI>
+<LI><tt>Alt</tt>+<tt>Cursor Up/Down</tt> : set timeline position to selection begin/end</LI>
+<LI><tt>Tab</tt> : select next region between adjectant markers</LI>
+<LI><tt>Alt</tt>+<tt>Tab</tt> : select previous region between adjectant markers</LI>
+<LI><tt>Shift</tt>+<tt>Tab</tt> : extend selection to next marker</LI>
+<LI><tt>Alt</tt>+<tt>Shift</tt>+<tt>Tab</tt> : extend selection to previous marker</LI>
+<LI><tt>Alt</tt>+<tt>F</tt> : fit visible span to selection</LI>
+<LI><tt>Delete</tt> (<tt>Backspace</tt>) : remove selected time span</LI>
+<LI><tt>Meta</tt>+<tt>A</tt> : select whole document span</LI>
+<LI><tt>M</tt> : drop marker at current timeline position. only effective if marker display is enabled from the view menu.</LI>
+<LI><tt>G</tt> : open go-to-time dialog</LI>
 </UL>
 <P>&nbsp;&nbsp;&nbsp;<B>Zooming</B>:</P>
 <UL>
-<LI><code>Ctrl+Cursor Left/Right</code> : horizontal zoom out/in</LI>
-<LI><code>Alt+A</code> or <code>Meta+Cursor Left</code> : zoom all the way out</LI>
-<LI><code>Meta+Cursor Right</code> : zoom to sample level</LI>
-<LI><code>Ctrl+Cursor Up/Down</code> : vertical zoom out/in (or ceiling adjustment in logarithmic mode)</LI>
-<LI><code>Ctrl+Alt+Cursor Up/Down</code> : noise floor adjustment (in logarithmic mode)</LI>
+<LI><tt>Ctrl</tt>+<tt>Cursor Left/Right</tt> : horizontal zoom out/in</LI>
+<LI><tt>Alt</tt>+<tt>A</tt> or <tt>Meta</tt>+<tt>Cursor Left</tt> : zoom all the way out</LI>
+<LI><tt>Meta</tt>+<tt>Cursor Right</tt> : zoom to sample level</LI>
+<LI><tt>Ctrl</tt>+<tt>Cursor Up/Down</tt> : vertical zoom out/in (or ceiling adjustment in logarithmic mode)</LI>
+<LI><tt>Ctrl</tt>+<tt>Alt</tt>+<tt>Cursor Up/Down</tt> : noise floor adjustment (in logarithmic mode)</LI>
 </UL>
 <!-- <h3>Main Frame</h3>
 <UL>
-<LI><code>Delete</code> : clear console ; DOESN'T WORK</LI>
+<LI><tt>Delete</tt> : clear console ; DOESN'T WORK</LI>
 </UL> -->
 <h3>Recorder Dialog</h3>
 <P>these are subject to changes!</P>
 <UL>
-<LI><code>Meta+R</code> : start recording</LI>
-<LI><code>Meta+Return</code> : stop and commit recording</LI>
-<LI><code>Meta+Period</code> : abort recording</LI>
-<LI><code>Escape</code> : close dialog</LI>
+<LI><tt>Meta</tt>+<tt>R</tt> : start recording</LI>
+<LI><tt>Meta</tt>+<tt>Return</tt> : stop and commit recording</LI>
+<LI><tt>Meta</tt>+<tt>Period</tt> : abort recording</LI>
+<LI><tt>Escape</tt> : close dialog</LI>
 </UL>
 <h3>Special Gadgets</h3>
 <P>&nbsp;&nbsp;&nbsp;<B>Path Fields</B>:</P>
 <UL>
-<LI><code>Meta+Alt+Numpad-1 to 9</code> : store directory in user preferences 1 ... 9</LI>
-<LI><code>Meta+Numpad-1 to 9</code> : recall directory from user preferences 1 ... 9</LI>
+<LI><tt>Meta</tt>+<tt>Alt</tt>+<tt>Numpad-1 to 9</tt> : store directory in user preferences 1 ... 9</LI>
+<LI><tt>Meta</tt>+<tt>Numpad-1 to 9</tt> : recall directory from user preferences 1 ... 9</LI>
 </UL>
 <P>&nbsp;&nbsp;&nbsp;<B>Parameter Fields</B>:</P>
 <UL>
-<LI><code>Escape</code> : unfocus gadget</LI>
+<LI><tt>Escape</tt> : unfocus gadget</LI>
 </UL>
 <P>&nbsp;&nbsp;&nbsp;<B>Confirming Unsaved Changes</B>:</P>
 <UL>
-<LI><code>Meta+D</code> : choose &quot;don't save&quot;</LI>
+<LI><tt>Meta</tt>+<tt>D</tt> : choose &quot;don't save&quot;</LI>
 </UL>
 </body>
 </html>

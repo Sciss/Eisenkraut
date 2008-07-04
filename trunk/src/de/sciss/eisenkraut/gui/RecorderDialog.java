@@ -113,7 +113,7 @@ import de.sciss.eisenkraut.session.Session;
 import de.sciss.eisenkraut.util.PrefsUtil;
 
 /**
- *	@version	0.70, 28-Jun-08
+ *	@version	0.70, 04-Jul-08
  *	@author		Hanns Holger Rutz
  */
 public class RecorderDialog
@@ -173,9 +173,11 @@ implements Constants, ServerListener, NodeListener, OSCRouter,
 		super( ((doc.getFrame() != null) && (doc.getFrame().getWindow() instanceof Frame)) ? (Frame) doc.getFrame().getWindow() : null,
 			   AbstractApplication.getApplication().getResourceString( "dlgRecorder" ),
 			   true ); // modal
+		
+		setResizable( false );
 
 //		this.doc		= doc;
-		docFrame	= doc.getFrame();
+		docFrame		= doc.getFrame();
 		superCollider	= SuperColliderClient.getInstance();
 		numChannels		= doc.getAudioTrail().getChannelNum();
 		

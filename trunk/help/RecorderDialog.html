@@ -8,26 +8,33 @@
 <body>
 <h1>Recorder Dialog</h1>
 <p>
-The Audio Recorder is opened by choosing &quot;Insert Recording...&quot; from the timeline menu of a waveform document. It will let you record audio from input channels of your soundcard (or internal computer signals when using Jack Audio Router).
+The Audio Recorder is opened by choosing &quot;Insert Recording...&quot; from the timeline menu of a waveform document. It will let you record audio from input channels of your soundcard (or internal computer signals when using Jack Audio Router). This dialog can only be opened when the SuperCollider server is running.
 </P>
-<IMG SRC="Recorder.png" ALT="">
+<IMG SRC="Recorder.png" ALT="Screenshot of the Recorder">
 <P>
-To create a new document with recorded audio, first choose &quot;New Empty Document&quot; from the file menu. Here, specify the recording resolution and number of channels. Next choose &quot;Insert Recording...&quot; from the timeline menu.
+To create a <I>new</I> document with recorded audio, first choose &quot;New Empty Document&quot; from the file menu. Here, specify the recording resolution and number of channels. Next choose &quot;Insert Recording...&quot; from the timeline menu. Note that the recorded audio piece will have the number of channels, bitdepth and sampling rate from its parent document. 
+</P>
+<h2>Input Source</h2>
+<P>
+The &quot;Record Inputs&quot; combo box shows a list of all input configurations that match the current number of document channels. If this list is blank, close the recorder, and open the <A HREF="IOSetup.html">&quot;I/O Setup&quot;</A> first from the window menu. In the I/O setup, select the inputs tab and create a new configuration for the desired number of channels and their mapping to physical (sound card) channels.
 </P><P>
-Note that the recorded audio piece will have the number of channels, bitdepth and sampling rate from its parent document. The &quot;Record Inputs&quot; combo box shows a list of all input configurations that match the current number of document channels. If this list is blank, close the recorder, and open the <A HREF="IOSetup.html">&quot;I/O Setup&quot;</A> first from the windows menu. In the I/O setup, select the inputs tab and create a new configuration for the desired number of channels and their mapping to physical (sound card) channels.
-</P>
-<P>
 Note that the recorder does not do any inplace sample rate conversion. Therefore, when your document has 48 kHz and SuperCollider is running at 44.1 kHz, you will get a 44.1 kHz recording which is played back at the wrong speed. Use the &quot;Resampling&quot; module in FScape to convert this document to the correct pitch afterwards.
-</P><P>
-When you have checked the &quot;Channel Meters&quot; in the view menu, as soon as you open the recorder and choose an input source, you will see the input signal on these meters. Additionally, you see a headroom gadget that monitors the peak amplitude of all channels. The display can be reset by pressing the &quot;Reset&quot; button. <strong>NOTE:</strong> as of v0.63, headroom display will not work if channel meter view is disabled.
-</P><P>
+</P>
+<h2>Meters and Headroom</h2>
+<P>
+The channel meters of the document into which to record show now the levels of the live input signal. Additionally, you see a headroom gadget that monitors the peak amplitude of all channels. The peak hold of the meters and the headroom display can be reset by pressing the &quot;Reset&quot; button.
+</P>
+<h2>Monitoring</h2>
+<P>
 You may wish to monitor the input signal by pressing the &quot;Monitoring&quot; toggle button. <strong>WARNING:</strong> if your speakers are picked up by the recording microphones, you may produce a feedback that can damage both your ears and your gear. It is advised to turn down speaker volume or switch to headphones before enabling monitoring. Monitoring automatically uses the output configuration that the normal document playback uses (including solo/mute, panorama, master volume and limiter).
+</P>
+<h2>Transport Buttons</h2>
+<P>
+Press &quot;Record&quot; to begin recording. Note that there is no waveform indicator during recording, instead you will see the running elapsed time in the top part of the recorder window. The recording is saved to the temporary folder as specified in the preferences, and is inserted in the parent document as soon as you press &quot;Stop&quot;. Be sure to check the <strong>available disk space</strong> before recording.
 </P><P>
-Press &quot;Record&quot; to begin recording. Note that there is no waveform indicator during recording. The recording is saved to the temporary folder as specified in the preferences, and is inserted in the parent document as soon as you press &quot;Stop&quot;. Be sure to check the <strong>available disk space</strong> before recording.
+<strong>NOTE:</strong> due to the internal workings of the <code>DiskOut</code> UGen, the actual recording may be up to one buffer (c.&nbsp;750&nbsp;ms) shorter than expected, so be sure to record one extra second of sound when your punch out is critical.
 </P><P>
-<strong>NOTE:</strong> due to the internal workings of the DiskOut UGen, the actual recording may be up to one buffer (c. 750ms) shorter than expected, so be sure to record one extra second of sound when your punch out is critical.
-</P><P>
-If you wish to cancel a recording and start over, press the &quot;Abort&quot; button. 
+If you wish to cancel a recording and start over, press the &quot;Abort&quot; button.
 </P>
 </body>
 </html>

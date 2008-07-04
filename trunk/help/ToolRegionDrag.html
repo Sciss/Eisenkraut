@@ -8,7 +8,12 @@
 <body>
 <h1><IMG SRC="iconRegionDrag.png" ALT="">&nbsp;Region Drag</h1>
 <p>
-TO DO...
+This is a small but usefull tool: You can grab and drag this button into any other application that accepts a text drag. The pasted text will consist of three fields separated by the platforms path separation character (the colon on the Mac). The first field contains the current document's pathname, the second field is the selection span's start (in sample frames), the third field is the selection span's stop (in sample frames).
+</P>
+<P>
+For example, if the file <code>&quot;/Users/rutz/Desktop/test.aiff&quot;</code> is open and the selection span covers seconds ten to eleven, assuming 44.1 kHz sample rate, the dragged text will be <code>/Users/rutz/Desktop/test.aiff:441000:485100</code>.
+</P><P>
+You can drop it for example on a <code>JSCDragSink</code> view inside the SuperCollider language application which has been customized with <code>interpretDroppedStrings_(false)</code>.
 </P>
 </body>
 </html>

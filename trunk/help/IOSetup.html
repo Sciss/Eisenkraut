@@ -9,14 +9,27 @@
 <h1>I/O Setup</h1>
 <p>
 This window is designed in analogy to the I/O setup you may know from Protools. Now this is a sound editor so there are no busses except the master bus. What you can do here is to specify different routings from logical channels to physical channels of your audio hardware and vice versa.
+</P><P>
+In each tab, the table lists all available setups. You can add a setup by pressing the &quot;Plus&quot; button or remove one by selecting its name and pressing the &quot;Minus&quot; button. The number of setups is not limited, but two setups cannot have the same name.
 </P>
-<IMG SRC="IOSetup.png" ALT="">
+<h2>Outputs Tab</h2>
+<IMG SRC="IOSetupOutputs.png" ALT="Screenshot of Output Setup">
 <P>
-The table lists all available setups. You can add a setup by pressing the &quot;Plus&quot; button or remove one by selecting its name and pressing the &quot;Minus&quot; button. The number of setups is not limited, but two setups cannot have the same name.
+Each setup is characterized by a number of logical channels, their mapping to physical channels and a starting angle which is used as a layout hint for the <A HREF="ChannelPanorama.html">panorama window</A>. The <STRONG>number of physical channels</STRONG> of your audio interface is specified in the <A HREF="prefsAudio.html">audio tab</A> of the programme preferences. In the screenshot above you can see that the interface was specified to have eight channels, corresponding to the columns on the right side of the table.
 </P><P>
-Each setup is characterized by a number of logical channels, their mapping to physical channels and a starting angle which is used as a layout hint for the <A HREF="ChannelPanorama.html">panorama window</A>. Note that for input routings, the angle field has no meaning. The number of physical channels of your audio interface is specified in the <A HREF="prefsAudio.html">audio tab</A> of the programme preferences. In the screenshot above you can see that the interface was specified to have eight channels, corresponding to the columns on the right side of the table.
+If you do not see enough physical channels (columns) in the table, be sure to switch the audio card in the <A HREF="ControlRoomFrame.html">control room frame</A> to an interface with the appropriate number of channels, and re-open the I/O setup.
 </P><P>
-Two output setups have been created: a one-to-one mapping setup for eight channels. Note that a start-angle of -45 degrees here means that when a channel's azimuth is set to -45 degrees, it will play on channel 1, if azimuth is zero degrees, it will play on channel 2 and so on. For the stereo setup, a channel's azimuth of -45 degrees will play on both channels but more on the left one. Moving the azimuth to -90 degrees will play only on the first channel, moving to +90 degrees will play only on the second logical channel which is assigned to the third interface channel, so this stereo setup was made for an eight channel studio.
+When you create a setup, by pressing on the plus-shaped button, it is automically named &quot;Untitled&quot; and has zero channels. You can edit the name by double-clicking on the table cell (confirm editing by pressing <tt>Return</tt>). Accordingly you can edit the number of channels. When you enter the number of channels, small grey button-like boxes are automatically placed in the first columns of the channel mapping. You can move the mapping of a channel by selecting its cell first (the cell changes colour), then use the mouse to <tt>Click</tt>+<tt>Drag</tt> the cell to its target column.
+</P><P>
+For example, in the screenshot above, the first four configurations just differ in the number of channels assigned (1, 2, 4, and 8 respectively), but they simply map logical channels to their corresponding physical channels. The configuration named &quot;Out&nbsp;2&quot; however is a mono configuration like &quot;Out&nbsp;1&quot; but the only logical channel (1) is now mapped to the second physical channel of the sound card (hence the <IMG SRC="IOSetupLogicalBox.png" ALT="1"> box has been moved to the second column <IMG SRC="IOSetupPhysicalColumn.png" ALT="2">). Similarily, the configuration &quot;Out&nbsp;3-6&quot; is another quadro-channel configuration, but the channels play out on the sound card's physical channels 3, 4, 5, and 6.
+</P><P>
+The effect of the angle specification is illustrated in the following two pictures, corresponding to the setups &quot;Out&nbsp;1-2&quot; (having an angle of -90&nbsp;degrees) and &quot;Out&nbsp;1-4&quot; (having an angle of -45&nbsp;degrees). The first logical channel is indicated by the panorama position in these screenshots and appears in red:
 </P>
+<IMG SRC="Pan90Deg.png" ALT="-90 Degrees Angle"><IMG SRC="Pan45Deg.png" ALT="-45 Degrees Angle">
+<h2>Inputs Tab</h2>
+<IMG SRC="IOSetupInputs.png" ALT="Screenshot of Input Setup">
+<P>The inputs tab works the same as the outputs tab. The routing configurations made here form the options for the source selection in the <A HREF="RecorderDialog.html">recorder dialog</A>. For example, taking the above screenshot, when opening the recorder dialog in a monophonic document, the three configurations named &quot;In&nbsp;1&quot;, &quot;In&nbsp;3&quot;, and &quot;In&nbsp;4&quot; will be available, which route physical channel 1, 3, and 4 respectively from the sound card to the one and only logical channel in the recorder.
+</P><P>
+Note that for input routings, the angle field has no meaning.</P>
 </body>
 </html>

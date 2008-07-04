@@ -31,21 +31,26 @@ On Mac OS X, this menu carries the items to open the about dialog, to open the <
 <LI><B>Undo</B> : makes the last editing operation undone. the number of undoable steps is not limited. once a soundfile is opened or saved, the undo buffer is erased.</LI>
 <LI><B>Redo</B> : when undo was invoked and no new editing has been performed, it is possible to redo the undone steps.</LI>
 <LI CLASS="none"><HR WIDTH="20%"></LI>
-<LI><B>Cut</B> : what this item does, depends on the window that is focussed. for the <A HREF="TimelineFrame.html">waveform frame</A>, the selected time span is removed and put in the clipboard.</LI>
-<LI><B>Copy</B> : what this item does, depends on the window that is focussed. for the <A HREF="TimelineFrame.html">waveform frame</A>, the selected time span is put in the clipboard.</LI>
-<LI><B>Paste</B> : what this item does, depends on the window that is focussed. for the <A HREF="TimelineFrame.html">waveform frame</A>, if soundfile portions had been put in the clipboard, they get pasted in at the current timeline position. note that in the paste operation, the current timeline selection is ignored, the material is always inserted, it never overwrites parts of the timeline. if you wish to overwrite a part, delete the old content first, then choose paste.</LI>
-<LI><B>Delete</B> : what this item does, depends on the window that is focussed. for the <A HREF="TimelineFrame.html">waveform frame</A>, the selected time span is removed.</LI>
+<LI><B>Cut</B> : what this item does, depends on the window that is focussed. for the <A HREF="TimelineFrame.html">document frame</A>, the selected time span is removed and put in the clipboard.</LI>
+<LI><B>Copy</B> : what this item does, depends on the window that is focussed. for the <A HREF="TimelineFrame.html">document frame</A>, the selected time span is put in the clipboard.</LI>
+<LI><B>Paste</B> : what this item does, depends on the window that is focussed. for the <A HREF="TimelineFrame.html">document frame</A>, if soundfile portions had been put in the clipboard, they get pasted in at the current timeline position. note that in the paste operation, the current timeline selection is ignored, the material is always inserted, it never overwrites parts of the timeline. if you wish to overwrite a part, delete the old content first, then choose paste.</LI>
+<LI><B>Delete</B> : what this item does, depends on the window that is focussed. for the <A HREF="TimelineFrame.html">document frame</A>, the selected time span is removed.</LI>
 <LI CLASS="none"><HR WIDTH="20%"></LI>
-<LI><B>Select All</B> : what this item does, depends on the window that is focussed. for the <A HREF="TimelineFrame.html">waveform frame</A>, the selected time span is set to the whole soundfile extent.</LI>
+<LI><B>Select All</B> : what this item does, depends on the window that is focussed. for the <A HREF="TimelineFrame.html">document frame</A>, the selected time span is set to the whole soundfile extent.</LI>
 </UL>
 <H3><A NAME="Timeline"></A>Timeline menu</H3>
 <UL>
 <LI><B>Trim to Selection</B> : removes all parts left and right to the timeine selection (crop).</LI>
-<LI><B>Insert Silence</B> : opens a dialog to enter the length of the span in seconds. the time span is inserted at the current timeline position. This ignores the current timeline selection.</LI>
+<LI><B>Insert Silence</B> : opens a dialog to enter the length of the span to insert. this time span is inserted at the current timeline position. This ignores the current timeline selection.</LI>
 <LI><B>Insert Recording</B> : opens the <A HREF="RecorderDialog.html">Audio Recorder</A> dialog to insert a piece of live recording.</LI>
 </UL>
 <H3><A NAME="Process"></A>Process menu</H3>
 <UL>
+<LI><B>Again</B> : Will apply the last process used again on the current timeline selection. This is greyed out until you choose any of the processes for the first time. The parameters of the process are taken from the previous application (e.g. gain settings for the gain process) without opening the process dialog anew.</LI>
+<LI CLASS="none"><HR WIDTH="20%"></LI>
+<LI><B>FScape</B> : Contains some processes migrated from the FScape application.</LI>
+<LI><B>SuperCollider</B> : A blank submenu that can be populated via <A HREF="osc.html">OSC</A> from the SuperCollider language client.</LI>
+<LI CLASS="none"><HR WIDTH="20%"></LI>
 <LI><B>Fade In</B> : applies a fade-in to the current timeline selection. If you hold down <code>Alt</code> when opening the menu and selecting the menu item, a dialog will pop up to adjust the shape of the fade curve.
 <LI><B>Fade Out</B> : applies a fade-out to the current timeline selection. If you hold down <code>Alt</code> when opening the menu and selecting the menu item, a dialog will pop up to adjust the shape of the fade curve.
 <LI><B>Gain</B> : opens a dialog with the processing parameters. The process changes the volume of the current timeline selection. In &quot;absolute&quot; mode, the gain is applied directly to the sound, for example -6 dB makes it half as loud. In &quot;normalized&quot; mode, the gain describes the headroom left after normalization, for example -3 dB/normalized makes the sound as loud as possible but leaves a 3 decibels headroom to the digital fullscale (DFS). Positive decibels in normalized-mode naturally distorts the sound unless you save it in floating point format.</LI>
@@ -53,7 +58,6 @@ On Mac OS X, this menu carries the items to open the about dialog, to open the <
 <LI><B>Reverse</B> : reverses the samples in the current timeline selection.</LI>
 <LI><B>Rotate Channels</B> : opens a dialog to specify the number of shifts to apply to the channels. This value naturally can be between -(NumberOfChannels-1) ... +(NumberOfChannels-1). For mono it's useless, for stereo the only usefull value is 1 which swaps left and right channel. For an eight channel sound file, choosing a value of 1 will put channel 1 in channel 2, channel 2 is put in channel 3 etc. For a value of 6, channel 1 is put in channel 7, channel 2 is put in channel 8, channel 3 is put in channel 1 (3 + 6 = 9, wraps to 1). etc.
 </LI>
-<LI><B>Silence</B> : fills the timeline selection with silence (zero amplitude samples).</LI>
 </UL>
 <H3><A NAME="Operation"></A>Operation menu</H3>
 <UL>
@@ -61,15 +65,24 @@ On Mac OS X, this menu carries the items to open the about dialog, to open the <
 </UL>
 <H3><A NAME="View"></A>View menu</H3>
 <UL>
-<LI><B>Time Units</B> : what the horizontal timeline axis ruler should display (minutes:seconds.milliseconds or sample frames). doesn't yet affect observer palette or go-to-time dialog.</LI>
+<LI><B>Time Units</B> : what the horizontal <A HREF="TimelineAxis.html">timeline axis</A> ruler should display (minutes:seconds.milliseconds or sample frames).</LI>
+<LI><B>Vertical Scale</B> : determines what parameter is displayed on the <A HREF="VerticalAxis.html">vertical axis</A> of each audio channel track. The sonagramme option (&quot;Frequency Spectrum&quot; scale) must be explictly enabled in the <A HREF="prefsView.html">view preferences</A>.</LI>
 <LI><B>Null Linie</B> : if checked, a dooted yellow line in the waveform display indicates the zero crossing line.</LI>
-<LI><B>Vertical Rulers</B> : if checked, a vertical (amplitude axis) ruler is displayed next to each channel, indicating the vertical zoom (shown in percent).</LI>
+<LI><B>Vertical Rulers</B> : if checked, a <A HREF="VerticalAxis.html">vertical ruler</A> (amplitude or frequency axis) is displayed next to each channel, indicating the vertical zoom. depending on the vertical scale settings, the units are amplitude percent, amplitude decibels or frequency (hertz).</LI>
+<LI><B>Channel Meters</B> : if checked, a <A HREF="ChannelMeters.html">level meter</A> is shown for each channel.</LI>
+<LI><B>Markers</B> : if checked, the <A HREF="MarkerAxis.html">marker axis</A> is shown, allowing you to view and edit time markers.</LI>
 </UL>
 <H3><A NAME="Window"></A>Window menu</H3>
 <UL>
-<LI><B>Transport</B> (<code>Meta+Numpad-1</code>) : opens the <A HREF="TransportPalette.html">transport palette</A> and brings it to the front.</LI>
-<LI><B>Observer</B> (<code>Meta+Numpad-3</code>) : opens the <A HREF="ObserverPalette.html">observer palette</A> and brings it to the front.</LI>
-<LI><B>SuperCollider Server</B> (<code>Meta+Numpad-2</code>) : opens the <A HREF="SuperCollider.html">supercollider server frame</A> and brings it to the front.</LI>
+<LI><B>I/O Setup</B> : opens the <A HREF="IOSetup.html">I/O setup dialog</A> and brings it to the front.</LI>
+<LI CLASS="none"><HR WIDTH="20%"></LI>
+<LI><B>Main</B> : bringts the <A HREF="MainFrame.html">main window</A> to the front.</LI>
+<LI><B>Observer</B> (<tt>Meta</tt>+<tt>Numpad-3</tt>) : opens the <A HREF="ObserverPalette.html">observer palette</A> and brings it to the front.</LI>
+<LI><B>Control Room</B> (<tt>Meta</tt>+<tt>Numpad-2</tt>) : opens the <A HREF="ControlRoomFrame.html">control room palette</A> and brings it to the front.</LI>
+<LI CLASS="none"><HR WIDTH="20%"></LI>
+<LI><B>Collect Windows</B> checks the bounds of all open windows and moves or resizes windows to be entirely contained in the screen. This is usefull when launching Eisenkraut with a lower screen resolution than was used before, where some windows are not accessible due to their bounds lying outside the current screen bounds.</LI>
+<LI CLASS="none"><HR WIDTH="20%"></LI>
+<LI><B>...</B> The remaining items in this menu correspond to other open windows (e.g. documents). Choosing an item will bring the particular window to the front.</LI>
 </UL>
 <H3><A NAME="Debug"></A>Debug menu</H3>
 <H3><A NAME="Help"></A>Help menu</H3>

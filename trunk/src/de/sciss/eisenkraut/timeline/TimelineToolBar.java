@@ -135,7 +135,7 @@ GUIUtil.createKeyAction( toggle, KeyStroke.getKeyStroke( KeyEvent.VK_F1 + i, 0 )
 		toolAction		= new ToolAction( ToolAction.ZOOM );
         toggle			= new JToggleButton( toolAction );
 		toolAction.setIcons( toggle );
-		GUIUtil.createKeyAction( toggle, KeyStroke.getKeyStroke( KeyEvent.VK_F8, 0 ));
+		GUIUtil.createKeyAction( toggle, KeyStroke.getKeyStroke( KeyEvent.VK_F6, 0 ));
 //        HelpGlassPane.setHelp( toggle, "TimelineToolZoom" );
   		addToggleButton( toggle, 0 );
 		mapToolButtons.put( new Integer( toolAction.getID() ), toggle );

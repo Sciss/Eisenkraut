@@ -1,0 +1,22 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Timeline Position</title>
+<LINK REL="stylesheet" TYPE="text/css" HREF="stylesheet.css">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+</head>
+<body>
+<h1>Timeline Position</h1>
+<p>
+The current timelime position represents the insertion point for paste operations, as well as the starting location for playback. During playback, the timeline position moves along the timeline, so there is no separation between insertion cursor and playhead pointer in Eisenkraut. However, unchecking the &quot;Timeline Insertion follows Playback&quot; setting available in the Operation menu makes it possible to return to the original insertion point when playback stops.
+</p><p>
+The timeline position is displayed as a thin vertical red line in the <A HREF="TimelineFrame.html">document frame</A>. The exact position is displayed in text format next to the transport controls:
+</p>
+<IMG SRC="iconTimeLabel.png" ALT="Timeline Position Text Label">
+<P>
+The format of this label is determined by the Time Units setting chosen in the View menu. By clicking on this text label, the Go-to-Time dialog pops up (keyboard shortcut <tt>G</tt>):
+</P>
+<IMG SRC="GoToTime.png" ALT="Go-to-Time Dialog">
+<P>In this dialog, the time units can be switched from the popup menu accessible from the right side of the number field. Pressing the &quot;Current&quot; button will place the current timeline position in the number field. This makes it easy nudge by exactly N seconds for example.</P>
+</body>
+</html>
