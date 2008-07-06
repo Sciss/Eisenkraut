@@ -184,7 +184,8 @@ implements PerformableEdit
 
 	protected String getResourceString( String key )
 	{
-		return AbstractApplication.getApplication().getResourceString( key );
+		final Application app = AbstractApplication.getApplication();
+		return app != null ? app.getResourceString( key ) : key;
 	}
 
 	public void addPerform( PerformableEdit edit )
