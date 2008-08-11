@@ -90,7 +90,6 @@ implements	ParamField.Listener, TimelineListener, DynamicListening, DocumentList
 	private Session						doc					= null;
 	
 	private JLabel[]					lbCursorInfo;
-//	private final NumberField			ggTimelineStart, ggTimelineStop;
 	private final ParamField			ggTimelineStart, ggTimelineStop, ggTimelineLen;
 	private final DefaultUnitTranslator	timeTrans;
 	private final JTabbedPane			ggTabPane;
@@ -110,7 +109,6 @@ implements	ParamField.Listener, TimelineListener, DynamicListening, DocumentList
 	
 		final Application app = AbstractApplication.getApplication();
 	
-//		super( AbstractApplication.getApplication().getResourceString( "paletteObserver" ), HORIZONTAL, false );
 		setTitle( app.getResourceString( "paletteObserver" ));
 		setResizable( false );
 		
@@ -120,10 +118,8 @@ implements	ParamField.Listener, TimelineListener, DynamicListening, DocumentList
 		JLabel				lb;
 		GridBagLayout		lay;
 		GridBagConstraints  con;
-//		JTextField			ggName;
 
 		ggTabPane = new JTabbedPane();
-//        HelpGlassPane.setHelp( ggTabPane, "ObserverPalette" );
         ggTabPane.setTabLayoutPolicy( JTabbedPane.WRAP_TAB_LAYOUT );
 
 		// ----- cursor tab ------
@@ -142,7 +138,6 @@ implements	ParamField.Listener, TimelineListener, DynamicListening, DocumentList
 			lbCursorInfo[i] = lb;
 		}
 		ggTabPane.addTab( app.getResourceString( "observerCursor" ), null, c, null );
-//        HelpGlassPane.setHelp( c, "ObserverCursor" );
         
 		// ----- timeline tab ------
 		timeTrans		= new DefaultUnitTranslator();
@@ -187,17 +182,14 @@ implements	ParamField.Listener, TimelineListener, DynamicListening, DocumentList
 		p.gridAdd( ggTimelineLen, 2, 2 );
 		lb.setLabelFor( ggTimelineLen );
 		
-//		p.gridAdd( new JPanel( new BorderLayout() ), 1, 3 );
 		p.makeCompactGrid( false, false );
 		ggTabPane.addTab( app.getResourceString( "observerTimeline" ), null, p, null );
-//        HelpGlassPane.setHelp( c, "ObserverTimeline" );
         
 		cp.add( BorderLayout.CENTER, ggTabPane );
 		
 		AbstractWindowHandler.setDeepFont( ggTabPane );
 		
 		// --- Listener ---
-//		new DynamicAncestorAdapter( this ).addTo( rp );
         addDynamicListening( this );
 		
 		app.getDocumentHandler().addDocumentListener( this );
@@ -280,28 +272,19 @@ implements	ParamField.Listener, TimelineListener, DynamicListening, DocumentList
 	{
 		if( doc != null ) {
 
-//			if( !doc.bird.attemptShared( Session.DOOR_TIME, 250 )) return;
-//			try {
-				final Span	span	= doc.timeline.getSelectionSpan();
-				final double rate	= doc.timeline.getRate();
+			final Span	span	= doc.timeline.getSelectionSpan();
+			final double rate	= doc.timeline.getRate();
 
-				timeTrans.setLengthAndRate( doc.timeline.getLength(), rate );
-				ggTimelineStart.setValue( new Param( span.getStart(), ParamSpace.spcTimeSmps.unit ));
-				ggTimelineStop.setValue( new Param( span.getStop(), ParamSpace.spcTimeSmps.unit ));
-				ggTimelineLen.setValue( new Param( span.getLength(), ParamSpace.spcTimeSmps.unit ));
-				if( !ggTimelineStart.isEnabled() ) ggTimelineStart.setEnabled( true );
-				if( !ggTimelineStop.isEnabled() )  ggTimelineStop.setEnabled( true );
-				if( !ggTimelineLen.isEnabled() )  ggTimelineLen.setEnabled( true );
-//			}
-//			finally {
-//				doc.bird.releaseShared( Session.DOOR_TIME );
-//			}
+			timeTrans.setLengthAndRate( doc.timeline.getLength(), rate );
+			ggTimelineStart.setValue( new Param( span.getStart(), ParamSpace.spcTimeSmps.unit ));
+			ggTimelineStop.setValue( new Param( span.getStop(), ParamSpace.spcTimeSmps.unit ));
+			ggTimelineLen.setValue( new Param( span.getLength(), ParamSpace.spcTimeSmps.unit ));
+			if( !ggTimelineStart.isEnabled() ) ggTimelineStart.setEnabled( true );
+			if( !ggTimelineStop.isEnabled() )  ggTimelineStop.setEnabled( true );
+			if( !ggTimelineLen.isEnabled() )  ggTimelineLen.setEnabled( true );
 			
 		} else {
 			
-// ZZZ
-//			ggTimelineStart.setNumber( new Double( Double.NaN ));
-//			ggTimelineStop.setNumber( new Double( Double.NaN ));
 			ggTimelineStart.setEnabled( false );
 			ggTimelineStop.setEnabled( false );
 			ggTimelineLen.setEnabled( false );
@@ -330,7 +313,6 @@ implements	ParamField.Listener, TimelineListener, DynamicListening, DocumentList
 		doc = (Session) AbstractApplication.getApplication().getDocumentHandler().getActiveDocument();
 		if( doc != null ) {
 			doc.timeline.addTimelineListener( this );
-//			borrowMenuBar( doc.getFrame() );
 		}
 		updateTimeline();
     }
@@ -338,7 +320,6 @@ implements	ParamField.Listener, TimelineListener, DynamicListening, DocumentList
     public void stopListening()
     {
 		if( doc != null ) {
-//			borrowMenuBar( null );
 			doc.timeline.removeTimelineListener( this );
 		}
     }
@@ -428,7 +409,6 @@ implements	ParamField.Listener, TimelineListener, DynamicListening, DocumentList
 				}
 			}
 			doc.timeline.editSelect( this, span );
-//				doc.getUndoManager().addEdit( TimelineVisualEdit.select( this, doc, span ));
 		}
 	}
 
@@ -444,14 +424,8 @@ implements	ParamField.Listener, TimelineListener, DynamicListening, DocumentList
 	public void timelineSelected( TimelineEvent e )
     {
 		if( e.getSource() != this ) {
-//			if( !doc.bird.attemptShared( Session.DOOR_TIME, 250 )) return;
-//			try {
-				showTab( doc.timeline.getSelectionSpan().isEmpty() ? CURSOR_TAB : TIMELINE_TAB );
-				updateTimeline();
-//			}
-//			finally {
-//				doc.bird.releaseShared( Session.DOOR_TIME );
-//			}
+			showTab( doc.timeline.getSelectionSpan().isEmpty() ? CURSOR_TAB : TIMELINE_TAB );
+			updateTimeline();
 		}
     }
 
@@ -471,143 +445,10 @@ implements	ParamField.Listener, TimelineListener, DynamicListening, DocumentList
 		doc	= (Session) e.getDocument();
 		if( doc != null ) {
 			doc.timeline.addTimelineListener( this );
-//			borrowMenuBar( doc.getFrame() );
-//		} else {
-//			borrowMenuBar( null );
 		}
 		updateTimeline();
 	}
 
 	public void documentAdded( de.sciss.app.DocumentEvent e ) { /* ignore */ }
 	public void documentRemoved( de.sciss.app.DocumentEvent e ) { /* ignore */ }
-
-// ---------------- internal classes ---------------- 
-
-//	private class sessionCollectionListener
-//	implements ActionListener, SessionCollection.Listener, DynamicListening
-//	{
-//		private final LockManager lm;
-//		private final int doors;
-//		private final int tab;
-//		private final SessionCollection scSel, scAll;
-//		private final JTextField ggName;
-//		private final SessionObjectTable ggTable;
-//	
-//		private sessionCollectionListener( SessionCollection scSel, SessionCollection scAll,
-//										   LockManager lm, int doors, int tab, JTextField ggName,
-//										   SessionObjectTable ggTable, JComponent ancestor )
-//		{
-//			this.scSel	= scSel;
-//			this.scAll	= scAll;
-//			this.lm		= lm;
-//			this.doors	= doors;
-//			this.tab	= tab;
-//			this.ggName	= ggName;
-//			this.ggTable= ggTable;
-//			
-//			ggName.addActionListener( this );
-//			new DynamicAncestorAdapter( this ).addTo( ancestor );
-//		}
-//	
-//		public void sessionCollectionChanged( SessionCollection.Event e )
-//		{
-//			try {
-//				lm.waitShared( doors );
-//				showTab( scSel.isEmpty() ? CURSOR_TAB : tab );   // intelligently switch between the tabs
-//				ggTable.setObjects( scSel.getAll() );
-//				updateFields( e );
-//			}
-//			finally {
-//				lm.releaseShared( doors );
-//			}
-//		}
-//		
-//		public void sessionObjectMapChanged( SessionCollection.Event e ) {}
-//
-//		public void sessionObjectChanged( SessionCollection.Event e )
-//		{
-//			if( e.getModificationType() == SessionObject.OWNER_RENAMED ) {
-//				try {
-//					lm.waitShared( doors );
-//					updateFields( e );
-//				}
-//				finally {
-//					lm.releaseShared( doors );
-//				}
-//			}
-//		}
-//
-//		// to be called with shared lock on 'doors'!
-//		private void updateFields( SessionCollection.Event e )
-//		{
-//			SessionObject	so;
-//			int				numObj		= scSel.size();
-//			String			name;
-//
-//			if( numObj >= 1 ) {
-//				so		= (SessionObject) scSel.get( 0 );
-//				name	= numObj == 1 ? so.getName() : Main.getResourceString( "observerMultiSelection" );
-//			} else {
-//				name	= Main.getResourceString( "observerNoSelection" );
-//			}
-//			ggName.setText( name );
-//		}
-//
-//		public void actionPerformed( ActionEvent e )
-//		{
-//			SessionObject		so;
-//			int					i, num;
-//			CompoundEdit		edit;
-//			String				name;
-//			java.util.List		coll, coll2;
-//			Object[]			args;
-//
-//			if( e.getSource() == ggName ) {
-//				if( !lm.attemptExclusive( doors, 250 )) return;
-//				try {
-//					coll	= scSel.getAll();
-//					coll2	= scAll.getAll();
-//					num		= coll.size();
-//					if( num == 0 ) return;
-//					
-//					args	= new Object[ 3 ];
-//					
-//					coll2.removeAll( coll );
-//					edit	= new BasicSyncCompoundEdit( lm, doors );
-//					name	= ggName.getText();
-//					if( num == 1 ) {
-//						if( SessionCollection.findByName( coll2, name ) != null ) {
-//							Session.makeNamePattern( name, args );
-//							name = SessionCollection.createUniqueName( Session.SO_NAME_PTRN, args, coll2 );
-//						}
-//						edit.addEdit( new EditSetSessionObjectName( this, doc, (SessionObject) coll.get( 0 ),
-//																	name, doors ));
-//					} else {
-//						Session.makeNamePattern( name, args );
-//						for( i = 0; i < num; i++ ) {
-//							so		= (SessionObject) coll.get( i );
-//							name	= SessionCollection.createUniqueName( Session.SO_NAME_PTRN, args, coll2 );
-//							edit.addEdit( new EditSetSessionObjectName( this, doc, so, name, doors ));
-//							coll2.add( so );
-//						}
-//					}
-//					edit.end();
-//					root.undo.addEdit( edit );
-//				}
-//				finally {
-//					lm.releaseExclusive( doors );
-//				}
-//			}
-//		}
-//
-//		public void startListening()
-//		{
-//			scSel.addListener( this );
-//		}
-//
-//		public void stopListening()
-//		{
-//			scSel.removeListener( this );
-//		}
-//	} // class sessionCollectionListener
 }

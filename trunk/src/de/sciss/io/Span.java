@@ -51,7 +51,7 @@ import java.util.Comparator;
  *  in sense rate frames.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.29, 12-May-08
+ *  @version	0.30, 18-Jul-08
  */
 public class Span
 implements Serializable, Cloneable
@@ -285,6 +285,13 @@ implements Serializable, Cloneable
 		final long newStop	= Math.min( stop, anotherSpan.stop );
 //		if( stop < start ) return null;
 		return new Span( newStart, newStop );
+	}
+	
+	public long clip( long pos )
+	{
+		if( pos < start ) return start;
+		if( pos > stop ) return stop;
+		return pos;
 	}
 
 	public Span replaceStart( long newStart )

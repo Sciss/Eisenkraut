@@ -68,8 +68,6 @@ extends ToolBar
 implements Disposable
 {
 	private final Map					mapToolButtons	= new HashMap();
-
-	private final BlendingAction		actionBlending;
 	
 	/**
 	 *	Creates a tool palette with
@@ -83,6 +81,7 @@ implements Disposable
 		final CatchAction		actionCatch;
 		final EditModeAction	actionEditMode;
 		final AbstractButton	button;
+		final BlendingAction	actionBlending;
 		ToolAction				toolAction;
 		JToggleButton			toggle;
 		ButtonGroup				bg;

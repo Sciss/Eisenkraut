@@ -602,7 +602,6 @@ implements EventManager.Processor, OSCRouter
 			edit	= new BasicCompoundEdit();
 			if( deselect ) edit.addEdit( TimelineVisualEdit.select( this, doc, new Span() ).perform() );
 			pos		= (long) (selSpan.getStart() + selSpan.getLength() * weight + 0.5);
-//System.err.println( "selSpan = "+selSpan+"; selSpan.getStart() + selSpan.getLength() = "+(selSpan.getStart() + selSpan.getLength())+"; weight = "+weight+"; pos = "+pos );
 			edit.addEdit( TimelineVisualEdit.position( this, doc, pos ).perform() );
 			edit.end();
 			doc.getUndoManager().addEdit( edit );

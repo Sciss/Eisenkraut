@@ -358,9 +358,6 @@ public class PrefsUtil
 		putDontOverwrite( IOUtil.getUserPrefs(), IOUtil.KEY_TEMPDIR, System.getProperty( "java.io.tmpdir" ));
 
 		// general
-//		putDontOverwrite( GUIUtil.getUserPrefs(), HelpGlassPane.KEY_KEYSTROKE_HELP, strokeToPrefs(
-//			KeyStroke.getKeyStroke( KeyEvent.VK_H, MenuFactory.MENU_SHORTCUT + KeyEvent.SHIFT_MASK )));
-
 		putDontOverwrite( mainPrefs, KEY_LOOKANDFEEL, UIManager.getSystemLookAndFeelClassName() );
 		putBooleanDontOverwrite( mainPrefs, CoverGrowBox.KEY_INTRUDINGSIZE, isMacOS );
 		putBooleanDontOverwrite( mainPrefs, KEY_INSERTIONFOLLOWSPLAY, true );

@@ -45,7 +45,7 @@
 			<fileset dir="${lib.dir}" excludes="*.jar" />
 		</delete>
 	</target>
-	<target name="main" depends="clean,compile" />
+	<target name="main" depends="clean,jar" />
 	<target name="osx-app" depends="jar">
 		<copy file="${jar.file}" todir="${ant.project.name}.app/Contents/Resources/Java" />
 		<touch>
