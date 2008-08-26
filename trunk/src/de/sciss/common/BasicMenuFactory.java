@@ -396,7 +396,7 @@ implements DocumentListener
 		if( idxLeft == -1 ) return name;
 		final int idxRight	= name.indexOf( ']', idxLeft + 1 );
 		if( (idxRight - idxLeft) < 25 ) return name;
-		return name.substring( 0, idxLeft + 12 ) + "…" + name.substring( idxRight - 12 );
+		return name.substring( 0, idxLeft + 12 ) + "\u2026" + name.substring( idxRight - 12 );
 	}
 	
 	// action for the Open-Recent menu

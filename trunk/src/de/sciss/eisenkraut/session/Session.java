@@ -514,7 +514,7 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 					if( (idxBraClose - left) > 25 ) {
 //						strBuf.delete( left + 12, strBuf.length() - 13 );
 //						strBuf.insert( left + 12, '…' );
-						strBuf.replace( left + 12, idxBraClose - 13, "…" );
+						strBuf.replace( left + 12, idxBraClose - 13, "\u2026" );
 					}
 					name = strBuf.toString();
 				}
