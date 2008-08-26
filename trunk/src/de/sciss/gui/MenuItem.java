@@ -30,6 +30,7 @@
 package de.sciss.gui;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -40,7 +41,7 @@ import de.sciss.app.AbstractWindow;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 30-Aug-06
+ *  @version	0.71, 27-Jul-08
  */
 public class MenuItem
 implements MenuNode
@@ -116,13 +117,18 @@ implements MenuNode
 		if( mapRealized.remove( w ) == null ) throw new IllegalArgumentException( "Element was not found : " + w );
 		mapWindowActions.remove( w );
 	}
+	
+	public Iterator getRealized()
+	{
+		return mapRealized.values().iterator();
+	}
 		
 	// -------------------- internal classes --------------------
 	
 	protected static class Realized
 	{
-		protected final AbstractWindow	w;
-		protected final JComponent		c;
+		public final AbstractWindow	w;
+		public final JComponent		c;
 	
 		protected Realized( AbstractWindow w, JComponent c )
 		{

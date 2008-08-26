@@ -102,6 +102,7 @@ public interface AbstractWindow
 	public void setDirty( boolean dirty );
 	public void setLocationRelativeTo( Component c );
 	public void setResizable( boolean b );
+	public void setUndecorated( boolean b );
 	public boolean isResizable();
 	
 	public void revalidate();

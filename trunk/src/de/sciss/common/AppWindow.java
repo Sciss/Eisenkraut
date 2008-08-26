@@ -74,6 +74,7 @@ import de.sciss.app.Application;
 import de.sciss.app.DynamicAncestorAdapter;
 import de.sciss.app.DynamicListening;
 import de.sciss.gui.AquaWindowBar;
+import de.sciss.gui.EmptyInternalFrameUI;
 import de.sciss.gui.FloatingPaletteHandler;
 import de.sciss.gui.GUIUtil;
 import de.sciss.gui.InternalFrameListenerWrapper;
@@ -86,7 +87,7 @@ import de.sciss.gui.WindowListenerWrapper;
  *  will get a copy of the main menubar as well.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 18-Mar-08
+ *  @version	0.71, 01-Aug-08
  *
  *  @todo   tempFloatingTimer could maybe be eliminated
  *  		in favour of a simple EventQueue.invokeLater
@@ -1124,17 +1125,20 @@ EventQueue.invokeLater( new Runnable() {
 		}
 	}
 	
-//	public void setUndecorated( boolean b )
-//	{
-//		if( d != null ) {
-//			d.setUndecorated( b );
-//		} else if( f != null ) {
-//			f.setUndecorated( b );
-//		} else {
-////			throw new IllegalStateException();
-//System.err.println( "FUCKING HELL setUndecorated NOT POSSIBLE WITH THIS WINDOW TYPE" );
-//		}
-//	}
+	public void setUndecorated( boolean b )
+	{
+		if( d != null ) {
+			d.setUndecorated( b );
+		} else if( f != null ) {
+			f.setUndecorated( b );
+		} else if( jif != null ) {
+//			System.out.println( "ERROR: borderless property not supported by internal frames!" );
+//			jif.getRootPane().setWindowDecorationStyle( JRootPane.NONE );
+			jif.setUI( new EmptyInternalFrameUI( jif ));
+		} else {
+			throw new IllegalStateException( "setUndecorated() is not supported by this window type" );
+		}
+	}
 
 	public void setResizable( boolean b )
 	{
@@ -1148,7 +1152,7 @@ EventQueue.invokeLater( new Runnable() {
 			throw new IllegalStateException();
 		}
 	}
-	
+
 	public boolean isResizable()
 	{
 		if( f != null ) {
