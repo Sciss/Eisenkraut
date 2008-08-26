@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<title></title>
+<meta name="Generator" content="Cocoa HTML Writer">
+<meta name="CocoaVersion" content="824.48">
+<style type="text/css">
+p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #bf0000}
+p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #000000}
+p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #000000; min-height: 12.0px}
+p.p4 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #007300}
+span.s1 {color: #0000bf}
+span.s2 {color: #000000}
+span.s3 {color: #007300}
+span.s4 {color: #606060}
+span.Apple-tab-span {white-space:pre}
+</style>
+</head>
+<body>
+<p class="p1">// last mod: 26-Aug-08</p>
+<p class="p2">(</p>
+<p class="p2">e = <span class="s1">Eisenkraut</span>.default;</p>
+<p class="p2">e.addr.connect;</p>
+<p class="p2">fork { e.initSwing };</p>
+<p class="p2">)</p>
+<p class="p3"><br></p>
+<p class="p1">// This example demonstrates the use</p>
+<p class="p1">// of JSCMenuNode : an extra menu "Util"</p>
+<p class="p1">// is added which contains two items</p>
+<p class="p1">// "Prev Marker" and "Next Marker"</p>
+<p class="p1">// (accessible via Meta+(Shift)+Quote).</p>
+<p class="p1">// They will move the timeline position</p>
+<p class="p1">// to the succeeding or preceding marker.</p>
+<p class="p1">// ~preRoll specifies a negative offset</p>
+<p class="p1">// to the positioning.</p>
+<p class="p3"><br></p>
+<p class="p2">(</p>
+<p class="p2">~preRoll = 0.5;</p>
+<p class="p2">~action = { <span class="s1">arg</span> dir;</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="s1">var</span> msg, rate, pos, numMarks, idx, len, preFrames;</p>
+<p class="p2"><span class="Apple-tab-span">	</span>fork {</p>
+<p class="p4"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>msg = e.query( </span>'/doc/active/timeline'<span class="s2">, [ </span>\rate<span class="s2">, </span>\length<span class="s2"> ]);</span></p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>if( msg.notNil, {</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>#rate, len = msg;</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>preFrames = (~preRoll * rate).round.asInteger;</p>
+<p class="p4"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>msg = e.query( </span>'/doc/active/transport'<span class="s2">, </span>\position<span class="s2"> );</span></p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>pos = if( msg.isNil, 0, { msg[ 0 ]});</p>
+<p class="p4"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>msg = e.query( </span>'/doc/active/markers'<span class="s2">, </span>\count<span class="s2"> );</span></p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>numMarks = if( msg.isNil, 0, { msg[ 0 ]});</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>msg = e.get( <span class="s3">'/doc/active/markers'</span>, [ <span class="s3">\indexOf</span>, pos + preFrames ]);</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>if( msg.notNil, {</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>idx = msg[ 0 ];</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>if( idx &lt; 0, { idx = (idx + 1).neg + if( dir, 0, -1 )}, { idx = idx + if( dir, 1, -1 )});</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>if( (idx &gt;= 0) &amp;&amp; (idx &lt; numMarks), {</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>msg = e.get( <span class="s3">'/doc/active/markers'</span>, [ <span class="s3">\at</span>, idx ]);</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>if( msg.notNil, {</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>pos = (msg[ 0 ] - preFrames).clip( 0, len );</p>
+<p class="p4"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>e.sendMsg( </span>'/doc/active/timeline'<span class="s2">, </span>\position<span class="s2">, pos );</span></p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>}, {</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s4">"timeout"</span>.warn;</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>}, {</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s4">"timeout"</span>.warn;</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>}, {</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s4">"timeout"</span>.warn;</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
+<p class="p2"><span class="Apple-tab-span">	</span>};</p>
+<p class="p2">};</p>
+<p class="p2">~root = <span class="s1">JSCMenuRoot</span>( e.swing );</p>
+<p class="p2">~menu = <span class="s1">JSCMenuGroup</span>( ~root, <span class="s4">"Util"</span> );</p>
+<p class="p1">// note: on a german keyboard A-umlaut</p>
+<p class="p2">~itemPrev = <span class="s1">JSCMenuItem</span>( ~menu, <span class="s4">"Prev Marker"</span> ).shortcut_( <span class="s4">"meta shift QUOTE"</span> ).action_({ ~action.( <span class="s1">false</span> )});</p>
+<p class="p2">~itemNext = <span class="s1">JSCMenuItem</span>( ~menu, <span class="s4">"Next Marker"</span> ).shortcut_( <span class="s4">"meta QUOTE"</span> ).action_({ ~action.( <span class="s1">true</span> )});</p>
+<p class="p2">)</p>
+<p class="p3"><br></p>
+<p class="p2">~menu.remove;</p>
+</body>
+</html>

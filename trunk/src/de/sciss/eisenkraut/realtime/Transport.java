@@ -68,7 +68,7 @@ import de.sciss.eisenkraut.util.PrefsUtil;
  *	transport listeners are informed about actions.
  * 
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 28-Jun-08
+ *  @version	0.70, 26-Aug-08
  *
  *	@todo	the methods for adding and removing consumers should
  *			be moved to the realtime host interface?
@@ -608,6 +608,8 @@ implements TimelineListener, OSCRouter, Disposable
 			dispatchPosition( startFrame );
 			startTime		= System.currentTimeMillis();
 			lastUpdate		= startTime;
+		} else {
+			currentFrame	= doc.timeline.getPosition();
 		}
 	}
 
@@ -658,6 +660,16 @@ implements TimelineListener, OSCRouter, Disposable
 	public void oscRemoveRouter( OSCRouter subRouter )
 	{
 		osc.oscRemoveRouter( subRouter );
+	}
+	
+	public Object oscQuery_position()
+	{
+		return new Long( getCurrentFrame() );
+	}
+	
+	public Object oscQuery_running()
+	{
+		return new Integer( isRunning() ? 1 : 0 );
 	}
 	
 	public void oscCmd_play( RoutedOSCMessage rom )
