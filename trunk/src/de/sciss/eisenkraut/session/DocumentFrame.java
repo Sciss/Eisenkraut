@@ -1024,7 +1024,7 @@ bbb.add( markAxisHeader );
 	 */
 	public void updateTitle()
 	{
-		final File				fDisp	= doc.getDisplayDescr().file;
+//		final File				fDisp	= doc.getDisplayDescr().file;
 		final AudioFileDescr[]	afds	= doc.getDescr();
 		final String			name;
 		final Icon				icn;
@@ -1034,10 +1034,10 @@ bbb.add( markAxisHeader );
 		
 		actionRevealFile.setFile( afds.length == 0 ? null : afds[ 0 ].file );
 		
-		if( fDisp == null ) {
+		if( doc.getName() == null ) {
 			name			= getResourceString( "frameUntitled" );
 		} else {
-			name			= fDisp.getName();
+			name			= doc.getName();
 			try {
 				for( int i = 0; i < afds.length; i++ ) {
 					f = afds[ i ].file;
@@ -1315,7 +1315,7 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 											getResourceString( "buttonCancel" ),
 											getResourceString( "buttonDontSave" )};
 		final int				choice;
-		final AudioFileDescr	displayAFD	= doc.getDisplayDescr();
+//		final AudioFileDescr	displayAFD	= doc.getDisplayDescr();
 		final String			name;
 		final JOptionPane		op;
 		final JDialog 			d;
@@ -1323,10 +1323,10 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 		final Flag				dont		= new Flag( false );
 		AudioFileDescr[]		afds		= doc.getDescr();
 		
-		if( displayAFD.file == null ) {
+		if( doc.getName() == null ) {
 			name = getResourceString( "frameUntitled" );
 		} else {
-			name = displayAFD.file.getName();
+			name = doc.getName();
 		}
 		
 //		choice = JOptionPane.showOptionDialog( getWindow(), name + " :\n" + getResourceString( "optionDlgUnsaved" ),
@@ -1377,7 +1377,7 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 			
 		case 0:
 			confirmed.set( false );
-			if( (displayAFD.file == null) || writeProtected ) {
+			if( (doc.getDisplayDescr().file == null) || writeProtected ) {
 				afds = actionSaveAs.query( afds );
 			}
 			if( afds != null ) {
@@ -1398,13 +1398,13 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 		}
 		
 		final int				choice;
-		final AudioFileDescr	displayAFD	= doc.getDisplayDescr();
+//		final AudioFileDescr	displayAFD	= doc.getDisplayDescr();
 		final String			name;
 		
-		if( displayAFD.file == null ) {
+		if( doc.getName() == null ) {
 			name = getResourceString( "frameUntitled" );
 		} else {
-			name = displayAFD.file.getName();
+			name = doc.getName();
 		}
 		
 		final JOptionPane op = new JOptionPane( name + " :\n" + getResourceString( "optionDlgProcessing" ) +

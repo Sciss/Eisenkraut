@@ -88,7 +88,7 @@ import de.sciss.common.ProcessingThread;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
+ *  @version	0.71, 26-Aug-08
  *
  *	@todo		try get rid of the GUI stuff in here
  */
@@ -96,8 +96,9 @@ public class Session
 extends BasicDocument
 implements OSCRouter
 {
-	private AudioFileDescr					displayAFD;
+	private final AudioFileDescr			displayAFD;
 	private AudioFileDescr[]				afds;
+	private String							name;
 	
 	public final Timeline					timeline;
 
@@ -195,7 +196,9 @@ implements OSCRouter
 			autoCreateDisplayDescr();
 		} else {
 			this.displayAFD			= displayAFD;
+			name					= displayAFD.file == null ? null : displayAFD.file.getName(); 
 		}
+//		System.out.println( "name = '" + name + "'" );
 		
 		nodeID				= ++nodeIDAlloc;
 		
@@ -452,6 +455,7 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 	{
 		if( afds.length == 0 ) {
 			displayAFD.file				= null;
+			name						= null;
 		} else {
 			final AudioFileDescr proto	= afds[ 0 ];
 			displayAFD.type				= proto.type;
@@ -463,10 +467,11 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 
 			if( proto.file == null ) {
 				displayAFD.file			= null;
+				name					= null;
 			} else {
-				final String			name	= proto.file.getName();
-				int						left	= name.length();
-				int						right	= name.length();
+				final String			pname	= proto.file.getName();
+				int						left	= pname.length();
+				int						right	= pname.length();
 				String					name2;
 				int						trunc;
 
@@ -481,29 +486,37 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 					name2				 = afds[ i ].file.getName();
 					displayAFD.channels	+= afds[ i ].channels;
 					for( trunc = 0; trunc < Math.min( name2.length(), left ); trunc++ ) {
-						if( !(name2.charAt( trunc ) == name.charAt( trunc ))) break;
+						if( !(name2.charAt( trunc ) == pname.charAt( trunc ))) break;
 					}
 					left	= trunc;
 					for( trunc = 0; trunc < Math.min( name2.length(), right ); trunc++ ) {
-						if( !(name2.charAt( name2.length() - trunc - 1 ) == name.charAt( name.length() - trunc - 1 ))) break;
+						if( !(name2.charAt( name2.length() - trunc - 1 ) == pname.charAt( pname.length() - trunc - 1 ))) break;
 					}
 					right	= trunc;
 //					System.out.println( "for '" + name2 + "' left = "+left+"; right = "+right );
 				}
 				
-				if( left >= name.length() - right ) {
+				if( left >= pname.length() - right ) {
 					displayAFD.file	= afds[ 0 ].file;
+					name			= displayAFD.file.getName(); 
 				} else {
 					final StringBuffer strBuf = new StringBuffer();
-					strBuf.append( name.substring( 0, left ));
+					strBuf.append( pname.substring( 0, left ));
 					for( int i = 0; i < afds.length; i++ ) {
 						strBuf.append( i == 0 ? '[' : ',' );
 						name2 = afds[ i ].file.getName();
 						strBuf.append( name2.substring( left, name2.length() - right ));
 					}
 					strBuf.append( ']' );
-					strBuf.append( name.substring( name.length() - right ));
+					final int idxBraClose = strBuf.length();
+					strBuf.append( pname.substring( pname.length() - right ));
 					displayAFD.file	= new File( afds[ 0 ].file.getParentFile(), strBuf.toString() );
+					if( (idxBraClose - left) > 25 ) {
+//						strBuf.delete( left + 12, strBuf.length() - 13 );
+//						strBuf.insert( left + 12, '…' );
+						strBuf.replace( left + 12, idxBraClose - 13, "…" );
+					}
+					name = strBuf.toString();
 				}
 			}
 		}
@@ -534,7 +547,7 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 	
 	public String getName()
 	{
-		return( displayAFD.file == null ? null : displayAFD.file.getName() );
+		return name;
 	}
 	
 	public AudioFileDescr[] getDescr()
@@ -547,15 +560,15 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 		if( frame != null ) frame.updateTitle();
 	}
 
-	public ProcessingThread procDelete( String name, Span span, int mode )
+	public ProcessingThread procDelete( String procName, Span span, int mode )
 	{
-		return actionDelete.initiate( name, span, mode );
+		return actionDelete.initiate( procName, span, mode );
 	}
 
-	public ProcessingThread procSave( String name, Span span, AudioFileDescr[] targetAFDs,
+	public ProcessingThread procSave( String procName, Span span, AudioFileDescr[] targetAFDs,
 									  int[] channelMap, boolean saveMarkers, boolean asCopy )
 	{
-		return actionSave.initiate( name, span, targetAFDs, channelMap, saveMarkers, asCopy );
+		return actionSave.initiate( procName, span, targetAFDs, channelMap, saveMarkers, asCopy );
 	}
 	
 	public MenuAction getCutAction()
@@ -603,9 +616,9 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 		return actionCopy.getSelectionAsTrackList();
 	}
 	
-	public ProcessingThread pasteTrackList( ClipboardTrackList tl, long insertPos, String name, int mode )
+	public ProcessingThread pasteTrackList( ClipboardTrackList tl, long insertPos, String procName, int mode )
 	{
-		return actionPaste.initiate( tl, insertPos, name, mode );
+		return actionPaste.initiate( tl, insertPos, procName, mode );
 	}
 
 	public static Session newEmpty( AudioFileDescr afd )
@@ -983,7 +996,7 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 	
 	public Object oscQuery_name()
 	{
-		return getDisplayDescr().file.getName();
+		return getName();
 	}
 
 // ---------------- Document interface ----------------
@@ -1059,7 +1072,7 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 		 *
 		 *  @synchronization	this method is to be called in the event thread
 		 */
-		protected ProcessingThread initiate( String name, Span span, AudioFileDescr[] descrs,
+		protected ProcessingThread initiate( String procName, Span span, AudioFileDescr[] descrs,
 											 int[] channelMap, boolean saveMarkers, boolean asCopy )
 		{
 			final ProcessingThread proc;
@@ -1068,7 +1081,7 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 			if( !checkProcess() ) return null;
 			
 //			pt				= new ProcessingThread( this, getFrame(), bird, name, args, Session.DOOR_ALL );
-			proc				= new ProcessingThread( this, getFrame(), name );
+			proc				= new ProcessingThread( this, getFrame(), procName );
 			proc.putClientArg( "afds", descrs );
 			proc.putClientArg( "doc", Session.this );
 			proc.putClientArg( "asCopy", new Boolean( asCopy ));
@@ -1338,7 +1351,7 @@ tryRename:					  {
 			perform( getValue( NAME ).toString(), getEditMode() );
 		}
 		
-		private void perform( String name, int mode )
+		private void perform( String procName, int mode )
 		{
 			final Transferable			t;
 			final ClipboardTrackList	tl;
@@ -1364,13 +1377,13 @@ tryRename:					  {
 			}
 			
 			if( !checkProcess() ) return;
-			final ProcessingThread proc = initiate( tl, timeline.getPosition(), name, mode );	// XXX sync
+			final ProcessingThread proc = initiate( tl, timeline.getPosition(), procName, mode );	// XXX sync
 			if( proc != null ) {
 				start( proc );
 			}
 		}
 
-		protected ProcessingThread initiate( ClipboardTrackList tl, long insertPos, String name, int mode )
+		protected ProcessingThread initiate( ClipboardTrackList tl, long insertPos, String procName, int mode )
 		{
 			if( !checkProcess() ) return null;
 			
@@ -1450,13 +1463,13 @@ tryRename:					  {
 			cutTimeline			= (mode == EDIT_INSERT) && !hasSelectedAudio.isSet();
 			cutTimelineSpan		= cutTimeline ? new Span( docLength, docLength + pasteLength ) : null;
 			
-			edit			= new BasicCompoundEdit( name );
+			edit			= new BasicCompoundEdit( procName );
 			oldSelSpan		= timeline.getSelectionSpan();
 			if( !oldSelSpan.isEmpty() ) { // deselect
 				edit.addPerform( TimelineVisualEdit.select( this, Session.this, new Span() ));
 			}
 
-			proc	= new ProcessingThread( this, getFrame(), name );
+			proc	= new ProcessingThread( this, getFrame(), procName );
 			proc.putClientArg( "tl", tl );
 			proc.putClientArg( "pos", new Long( insertPos ));
 			proc.putClientArg( "mode", new Integer( mode ));
@@ -1620,7 +1633,7 @@ tryRename:					  {
 		}
 		
 		// XXX sync
-		protected ProcessingThread initiate( String name, Span span, int mode )
+		protected ProcessingThread initiate( String procName, Span span, int mode )
 		{
 			if( !checkProcess() ) return null;
 
@@ -1689,7 +1702,7 @@ tryRename:					  {
 				bc					= createBlendContext( maxLen, 0, hasSelectedAudio.isSet() );
 			}
 //			bc					= createBlendContext( Math.min( cutLength, span.start ), Math.min( cutLength, docLength - span.stop ), hasSelectedAudio );
-			edit				= new BasicCompoundEdit( name );
+			edit				= new BasicCompoundEdit( procName );
 
 //			if( bc != null )  System.out.println( "bc  : " + bc.getLen() + ", " + bc.getLeftLen() + ", "+ bc.getRightLen() );
 			
@@ -1714,7 +1727,7 @@ tryRename:					  {
 				edit.addPerform( new EditSetTimelineLength( this, Session.this, newDocLength ));
 			}
 
-			final ProcessingThread proc = new ProcessingThread( this, getFrame(), name );
+			final ProcessingThread proc = new ProcessingThread( this, getFrame(), procName );
 			proc.putClientArg( "span", span );
 			proc.putClientArg( "mode", new Integer( mode ));
 			proc.putClientArg( "tis", tis );

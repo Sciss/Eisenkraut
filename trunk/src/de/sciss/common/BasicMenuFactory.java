@@ -81,7 +81,7 @@ import de.sciss.util.Flag;
  *  <code>Main</code> class.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.71, 11-Jun-08
+ *  @version	0.71, 26-Aug-08
  *
  *  @see	de.sciss.eisenkraut.Main#menuFactory
  */
@@ -388,6 +388,17 @@ implements DocumentListener
 
 // ---------------- Action objects for file (session) operations ---------------- 
 
+	protected static String abbrName( String name )
+	{
+		final int len		= name.length();
+		if( len <= 25 ) return name;
+		final int idxLeft	= name.lastIndexOf( '[' );
+		if( idxLeft == -1 ) return name;
+		final int idxRight	= name.indexOf( ']', idxLeft + 1 );
+		if( (idxRight - idxLeft) < 25 ) return name;
+		return name.substring( 0, idxLeft + 12 ) + "…" + name.substring( idxRight - 12 );
+	}
+	
 	// action for the Open-Recent menu
 	protected class ActionOpenRecent
 	extends MenuAction
@@ -397,10 +408,10 @@ implements DocumentListener
 		// new action with path set to null
 		public ActionOpenRecent( String text, File path )
 		{
-			super( text == null ? IOUtil.abbreviate( path.getAbsolutePath(), 40 ) : text );
+			super( text == null ? IOUtil.abbreviate( new File( path.getParentFile(), abbrName( path.getName() )).getAbsolutePath(), 40 ) : text );
 			setPath( path );
 		}
-		
+				
 		// set the path of the action. this
 		// is the file that will be loaded
 		// if the action is performed

@@ -188,7 +188,7 @@ implements	DynamicListening, de.sciss.app.DocumentListener, ParamField.Listener,
 	
 	private void setDocumentName()
 	{
-		lbName.setText( afd.file == null ? getResourceString( "frameUntitled" ) : afd.file.getName() );
+		lbName.setText( doc.getName() == null ? getResourceString( "frameUntitled" ) : doc.getName() );
 	}
 
 	private void updateSchnucki( Session newDoc )
