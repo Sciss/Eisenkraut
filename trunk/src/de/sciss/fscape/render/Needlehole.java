@@ -59,7 +59,7 @@ import de.sciss.util.ParamSpace;
  *	based filtering of a sound.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
+ *  @version	0.71, 03-Sep-08
  */
 public class Needlehole
 extends AbstractRenderPlugIn
@@ -148,7 +148,7 @@ implements RandomAccessRequester
 	private long					prFramesWritten;
 	private long					prRenderLength;
 	private int						prWinSize;
-	private int						prWinSizeH;
+//	private int						prWinSizeH;
 	private InterleavedStreamFile	prTempFile;
 	private Span					prNextSpan;
 	private float					prProgWeight;
@@ -179,9 +179,7 @@ implements RandomAccessRequester
 		prOutBufSize	= Math.max( 8192, prWinSize );
 		outBufSizeI		= new Integer( prOutBufSize );
 		prInBufSize		= prOutBufSize + prWinSize;
-		prWinSizeH		= prWinSize >> 1;
-		prOffStart		= prWinSizeH;
-		prProcLen		= prOutBufSize - prWinSizeH;
+//		prWinSizeH		= prWinSize >> 1;
 
 		prInBuf			= new float[ source.numAudioChannels ][ prInBufSize ];
 
@@ -209,9 +207,13 @@ implements RandomAccessRequester
 		} else if( filterType.equals( FILTER_MINPHASE )) {
 			prFilter	= new MinimumPhaseFilter( prWinSize, source.numAudioChannels );
 		} else {
-			throw new IOException( "Unknown filter type : "+filterType );
+			throw new IOException( "Unknown filter type : " + filterType );
 		}
-
+		
+		prOffStart		= prFilter.getStartOffset(); // prWinSizeH;
+//		prProcLen		= prOutBufSize - prWinSizeH;
+		prProcLen		= prOutBufSize - prOffStart;
+		
 		prRenderLength	= prTotalSpan.getLength();
 //		prFramesRead	= 0;
 		prFramesWritten	= 0;
@@ -368,8 +370,8 @@ implements RandomAccessRequester
 			System.arraycopy( prInBuf[ ch ], transLen, prInBuf[ ch ], 0, prWinSize );
 		}
 
-		prOffStart		 = prWinSize;
 		prProcLen		 = prOutBufSize;
+		prOffStart		 = prWinSize;
 		prFramesWritten += transLen;
 
 		source.audioBlockBufLen = transLen;
@@ -384,28 +386,45 @@ implements RandomAccessRequester
 
 // -------- Window Filter --------
 
-	private interface RunningWindowFilter
+	private static abstract class RunningWindowFilter
 	{
-		public void process( float[][] inBuf, float[][] outBuf, int inOff, int outOff, int len ) throws IOException;
+		protected final int winSize;
+		
+		protected RunningWindowFilter( int winSize )
+		{
+			this.winSize = winSize;
+		}
+		
+		public abstract void process( float[][] inBuf, float[][] outBuf, int inOff, int outOff, int len ) throws IOException;
+		
+		public int getStartOffset()
+		{
+			return winSize >> 1;
+		}
+		
+		public int getOutputSkip()
+		{
+			return 0;
+		}
 	}
 	
 	private static class StdDevFilter
-	implements RunningWindowFilter
+	extends RunningWindowFilter
 	{
-		final int			winSize;
-		final int			channels;
-		final double[][]	dcMem;
-		final int			winSizeM1;
+		private final int			channels;
+		private final double[][]	dcMem;
+		private final int			winSizeM1;
 	
 		protected StdDevFilter( int winSize, int channels )
 		{
-			this.winSize	= winSize;
+			super( winSize );
+			
 			this.channels   = channels;
 			winSizeM1		= winSize - 1;
 			
 			dcMem		= new double[channels][2];
 		}
-	
+		
 		public void process( float[][] inBuf, float[][] outBuf, int inOff, int outOff, int len )
 		throws IOException
 		{
@@ -450,19 +469,19 @@ implements RandomAccessRequester
 	 *	Verfolgt das betragsmaessige Minimum
 	 */
 	private static class MinimumFilter
-	implements RunningWindowFilter
+	extends RunningWindowFilter
 	{
-		final int			winSize;
-		final int			channels;
-		final int			winSizeM1;
+		private final int			channels;
+		private final int			winSizeM1;
 	
 		protected MinimumFilter( int winSize, int channels )
 		{
-			this.winSize	= winSize;
+			super( winSize );
+			
 			this.channels   = channels;
 			winSizeM1		= winSize - 1;
 		}
-	
+
 		public void process( float[][] inBuf, float[][] outBuf, int inOff, int outOff, int len )
 		throws IOException
 		{
@@ -501,111 +520,308 @@ implements RandomAccessRequester
 		} // process
 	} // class MinimumFilter
 
+	// this is about 20 times faster than the original code
 	private static class MedianFilter
-	implements RunningWindowFilter
+	extends RunningWindowFilter
 	{
-		final int		winSize, medianOff, winSizeM;
-		final int		channels;
-		final float[][] buf;
-		final int[][]	idxBuf;
+		private final int		winSizeH;
+		private final int		winSizeM1;
+		private final int		channels;
+		
+		private final float[][]	medianBuf;
+		private final float[][]	histoBuf;
+		
+		private int				histoIdx	= 0;
+		private int				medianNum	= 0;
 	
 		protected MedianFilter( int winSize, int channels )
 		{
-			this.winSize	= winSize;
-			this.channels   = channels;
+			super( winSize );
 			
-			buf			= new float[channels][winSize];
-			idxBuf		= new int[channels][winSize];
-			medianOff   = winSize >> 1;
-			winSizeM	= winSize - 1;
+			this.channels   = channels;
+			winSizeH		= winSize >> 1;
+			winSizeM1		= winSize - 1;
+			
+			medianBuf		= new float[ channels ][ winSize ];
+			histoBuf		= new float[ channels ][ winSize ];
 		}
-	
+
+//		public int getStartOffset()
+//		{
+//			return 0;
+//		}
+
+		// we need access to low and high, that's why we cannot
+		// use Arrays.binarySearch directly ;-/
+	    private int binarySearch( float[] a, float key, int low,int high )
+	    {
+	    	while( low <= high ) {
+	    	    final int	mid		= (low + high) >> 1;
+	    	    final float	midVal	= a[ mid ];
+	    	    
+	    	    if( midVal < key ) {
+	    	    	low = mid + 1;
+	    	    } else if( midVal > key ) {
+	    	    	high = mid - 1;
+	    	    } else {
+	    	    	return mid;
+	    	    }
+	    	}
+	    	return -(low + 1);  // key not found.
+	    }
+	    
 		public void process( float[][] inBuf, float[][] outBuf, int inOff, int outOff, int len )
 		throws IOException
 		{
-//			Util.clear( buf );
+//System.out.println( "inOff = " + inOff + "; outOff = " + outOff + "; len = " + len );
 			
-			int		ch, i, j, k, m, n;
-			float[] convBuf1, convBuf2, convBuf3;
-			int[]   convBuf4;
-			float   f1;
-			
-			for( ch = 0; ch < channels; ch++ ) {
-				convBuf1	= buf[ch];
-				convBuf2	= inBuf[ch];
-				convBuf3	= outBuf[ch];
-				convBuf4	= idxBuf[ch];
-				m			= inOff;
-				n			= outOff;
-				convBuf1[0] = convBuf2[m++];
-				convBuf4[0] = 0;
+			for( int ch = 0; ch < channels; ch++ ) {
+				final float[]	medianChanBuf	= medianBuf[ ch ];
+				final float[]	inChanBuf		= inBuf[ ch ];
+				final float[]	outChanBuf		= outBuf[ ch ];
+				final float[]	histoChanBuf	= histoBuf[ ch ];
+				int				medianChanNum	= medianNum;
+				int				histoChanIdx	= histoIdx;
+				            
+//int lastCpySrcIdx = -666, lastCpyDstIdx = -666, lastCpyLen = -666;
+//boolean didLastCpy = false;
+//int lastOldIdx = -666, lastNewIdx = -666;
+//float lastOldVal = -666;
+//float[] backup = new float[ winSize ];
 
-				// --- calculate the initial median by sorting inBuf content of length 'winSize ---
-				// XXX this is a really slow sorting algorithm and should be replaced by a fast one
-				// e.g. by exchanging the j-loop by a step-algorithm (stepping right into
-				// i/2 and if f1 < convBuf1[i/2] steppping to i/4 else i*3/4 etc.
-				for( i = 1; i < winSize; i++ ) {
-					f1  = convBuf2[m++];
-					for( j = 0; j < i; j++ ) {
-						if( f1 < convBuf1[j] ) {
-							System.arraycopy( convBuf1, j, convBuf1, j + 1, i - j );
-							for( k = 0; k < i; k++ ) {
-								if( convBuf4[k] >= j ) convBuf4[k]++;
-							}
-							break;
+				for( int i = inOff, j = outOff, k = inOff + len; i < k; i++, j++ ) {
+					final float val = inChanBuf[ i ];
+//System.arraycopy( medianChanBuf, 0, backup, 0, winSize );
+					if( medianChanNum == winSize ) { // full buffer size reached
+						if( histoChanIdx == winSize ) histoChanIdx = 0;
+//lastOldVal = histoChanBuf[ histoChanIdx ];
+						final int oldIdx = binarySearch( medianChanBuf, histoChanBuf[ histoChanIdx ], 0, winSizeM1 );
+						// trick to kind of ignore the removed value
+//						medianChanBuf[ oldIdx ] = medianChanBuf[ oldIdx > 0 ? oldIdx - 1 : oldIdx + 1 ];
+						int newIdx = binarySearch( medianChanBuf, val, 0, winSizeM1 );
+						if( newIdx < 0 ) newIdx = -(newIdx + 1);
+//try {
+						if( newIdx < oldIdx ) {
+//lastCpySrcIdx=newIdx; lastCpyDstIdx=newIdx+1;lastCpyLen=oldIdx-newIdx; didLastCpy = true;
+							System.arraycopy( medianChanBuf, newIdx, medianChanBuf, newIdx + 1, oldIdx - newIdx );
+						} else if( newIdx > oldIdx ) {
+							newIdx--;
+//lastCpySrcIdx=oldIdx+1; lastCpyDstIdx=oldIdx;lastCpyLen=newIdx-oldIdx; didLastCpy = true;
+							System.arraycopy( medianChanBuf, oldIdx + 1, medianChanBuf, oldIdx, newIdx - oldIdx );
 						}
+//						else didLastCpy = false; 
+						medianChanBuf[ newIdx ] = val;
+						
+//lastOldIdx = oldIdx; lastNewIdx = newIdx;
+							
+//}
+//catch( ArrayIndexOutOfBoundsException e1 ) {
+//	System.out.println( "ch = " + ch + "; oldIdx = " + oldIdx + "; newIdx = " + newIdx + "; winSize = " + winSize );
+//	throw e1;
+//}
+						outChanBuf[ j ] = medianChanBuf[ winSizeH ];
+					} else {	// buffer still in the process of filling up
+						int newIdx = binarySearch( medianChanBuf, val, 0, medianChanNum - 1 );
+						if( newIdx < 0 ) newIdx = -(newIdx + 1);
+//						System.out.println( "ch = " + ch + "; newIdx = " + newIdx + "; medianChanNum = " + medianChanNum + "; winSize = " + winSize );
+						System.arraycopy( medianChanBuf, newIdx, medianChanBuf, newIdx + 1, medianChanNum - newIdx );
+						medianChanBuf[ newIdx ] = val;
+						medianChanNum++;
+						outChanBuf[ j ] = medianChanBuf[ medianChanNum >> 1 ];
 					}
-					convBuf1[j] = f1;
-					convBuf4[i] = j;
+					
+					histoChanBuf[ histoChanIdx++ ] = val;
+//					histoChanIdx = (histoChanIdx + 1) % winSize;
+//boolean failed=false;
+//for( int ii = 0; ii < Math.max( histoChanIdx, medianChanNum ); ii++ ) {
+//	if( binarySearch( medianChanBuf, histoChanBuf[ ii ], 0, medianChanNum - 1 ) < 0 ) {
+//		System.out.println( "TEST FAILED! value " + histoChanBuf[ ii ] + " not found" );
+//		failed=true;
+//	}
+//}
+//if( failed ) {
+//	if( !didLastCpy ) System.out.println( "DIDN'T DO LASTCPY" );
+//	System.out.println( "last copy : from " + lastCpySrcIdx + "; to " + lastCpyDstIdx + "; len = " + lastCpyLen + "; oldIdx = " +lastOldIdx + "; newIdx = " + lastNewIdx + "; oldVal = " + lastOldVal + "; newVal = " + val );
+//}
+					
+//					float prev = medianChanBuf[ 0 ];
+//					for( int kk = 1; kk < medianChanNum; kk++ ) {
+//						if( medianChanBuf[ kk ] < prev ) {
+//							System.out.println( "TEST FAILED!" );
+//						}
+//						prev = medianChanBuf[ kk ]; 
+//					}
 				}
-				// now the median is approx. (for winSize >> 1) the sample in convBuf1[winSize/2]
-
-//System.err.println( "A---unsorted---" );
-//for( int p = 0; p < winSize; p++ ) {
-//	System.err.println( p + " : "+convBuf2[inOff+p] );
-//}
-//System.err.println( " --sorted---" );
-//for( int p = 0; p < winSize; p++ ) {
-//	System.err.println( p + " : "+convBuf1[p] );
-//}
-
-				// XXX this is a really slow sorting algorithm and should be replaced by a fast one
-				// e.g. by exchanging the j-loop by a step-algorithm (stepping right into
-				// i/2 and if f1 < convBuf1[i/2] steppping to i/4 else i*3/4 etc.
-				// ; also the two arraycopies could be collapsed into one or two shorter ones
-				for( i = 0; i < len; i++ ) {
-					convBuf3[n++] = convBuf1[medianOff];
-
-					j   = convBuf4[i%winSize];  // index of the element to be removed (i.e. shifted left out of the win)
-					System.arraycopy( convBuf1, j + 1, convBuf1, j, winSizeM - j );
-					for( k = 0; k < winSize; k++ ) {
-						if( convBuf4[k] > j ) convBuf4[k]--;
-					}
-					f1  = convBuf2[m++];
-					for( j = 0; j < winSizeM; j++ ) {
-						if( f1 < convBuf1[j] ) {
-							System.arraycopy( convBuf1, j, convBuf1, j + 1, winSizeM - j );
-							for( k = 0; k < winSize; k++ ) {
-								if( convBuf4[k] >= j ) convBuf4[k]++;
-							}
-							break;
-						}
-					}
-					// j = index of the element to be inserted (i.e. coming from the right side of the win)
-					convBuf1[j] = f1;
-					convBuf4[i%winSize] = j;
+				
+				if( ch == channels - 1 ) {
+					medianNum	= medianChanNum;
+					histoIdx	= histoChanIdx;
 				}
-//System.err.println( "B---unsorted---" );
-//for( int p = 0; p < winSize; p++ ) {
-//	System.err.println( p + " : "+convBuf2[inOff+len+p] );
-//}
-//System.err.println( " ---sorted---" );
-//for( int p = 0; p < winSize; p++ ) {
-//	System.err.println( p + " : "+convBuf1[p] );
-//}
 			} // for channels
 		} // process
 	} // class MedianFilter
+
+// this is about 6 times faster than the original code
+//	private static class MedianFilterTEST
+//	implements RunningWindowFilter
+//	{
+//		private final int		winSize;
+//		private final int		channels;
+//		
+//		private final List[]	medianBuf;
+//		private final Float[][]	histoBuf;
+//		
+//		private int				histoIdx	= 0;
+//	
+//		protected MedianFilterTEST( int winSize, int channels )
+//		{
+//			this.winSize	= winSize;
+//			this.channels   = channels;
+//			
+//			medianBuf		= new List[ channels ];
+//			for( int ch = 0; ch < channels; ch++ ) { 
+//				medianBuf[ ch ] = new ArrayList( winSize );
+////				medianBuf[ ch ] = new LinkedList();
+//			}
+//			histoBuf		= new Float[ channels ][ winSize ];
+//		}
+//	
+//		public void process( float[][] inBuf, float[][] outBuf, int inOff, int outOff, int len )
+//		throws IOException
+//		{
+//			for( int ch = 0; ch < channels; ch++ ) {
+//				final List		medianChanBuf	= medianBuf[ ch ];
+//				final float[]	inChanBuf		= inBuf[ ch ];
+//				final float[]	outChanBuf		= outBuf[ ch ];
+//				final Float[]	histoChanBuf	= histoBuf[ ch ];
+//				            
+//				for( int i = inOff, j = outOff, k = inOff + len; i < k; i++, j++ ) {
+//					final Float oldVal = histoChanBuf[ histoIdx ]; 
+//					if( oldVal != null ) {
+//						medianChanBuf.remove( Collections.binarySearch( medianChanBuf, oldVal ));
+////						medianChanBuf.remove( oldVal );
+//					}
+//					final Float inVal	= new Float( inChanBuf[ i ]);
+//					final int	idx		= Collections.binarySearch( medianChanBuf, inVal );
+//					if( idx >= 0 ) {
+//						medianChanBuf.add( idx, inVal );
+//					} else {
+//						medianChanBuf.add( -(idx + 1), inVal );
+//					}
+//					outChanBuf[ j ] = ((Float) medianChanBuf.get( medianChanBuf.size() >> 1 )).floatValue();
+//					histoChanBuf[ histoIdx ] = inVal;
+//					histoIdx = (histoIdx + 1) % winSize;
+//				}
+//			} // for channels
+//		} // process
+//	} // class MedianFilter
+
+// this is the original code (very slow)
+//	private static class MedianFilterOLD
+//	implements RunningWindowFilter
+//	{
+//		final int		winSize, medianOff, winSizeM;
+//		final int		channels;
+//		final float[][] buf;
+//		final int[][]	idxBuf;
+//	
+//		protected MedianFilterOLD( int winSize, int channels )
+//		{
+//			this.winSize	= winSize;
+//			this.channels   = channels;
+//			
+//			buf			= new float[channels][winSize];
+//			idxBuf		= new int[channels][winSize];
+//			medianOff   = winSize >> 1;
+//			winSizeM	= winSize - 1;
+//		}
+//	
+//		public void process( float[][] inBuf, float[][] outBuf, int inOff, int outOff, int len )
+//		throws IOException
+//		{
+////			Util.clear( buf );
+//			
+//			int		ch, i, j, k, m, n;
+//			float[] convBuf1, convBuf2, convBuf3;
+//			int[]   convBuf4;
+//			float   f1;
+//			
+//			for( ch = 0; ch < channels; ch++ ) {
+//				convBuf1	= buf[ch];
+//				convBuf2	= inBuf[ch];
+//				convBuf3	= outBuf[ch];
+//				convBuf4	= idxBuf[ch];
+//				m			= inOff;
+//				n			= outOff;
+//				convBuf1[0] = convBuf2[m++];
+//				convBuf4[0] = 0;
+//
+//				// --- calculate the initial median by sorting inBuf content of length 'winSize ---
+//				// XXX this is a really slow sorting algorithm and should be replaced by a fast one
+//				// e.g. by exchanging the j-loop by a step-algorithm (stepping right into
+//				// i/2 and if f1 < convBuf1[i/2] steppping to i/4 else i*3/4 etc.
+//				for( i = 1; i < winSize; i++ ) {
+//					f1  = convBuf2[m++];
+//					for( j = 0; j < i; j++ ) {
+//						if( f1 < convBuf1[j] ) {
+//							System.arraycopy( convBuf1, j, convBuf1, j + 1, i - j );
+//							for( k = 0; k < i; k++ ) {
+//								if( convBuf4[k] >= j ) convBuf4[k]++;
+//							}
+//							break;
+//						}
+//					}
+//					convBuf1[j] = f1;
+//					convBuf4[i] = j;
+//				}
+//				// now the median is approx. (for winSize >> 1) the sample in convBuf1[winSize/2]
+//
+////System.err.println( "A---unsorted---" );
+////for( int p = 0; p < winSize; p++ ) {
+////	System.err.println( p + " : "+convBuf2[inOff+p] );
+////}
+////System.err.println( " --sorted---" );
+////for( int p = 0; p < winSize; p++ ) {
+////	System.err.println( p + " : "+convBuf1[p] );
+////}
+//
+//				// XXX this is a really slow sorting algorithm and should be replaced by a fast one
+//				// e.g. by exchanging the j-loop by a step-algorithm (stepping right into
+//				// i/2 and if f1 < convBuf1[i/2] steppping to i/4 else i*3/4 etc.
+//				// ; also the two arraycopies could be collapsed into one or two shorter ones
+//				for( i = 0; i < len; i++ ) {
+//					convBuf3[n++] = convBuf1[medianOff];
+//
+//					j   = convBuf4[i%winSize];  // index of the element to be removed (i.e. shifted left out of the win)
+//					System.arraycopy( convBuf1, j + 1, convBuf1, j, winSizeM - j );
+//					for( k = 0; k < winSize; k++ ) {
+//						if( convBuf4[k] > j ) convBuf4[k]--;
+//					}
+//					f1  = convBuf2[m++];
+//					for( j = 0; j < winSizeM; j++ ) {
+//						if( f1 < convBuf1[j] ) {
+//							System.arraycopy( convBuf1, j, convBuf1, j + 1, winSizeM - j );
+//							for( k = 0; k < winSize; k++ ) {
+//								if( convBuf4[k] >= j ) convBuf4[k]++;
+//							}
+//							break;
+//						}
+//					}
+//					// j = index of the element to be inserted (i.e. coming from the right side of the win)
+//					convBuf1[j] = f1;
+//					convBuf4[i%winSize] = j;
+//				}
+////System.err.println( "B---unsorted---" );
+////for( int p = 0; p < winSize; p++ ) {
+////	System.err.println( p + " : "+convBuf2[inOff+len+p] );
+////}
+////System.err.println( " ---sorted---" );
+////for( int p = 0; p < winSize; p++ ) {
+////	System.err.println( p + " : "+convBuf1[p] );
+////}
+//			} // for channels
+//		} // process
+//	} // class MedianFilter
 
 	/*
 	 *	Center Clipping for a variable threshold
@@ -618,7 +834,7 @@ implements RandomAccessRequester
 	 *	@todo	delay compensation stimmt nicht
 	 */
 	private static class CenterClippingFilter
-	implements RunningWindowFilter
+	extends RunningWindowFilter
 	{
 //		private final int			winSize;
 		private final int			channels;
@@ -634,7 +850,8 @@ implements RandomAccessRequester
 		
 		protected CenterClippingFilter( int winSize, int channels, double threshAmp )
 		{
-//			this.winSize	= winSize;
+			super( winSize );
+			
 			this.channels   = channels;
 			winSizeM1		= winSize - 1;
 			histogram		= new int[ channels ][ HISTOSIZE ];
@@ -708,21 +925,21 @@ implements RandomAccessRequester
 	 *	mit nachgeschaltetem DC block filter
 	 */
 	private static class Minimum2Filter
-	implements RunningWindowFilter
+	extends RunningWindowFilter
 	{
-		final int			winSize;
 		final int			channels;
 		final int			winSizeM1;
 		final double[][]	dcMem;
 	
 		protected Minimum2Filter( int winSize, int channels )
 		{
-			this.winSize	= winSize;
+			super( winSize );
+			
 			this.channels   = channels;
 			winSizeM1		= winSize - 1;
 			dcMem			= new double[channels][2];
 		}
-	
+
 		public void process( float[][] inBuf, float[][] outBuf, int inOff, int outOff, int len )
 		throws IOException
 		{
@@ -775,9 +992,8 @@ implements RandomAccessRequester
 	 *	, plus DC block filter
 	 */
 	private static class AutoCorrelationFilter
-	implements RunningWindowFilter
+	extends RunningWindowFilter
 	{
-		final int			winSize;
 		final int			winSizeM2;
 		final int			channels;
 		final double[][]	dcMem;
@@ -787,7 +1003,8 @@ implements RandomAccessRequester
 	
 		protected AutoCorrelationFilter( int winSize, int channels )
 		{
-			this.winSize	= winSize;
+			super( winSize );
+			
 			this.channels   = channels;
 			winSizeM2		= winSize << 1;
 			fftSize			= MathUtil.nextPowerOfTwo( winSizeM2 );
@@ -855,32 +1072,31 @@ implements RandomAccessRequester
 	 *	, plus DC block filter
 	 */
 	private static class AutoCorrelation2Filter
-	implements RunningWindowFilter
+	extends RunningWindowFilter
 	{
-		final int			winSize;
-		final int			winSizeM2;
-		final int			winSizeP4;
-		final int			channels;
-		final double[][]	dcMem;
-		final float[]		fftBuf;
-		final int			fftSize;
-		final int			fftSizeP2;
-		final float[][]		procBuf;
-		int					procBufOff	= 0;
+		private final int			winSizeD2;
+		private final int			winSizeP4;
+		private final int			channels;
+		private final double[][]	dcMem;
+		private final float[]		fftBuf;
+		private final int			fftSize;
+		private final int			fftSizeP2;
+		private final float[][]		procBuf;
+		private int					procBufOff	= 0;
 	
 		protected AutoCorrelation2Filter( int winSize, int channels )
 		{
-			this.winSize	= winSize >> 1;
+			super( winSize & ~1 );
+			this.winSizeD2	= winSize >> 1;
 			this.channels   = channels;
-			winSizeM2		= this.winSize << 1;
-			winSizeP4		= this.winSize; // * this.winSize; // Math.pow( this.winSize, 4 );
-			fftSize			= MathUtil.nextPowerOfTwo( winSizeM2 );
+			winSizeP4		= this.winSizeD2; // * this.winSize; // Math.pow( this.winSize, 4 );
+			fftSize			= MathUtil.nextPowerOfTwo( winSize );
 			fftSizeP2		= fftSize + 2;
 			fftBuf			= new float[ fftSizeP2 ];
 			dcMem			= new double[ channels ][ 2 ];
-			procBuf			= new float[ channels ][ winSizeM2 ];
+			procBuf			= new float[ channels ][ winSize ];
 		}
-	
+
 		public void process( float[][] inBuf, float[][] outBuf, int inOff, int outOff, int len )
 		throws IOException
 		{
@@ -889,26 +1105,26 @@ implements RandomAccessRequester
 			double[]	convBuf4;
 			float		f1;
 			double		d1, d2;
-			final int	procBufOffN = (procBufOff + 1) % winSizeM2;
+			final int	procBufOffN = (procBufOff + 1) % winSize;
 			
-inOff += winSize;
+inOff += winSizeD2;
 			
 			for( ch = 0; ch < channels; ch++ ) {
 				convBuf4	= dcMem[ ch ];
 				convBuf2	= inBuf[ch];
 				convBuf3	= outBuf[ch];
 				for( j = 0, m = inOff, n = outOff; j < len; j++, m++, n++ ) {
-					System.arraycopy( convBuf2, m, fftBuf, 0, winSize );
+					System.arraycopy( convBuf2, m, fftBuf, 0, winSizeD2 );
 					// calc rms
 					d2 = 0.0;
 					d1 = 0.0;
-					for( k = 0; k < winSize; k++ ) {
+					for( k = 0; k < winSizeD2; k++ ) {
 						f1	= fftBuf[ k ];
 						d2 += f1 * f1;
 					}
-					d2 = Math.sqrt( d2 / winSize ) * winSizeP4;
+					d2 = Math.sqrt( d2 / winSizeD2 ) * winSizeP4;
 					
-					procBuf[ ch ][ (procBufOff + winSizeM2) % winSizeM2 ] = 0.0f;
+					procBuf[ ch ][ (procBufOff + winSize) % winSize ] = 0.0f;
 					
 					if( d2 > 0.0 ) {
 						// zero padding
@@ -918,7 +1134,7 @@ inOff += winSize;
 						Fourier.realTransform( fftBuf, fftSize, Fourier.FORWARD );
 						// autokorrelation: square amplitudes, zero phases
 						for( k = 0; k < fftSizeP2; ) {
-							f1				= fftBuf[ k ] / winSize;
+							f1				= fftBuf[ k ] / winSizeD2;
 							fftBuf[ k++ ]	= f1 * f1;
 							fftBuf[ k++ ]	= 0.0f;
 						}
@@ -927,11 +1143,11 @@ inOff += winSize;
 //						for( k = 0; k < winSizeM2; k++ ) {
 //							d1 += fftBuf[ k ];
 //						}
-						add( procBuf[ ch ], procBufOffN, fftBuf, 0, winSizeM2 - procBufOffN );
-						add( procBuf[ ch ], 0, fftBuf, winSizeM2 - procBufOffN, procBufOffN );
+						add( procBuf[ ch ], procBufOffN, fftBuf, 0, winSize - procBufOffN );
+						add( procBuf[ ch ], 0, fftBuf, winSize - procBufOffN, procBufOffN );
 
 //						d1 /= Math.sqrt( d2 / winSize ) * winSize;
-						d1 = procBuf[ ch ][ (procBufOffN + winSize) % winSizeM2 ] / d2;
+						d1 = procBuf[ ch ][ (procBufOffN + winSizeD2) % winSize ] / d2;
 					}
 
 				// ---- remove DC ----
@@ -950,24 +1166,24 @@ inOff += winSize;
 	 *	Minimum Phase schnuckendorfer
 	 */
 	private static class MinimumPhaseFilter
-	implements RunningWindowFilter
+	extends RunningWindowFilter
 	{
-		final int			winSize;
-		final int			winSizeM2;
-		final int			winSizeH;
-		final int			channels;
-		final double[][]	dcMem;
-		final float[]		fftBuf;
-		final int			fftSize;
-		final int			fftSizeP2;
-		final int			complexFFTsize;
-		final float[][]		winBuf;
-		final float			gain;
-		int					winBufIdx	= 0;
+		private final int			winSizeM2;
+		private final int			winSizeH;
+		private final int			channels;
+		private final double[][]	dcMem;
+		private final float[]		fftBuf;
+		private final int			fftSize;
+		private final int			fftSizeP2;
+		private final int			complexFFTsize;
+		private final float[][]		winBuf;
+		private final float			gain;
+		private int					winBufIdx	= 0;
 	
 		protected MinimumPhaseFilter( int winSize, int channels )
 		{
-			this.winSize	= winSize;
+			super( winSize );
+			
 			this.channels   = channels;
 			winSizeM2		= winSize << 1;
 			winSizeH		= winSize >> 1;
