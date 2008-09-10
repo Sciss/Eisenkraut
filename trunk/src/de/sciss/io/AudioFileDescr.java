@@ -30,6 +30,7 @@
  *		21-Feb-06	added KEY_COMMENT ; added PropertyChangeListener facility ; property keys must be strings now!
  *		25-Feb-06	moved to double precision rate
  *		27-Mar-07	added appCode field
+ *		10-Sep-08	added Wave64 support
  */
 
 package de.sciss.io;
@@ -64,7 +65,7 @@ import de.sciss.gui.StringItem;
  *  which presents the common fields to the user.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.28, 07-Dec-07
+ *  @version	0.29, 10-Sep-08
  *
  *  @see		AudioFile
  *  @see		AudioFileFormatPane
@@ -104,7 +105,11 @@ public class AudioFileDescr
 	 *  type value : raw (headerless) file format
 	 */
 	public static final int TYPE_RAW		= 4;
-	private static final int NUM_TYPES		= 5;
+	/**
+	 *  type value : sony wave64 sound file format
+	 */
+	public static final int TYPE_WAVE64		= 5;	
+	private static final int NUM_TYPES		= 6;
 
 	/**
 	 *  sampleFormat type : linear pcm integer
@@ -200,18 +205,19 @@ public class AudioFileDescr
 		new StringItem( "au", "NeXT/Sun AU" ),
 		new StringItem( "ircam", "IRCAM" ),
 		new StringItem( "wave", "WAVE" ),
-		new StringItem( "raw", "Raw" )
+		new StringItem( "raw", "Raw" ),
+		new StringItem( "w64", "Wave64" )
 	};
-	private static final String[] FORMAT_SUFFICES	= { "aif", "au", "irc", "wav", "raw" };
+	private static final String[] FORMAT_SUFFICES	= { "aif", "au", "irc", "wav", "raw", "w64" };
 
-	private static final String			msgPtrn		= "{0,choice,0#AIFF|1#NeXT/Sun AU|2#IRCAM|3#WAVE|4#Raw} audio, {1,choice,0#no channels|1#mono|2#stereo|2<{1,number,integer}-ch} {2,number,integer}-bit {3,choice,0#int|1#float} {4,number,0.###} kHz, {5,number,integer}:{6,number,00.000}";
+	private static final String			msgPtrn		= "{0,choice,0#AIFF|1#NeXT/Sun AU|2#IRCAM|3#WAVE|4#Raw|5#Wave64} audio, {1,choice,0#no channels|1#mono|2#stereo|2<{1,number,integer}-ch} {2,number,integer}-bit {3,choice,0#int|1#float} {4,number,0.###} kHz, {5,number,integer}:{6,number,00.000}";
 	private static final MessageFormat	msgForm		= new MessageFormat( msgPtrn, Locale.US );  // XXX US locale to allow parsing via Double.parseDouble()
 											
 	static {
 		Set	set;
 
 		supports				= new Set[ NUM_TYPES ];
-		set						= new HashSet();
+		set						= new HashSet( 5 );
 		set.add( KEY_LOOP );
 		set.add( KEY_MARKERS );
 		set.add( KEY_GAIN );
@@ -219,22 +225,27 @@ public class AudioFileDescr
 		set.add( KEY_COMMENT );
 		supports[ TYPE_AIFF ]	= set;
 
-		set						= new HashSet();
+		set						= new HashSet( 1 );
 		set.add( KEY_COMMENT );
 		supports[ TYPE_SND ]	= set;
 
-		set						= new HashSet();
+		set						= new HashSet( 2 );
 		set.add( KEY_REGIONS );
 		set.add( KEY_COMMENT );
 		supports[ TYPE_IRCAM ]	= set;
 
-		set						= new HashSet();
+		set						= new HashSet( 2 );
 		set.add( KEY_MARKERS );
 		set.add( KEY_GAIN );
 		supports[ TYPE_WAVE ]	= set;
 
-		set						= new HashSet();
+		set						= new HashSet( 1 );
 		supports[ TYPE_RAW ]	= set;
+		
+		set						= new HashSet( 1 );
+		set.add( KEY_MARKERS );
+//		set.add( KEY_GAIN );
+		supports[ TYPE_WAVE64 ]	= set;
 	}
 
 // -------- public Methoden --------

@@ -40,6 +40,7 @@
  *		27-Mar-07	separate APPCODE reader, not requiring Application class; separate markers reading;
  *					fixed AIFF output file endian bug
  *		06-Jan-07	added static retrieveType method
+ *		10-Sep-08	added Wave64 support
  */
 
 package de.sciss.io;
@@ -49,12 +50,18 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.CharBuffer;
 import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CoderResult;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -69,7 +76,7 @@ import java.util.Map;
  *	the specific sample format and endianess.
  *	<p>
  *	Currently supported formats are: AIFF, IRCAM,
- *  NeXT/Sun (.au), and WAVE. Supported resolutions are
+ *  NeXT/Sun (.au), WAVE, and Wave64. Supported resolutions are
  *  8/16/24/32 bit integer and 32/64 bit floating point.
  *  However not all audio formats support all bit depths.
  *  <p>
@@ -98,7 +105,7 @@ import java.util.Map;
  *	of streaming files, not just audio files.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.36, 25-Feb-08
+ *  @version	0.37, 10-Sep-08
  *
  *  @see		AudioFileDescr
  *
@@ -330,6 +337,8 @@ implements InterleavedStreamFile
 			return new WAVEHeader();
 		case AudioFileDescr.TYPE_RAW:
 			return new RawHeader();
+		case AudioFileDescr.TYPE_WAVE64:
+			return new Wave64Header();
 		default:
 			throw new IOException( getResourceString( "errAudioFileType" ));
 		}
@@ -346,13 +355,13 @@ implements InterleavedStreamFile
 		int		magic;
 		int		type	= AudioFileDescr.TYPE_UNKNOWN;
 
-		if( len < 4 ) return AudioFileDescr.TYPE_UNKNOWN;
+		if( len < 4 ) return type;
 
 		raf.seek( 0L );
 		magic = raf.readInt();
 		switch( magic ) {
 		case AIFFHeader.FORM_MAGIC:					// -------- probably AIFF --------
-			if( len < 8 ) return AudioFileDescr.TYPE_UNKNOWN;
+			if( len < 12 ) break;
 			raf.readInt();
 			magic = raf.readInt();
 			switch( magic ) {
@@ -374,13 +383,26 @@ implements InterleavedStreamFile
 			break;
 			
 		case WAVEHeader.RIFF_MAGIC:					// -------- probably WAVE --------
-			if( len < 8 ) return AudioFileDescr.TYPE_UNKNOWN;
+			if( len < 12 ) break;
 			raf.readInt();
 			magic = raf.readInt();
 			switch( magic ) {
 			case WAVEHeader.WAVE_MAGIC:
 				type = AudioFileDescr.TYPE_WAVE;
 				break;
+			}
+			break;
+
+		case Wave64Header.RIFF_MAGIC1a:				// -------- probably Wave64 --------
+			if( (len < 40) ||
+			    (raf.readInt() != Wave64Header.RIFF_MAGIC1b) ||
+			    (raf.readLong() != Wave64Header.RIFF_MAGIC2) ) break;
+			
+			raf.readLong(); // length
+			
+			if( (raf.readLong() == Wave64Header.WAVE_MAGIC1) &&
+			    (raf.readLong() == Wave64Header.WAVE_MAGIC2) ) {
+				type = AudioFileDescr.TYPE_WAVE64;
 			}
 			break;
 
@@ -1246,15 +1268,29 @@ implements InterleavedStreamFile
 		protected final int readLittleUShort()
 		throws IOException
 		{
-			int i = raf.readUnsignedShort();
+			final int i = raf.readUnsignedShort();
 			return( (i >> 8) | ((i & 0xFF) << 8) );
 		}
 
 		protected final int readLittleInt()
 		throws IOException
 		{
-			int i = raf.readInt();
+			final int i = raf.readInt();
 			return( ((i >> 24) & 0xFF) | ((i >> 8) & 0xFF00) | ((i << 8) & 0xFF0000) | (i << 24) );
+		}
+
+		protected final long readLittleLong()
+		throws IOException
+		{
+			final long n = raf.readLong();
+			return( ((n >> 56) & 0xFFL) |
+					((n >> 40) & 0xFF00L) |
+					((n >> 24) & 0xFF0000L) |
+					((n >> 8)  & 0xFF000000L) |
+					((n << 8)  & 0xFF00000000L) |
+					((n << 24) & 0xFF0000000000L) |
+					((n << 40) & 0xFF000000000000L) |
+					 (n << 56) );
 		}
 
 		protected final void writeLittleShort( int i )
@@ -1267,6 +1303,19 @@ implements InterleavedStreamFile
 		throws IOException
 		{
 			raf.writeInt( ((i >> 24) & 0xFF) | ((i >> 8) & 0xFF00) | ((i << 8) & 0xFF0000) | (i << 24) );
+		}
+		
+		protected final void writeLittleLong( long n )
+		throws IOException
+		{
+			raf.writeLong( ((n >> 56) & 0xFFL) |
+			               ((n >> 40) & 0xFF00L) |
+			               ((n >> 24) & 0xFF0000L) |
+			               ((n >> 8)  & 0xFF000000L) |
+			               ((n << 8)  & 0xFF00000000L) |
+			               ((n << 24) & 0xFF0000000000L) |
+			               ((n << 40) & 0xFF000000000000L) |
+							(n << 56) );
 		}
 		
 		protected final String readNullTermString()
@@ -1598,7 +1647,7 @@ commentLp:			for( i = 0; !comment && (i < i1); i++ ) {
 			raf.writeInt( 0 );
 
 			markers  = (List) descr.getProperty( AudioFileDescr.KEY_MARKERS );
-			if( markers == null ) markers = new ArrayList();
+			if( markers == null ) markers = Collections.EMPTY_LIST;
 			// MARK Chunk
 			if( lp || !markers.isEmpty() ) {
 				raf.writeInt( MARK_MAGIC );
@@ -1710,45 +1759,48 @@ commentLp:			for( i = 0; !comment && (i < i1); i++ ) {
 		{
 			int i, i1, i2, i3;
 			
-			if( markersOffset > 0L ) {
-				final List		markers 	= new ArrayList();
-				final byte[]	strBuf 		= new byte[ 64 ];	// to store the names
-				final long		oldPos		= raf.getFilePointer();
-				int				essentials	= loop ? 2 : 0; 	// start+end for sustain-loop
-				try {
-					raf.seek( markersOffset );
-					i1 = raf.readUnsignedShort();		// number of markers
-					for( i = i1; i > 0; i-- ) {
-						i3 = raf.readUnsignedShort();	// marker ID
-						i2 = raf.readInt();				// marker position (sample offset)
-						i1 = raf.readUnsignedByte();	// markerName String-len
-						if( loop && i3 == loopStart ) {
-							loopStart	= i2;
-							essentials--;
-						} else if( loop && i3 == loopEnd ) {
-							loopEnd		= i2;
-							essentials--;
-						} else {
-							i3	 = Math.min( i1, strBuf.length );
-							raf.readFully( strBuf, 0, i3 );
-							i1	-= i3;
-							if( (i3 > 0) && (strBuf[ i3 - 1 ] == 0x20) ) {
-								i3--;	// ignore padding space created by Peak
-							}
-							markers.add( new Marker( i2, new String( strBuf, 0, i3 )));
+			if( markersOffset <= 0L ) return;
+
+			final List		markers;
+			final byte[]	strBuf 		= new byte[ 64 ];	// to store the names
+			final long		oldPos		= raf.getFilePointer();
+			int				essentials	= loop ? 2 : 0; 	// start+end for sustain-loop
+
+			try {
+				raf.seek( markersOffset );
+				i1 = raf.readUnsignedShort();		// number of markers
+			 	markers = new ArrayList( i1 );
+				for( i = i1; i > 0; i-- ) {
+					i3 = raf.readUnsignedShort();	// marker ID
+					i2 = raf.readInt();				// marker position (sample offset)
+					i1 = raf.readUnsignedByte();	// markerName String-len
+					if( loop && (i3 == loopStart) ) {
+						loopStart	= i2;
+						essentials--;
+					} else if( loop && (i3 == loopEnd) ) {
+						loopEnd		= i2;
+						essentials--;
+					} else {
+						i3	 = Math.min( i1, strBuf.length );
+						raf.readFully( strBuf, 0, i3 );
+						i1	-= i3;
+						if( (i3 > 0) && (strBuf[ i3 - 1 ] == 0x20) ) {
+							i3--;	// ignore padding space created by Peak
 						}
-						raf.seek( (raf.getFilePointer() + (i1 + 1)) & ~1 );
+						markers.add( new Marker( i2, new String( strBuf, 0, i3 )));
 					}
-					afd.setProperty( AudioFileDescr.KEY_MARKERS, markers );
-					if( loop && essentials == 0 ) {
-						afd.setProperty( AudioFileDescr.KEY_LOOP, new Region( new Span( loopStart, loopEnd ), NAME_LOOP ));
-					}
+					raf.seek( (raf.getFilePointer() + (i1 + 1)) & ~1 );
 				}
-				finally {
-					raf.seek( oldPos );
+				afd.setProperty( AudioFileDescr.KEY_MARKERS, markers );
+				if( loop && essentials == 0 ) {
+					afd.setProperty( AudioFileDescr.KEY_LOOP, new Region( new Span( loopStart, loopEnd ), NAME_LOOP ));
 				}
 			}
+			finally {
+				raf.seek( oldPos );
+			}
 		}
+		
 		protected void readAppCode()
 		throws IOException
 		{
@@ -1765,12 +1817,38 @@ commentLp:			for( i = 0; !comment && (i < i1); i++ ) {
 		}
 	} // class AIFFHeader
 
+	private abstract class AbstractRIFFHeader
+	extends AudioFileHeader
+	{
+		protected static final int ADTL_MAGIC		= 0x6164746C;	// 'adtl'
+		protected static final int LABL_MAGIC		= 0x6C61626C;	// 'labl'
+		protected static final int LTXT_MAGIC		= 0x6C747874;	// 'ltxt'
+
+		// ltxt purpose for regions
+		protected static final int RGN_MAGIC		= 0x72676E20;	// 'rgn '
+
+		// fmt format-code
+		protected static final int FORMAT_PCM		= 0x0001;
+		protected static final int FORMAT_FLOAT		= 0x0003;
+		protected static final int FORMAT_EXT		= 0xFFFE;
+		
+		
+		protected long 		sampleDataOffset;
+		protected long		dataLengthOffset;
+		protected long		factSmpNumOffset;
+		protected long		lastUpdateLength	= 0L;
+		protected boolean	isFloat				= false;
+		protected boolean	unsignedPCM;
+				
+		protected AbstractRIFFHeader() { /* empty */ }
+	}
+	
 	// WAVE is the most stupid and chaotic format. there are dozens
 	// of alternatives to say the same thing and i'm too lazy to apply higher
 	// order heuristics to find out what the creator application was trying
 	// to say.
 	//
-	// therefore we are simply imitating the behaviour of bias pias
+	// therefore we are simply imitating the behaviour of bias peak
 	// in terms of marker storage : use LIST/adtl with labl chunk for the marker
 	// names and ltxt chunks for regions (purpose field == "rgn "). the loop
 	// region is stored outside in the smpl chunk.
@@ -1780,7 +1858,7 @@ commentLp:			for( i = 0; !comment && (i < i1); i++ ) {
 	//
 	// http://www.borg.com/%7Ejglatt/tech/wave.htm for a discussion
 	private class WAVEHeader
-	extends AudioFileHeader
+	extends AbstractRIFFHeader
 	{
 		private static final int RIFF_MAGIC		= 0x52494646;	// 'RIFF'
 		private static final int WAVE_MAGIC		= 0x57415645;	// 'WAVE' (offset 8)
@@ -1796,32 +1874,13 @@ commentLp:			for( i = 0; !comment && (i < i1); i++ ) {
 		// embedded LIST (peak speak) / list (rest of the universe speak) format
 		private static final int LIST_MAGIC		= 0x6C697374;	// 'list'
 		private static final int LIST_MAGIC2	= 0x4C495354;	// 'LIST'
-		private static final int ADTL_MAGIC		= 0x6164746C;	// 'adtl'
-		private static final int LABL_MAGIC		= 0x6C61626C;	// 'labl'
-		private static final int LTXT_MAGIC		= 0x6C747874;	// 'ltxt'
-
-		// ltxt purpose for regions
-		private static final int RGN_MAGIC		= 0x72676E20;	// 'rgn '
-
-		// fmt format-code
-		private static final int FORMAT_PCM		= 0x0001;
-		private static final int FORMAT_FLOAT	= 0x0003;
-		private static final int FORMAT_EXT		= 0xFFFE;
 		
-		private long sampleDataOffset;
+		private long		smplMagicOff		= 0L;
+		private long		listMagicOff		= 0L;
+		private long		listMagicLen		= 0L;
+		private long		cueMagicOff			= 0L;
+		private static final long riffLengthOffset = 4L;
 		
-		private long	riffLengthOffset	= 4L;
-		private long	dataLengthOffset;
-		private long	factSmpNumOffset;
-		private long	lastUpdateLength	= 0L;
-		private boolean	isFloat				= false;
-		private boolean	unsignedPCM;
-		
-		private long	smplMagicOff		= 0L;
-		private long	listMagicOff		= 0L;
-		private long	listMagicLen		= 0L;
-		private long	cueMagicOff			= 0L;
-
 		protected WAVEHeader() { /* empty */ }
 		
 		protected void readHeader( AudioFileDescr descr )
@@ -1973,8 +2032,8 @@ len	= raf.length() - 8;
 			markers  = (List) descr.getProperty( AudioFileDescr.KEY_MARKERS );
 			regions  = (List) descr.getProperty( AudioFileDescr.KEY_REGIONS );
 			if( ((markers != null) && !markers.isEmpty()) || ((regions != null) && !regions.isEmpty()) ) {
-				if( markers == null ) markers = new ArrayList();
-				if( regions == null ) regions = new ArrayList();
+				if( markers == null ) markers = Collections.EMPTY_LIST;
+				if( regions == null ) regions = Collections.EMPTY_LIST;
 				
 				raf.writeInt( CUE_MAGIC );
 				i2	= markers.size() + regions.size();
@@ -2256,6 +2315,367 @@ len	= raf.length() - 8;
 		}
 	} // class WAVEHeader
 
+	// http://www.vcs.de/fileadmin/user_upload/MBS/PDF/Whitepaper/Informations_about_Sony_Wave64.pdf
+	private class Wave64Header
+	extends AbstractRIFFHeader
+	{
+		private static final int RIFF_MAGIC1a	= 0x72696666;	// 'riff'
+		private static final int RIFF_MAGIC1b	= 0x2E91CF11;
+		private static final long RIFF_MAGIC1	= 0x726966662E91CF11L;
+		private static final long RIFF_MAGIC2	= 0xA5D628DB04C10000L;
+
+		private static final long WAVE_MAGIC1	= 0x77617665F3ACD311L;	// 'wave'-XXXX
+		private static final long WAVE_MAGIC2	= 0x8CD100C04F8EDB8AL;
+
+		// chunk identifiers
+		private static final long FMT_MAGIC1	= 0x666D7420F3ACD311L;	// 'fmt '-XXXX
+		private static final long FMT_MAGIC2	= 0x8CD100C04F8EDB8AL;
+		private static final long FACT_MAGIC1	= 0x66616374F3ACD311L;	// 'fact'-XXXX
+		private static final long FACT_MAGIC2	= 0x8CD100C04F8EDB8AL;
+		private static final long DATA_MAGIC1	= 0x64617461F3ACD311L;	// 'data'-XXXX
+		private static final long DATA_MAGIC2	= 0x8CD100C04F8EDB8AL;
+
+//		private static final long LIST_MAGIC1	= 0x6C6973742F91CF11L; // 'list'-XXXX
+//		private static final long LIST_MAGIC2	= 0xA5D628DB04C10000L;
+		private static final long MARKER_MAGIC1	= 0x5662F7AB2D39D211L;
+		private static final long MARKER_MAGIC2	= 0x86C700C04F8EDB8AL;
+		
+		private final Charset charset = Charset.forName( "UTF-16LE" );
+		private long		markersOffset			= 0L;
+		private static final long riffLengthOffset	= 16L;
+
+		protected Wave64Header() { /* empty */ }
+		
+		protected void readHeader( AudioFileDescr descr )
+		throws IOException
+		{
+			int		i, i1, i2, i3, essentials, bpf = 0;
+			long	len, magic1, magic2, chunkLen, dataLen = 0;
+
+			raf.readLong(); raf.readLong();		// riff
+			len	= readLittleLong();
+			raf.readLong(); raf.readLong();		// wave
+			len	   -= 40;
+			chunkLen = 0;
+			
+//System.out.println( "len = " + len );
+
+			for( essentials = 2; (len >= 24) && (essentials > 0); ) {
+				if( chunkLen != 0 ) raf.seek( raf.getFilePointer() + chunkLen );	// skip to next chunk
+			
+				magic1		= raf.readLong();
+				magic2		= raf.readLong();
+				chunkLen	= (readLittleLong() + 7) & 0xFFFFFFFFFFFFFFF8L;
+				
+//System.out.println( "magic1 = " + magic1 + "; chunkLen = " + chunkLen + "; pos = " + raf.getFilePointer() );
+				
+				len		   -= chunkLen;
+				chunkLen   -= 24;
+
+				if( magic1 == FMT_MAGIC1 && magic2 == FMT_MAGIC2 ) {
+					essentials--;
+					i					= readLittleUShort();		// format
+					descr.channels		= readLittleUShort();		// # of channels
+					i1					= readLittleInt();			// sample rate (integer)
+					descr.rate			= i1;
+					i2					= readLittleInt();			// bytes per frame and second (=#chan * #bits/8 * rate)
+					bpf					= readLittleUShort();		// bytes per frame (=#chan * #bits/8)
+					descr.bitsPerSample	= readLittleUShort();		// # of bits per sample
+					if( ((descr.bitsPerSample & 0x07) != 0) ||
+						((descr.bitsPerSample >> 3) * descr.channels != bpf) ||
+						((descr.bitsPerSample >> 3) * descr.channels * i1 != i2) ) {
+											
+						throw new IOException( getResourceString( "errAudioFileEncoding" ));
+					}
+					unsignedPCM			= bpf == 1;
+
+					chunkLen -= 16;
+
+					switch( i ) {
+					case FORMAT_PCM:
+						descr.sampleFormat = AudioFileDescr.FORMAT_INT;
+						break;
+					case FORMAT_FLOAT:
+						descr.sampleFormat = AudioFileDescr.FORMAT_FLOAT;
+						break;
+					case FORMAT_EXT:
+						if( chunkLen < 24 ) throw new IOException( getResourceString( "errAudioFileIncomplete" ));
+						i1 = readLittleUShort();	// extension size
+						if( i1 < 22 ) throw new IOException( getResourceString( "errAudioFileIncomplete" ));
+						i2 = readLittleUShort();	// # valid bits per sample
+						raf.readInt();				// channel mask, ignore
+						i3 = readLittleUShort();	// GUID first two bytes
+						if( (i2 != descr.bitsPerSample) ||
+							((i3 != FORMAT_PCM) &&
+							(i3 != FORMAT_FLOAT)) ) throw new IOException( getResourceString( "errAudioFileEncoding" ));
+						descr.sampleFormat = i3 == FORMAT_PCM ? AudioFileDescr.FORMAT_INT : AudioFileDescr.FORMAT_FLOAT;
+						chunkLen -= 10;
+						break;
+					default:
+						throw new IOException( getResourceString( "errAudioFileEncoding" ));
+					}
+					
+				} else if( magic1 == DATA_MAGIC1 && magic2 == DATA_MAGIC2 ) {
+					essentials--;
+					sampleDataOffset	= raf.getFilePointer();
+					dataLen				= chunkLen;
+				
+				} else if( magic1 == MARKER_MAGIC1 && magic2 == MARKER_MAGIC2 ) {
+					markersOffset			= raf.getFilePointer();
+				}
+			} // for( essentials = 2; (len > 0) && (essentials > 0); )
+			if( essentials > 0 ) throw new IOException( getResourceString( "errAudioFileIncomplete" ));
+			
+			descr.length = dataLen / bpf;
+		}
+		
+		protected void writeHeader( AudioFileDescr descr )
+		throws IOException
+		{
+			final List		markers, regions;
+			int				i1, i2;
+			String			str;
+			Region			region;
+			Marker			marker;
+			long			pos, pos2, n1, n2;
+
+			isFloat = descr.sampleFormat == AudioFileDescr.FORMAT_FLOAT;	// floating point requires FACT extension
+			raf.writeLong( RIFF_MAGIC1 );
+			raf.writeLong( RIFF_MAGIC2 );
+			raf.writeLong( 40 );		// Laenge inkl. RIFF-Header (Dateilaenge); unknown now
+			raf.writeLong( WAVE_MAGIC1 );
+			raf.writeLong( WAVE_MAGIC2 );
+
+			// ---- fmt Chunk ----
+			raf.writeLong( FMT_MAGIC1 );
+			raf.writeLong( FMT_MAGIC2 );
+			writeLittleLong( isFloat ? 42 : 40 );  // FORMAT_FLOAT has extension of size 0
+			writeLittleShort( isFloat ? FORMAT_FLOAT : FORMAT_PCM );
+			writeLittleShort( descr.channels );
+			i1 = (int) (descr.rate + 0.5);
+			writeLittleInt( i1 );
+			i2 = (descr.bitsPerSample >> 3) * descr.channels;
+			writeLittleInt( i1 * i2 );
+			writeLittleShort( i2 );
+			writeLittleShort( descr.bitsPerSample );
+			
+			if( isFloat ) {
+//				raf.writeShort( 0 );
+				raf.writeLong( 0 ); // actually a short, but six extra bytes to align to 8-byte boundary
+			}
+
+			// ---- fact Chunk ----
+			if( isFloat ) {
+				raf.writeLong( FACT_MAGIC1 );
+				raf.writeLong( FACT_MAGIC2 );
+				writeLittleLong( 32 );
+				factSmpNumOffset = raf.getFilePointer();
+//				raf.writeInt( 0 );
+				raf.writeLong( 0 ); // i guess it should be long???
+			}
+			
+			// -- marker Chunk ----
+			markers  = (List) descr.getProperty( AudioFileDescr.KEY_MARKERS );
+			regions  = (List) descr.getProperty( AudioFileDescr.KEY_REGIONS );
+			if( ((markers != null) && !markers.isEmpty()) || ((regions != null) && !regions.isEmpty()) ) {
+				
+				final CharsetEncoder	enc		= charset.newEncoder();
+				CharBuffer				cbuf	= null;
+				ByteBuffer				bbuf	= null;
+				final List[] cues = {
+					markers == null ? Collections.EMPTY_LIST : markers,
+					regions == null ? Collections.EMPTY_LIST : regions
+				};
+				
+				raf.writeLong( MARKER_MAGIC1 );
+				raf.writeLong( MARKER_MAGIC2 );
+				pos	= raf.getFilePointer();
+				raf.writeLong( 0 ); // updated afterwards
+				i2	= cues[ 0 ].size() + cues[ 1 ].size();
+				writeLittleInt( i2 );
+				// CUE64 structures
+				for( int i = 0, id = 1; i < 2; i++ ) {
+					for( int j = 0; j < cues[ i ].size(); j++, id++ ) {
+						if( i == 0 ) {
+							marker	= (Marker) cues[ i ].get( j );
+							n1		= marker.pos;
+							n2		= -1;
+							str		= marker.name;
+						} else {
+							region = (Region) cues[ i ].get( j );
+							n1		= region.span.start;
+							n2		= region.span.getLength();
+							str		= region.name;
+						}
+						writeLittleInt( id );	// marker ID
+						raf.writeInt( 0 );		// padding
+						writeLittleLong( n1 );	// position
+						writeLittleLong( n2 );	// length
+						
+						if( (cbuf == null) || (cbuf.capacity() < str.length()) ) {
+							cbuf = CharBuffer.allocate( str.length() + 8 );
+							bbuf = ByteBuffer.allocate( (cbuf.capacity() + 1) << 1 );
+						}
+						cbuf.clear();
+						cbuf.put( str );
+						cbuf.flip();
+						bbuf.clear();
+						enc.reset();
+						enc.encode( cbuf, bbuf, true );
+						enc.flush( bbuf );
+						bbuf.putShort( (short) 0 ); // null term
+						bbuf.flip();
+						
+						writeLittleInt( bbuf.remaining() );
+						raf.writeInt( 0 );		// padding
+//System.out.println( "writing " + bbuf.remaining() + " bytes at " + fch.position() );
+						fch.write( bbuf );
+					}
+				}
+				
+				// update chunk size
+				pos2 = raf.getFilePointer();
+				n1	 = pos2 - pos;
+//System.out.println( "n1 = " + n1 + "; pos = " + pos + "; pos2 = " + pos2 + "; pad = " + (int) (((n1 + 7) & 0xFFFFFFFFFFFFFFF8L) - n1) );
+				final int pad = (int) (((n1 + 7) & 0xFFFFFFFFFFFFFFF8L) - n1);
+				for( int i = 0; i < pad; i++ ) raf.write( 0 );	// padding byte
+				
+				raf.seek( pos );
+				writeLittleLong( n1 + 16 );
+//				writeLittleLong( n1 + 16 + pad );
+				raf.seek( pos2 + pad );
+				
+			} // if marker or region list not empty
+
+			// data Chunk (Header)
+			raf.writeLong( DATA_MAGIC1 );
+			raf.writeLong( DATA_MAGIC2 );
+			dataLengthOffset = raf.getFilePointer();
+			raf.writeLong( 24 );
+			sampleDataOffset = raf.getFilePointer();
+			
+			updateHeader( descr );
+		}
+		
+		protected void updateHeader( AudioFileDescr descr )
+		throws IOException
+		{
+			final long oldPos	= raf.getFilePointer();
+			final long len		= raf.length();
+			if( len == lastUpdateLength ) return;
+			final long lenM8	= len - 8;
+			
+			if( lenM8 >= riffLengthOffset ) {
+				raf.seek( riffLengthOffset );
+// System.out.println( "updateHeader: len = " + len );
+				writeLittleLong( len );		// riff Chunk len
+			}
+			if( isFloat && (lenM8 >= factSmpNumOffset) ) {
+				raf.seek( factSmpNumOffset );
+				writeLittleLong( descr.length * descr.channels );			// fact: Sample-Num XXX check multich.!
+			}
+			if( lenM8 >= dataLengthOffset ) {
+				raf.seek( dataLengthOffset );
+				writeLittleLong( (int) (len - (dataLengthOffset - 16)) );	// data Chunk len
+			}
+			raf.seek( oldPos );
+			lastUpdateLength = len;
+		}
+		
+		protected long getSampleDataOffset()
+		{
+			return sampleDataOffset;
+		}
+		
+		protected ByteOrder getByteOrder()
+		{
+			return ByteOrder.LITTLE_ENDIAN;
+		}
+
+		protected boolean isUnsignedPCM()
+		{
+			return unsignedPCM;
+		}
+		
+		protected void readMarkers()
+		throws IOException
+		{
+//System.out.println( "markersOffset = " + markersOffset );
+			if( markersOffset == 0L ) return;
+			
+			final List				markers	= new ArrayList();
+			final List				regions	= new ArrayList();
+			final CharsetDecoder	dec		= charset.newDecoder();
+			CharBuffer				cbuf	= null;
+			ByteBuffer				bbuf	= null;
+			long					n1, n2;
+			int						numBytes;
+			String					str;
+			CoderResult				result;
+			
+			final long oldPos = raf.getFilePointer();
+			try {
+				raf.seek( markersOffset );
+				for( int numCues = readLittleInt(), cue = 0; cue < numCues; cue++ ) {
+//System.out.println( "cue " + (cue+1) + " of " + numCues );
+					raf.readInt();					// marker ID (ignore)
+					raf.readInt(); 					// padding
+					n1			= readLittleLong();	// pos
+					n2			= readLittleLong();	// length (-1 for markers)
+					numBytes	= readLittleInt();	// size of name string in bytes
+					raf.readInt(); 					// padding
+					
+					if( bbuf == null || bbuf.capacity() < numBytes ) {
+						bbuf = ByteBuffer.allocate( numBytes + 16 );
+						cbuf = CharBuffer.allocate( bbuf.capacity() >> 1 );
+					}
+					
+					bbuf.rewind().limit( numBytes );
+					
+//System.out.println( "reading " + bbuf.remaining() + " bytes from " + fch.position() );
+					
+					fch.read( bbuf );
+					if( (numBytes >= 2) &&
+					    (bbuf.get( numBytes - 2 ) == 0) &&
+					    (bbuf.get( numBytes - 1 ) == 0) ) { // null term
+						
+						bbuf.rewind().limit( numBytes - 2 );
+					} else {
+						bbuf.flip();
+					}
+					cbuf.clear();
+					dec.reset();
+					result = dec.decode( bbuf, cbuf, true );
+					if( result.isError() ) {
+						throw new IOException( "Error Reading Cue Name" +
+						   (result.isMalformed() ? ": Malformed Input" :
+						   (result.isOverflow() ? ": Overflow" :
+						   (result.isUnderflow() ? ": Underflow" :
+						   (result.isUnmappable() ? ": Unmappable" : "")))));
+					}
+					dec.flush( cbuf );
+					cbuf.flip();
+					str = cbuf.toString();
+					
+// System.out.println( "n1 = " + n1 + "; n2 = " + n2 + "; name  = '" + str + "'" );
+					
+					if( n2 < 0 ) {
+						markers.add( new Marker( n1, str ));
+					} else {
+						regions.add( new Region( new Span( n1, n1 + n2 ), str ));
+					}
+				}
+
+				afd.setProperty( AudioFileDescr.KEY_MARKERS, markers );
+				afd.setProperty( AudioFileDescr.KEY_REGIONS, regions );
+
+			}
+			finally {
+				raf.seek( oldPos );
+			}
+		}
+	} // class Wave64Header
+	
 	private class SNDHeader
 	extends AudioFileHeader
 	{
