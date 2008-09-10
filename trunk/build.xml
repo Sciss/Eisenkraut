@@ -12,8 +12,8 @@
 	<property name="resources.dir"	value="resources"/>
 	<property name="main-class"		value="de.sciss.eisenkraut.Main"/>
 	<property name="lib.dir"		value="libraries"/>
-	<property name="libraries"		value="${lib.dir}/JCollider.jar:${lib.dir}/MRJAdapter.jar:${lib.dir}/NetUtil.jar:${lib.dir}/Normalizer.jar"/>
-	<property name="version"		value="0.70"/>
+	<property name="libraries"		value="${lib.dir}/ScissLib.jar:${lib.dir}/JCollider.jar:${lib.dir}/MRJAdapter.jar:${lib.dir}/NetUtil.jar:${lib.dir}/Normalizer.jar"/>
+	<property name="version"		value="0.71"/>
 	<property name="debug"			value="true"/>
 
 	<target name="clean">
