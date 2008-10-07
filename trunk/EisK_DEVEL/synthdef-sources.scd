@@ -8,16 +8,17 @@
  *	- 21-Sep-06	multichannel defs dynamically created in JCollider now
  *	- 04-Dec-07	removed OffsetOut uses
  *	- 06-May-08	putting them all together in one file
+ *	- 08-Oct-08	removed BufRateScale
  *
  *	@author	Hanns Holger Rutz
- *	@version	06-May-08
+ *	@version	08-Oct-08
  */
 
 s = Server.local;
 
 (
 //p = "/Applications/Eisenkraut/synthdefs/"; // folder in which to save the synth defs
-p = "~/Documents/workspace/Eisenkraut/synthdefs/".standardizePath; // folder in which to save the synth defs
+p = "~/Documents/workspace/Eisenkraut/resources/de/sciss/eisenkraut/net/".standardizePath; // folder in which to save the synth defs
 //n = 32; // maximum number of channels for which to generate synth defs
 ~defs = nil;
 
@@ -106,7 +107,14 @@ p = "~/Documents/workspace/Eisenkraut/synthdefs/".standardizePath; // folder in 
 ~defs = ~defs.add( SynthDef( "eisk-phasor", { arg i_aInBf, rate = 1.0, i_aPhBs;
 	var phasorRate, halfPeriod, numFrames, phasor, phasorTrig, clockTrig;
 
-	phasorRate 	= BufRateScale.kr( i_aInBf ) * rate;
+// NOTE: BufRateScale used to report 1.0 in SC 3.2 (hence was superfluous)
+// ; this changed as of summer 2008 SVN and since EisK will pass in the
+// correct rate scale factor in the 'rate' control, this would result in
+// wrong pitch. Furthermore, since you can change the rate in the info window
+// while still the old sound file headers are on the harddisk, using BufRateScale
+// won't make sense.
+//	phasorRate 	= BufRateScale.kr( i_aInBf ) * rate;
+	phasorRate	= rate;
 	halfPeriod	= BufDur.kr( i_aInBf ) / (2 * rate);
 	numFrames		= BufFrames.kr( i_aInBf );
 	// i can't remember why the ~pad is not included in phasor's start arg
