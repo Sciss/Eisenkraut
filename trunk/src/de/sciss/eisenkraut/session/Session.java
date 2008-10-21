@@ -88,7 +88,7 @@ import de.sciss.common.ProcessingThread;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.71, 26-Aug-08
+ *  @version	0.71, 16-Oct-08
  *
  *	@todo		try get rid of the GUI stuff in here
  */
@@ -997,6 +997,16 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 	public Object oscQuery_name()
 	{
 		return getName();
+	}
+	
+	public Object oscQuery_file()
+	{
+		final StringBuffer sb = new StringBuffer();
+		for( int i = 0; i < afds.length; i++ ) {
+			if( i > 0 ) sb.append( File.pathSeparator );
+			sb.append(  afds[ i ].file.getAbsolutePath() );
+		}
+		return sb.toString();
 	}
 
 // ---------------- Document interface ----------------

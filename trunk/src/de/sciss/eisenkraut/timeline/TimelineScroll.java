@@ -72,7 +72,7 @@ import de.sciss.io.Span;
  *	This class tracks the catch preferences
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 20-Mar-08
+ *  @version	0.70, 21-Oct-08
  *
  *  @todo		the display properties work well
  *				with the Aqua look+and+feel, however
@@ -126,7 +126,7 @@ implements AdjustmentListener, TimelineListener, DynamicListening, PreferenceCha
         this.doc    = doc;
 
 		LookAndFeel laf = UIManager.getLookAndFeel();
-		if( (laf != null) && laf.isNativeLookAndFeel() && (laf.getName().indexOf( "Aqua" ) >= 0) ) {
+		if( (laf != null) && laf.isNativeLookAndFeel() && (laf.getName().toLowerCase().indexOf( "aqua" ) >= 0) ) {
 			trackMarginLeft = 6;  // for Aqua look and feel	
 			trackMargin		= 39;
 		} else {
@@ -249,7 +249,8 @@ implements AdjustmentListener, TimelineListener, DynamicListening, PreferenceCha
 	public void setPosition( long pos, long patience, int type )
 	{
 		if( prefCatch && (catchBypassCount == 0) /* && timelineVis.contains( timelinePos ) */ &&
-//			(timelineVis.getStop() < timelineLen) &&
+//			(timelineVis.stop < timelineLen) &&
+			((timelineVis.stop != timelineLen) || (pos < timelineVis.start)) &&
 			!timelineVis.contains( pos + (type == TYPE_TRANSPORT ? timelineVis.getLength() >> 3 : 0) )) {
 			
 			timelinePos = pos;

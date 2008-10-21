@@ -1733,6 +1733,7 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 
     public void timelineScrolled( TimelineEvent e )
     {
+//System.out.println( "scrolled " + doc.timeline.getVisibleSpan() );
     	timelineVis	= doc.timeline.getVisibleSpan();
 
 		updateOverviews( false, true );
