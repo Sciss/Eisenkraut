@@ -60,7 +60,7 @@ import de.sciss.io.Span;
  *  called.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
+ *  @version	0.71, 05-Nov-08
  *
  *	@todo		view based stuff (visible span) should be removed
  */
@@ -521,6 +521,16 @@ implements EventManager.Processor, OSCRouter
 		return new Long( getSelectionSpan().stop );
 	}
 
+	public Object oscQuery_viewStart()
+	{
+		return new Long( getVisibleSpan().start );
+	}
+
+	public Object oscQuery_viewStop()
+	{
+		return new Long( getVisibleSpan().stop );
+	}
+	
 	public Object oscQuery_rate()
 	{
 		return new Double( getRate() );
@@ -555,6 +565,25 @@ implements EventManager.Processor, OSCRouter
 			argIdx++;
 			stop	= Math.max( start, Math.min( getLength(), ((Number) rom.msg.getArg( argIdx )).longValue() ));
 			editSelect( this, new Span( start, stop ));
+		}
+		catch( IndexOutOfBoundsException e1 ) {
+			OSCRoot.failedArgCount( rom );
+		}
+		catch( ClassCastException e1 ) {
+			OSCRoot.failedArgType( rom, argIdx );
+		}
+	}
+
+	public void oscCmd_view( RoutedOSCMessage rom )
+	{
+		final long		start, stop;
+		int				argIdx	= 1;
+
+		try	{
+			start	= Math.max( 0, Math.min( getLength(), ((Number) rom.msg.getArg( argIdx )).longValue() ));
+			argIdx++;
+			stop	= Math.max( start, Math.min( getLength(), ((Number) rom.msg.getArg( argIdx )).longValue() ));
+			editScroll( this, new Span( start, stop ));
 		}
 		catch( IndexOutOfBoundsException e1 ) {
 			OSCRoot.failedArgCount( rom );

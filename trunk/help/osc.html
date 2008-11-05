@@ -7,7 +7,7 @@
 </head>
 <body>
 <h2>OSC Command Reference</h2>
-<P>as of: 19-may-08<br>
+<P>as of: 05-nov-08<br>
 <b>warning:</b> OSC command set may be subject to changes.</P>
 
 <UL>
@@ -134,12 +134,15 @@
 <LI><CODE>/doc/&lt;<VAR>address</VAR>&gt;/timeline</CODE><UL>
 	<LI><CODE>position &lt;(long) <VAR>frame</VAR>&gt;</CODE></LI>
 	<LI><CODE>select &lt;(long) <VAR>start</VAR>&gt; &lt;(long) <VAR>stop</VAR>&gt;</CODE></LI>
+	<LI><CODE>view &lt;(long) <VAR>start</VAR>&gt; &lt;(long) <VAR>stop</VAR>&gt;</CODE></LI>
 	<LI>query properties:
 		<TABLE>
 		<TR><TD><CODE>position</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(long) <VAR>currentFrame</VAR>&gt;</CODE></TD></TR>
 		<TR><TD><CODE>length</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(long) <VAR>numFrames</VAR>&gt;</CODE></TD></TR>
 		<TR><TD><CODE>selectionStart</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(long) <VAR>startFrame</VAR>&gt;</CODE></TD></TR>
 		<TR><TD><CODE>selectionStop</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(long) <VAR>stopFrame</VAR>&gt;</CODE></TD></TR>
+		<TR><TD><CODE>viewStart</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(long) <VAR>startFrame</VAR>&gt;</CODE></TD></TR>
+		<TR><TD><CODE>viewStop</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(long) <VAR>stopFrame</VAR>&gt;</CODE></TD></TR>
 		<TR><TD><CODE>rate</CODE></TD><TD>&nbsp;:&nbsp;</TD><TD><CODE>&lt;(double) <VAR>sampleRate</VAR>&gt;</CODE></TD></TR>
 		</TABLE>
 	</LI>

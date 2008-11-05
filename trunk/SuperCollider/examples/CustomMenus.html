@@ -14,14 +14,13 @@ p.p4 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #007300}
 p.p5 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco}
 span.s1 {color: #0000bf}
 span.s2 {color: #000000}
-span.s3 {color: #2b6f11}
-span.s4 {color: #007300}
-span.s5 {color: #606060}
+span.s3 {color: #007300}
+span.s4 {color: #606060}
 span.Apple-tab-span {white-space:pre}
 </style>
 </head>
 <body>
-<p class="p1">// last mod: 26-Aug-08</p>
+<p class="p1">// last mod: 05-Nov-08</p>
 <p class="p2">(</p>
 <p class="p2">e = <span class="s1">Eisenkraut</span>.default;</p>
 <p class="p2">e.addr.connect;</p>
@@ -51,32 +50,75 @@ span.Apple-tab-span {white-space:pre}
 <p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>pos = if( msg.isNil, 0, { msg[ 0 ]});</p>
 <p class="p4"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>msg = e.query( </span>'/doc/active/markers'<span class="s2">, </span>\count<span class="s2"> );</span></p>
 <p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>numMarks = if( msg.isNil, 0, { msg[ 0 ]});</p>
-<p class="p5"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>msg = e.get( <span class="s3">'/doc/active/markers'</span>, [ <span class="s3">\indexOf</span>, pos + if( dir, preFrames, 0 )]);</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>msg = e.get( <span class="s3">'/doc/active/markers'</span>, [ <span class="s3">\indexOf</span>, pos + if( dir, preFrames, 0 )]);</p>
 <p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>if( msg.notNil, {</p>
 <p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>idx = msg[ 0 ];</p>
 <p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>if( idx &lt; 0, { idx = (idx + 1).neg + if( dir, 0, -1 )}, { idx = idx + if( dir, 1, -1 )});</p>
 <p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>if( (idx &gt;= 0) &amp;&amp; (idx &lt; numMarks), {</p>
-<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>msg = e.get( <span class="s4">'/doc/active/markers'</span>, [ <span class="s4">\at</span>, idx ]);</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>msg = e.get( <span class="s3">'/doc/active/markers'</span>, [ <span class="s3">\at</span>, idx ]);</p>
 <p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>if( msg.notNil, {</p>
 <p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>pos = (msg[ 0 ] - preFrames).clip( 0, len );</p>
 <p class="p4"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>e.sendMsg( </span>'/doc/active/timeline'<span class="s2">, </span>\position<span class="s2">, pos );</span></p>
 <p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>}, {</p>
-<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s5">"timeout"</span>.warn;</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s4">"timeout"</span>.warn;</p>
 <p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
 <p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
 <p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>}, {</p>
-<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s5">"timeout"</span>.warn;</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s4">"timeout"</span>.warn;</p>
 <p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
 <p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>}, {</p>
-<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s5">"timeout"</span>.warn;</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s4">"timeout"</span>.warn;</p>
 <p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
 <p class="p2"><span class="Apple-tab-span">	</span>};</p>
 <p class="p2">};</p>
 <p class="p2">~root = <span class="s1">JSCMenuRoot</span>( e.swing );</p>
-<p class="p2">~menu = <span class="s1">JSCMenuGroup</span>( ~root, <span class="s5">"Util"</span> );</p>
+<p class="p2">~menu = <span class="s1">JSCMenuGroup</span>( ~root, <span class="s4">"Util"</span> );</p>
 <p class="p1">// note: on a german keyboard A-umlaut</p>
-<p class="p2">~itemPrev = <span class="s1">JSCMenuItem</span>( ~menu, <span class="s5">"Prev Marker"</span> ).shortcut_( <span class="s5">"meta shift QUOTE"</span> ).action_({ ~action.( <span class="s1">false</span> )});</p>
-<p class="p2">~itemNext = <span class="s1">JSCMenuItem</span>( ~menu, <span class="s5">"Next Marker"</span> ).shortcut_( <span class="s5">"meta QUOTE"</span> ).action_({ ~action.( <span class="s1">true</span> )});</p>
+<p class="p2">~itemPrev = <span class="s1">JSCMenuItem</span>( ~menu, <span class="s4">"Prev Marker"</span> ).shortcut_( <span class="s4">"meta shift QUOTE"</span> ).action_({ ~action.( <span class="s1">false</span> )});</p>
+<p class="p2">~itemNext = <span class="s1">JSCMenuItem</span>( ~menu, <span class="s4">"Next Marker"</span> ).shortcut_( <span class="s4">"meta QUOTE"</span> ).action_({ ~action.( <span class="s1">true</span> )});</p>
+<p class="p2">)</p>
+<p class="p3"><br></p>
+<p class="p2">~menu.remove;</p>
+<p class="p3"><br></p>
+<p class="p1">// ------------------------------------------------------------------------------------------------------</p>
+<p class="p3"><br></p>
+<p class="p1">// With different actions:</p>
+<p class="p1">// this offers two different zoom levels</p>
+<p class="p1">// at the stroke of a key. Zoom level 1</p>
+<p class="p1">// shows the left border of the selection at close-up (sample level).</p>
+<p class="p1">// Zoom level 2 shows the whole selection (similar to</p>
+<p class="p1">// alt+F but with a little headroom to both sides).</p>
+<p class="p3"><br></p>
+<p class="p2">(</p>
+<p class="p2">~action = { <span class="s1">arg</span> type;</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="s1">var</span> msg, rate, len, selStart, selStop, viewStart, viewStop, scrB;</p>
+<p class="p2"><span class="Apple-tab-span">	</span>fork {</p>
+<p class="p4"><span class="s2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>msg = e.query( </span>'/doc/active/timeline'<span class="s2">, [ </span>\rate<span class="s2">, </span>\length<span class="s2">, </span>\selectionStart<span class="s2">, </span>\selectionStop<span class="s2"> ]);</span></p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>if( msg.notNil, {</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>#rate, len, selStart, selStop = msg;</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>switch( type,</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s3">\in</span>, {</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s2">scrB</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>= <span class="s1">JSCWindow</span>.screenBounds( e.swing );</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>viewStart<span class="Apple-tab-span">	</span>= max( 0, selStart - (<span class="s2">scrB</span>.width * 0.25).asInteger );</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>viewStop<span class="Apple-tab-span">	</span>= min( len, selStart + (<span class="s2">scrB</span>.width * 0.75).asInteger );</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>e.sendMsg( <span class="s3">'/doc/active/timeline'</span>, <span class="s3">\view</span>, viewStart, viewStop );</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>},</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s3">\out</span>, {</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>viewStart<span class="Apple-tab-span">	</span>= max( 0, selStart - ((selStop - selStart) * 0.5).asInteger );</p>
+<p class="p5"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>viewStart<span class="Apple-tab-span">	</span>= min( len, selStop + ((selStop - selStart) * 0.5).asInteger );</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>e.sendMsg( <span class="s3">'/doc/active/timeline'</span>, <span class="s3">\view</span>, viewStart, viewStop );</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>}, {</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>(<span class="s4">"Illegal type '"</span> ++ type ++ <span class="s4">"'"</span>).error;</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>}, {</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s4">"timeout"</span>.warn;</p>
+<p class="p2"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
+<p class="p2"><span class="Apple-tab-span">	</span>};</p>
+<p class="p2">};</p>
+<p class="p2">~root = <span class="s1">JSCMenuRoot</span>( e.swing );</p>
+<p class="p2">~menu = <span class="s1">JSCMenuGroup</span>( ~root, <span class="s4">"Util"</span> );</p>
+<p class="p2">~itemPrev = <span class="s1">JSCMenuItem</span>( ~menu, <span class="s4">"Zoom to Selection Start"</span> ).shortcut_( <span class="s4">"alt 1"</span> ).action_({ ~action.( <span class="s3">\in</span> )});</p>
+<p class="p2">~itemNext = <span class="s1">JSCMenuItem</span>( ~menu, <span class="s4">"Zoom to Whole Selection"</span> ).shortcut_( <span class="s4">"alt 2"</span> ).action_({ ~action.( <span class="s3">\out</span> )});</p>
 <p class="p2">)</p>
 <p class="p3"><br></p>
 <p class="p2">~menu.remove;</p>
