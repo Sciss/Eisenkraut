@@ -42,9 +42,9 @@ import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoableEdit;
 
 import de.sciss.eisenkraut.edit.TimelineVisualEdit;
-import de.sciss.eisenkraut.gui.Axis;
 import de.sciss.eisenkraut.session.Session;
 import de.sciss.eisenkraut.util.PrefsUtil;
+import de.sciss.gui.Axis;
 import de.sciss.gui.ComponentHost;
 import de.sciss.gui.VectorSpace;
 

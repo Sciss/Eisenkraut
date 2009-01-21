@@ -1,7 +1,7 @@
 /**
  *	Client-side represenation of the Eisenkraut soundfile editor.
  *
- *	@version	0.70, 16-Jun-07
+ *	@version	0.70, 02-Jan-09
  *	@author	Hanns Holger Rutz
  */
 Eisenkraut {
@@ -63,47 +63,71 @@ Eisenkraut {
 			win.close;
 		});
 		windows.clear;
+		this.prDisposeSwing;
+		this.disconnect;
+	}
+
+	prDisposeSwing {
 		if( swing.notNil, {
 			swing.dispose;
 			swing = nil;
 		});
-		this.disconnect;
 	}
 	
 	/**
 	 *	@warning	asynchronous; needs to be called inside a Routine
 	 */
 	initSwing {
-		var result;
+		var result, cond, port, protocol, running, cancel, timeout = 5, upd;
 		this.sendMsg( '/gui', \initSwing );
-		result	= this.query( '/gui', [Ê\swingPort, \swingProtocol, \swingRunning ]);
-		if( result.notNil and: { result[ 0 ] != 0 }, {
-			// XXX addr.hostname no good, should check for loopBack yes/no
-			swing	= SwingOSC( \EisKSwing, NetAddr( addr.hostname, result[ 0 ]));
-//("dem addressa = "++swing.addr).postln;
-			if( result[ 1 ] === \tcp, {
-				result = block {Êarg break;
-					// TCP takes a while to become connectable
-					5.do({
-						try { 
-							swing.connect;
-							break.value( true ); // succeeded
-						} { arg error;
-							1.wait;
-						};
-					});
-					false;
-				};
-("result == "++result).inform;
-				if( result, {
-					swing.initTree;
-				});
-				^result;
-			});
-			^true;
-		}, {
+		result = this.query( '/gui', [Ê\swingPort, \swingProtocol, \swingRunning ]);
+		if( result.isNil, {
+			"OSC Timeout".error;
 			^false;
 		});
+		#port, protocol, running = result;
+		if( swing.notNil and: {Êswing.addr.port != port }, {
+			this.prDisposeSwing;
+		});
+		if( swing.isNil, {
+			// XXX addr.hostname no good, should check for loopBack yes/no
+			swing = SwingOSC( \EisKSwing, NetAddr( addr.hostname, port ));
+		});
+		if( protocol === \tcp, {
+			this.prTryToConnect;
+		});
+		if( swing.serverRunning.not, {
+			cond = Condition.new;
+			upd = UpdateListener.newFor( swing, { arg upd;
+				if( swing.serverRunning, {
+					cancel.stop;
+					result = true;
+					cond.test = true; cond.signal;
+				});
+			}, \serverRunning );
+			cancel = {
+				timeout.wait;
+				upd.remove;
+				result = false;
+				cond.test = true; cond.signal;
+			}.fork( AppClock );
+			cond.wait;
+			^result;
+		});
+		^true;
+	}
+	
+	prTryToConnect {
+		block { arg break;
+			5.do({
+				try { 
+					swing.connect;
+					break.value( true ); // succeeded
+				} { arg error;
+					1.wait;
+				};
+			});
+		};
 	}
 
 	/**
@@ -130,12 +154,12 @@ Eisenkraut {
 			plug = procPlugIns[ msg[ 1 ]];
 			if( plug.notNil, {
 				fork {
-//"Now we are here.".postln;
-					this.initSwing;
+"Now we are here.".postln;
+					if( this.initSwing, {
 
-//"Now we are there.".postln;
+"Now we are there.".postln;
 //swing.dumpOSC( 1, 1 );
-					win = plug.makeWindow;
+						win = plug.makeWindow;
 //("WIN = "++win).postln;
 //~win = win;
 //					func = win.onClose;
@@ -143,8 +167,9 @@ Eisenkraut {
 //						
 //						func.value;	// previous function
 //					};
-					windows.add( win );
-					win.front;
+						windows.add( win );
+						win.front;
+					});
 				};
 			});
 		}).add;

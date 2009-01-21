@@ -24,8 +24,8 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import de.sciss.eisenkraut.gui.Axis;
 import de.sciss.eisenkraut.math.MathUtil;
+import de.sciss.gui.Axis;
 import de.sciss.gui.VectorSpace;
 
 public class DebugView
