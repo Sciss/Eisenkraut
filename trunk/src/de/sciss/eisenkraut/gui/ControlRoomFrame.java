@@ -38,7 +38,10 @@ import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -84,7 +87,7 @@ import de.sciss.net.OSCBundle;
 
 /**
  *  @author		Hanns Holger Rutz
- *  @version	0.70, 28-Jun-08
+ *  @version	0.71, 27-Jan-09
  *
  *	@todo		could use an explicit GroupAnySync for lmm, which would go into SuperColliderClient
  *				so sc-client whould be able to pause master synths according to the sync
@@ -454,6 +457,7 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 	{
 		final Preferences	childPrefs;
 		final String[]		cfgIDs;
+		final Set			cfgItems;
 		
 		try {
 			if( isListening ) {
@@ -461,9 +465,13 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 			}
 			childPrefs	= audioPrefs.node( PrefsUtil.NODE_OUTPUTCONFIGS );
 			cfgIDs		= childPrefs.childrenNames();
-			ggOutputConfig.removeAllItems();
+			cfgItems	= new TreeSet( StringItem.valueComparator );
 			for( int i = 0; i < cfgIDs.length; i++ ) {
-				ggOutputConfig.addItem( new StringItem( cfgIDs[ i ], childPrefs.node( cfgIDs[ i ]).get( RoutingConfig.KEY_NAME, cfgIDs[ i ])));
+				cfgItems.add( new StringItem( cfgIDs[ i ], childPrefs.node( cfgIDs[ i ]).get( RoutingConfig.KEY_NAME, cfgIDs[ i ])));
+			}
+			ggOutputConfig.removeAllItems();
+			for( Iterator iter = cfgItems.iterator(); iter.hasNext(); ) {
+				ggOutputConfig.addItem( iter.next() );
 			}
 		}
 		catch( BackingStoreException e1 ) {
@@ -480,6 +488,7 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 	{
 		final Preferences	childPrefs;
 		final String[]		cfgIDs;
+		final Set			cfgItems;
 		Preferences			childPrefs2;
 		
 		try {
@@ -489,13 +498,17 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 			}
 			childPrefs	= audioPrefs.node( PrefsUtil.NODE_AUDIOBOXES );
 			cfgIDs		= childPrefs.childrenNames();
-			ggAudioBox.removeAllItems();
+			cfgItems	= new TreeSet( StringItem.valueComparator );
 			for( int i = 0; i < cfgIDs.length; i++ ) {
 				childPrefs2 = childPrefs.node( cfgIDs[ i ]);
 				if( childPrefs2.getBoolean( AudioBoxConfig.KEY_ACTIVE, false )) {
-					ggAudioBox.addItem( new StringItem( cfgIDs[ i ],
+					cfgItems.add( new StringItem( cfgIDs[ i ],
 						childPrefs2.get( AudioBoxConfig.KEY_NAME, cfgIDs[ i ])));
 				}
+			}
+			ggAudioBox.removeAllItems();
+			for( Iterator iter = cfgItems.iterator(); iter.hasNext(); ) {
+				ggAudioBox.addItem( iter.next() );
 			}
 		}
 		catch( BackingStoreException e1 ) {
