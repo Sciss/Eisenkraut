@@ -100,9 +100,9 @@ public class ConstQ
 		return minFreq;
 	}
 	
-	public void setMaxFreq( float minFreq )
+	public void setMaxFreq( float maxFreq )
 	{
-		this.maxFreq	= minFreq;
+		this.maxFreq = maxFreq;
 	}
 	
 	public float getMaxFreq()
@@ -128,6 +128,16 @@ public class ConstQ
 	public float getMaxFFTSize()
 	{
 		return maxFFTSize;
+	}
+	
+	public void setBandsPerOct( int bpo )
+	{
+		this.bandsPerOct = bpo;
+	}
+	
+	public int getBandsPerOct()
+	{
+		return bandsPerOct;
 	}
 	
 	public void readPrefs( Preferences prefs )
@@ -180,7 +190,7 @@ public class ConstQ
 
 //		System.out.println( "Calculating sparse kernel matrices" );
 		
-		maxFreq		= (float) Math.max( maxFreq, fs/2 );
+		maxFreq		= (float) Math.min( maxFreq, fs/2 );
 		q			= (float) (1 / (Math.pow( 2, 1.0/bandsPerOct ) - 1));
 		numKernels	= (int) Math.ceil( bandsPerOct * MathUtil.log2( maxFreq / minFreq ));
 		kernels		= new Kernel[ numKernels ];
@@ -301,7 +311,51 @@ public class ConstQ
 			System.arraycopy( fftBuf, specStart, kernels[ k ].data, 0, specStop - specStart );
 		}
 	}
+
+//	/**
+//	 * 	Helper method for SwingOSC
+//	 */
+//	public float[] createFloatArray( int size )
+//	{
+//		return new float[ size ];
+//	}
+//
+//	/**
+//	 * 	Helper method for SwingOSC
+//	 */
+//	public float[][] createFloatArray( int size1, int size2 )
+//	{
+//		return new float[ size1 ][ size2 ];
+//	}
+//	
+//	/**
+//	 * 	Helper method for SwingOSC
+//	 */
+//	public float[] getFloatArray( float[][] array2D, int dim )
+//	{
+//		return array2D[ dim ];
+//	}
 	
+	/**
+	 * 	Helper method for SwingOSC
+	 */
+	public float[] castToFloatArray( Object[] data )
+	{
+		final float[] buf = new float[ data.length ];
+		for( int i = 0; i < buf.length; i++ ) {
+			buf[ i ] = ((Number) data[ i ]).floatValue();
+		}
+		return buf;
+	}
+	
+	/**
+	 * 	Helper method for SwingOSC
+	 */
+	public float getArrayElement( float[] data, int idx )
+	{
+		return data[ idx ];
+	}
+
 	/**
 	 * 	Assumes that the input was already successfully transformed
 	 * 	into the Fourier domain (namely into fftBuf as returned by
