@@ -15,13 +15,13 @@ EisKPlugIn {
 	makeWindow {
 		var wb, sb;
 		
-//"Now we are KKKK.".postln;
+"Now we are KKKK.".postln;
 		if( win.notNil and: { win.isClosed.not }, {
 			^win;
 		});
-//"Now we are GAGA.".postln;
+"Now we are GAGA.".postln;
 		win = EisKPlugInWindow( this.name, resizable: false, server: eisk.swing );
-//"Now we are JJJJ.".postln;
+"Now we are JJJJ.".postln;
 		GUI.useID( \swing, { populateWindowFunc.value( this, win )});
 		wb	= win.bounds;
 		sb	= win.class.screenBounds;		

@@ -58,7 +58,7 @@ Eisenkraut {
 		procPlugIns.keysDo({ arg id;
 			bndl.add([ '/gui/menu', \remove, id ]);
 		});
-		if( bndl.notEmpty, {Êthis.listSendBundle( nil, bndl ); });
+		if( bndl.notEmpty, { this.listSendBundle( nil, bndl ); });
 		windows.do({ arg win;
 			win.close;
 		});
@@ -80,13 +80,13 @@ Eisenkraut {
 	initSwing {
 		var result, cond, port, protocol, running, cancel, timeout = 5, upd;
 		this.sendMsg( '/gui', \initSwing );
-		result = this.query( '/gui', [Ê\swingPort, \swingProtocol, \swingRunning ]);
+		result = this.query( '/gui', [ \swingPort, \swingProtocol, \swingRunning ]);
 		if( result.isNil, {
 			"OSC Timeout".error;
 			^false;
 		});
 		#port, protocol, running = result;
-		if( swing.notNil and: {Êswing.addr.port != port }, {
+		if( swing.notNil and: { swing.addr.port != port }, {
 			this.prDisposeSwing;
 		});
 		if( swing.isNil, {
@@ -141,7 +141,7 @@ Eisenkraut {
 		procPlugIns.values.copy.sort({ arg a, b; a.name <= b.name }).do({ arg plug;
 			bndl.add([ '/gui/menu', \add, plug.id, \item, 'process.sc', plug.name ]);
 		});
-		if( bndl.notEmpty, {Êthis.listSendBundle( nil, bndl ); });
+		if( bndl.notEmpty, { this.listSendBundle( nil, bndl ); });
 		
 		if( respMenu.notNil, {
 			respMenu.remove;
@@ -175,10 +175,10 @@ Eisenkraut {
 		}).add;
 		
 //		if( scsynth.isNil, {
-			result	= this.query( '/sc', [Ê\port, \protocol, \running ]);
+			result	= this.query( '/sc', [ \port, \protocol, \running ]);
 			^if( result.notNil and: { result[ 0 ] != 0 }, {
 				scsynth 	= EisKSynthServer( name, NetAddr( addr.hostname, result[ 0 ]), clientID: 1, eisK: this );
-				if( result[ 1 ] === \tcp, {Êscsynth.addr.connect });
+				if( result[ 1 ] === \tcp, { scsynth.addr.connect });
 				scsynth.startAliveThread( 0 );
 				true;
 			}, {
@@ -193,12 +193,12 @@ Eisenkraut {
 //	/**
 //	 *	@warning	asynchronous; needs to be called inside a Routine
 //	 */
-//	allocBuffer {Êarg numFrames, numChannels = 1;
+//	allocBuffer { arg numFrames, numChannels = 1;
 //		var result;
 //
 //		result = this.sendMsgSync( '/sc', \allocBuf, [ numFrames, numChannels ]);
 //		if( result.notNil, {
-//			result = Buffer( scsynth, numFrames, numChannels, result[ 0 ]);
+//			result = Buffer( scsynth, numFrames, numChannels, result[ 0 ]);
 //			scsynth.sync;
 //		});
 //		^result;
@@ -264,7 +264,7 @@ Eisenkraut {
 			arg time, resp, msg;
 			
 			if( msg[ 1 ] == id, {
-				if( cancel.notNil, {Êcancel.stop; });
+				if( cancel.notNil, { cancel.stop; });
 				resp.remove;
 				result			= msg.copyToEnd( 2 );
 				condition.test	= true;
@@ -312,8 +312,8 @@ Eisenkraut {
 		if( condition.isNil ) { condition = Condition.new; };
 
 		respDone	= OSCresponderNode( addr, '/done', { arg time, resp, msg;
-			if( msg[ 1 ].asSymbol === path.asSymbol and: {Êmsg[ 2 ].asSymbol === cmd.asSymbol }) {
-				if( cancel.notNil, {Êcancel.stop; });
+			if( msg[ 1 ].asSymbol === path.asSymbol and: { msg[ 2 ].asSymbol === cmd.asSymbol }) {
+				if( cancel.notNil, { cancel.stop; });
 				resp.remove;
 				result			= msg.copyToEnd( 3 );
 				condition.test	= true;
@@ -321,8 +321,8 @@ Eisenkraut {
 			};
 		});
 		respFailed = OSCresponderNode( addr, '/failed', { arg time, resp, msg;
-			if( msg[ 1 ].asSymbol === path.asSymbol and: {Êmsg[ 2 ].asSymbol === cmd.asSymbol }) {
-				if( cancel.notNil, {Êcancel.stop; });
+			if( msg[ 1 ].asSymbol === path.asSymbol and: { msg[ 2 ].asSymbol === cmd.asSymbol }) {
+				if( cancel.notNil, { cancel.stop; });
 				resp.remove;
 				result			= nil;
 				condition.test	= true;
@@ -365,7 +365,7 @@ Eisenkraut {
 		id = UniqueID.next;
 		resp = OSCresponderNode( addr, '/synced', { arg time, resp, msg;
 			if( msg[ 1 ] == id, {
-				if( cancel.notNil, {Êcancel.stop; });
+				if( cancel.notNil, { cancel.stop; });
 				resp.remove;
 				result			= true;
 				condition.test 	= true;
