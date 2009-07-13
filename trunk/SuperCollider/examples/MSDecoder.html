@@ -15,7 +15,8 @@ p.p5 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #606060}
 span.s1 {color: #0000bf}
 span.s2 {color: #606060}
 span.s3 {color: #007300}
-span.s4 {color: #000000}
+span.s4 {color: #bf0000}
+span.s5 {color: #000000}
 span.Apple-tab-span {white-space:pre}
 </style>
 </head>
@@ -69,7 +70,7 @@ span.Apple-tab-span {white-space:pre}
 <p class="p3"><span class="Apple-tab-span">	</span>flow = <span class="s1">FlowLayout</span>( win.view.bounds );</p>
 <p class="p3"><span class="Apple-tab-span">	</span>win.view.decorator = flow;</p>
 <p class="p2"><span class="Apple-tab-span">	</span></p>
-<p class="p3"><span class="Apple-tab-span">	</span>spec = <span class="s1">Spec</span>.specs[ <span class="s3">\boostcut</span> ];</p>
+<p class="p3"><span class="Apple-tab-span">	</span>spec = <span class="s1">ControlSpec</span>(-20, 20, units: <span class="s2">" dB"</span>,default: 0); <span class="s4">// Spec.specs[ \boostcut ];</span></p>
 <p class="p3"><span class="Apple-tab-span">	</span>cond = <span class="s1">Condition</span>.new;</p>
 <p class="p3"><span class="Apple-tab-span">	</span>fork { <span class="s1">var</span> msg, diskBus, grpInput;</p>
 <p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>while({ keepGoing }, {</p>
@@ -78,7 +79,7 @@ span.Apple-tab-span {white-space:pre}
 <p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>synth.free; synth = <span class="s1">nil</span>;</p>
 <p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
 <p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>if( bypass.not, {</p>
-<p class="p4"><span class="s4"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>msg = e.query( </span>'/doc/active/sc'<span class="s4">, [ </span>\diskBusIndex<span class="s4">, </span>\diskBusNumChannels<span class="s4">, </span>\inputGroup<span class="s4"> ]);</span></p>
+<p class="p4"><span class="s5"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>msg = e.query( </span>'/doc/active/sc'<span class="s5">, [ </span>\diskBusIndex<span class="s5">, </span>\diskBusNumChannels<span class="s5">, </span>\inputGroup<span class="s5"> ]);</span></p>
 <p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>if( msg.notNil, {</p>
 <p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>diskBus <span class="Apple-tab-span">	</span>= <span class="s1">Bus</span>( <span class="s3">\audio</span>, msg[ 0 ], msg[ 1 ], e.scsynth );</p>
 <p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>grpInput<span class="Apple-tab-span">	</span>= <span class="s1">Group</span>.basicNew( e.scsynth, msg[ 2 ]);</p>
@@ -86,7 +87,7 @@ span.Apple-tab-span {white-space:pre}
 <p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>e.scsynth.sync;</p>
 <p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>synth = <span class="s1">Synth</span>( <span class="s3">\msDecoder</span>, [ <span class="s3">\bus</span>, diskBus.index, <span class="s3">\sideAmp</span>, sideAmp ], grpInput, <span class="s3">\addAfter</span> );</p>
 <p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>}, {</p>
-<p class="p5"><span class="s4"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>"OSC Timeout!"<span class="s4">.error;</span></p>
+<p class="p5"><span class="s5"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>"OSC Timeout!"<span class="s5">.error;</span></p>
 <p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
 <p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>
 <p class="p3"><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span>});</p>

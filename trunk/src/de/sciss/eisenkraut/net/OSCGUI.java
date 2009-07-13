@@ -66,7 +66,7 @@ import de.sciss.util.DynamicURLClassLoader;
  * 	A basic management for custom menus via OSC and access to SwingOSC
  * 
  *	@author		Hanns Holger Rutz
- *	@version	0.70, 07-May-08
+ *	@version	0.71, 13-Jul-09
  */
 public class OSCGUI
 implements OSCRouter, Disposable
@@ -151,7 +151,7 @@ implements OSCRouter, Disposable
 				String.class, Integer.TYPE, Boolean.TYPE, Integer.TYPE,
 				Boolean.TYPE, InetSocketAddress.class });
 			m.invoke( swingOSC, new Object[] { OSCChannel.TCP, new Integer( SWING_PORT ),
-				Boolean.TRUE, new Integer( 8192 ), Boolean.FALSE, null });
+				Boolean.TRUE, new Integer( 65536 ), Boolean.FALSE, null });
 		}
 		catch( MalformedURLException e1 ) {
 			OSCRoot.failed( rom, e1 );
