@@ -338,10 +338,11 @@ final int decimations[] = { decimKorr }; // , decimKorr + 8 };
 	{
 //if( true ) return;
 
-		final boolean			fromPCM 		= false; // info.idx == -1;
-		final int				imgW			= fromPCM ?
-				  Math.min( tmpBufSize, tmpBufSize2 * info.getDecimationFactor() )
-				: tmpBufSize2; //  << info.shift;
+//		final boolean			fromPCM 		= false; // info.idx == -1;
+//		final int				imgW			= fromPCM ?
+//		  Math.min( tmpBufSize, tmpBufSize2 * info.getDecimationFactor() )
+//		: tmpBufSize2; //  << info.shift;
+		final int				imgW			= tmpBufSize2; //  << info.shift;
 		final int				maxLen			= imgW << info.shift; // * stepSize;
 
 //		final int				imgW			= view.getWidth(); // (int) info.sublength;
@@ -381,7 +382,8 @@ final float pixOff   = -view.getAmpLogMin() / 10;
 long screenOffX = 0;
 				while( totalLength > 0 ) {
 					fullLen		= Math.min( maxLen, totalLength );
-					chunkLen	= (int) (fromPCM ? fullLen : decimHelps[ info.idx ].fullrateToSubsample( fullLen ));
+//					chunkLen	= (int) (fromPCM ? fullLen : decimHelps[ info.idx ].fullrateToSubsample( fullLen ));
+					chunkLen	= (int) (decimHelps[ info.idx ].fullrateToSubsample( fullLen ));
 //					decimLen	= chunkLen / info.inlineDecim;
 //					chunkLen	= decimLen * info.inlineDecim;
 					fullLen		= (long) chunkLen << info.shift;

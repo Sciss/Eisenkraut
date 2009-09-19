@@ -196,7 +196,7 @@ implements OSCRouter, Disposable
 	// ===================================================================================================
 	// --------------- internal classes ---------------
 	
-	private static class MenuBuilder
+	protected static class MenuBuilder
 	implements OSCRouter, Disposable
 	{
 		private static final String		OSC_MENU		= "menu";

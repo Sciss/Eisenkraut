@@ -399,15 +399,19 @@ GUIUtil.setInitialDialogFocus( rp );	// necessary to get keyboard shortcuts work
 	{
 		final Control		ctrlI	= Control.ir( new String[] { "i_aInBs", "i_aOtBf" }, new float[] { 0f, 0f });
 		final GraphElem		graph;
+		final SynthDef		def;
 		
 		if( numInputChannels > 0 ) {
 			final GraphElem	in		= UGen.ar( "In", numInputChannels, ctrlI.getChannel( "i_aInBs" ));
 			final GraphElem	out		= UGen.ar( "DiskOut", ctrlI.getChannel( "i_aOtBf" ), in );
 			graph = out;
+//System.out.println( "DiskOut has " + out.getNumOutputs() + " outputs!" );
 		} else {
 			graph = ctrlI;
 		}
-		new SynthDef( "eisk-rec" + numInputChannels, graph ).send( server );
+		def	= new SynthDef( "eisk-rec" + numInputChannels, graph );
+		def.send( server );
+//		def.writeDefFile( new File( "/Users/rutz/Desktop/test.scsyndef" ));
 		return true;
 	}
 
@@ -981,6 +985,11 @@ this.busInternal = busInternal;
 				bndl.addPacket( msgWrite );
 				if( server.sendBundleSync( bndl, msgWrite.getName(), 4 )) {
 					nw.register( ct.synthDiskOut );
+					
+//System.out.println( "HERE" );
+//try { Thread.sleep( 3000 ); } catch( InterruptedException e1 ) { /* ... */ }
+//System.out.println( "---2" );
+					
 					server.sendMsg( ct.synthDiskOut.newMsg( ct.grpRoot, new String[] { "i_aInBs", "i_aOtBf" },
 								new float[] { ct.busInternal.getIndex(), ct.bufDisk.getBufNum() }, kAddToTail ));
 					timeoutTimer.stop();

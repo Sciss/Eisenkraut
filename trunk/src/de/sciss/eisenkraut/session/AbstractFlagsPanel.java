@@ -134,10 +134,10 @@ extends JPanel
 			}
 		}
 		
-		protected boolean isSelected()
-		{
-			return ab.isSelected();
-		}
+//		protected boolean isSelected()
+//		{
+//			return ab.isSelected();
+//		}
 	}
 
 	private class FlagAction

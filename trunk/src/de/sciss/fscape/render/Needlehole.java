@@ -402,10 +402,10 @@ implements RandomAccessRequester
 			return winSize >> 1;
 		}
 		
-		public int getOutputSkip()
-		{
-			return 0;
-		}
+//		public int getOutputSkip()
+//		{
+//			return 0;
+//		}
 	}
 	
 	private static class StdDevFilter
