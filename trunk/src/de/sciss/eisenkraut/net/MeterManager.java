@@ -33,7 +33,6 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -53,7 +52,6 @@ import de.sciss.jcollider.ServerEvent;
 import de.sciss.jcollider.ServerListener;
 import de.sciss.jcollider.Synth;
 import de.sciss.net.OSCBundle;
-import de.sciss.net.OSCListener;
 import de.sciss.net.OSCMessage;
 
 /**
@@ -61,7 +59,7 @@ import de.sciss.net.OSCMessage;
  *  @version	0.70, 03-Jul-08
  */
 public class MeterManager
-implements OSCListener, Constants, ServerListener, ActionListener,
+implements OSCResponderNode.Action, Constants, ServerListener, ActionListener,
 		   EventManager.Processor
 {
 	private List					collAllClients		= new ArrayList();
@@ -134,11 +132,11 @@ implements OSCListener, Constants, ServerListener, ActionListener,
 		}
 	}
 
-	// ----------------- OSCListener interface -----------------
+	// ----------------- OSCResponderNode.Action interface -----------------
 	
-	public void messageReceived( OSCMessage msg, SocketAddress sender, long time )
+	public void respond( OSCResponderNode r, OSCMessage msg, long time )
 	{
-		elm.dispatchEvent( new Event( sender, msg, time ));
+		elm.dispatchEvent( new Event( r, msg, time ));
 	}
 
 	// ----------------- EventManager.Processor interface -----------------
@@ -184,14 +182,7 @@ implements OSCListener, Constants, ServerListener, ActionListener,
 
 		meterTimer.stop();
 		
-		if( resp != null ) {
-			try {
-				resp.remove();
-			}
-			catch( IOException e1 ) {
-				printError( "disposeServer", e1 );
-			}
-		}
+		if( resp != null ) resp.remove();
 	
 		if( bus != null ) {
 			bus.free();
@@ -340,14 +331,7 @@ implements OSCListener, Constants, ServerListener, ActionListener,
 	
 		meterTimer.stop();
 
-		if( resp != null ) {
-			try {
-				resp.remove();
-			}
-			catch( IOException e1 ) {
-				printError( "resortClients", e1 );
-			}
-		}
+		if( resp != null ) resp.remove();
 
 		bndl			= new OSCBundle();
 		meterBangBndl	= null;
