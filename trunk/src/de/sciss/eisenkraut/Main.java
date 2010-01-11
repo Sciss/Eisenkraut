@@ -2,7 +2,7 @@
  *  Main.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2008 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2010 Hanns Holger Rutz. All rights reserved.
  *
  *	This software is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -89,7 +89,7 @@ import de.sciss.util.Flag;
  *  class from the <code>de.sciss.app</code> package.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.72, 19-Sep-08
+ *  @version	0.73, 11-Jan-10
  *
  *	@todo		OSC /main/quit doesn't work repeatedly
  *				; seems to be a problem of menuFactory.closeAll!
@@ -106,7 +106,7 @@ implements OSCRouter // ProgressComponent // , PreferenceChangeListener
 	 *
 	 *  @todo   should be saved in the session file as well
 	 */
-	private static final double APP_VERSION		= 0.72;
+	private static final double APP_VERSION		= 0.73;
 
 	/**
 	 *  Enables / disables event dispatching debugging
