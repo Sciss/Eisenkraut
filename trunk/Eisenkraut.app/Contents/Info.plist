@@ -151,6 +151,8 @@
 		<string>de.sciss.eisenkraut.Main</string>
 		<key>Properties</key>
 		<dict>
+			<key>apple.awt.graphics.UseQuartz</key>
+			<string>true</string>
 			<key>apple.laf.useScreenMenuBar</key>
 			<string>true</string>
 		</dict>
