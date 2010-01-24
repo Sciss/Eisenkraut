@@ -138,7 +138,9 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
 		lmm.setDynamicComponent( b1 );
 		ggVolume		= new VolumeFader();
 		ggOutputConfig	= new PrefComboBox();
+		ggOutputConfig.putClientProperty( "JComboBox.isSquare", Boolean.TRUE );
 		ggAudioBox		= new PrefComboBox();
+		ggAudioBox.putClientProperty( "JComboBox.isSquare", Boolean.TRUE );
 		ggOutputConfig.setPrototypeDisplayValue( comboProto );
 		ggAudioBox.setPrototypeDisplayValue( comboProto );
 		refillConfigs();
