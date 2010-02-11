@@ -399,7 +399,7 @@ implements RandomAccessRequester
 		
 		public int getStartOffset()
 		{
-			return winSize >> 1;
+			return 0; // winSize >> 1;
 		}
 		
 //		public int getOutputSkip()
