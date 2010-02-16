@@ -212,7 +212,7 @@ implements Constants, ServerListener, NodeListener, OSCRouter,
 		
 		recPane		= new SpringPanel( 4, 2, 4, 2 );
 //		affp		= new AudioFileFormatPane( AudioFileFormatPane.ENCODING );
-//		recPane.gridAdd( new JLabel( getResourceString( "labelFormat" ), JLabel.RIGHT ), 0, 1 );
+//		recPane.gridAdd( new JLabel( getResourceString( "labelFormat" ), SwingConstants.RIGHT ), 0, 1 );
 //		recPane.gridAdd( affp, 1, 1 );
 		ggRecordConfig	= new PrefComboBox();
 		ggRecordConfig.setFocusable( false );
@@ -232,7 +232,7 @@ implements Constants, ServerListener, NodeListener, OSCRouter,
 		recPane.gridAdd( tbMonitoring, 2, 1 );
 		recPane.gridAdd( new JLabel( getResourceString( "labelHeadroom" ) + " :", SwingConstants.RIGHT ), 0, 2 );
 		recPane.gridAdd( lbPeak, 1, 2 );
-//		recPane.gridAdd( new JLabel( getResourceString( "labelDB" ), JLabel.RIGHT ), 2, 1 );
+//		recPane.gridAdd( new JLabel( getResourceString( "labelDB" ), SwingConstants.RIGHT ), 2, 1 );
 		recPane.gridAdd( ggPeakReset, 2, 2, -1, 1 );
 		
 		refillConfigs();
