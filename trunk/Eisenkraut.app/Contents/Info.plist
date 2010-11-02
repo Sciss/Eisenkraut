@@ -122,7 +122,7 @@
 	<key>CFBundleExecutable</key>
 	<string>Eisenkraut</string>
 	<key>CFBundleGetInfoString</key>
-	<string>Eisenkraut 0.73. Copyright © 2004-2010 by Hanns Holger Rutz. All rights reserved.</string>
+	<string>Eisenkraut 0.74. Copyright © 2004-2010 by Hanns Holger Rutz. All rights reserved.</string>
 	<key>CFBundleIconFile</key>
 	<string>application.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -134,11 +134,11 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.73</string>
+	<string>0.74</string>
 	<key>CFBundleSignature</key>
 	<string>EisK</string>
 	<key>CFBundleVersion</key>
-	<string>0.73</string>
+	<string>0.74</string>
 	<key>Java</key>
 	<dict>
 		<key>ClassPath</key>

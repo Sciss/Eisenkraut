@@ -141,7 +141,7 @@ implements OSCRouter, Disposable
 		final Class					clz;
 		
 		try {
-			cl.addURL( new File( OSCRoot.getInstance().getPreferences().get( KEY_SWINGAPP, null )).toURL() );
+			cl.addURL( new File( OSCRoot.getInstance().getPreferences().get( KEY_SWINGAPP, null )).toURI().toURL() );
 			clz = Class.forName( "de.sciss.swingosc.SwingOSC", true, cl );
 //			swingOSC = new SwingOSC();
 			swingOSC = clz.newInstance();

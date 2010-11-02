@@ -2468,7 +2468,7 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 				// make sure space characters are escaped as %20 in URL stylee
 				final Normalizer n		= new Normalizer( Normalizer.C, false );
 //				final String parentDir	= n.normalize( f.getParentFile().getAbsolutePath() ).replaceAll( " ", "%20" );
-				String path				= n.normalize( f.getParentFile().getAbsoluteFile().toURL().toExternalForm() ); // getAbsolutePath() ).replaceAll( " ", "%20" );
+				String path				= n.normalize( f.getParentFile().getAbsoluteFile().toURI().toURL().toExternalForm() ); // getAbsolutePath() ).replaceAll( " ", "%20" );
 //				String path				= n.normalize( f.getAbsoluteFile().toURL().toExternalForm() ); // getAbsolutePath() ).replaceAll( " ", "%20" );
 				path					= path.substring( 5 );
 StringBuffer sb = new StringBuffer();

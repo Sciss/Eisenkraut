@@ -89,7 +89,7 @@ import de.sciss.util.Flag;
  *  class from the <code>de.sciss.app</code> package.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.73, 11-Jan-10
+ *  @version	0.74, 02-Nov-10
  *
  *	@todo		OSC /main/quit doesn't work repeatedly
  *				; seems to be a problem of menuFactory.closeAll!
@@ -106,7 +106,7 @@ implements OSCRouter // ProgressComponent // , PreferenceChangeListener
 	 *
 	 *  @todo   should be saved in the session file as well
 	 */
-	private static final double APP_VERSION		= 0.73;
+	private static final double APP_VERSION		= 0.74;
 
 	/**
 	 *  Enables / disables event dispatching debugging

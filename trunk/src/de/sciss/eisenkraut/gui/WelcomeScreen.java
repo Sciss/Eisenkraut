@@ -110,7 +110,7 @@ implements HyperlinkListener
 		String			img = "";
 		
 		try {
-			img = "<IMG SRC=\"" + new File( new File( "help" ), "application.png" ).getAbsoluteFile().toURL() +
+			img = "<IMG SRC=\"" + new File( new File( "help" ), "application.png" ).getAbsoluteFile().toURI().toURL() +
 		    "\" ALT=\"\">";
 		} catch( MalformedURLException e ) { /* ignore */ }
 

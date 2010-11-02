@@ -13,7 +13,7 @@
 	<property name="main-class"		value="de.sciss.eisenkraut.Main"/>
 	<property name="lib.dir"		value="libraries"/>
 	<property name="libraries"		value="${lib.dir}/ScissLib.jar:${lib.dir}/JCollider.jar:${lib.dir}/MRJAdapter.jar:${lib.dir}/Normalizer.jar"/>
-	<property name="version"		value="0.73"/>
+	<property name="version"		value="0.74"/>
 	<property name="debug"			value="true"/>
 
 	<target name="clean">
