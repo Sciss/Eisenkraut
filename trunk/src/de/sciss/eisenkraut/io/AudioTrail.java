@@ -2,7 +2,7 @@
  *  AudioTrail.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2010 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2011 Hanns Holger Rutz. All rights reserved.
  *
  *	This software is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -1673,7 +1673,7 @@ System.err.println( "WARNING: trying to read beyond the trail's stop" );
     throws IOException
 	{
 		final AudioFileDescr afd	= new AudioFileDescr();
-		afd.type					= AudioFileDescr.TYPE_AIFF;
+		afd.type					= AudioFileDescr.TYPE_WAVE64; // TYPE_AIFF
 		afd.rate					= getRate();
 		afd.bitsPerSample			= 32;
 		afd.sampleFormat			= AudioFileDescr.FORMAT_FLOAT;
