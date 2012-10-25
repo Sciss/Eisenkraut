@@ -2,7 +2,7 @@
  *  WelcomeScreen.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2011 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2012 Hanns Holger Rutz. All rights reserved.
  *
  *	This software is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -82,7 +82,7 @@ implements HyperlinkListener
 		"still contains a lot of bugs that can possibly damage your files. Use this at your own risk!</p>"+
 		"<p>This screen pops up because no valid "+
 		"preferences file was found, which suggests that you start this application for the first time. Please take a few "+
-		"minutes to read the <EM>readme.html</EM> file and the introductory part of the manual. As a first step before doing "+
+		"minutes to read the <EM>README.md</EM> file and the introductory part of the manual. As a first step before doing "+
 		"anything else, you should adjust your preferences. The preferences pane will show up when you "+
 		"close this window.</p>"+
 		"<p>This software is free software; you can redistribute it and/or "+

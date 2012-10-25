@@ -2,7 +2,7 @@
  *  PrefsUtil.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2011 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2012 Hanns Holger Rutz. All rights reserved.
  *
  *	This software is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -288,6 +288,20 @@ public class PrefsUtil
 	 *  Node: audio
 	 */
 	public static final String KEY_AUTOBOOT		= "autoboot";	// boolean : automatic scsynth booting
+
+    /**
+   	 *  Value: String indicating whether Eisenkraut should start
+     *  playing back a file if it is opened by double clicking
+     *  in the Finder.
+   	 *  Has default value: yes!<br>
+   	 *  Node: audio
+   	 */
+    public static final String KEY_AUTOPLAYFROMFINDER       = "autoplay";
+
+    public static final String AUTOPLAYFROMFINDER_NONE      = "none";
+    public static final String AUTOPLAYFROMFINDER_PLAY      = "play";
+    public static final String AUTOPLAYFROMFINDER_LOOP      = "loop";
+
 	/**
 	 *  Value: String representing the name
 	 *  of the currently active output routine configuration
@@ -376,6 +390,8 @@ public class PrefsUtil
 		childPrefs.remove( "audiodevice" );		// not used any more
 		childPrefs.remove( "audioinputs" );		// not used any more
 		childPrefs.remove( "audiooutputs" );	// not used any more
+
+        putDontOverwrite( childPrefs, KEY_AUTOPLAYFROMFINDER, AUTOPLAYFROMFINDER_NONE );
 
 		// audioboxes
 		value = AudioBoxConfig.ID_DEFAULT;

@@ -2,7 +2,7 @@
  *  PrefsFrame.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2011 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2012 Hanns Holger Rutz. All rights reserved.
  *
  *	This software is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -326,15 +326,27 @@ implements SwingConstants
 //		ggText.setPreferences( prefs, key );
 //		tab.gridAdd( ggText, 1, row, -1, 1 );
 
+        row++;
+        key		= PrefsUtil.KEY_AUTOBOOT;
+        key2	= "prefsAutoBoot";
+ //		lb		= new JLabel( getResourceString( key2 ), JLabel.TRAILING );
+ //		tab.gridAdd( lb, 0, row );
+        ggCheckBox  = new PrefCheckBox( getResourceString( key2 ));
+        ggCheckBox.setPreferences( prefs, key );
+ //		HelpGlassPane.setHelp( ggCheckBox, key2 );
+        tab.gridAdd( ggCheckBox, 1, row, -1, 1 );
+
  		row++;
-      	key		= PrefsUtil.KEY_AUTOBOOT;
-		key2	= "prefsAutoBoot";
-//		lb		= new JLabel( getResourceString( key2 ), JLabel.TRAILING );
-//		tab.gridAdd( lb, 0, row );
-		ggCheckBox  = new PrefCheckBox( getResourceString( key2 ));
-		ggCheckBox.setPreferences( prefs, key );
-//		HelpGlassPane.setHelp( ggCheckBox, key2 );
-		tab.gridAdd( ggCheckBox, 1, row, -1, 1 );
+      	key		= PrefsUtil.KEY_AUTOPLAYFROMFINDER;
+		key2	= "prefsAutoPlayFromFinder";
+		lb		= new JLabel( getResourceString( key2 ), JLabel.TRAILING );
+		tab.gridAdd( lb, 0, row );
+        ggChoice = new PrefComboBox();
+        ggChoice.addItem( new StringItem( PrefsUtil.AUTOPLAYFROMFINDER_NONE, getResourceString( key2 + "." + PrefsUtil.AUTOPLAYFROMFINDER_NONE )));
+        ggChoice.addItem( new StringItem( PrefsUtil.AUTOPLAYFROMFINDER_PLAY, getResourceString( key2 + "." + PrefsUtil.AUTOPLAYFROMFINDER_PLAY )));
+        ggChoice.addItem( new StringItem( PrefsUtil.AUTOPLAYFROMFINDER_LOOP, getResourceString( key2 + "." + PrefsUtil.AUTOPLAYFROMFINDER_LOOP )));
+        ggChoice.setPreferences( prefs, key );
+        tab.gridAdd( ggChoice, 1, row, -1, 1 );
 
 		row++;
 		lb		= new JLabel( getResourceString( "labelAudioIFs" ), TRAILING );

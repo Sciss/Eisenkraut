@@ -6,4 +6,4 @@ resolvers ++= Seq(
 
 addSbtPlugin( "com.eed3si9n" % "sbt-assembly" % "0.8.3" )
 
-addSbtPlugin( "de.sciss" % "sbt-appbundle" % "0.15" )
+addSbtPlugin( "de.sciss" % "sbt-appbundle" % "1.0.0" )

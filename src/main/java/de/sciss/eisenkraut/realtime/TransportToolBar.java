@@ -2,7 +2,7 @@
  *  TransportToolBar.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2011 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2012 Hanns Holger Rutz. All rights reserved.
  *
  *	This software is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -258,6 +258,10 @@ this.add( Box.createHorizontalStrut( 4 ));
 //	{
 //		lbTime.blink();
 //	}
+
+    public void setLoop( boolean onOff ) {
+        ggLoop.setSelected( onOff );
+    }
 
 	/**
 	 *	Adds a new button to the transport palette

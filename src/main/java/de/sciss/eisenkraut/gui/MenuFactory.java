@@ -2,7 +2,7 @@
  *  MenuFactory.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2011 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2012 Hanns Holger Rutz. All rights reserved.
  *
  *	This software is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -76,6 +76,7 @@ import de.sciss.gui.MenuRadioItem;
 import de.sciss.gui.MenuSeparator;
 import de.sciss.io.AudioFileDescr;
 import de.sciss.io.AudioFileFormatPane;
+import de.sciss.io.Span;
 import de.sciss.util.Flag;
 import de.sciss.util.Param;
 
@@ -437,9 +438,30 @@ if( doc.getFrame() == null ) {
 		return new ActionEisKOpenRecent( name, path );
 	}
 
-	public void openDocument( File f )
+    public void openDocument( File f )
+   	{
+   		openDocument( f, true );
+   	}
+
+	public void openDocument( File f, boolean postAction )
 	{
-		actionOpen.perform( f );
+		if( actionOpen.perform( f ) && postAction ) {
+            final Preferences audioPrefs = getApplication().getUserPrefs().node( PrefsUtil.NODE_AUDIO );
+            final String postActionValue = audioPrefs.get(PrefsUtil.KEY_AUTOPLAYFROMFINDER, PrefsUtil.AUTOPLAYFROMFINDER_NONE);
+            if( !postActionValue.equals( PrefsUtil.AUTOPLAYFROMFINDER_NONE )) {
+                final Session doc = findDocumentForPath( f );
+                if( doc != null ) {
+                    if( postActionValue.equals( PrefsUtil.AUTOPLAYFROMFINDER_LOOP )) {
+                        final Span loopSpan = doc.getAudioTrail().getSpan();
+                        // hmmm.... bit shaky all because we don't have a clean MVC
+                        doc.timeline.setSelectionSpan( this, loopSpan );
+                        doc.getFrame().setLoop( true );
+//                        doc.getTransport().setLoop( loopSpan );
+                    }
+                    doc.getTransport().play( 1.0 );
+                }
+            }
+        }
 	}
 
 	public void openDocument( File[] fs )
@@ -658,7 +680,7 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 		 *  
 		 *  @synchronization	this method must be called in event thread
 		 */
-		protected void perform( File path )
+		protected boolean perform( File path )
 		{
 			Session	doc;
 			
@@ -667,7 +689,7 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 			if( doc != null ) {
 				doc.getFrame().setVisible( true );
 				doc.getFrame().toFront();
-				return;
+				return true;
 			}
 
 			try {
@@ -675,9 +697,11 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 				addRecent( doc.getDisplayDescr().file );
 				AbstractApplication.getApplication().getDocumentHandler().addDocument( this, doc );
 				doc.createFrame();	// must be performed after the doc was added
+                return true;
 			}
 			catch( IOException e1 ) {
 				BasicWindowHandler.showErrorDialog( null, e1, getValue( Action.NAME ).toString() );
+                return false;
 			}
 		}
 	}
@@ -827,7 +851,7 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 		{
 			if( paths.length == 1 ) {
 				if( paths[ 0 ] == null ) return;
-				openDocument( paths[ 0 ]);
+				openDocument( paths[ 0 ], false );
 			} else {
 				openDocument( paths );
 			}
