@@ -5,3 +5,4 @@ project/boot/
 .idea/
 .idea_modules/
 *.app/
+sbt-launch.jar
