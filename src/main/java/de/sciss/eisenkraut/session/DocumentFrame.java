@@ -72,31 +72,7 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import java.text.MessageFormat;
 
-import javax.swing.AbstractAction;
-import javax.swing.AbstractButton;
-import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRootPane;
-import javax.swing.JTextField;
-import javax.swing.KeyStroke;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.Timer;
-import javax.swing.TransferHandler;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoableEdit;
@@ -452,7 +428,7 @@ bbb.add( markAxisHeader );
 		box.add( Box.createHorizontalStrut( 4 ));
 		box.add( lbWriteProtected );
 		box.add( ggAudioInfo );
-		box.add( ggRevealFile );
+		if (internalFrames) box.add( ggRevealFile );
 		box.add( Box.createHorizontalStrut( 4 ));
 		
 		pProgress			= new ProgressPanel();
@@ -1032,21 +1008,22 @@ bbb.add( markAxisHeader );
 		final AudioFileDescr[]	afds	= doc.getDescr();
 		final String			name;
 		final Icon				icn;
-		File					f;
+        final File              f;
 
 		writeProtected	= false;
-		
-		actionRevealFile.setFile( afds.length == 0 ? null : afds[ 0 ].file );
-		
-		if( doc.getName() == null ) {
+
+        f = afds.length == 0 ? null : afds[0].file;
+        actionRevealFile.setFile(f);
+
+        if( doc.getName() == null ) {
 			name			= getResourceString( "frameUntitled" );
 		} else {
 			name			= doc.getName();
 			try {
 				for( int i = 0; i < afds.length; i++ ) {
-					f = afds[ i ].file;
-					if( f == null ) continue;
-					writeProtected |= !f.canWrite() || ((f.getParentFile() != null) && !f.getParentFile().canWrite());
+					final File f1 = afds[ i ].file;
+					if( f1 == null ) continue;
+					writeProtected |= !f1.canWrite() || ((f1.getParentFile() != null) && !f1.getParentFile().canWrite());
 				}
 			} catch( SecurityException e ) { /* ignored */ }
 		}
@@ -1070,6 +1047,11 @@ bbb.add( markAxisHeader );
 			}
 		} else {
 			setTitle( app.getName() + (doc.isDirty() ? " - \u2022" : " - " ) + name );
+            final Component c = getComponent();
+            if (c instanceof JFrame) {
+                final JFrame jf = (JFrame) c;
+                jf.getRootPane().putClientProperty("Window.documentFile", f);
+            }
 		}
 		actionShowWindow.putValue( Action.NAME, name );
 		actionSave.setEnabled( !writeProtected && doc.isDirty() );
