@@ -1,9 +1,3 @@
-resolvers ++= Seq(
-  "less is" at "http://repo.lessis.me",
-  "coda" at "http://repo.codahale.com")
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.9.1")
 
-// addSbtPlugin( "me.lessis" % "ls-sbt" % "0.1.2" )
-
-addSbtPlugin( "com.eed3si9n" % "sbt-assembly" % "0.8.3" )
-
-addSbtPlugin( "de.sciss" % "sbt-appbundle" % "1.0.0" )
+addSbtPlugin("de.sciss" % "sbt-appbundle" % "1.0.1")

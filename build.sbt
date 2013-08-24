@@ -8,28 +8,30 @@ organization := "de.sciss"
 
 description := "A multi-channel and hi-res capable audio file editor"
 
-homepage := Some( url( "https://github.com/Sciss/Eisenkraut" ))
+homepage := Some(url("https://github.com/Sciss/Eisenkraut"))
 
-licenses := Seq( "GPL v2+" -> url( "http://www.gnu.org/licenses/gpl-2.0.txt" ))
+licenses := Seq("GPL v2+" -> url("http://www.gnu.org/licenses/gpl-2.0.txt"))
 
-scalaVersion := "2.9.2"
+scalaVersion := "2.10.2"
 
-crossPaths := false  // this is just a Java project right now!
+autoScalaLibrary := false // this is just a Java project right now!
+
+crossPaths := false       // this is just a Java project right now!
 
 retrieveManaged := true
 
-mainClass := Some( "de.sciss.eisenkraut.Main" )
+mainClass := Some("de.sciss.eisenkraut.Main")
 
 // ---- publishing ----
 
 publishMavenStyle := true
 
-publishTo <<= version { (v: String) =>
-   Some( if( v.endsWith( "-SNAPSHOT" ))
-      "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
-   else
-      "Sonatype Releases"  at "https://oss.sonatype.org/service/local/staging/deploy/maven2"
-   )
+publishTo <<= version { v =>
+  Some(if (v endsWith "-SNAPSHOT")
+    "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
+  else
+    "Sonatype Releases"  at "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+  )
 }
 
 publishArtifact in Test := false
@@ -42,24 +44,28 @@ pomExtra :=
   <connection>scm:git:git@github.com:Sciss/Eisenkraut.git</connection>
 </scm>
 <developers>
-   <developer>
-      <id>sciss</id>
-      <name>Hanns Holger Rutz</name>
-      <url>http://www.sciss.de</url>
-   </developer>
+  <developer>
+    <id>sciss</id>
+    <name>Hanns Holger Rutz</name>
+    <url>http://www.sciss.de</url>
+  </developer>
 </developers>
 
 // ---- packaging ----
 
-seq( assemblySettings: _* )
+seq(assemblySettings: _*)
 
 test in assembly := {}
 
-seq( appbundle.settings: _* )
+target in assembly <<= baseDirectory
+
+jarName in assembly <<= (name, version) map { _ + "-" + _ + ".jar" }
+
+seq(appbundle.settings: _*)
 
 appbundle.signature := "EisK"
 
-appbundle.icon := Some( file( "src/main/resources/de/sciss/eisenkraut/application.png" ))
+appbundle.icon := Some(file("src/main/resources/de/sciss/eisenkraut/application.png"))
 
 appbundle.documents ++= Seq(
    appbundle.Document( "AIFF Audio File", role = appbundle.Document.Editor, rank = appbundle.Document.Alternate,
@@ -85,7 +91,6 @@ appbundle.documents ++= Seq(
                        extensions = Seq( "cache" ))
 )
 
-appbundle.javaOptions ++= Seq( "-ea", "-Xmx2048m" )
+appbundle.javaOptions ++= Seq("-ea", "-Xmx2048m")
 
 appbundle.target <<= baseDirectory
-
