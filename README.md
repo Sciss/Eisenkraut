@@ -56,6 +56,8 @@ ICU4J and Unicode Java code (`Normalizer.jar`) is used which is licensed under a
 
 Please refer to the `help/index.html` file for a list of manual topics.
 
+A short screencast is available on [Vimeo](https://vimeo.com/26510634).
+
 ## to-do's
 
 A lot. Here are some suggestions:
