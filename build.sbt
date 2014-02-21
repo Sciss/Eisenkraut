@@ -1,24 +1,24 @@
 import AssemblyKeys._
 
-name := "Eisenkraut"
+name             := "Eisenkraut"
 
-version := "1.0.0"
+version          := "1.0.1-SNAPSHOT"
 
-organization := "de.sciss"
+organization     := "de.sciss"
 
-description := "A multi-channel and hi-res capable audio file editor"
+description      := "A multi-channel and hi-res capable audio file editor"
 
-homepage := Some(url("https://github.com/Sciss/Eisenkraut"))
+homepage         := Some(url("https://github.com/Sciss/Eisenkraut"))
 
-licenses := Seq("GPL v2+" -> url("http://www.gnu.org/licenses/gpl-2.0.txt"))
+licenses         := Seq("GPL v2+" -> url("http://www.gnu.org/licenses/gpl-2.0.txt"))
 
-scalaVersion := "2.10.2"
+scalaVersion     := "2.10.3"
 
-autoScalaLibrary := false // this is just a Java project right now!
+autoScalaLibrary := false       // this is just a Java project right now!
 
-crossPaths := false       // this is just a Java project right now!
+crossPaths       := false       // this is just a Java project right now!
 
-retrieveManaged := true
+// retrieveManaged := true
 
 mainClass := Some("de.sciss.eisenkraut.Main")
 
@@ -26,22 +26,21 @@ mainClass := Some("de.sciss.eisenkraut.Main")
 
 publishMavenStyle := true
 
-publishTo <<= version { v =>
-  Some(if (v endsWith "-SNAPSHOT")
+publishTo :=
+  Some(if (version.value endsWith "-SNAPSHOT")
     "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
   else
     "Sonatype Releases"  at "https://oss.sonatype.org/service/local/staging/deploy/maven2"
   )
-}
 
 publishArtifact in Test := false
 
 pomIncludeRepository := { _ => false }
 
-pomExtra :=
+pomExtra := { val n = name.value
 <scm>
-  <url>git@github.com:Sciss/Eisenkraut.git</url>
-  <connection>scm:git:git@github.com:Sciss/Eisenkraut.git</connection>
+  <url>git@github.com:Sciss/{n}.git</url>
+  <connection>scm:git:git@github.com:Sciss/{n}.git</connection>
 </scm>
 <developers>
   <developer>
@@ -50,16 +49,17 @@ pomExtra :=
     <url>http://www.sciss.de</url>
   </developer>
 </developers>
+}
 
 // ---- packaging ----
 
 seq(assemblySettings: _*)
 
-test in assembly := {}
+test in assembly := ()
 
-target in assembly <<= baseDirectory
+target in assembly := baseDirectory.value
 
-jarName in assembly <<= (name, version) map { _ + "-" + _ + ".jar" }
+jarName in assembly := s"${name.value}.jar"
 
 seq(appbundle.settings: _*)
 
@@ -93,4 +93,4 @@ appbundle.documents ++= Seq(
 
 appbundle.javaOptions ++= Seq("-ea", "-Xmx2048m")
 
-appbundle.target <<= baseDirectory
+appbundle.target := baseDirectory.value

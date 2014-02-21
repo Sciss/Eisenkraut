@@ -6,3 +6,4 @@ project/boot/
 .idea_modules/
 *.app/
 sbt-launch.jar
+Eisenkraut.jar

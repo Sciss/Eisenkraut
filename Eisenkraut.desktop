@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Eisenkraut
+Version=1.0
+GenericName=Eisenkraut
+Comment=Eisenkraut Audio File Editor
+Exec=java -Xmx1024m -jar /home/hhrutz/Documents/devel/Eisenkraut/Eisenkraut.jar
+StartupWMClass=de-sciss-eisenkraut-Main
+Icon=/home/hhrutz/Documents/devel/Eisenkraut/help/application.png
+Categories=Audio;AudioVideo;
+Terminal=false
+Type=Application
