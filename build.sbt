@@ -2,7 +2,7 @@ import AssemblyKeys._
 
 name             := "Eisenkraut"
 
-version          := "1.0.1-SNAPSHOT"
+version          := "1.1.0-SNAPSHOT"
 
 organization     := "de.sciss"
 
@@ -10,24 +10,26 @@ description      := "A multi-channel and hi-res capable audio file editor"
 
 homepage         := Some(url("https://github.com/Sciss/Eisenkraut"))
 
-licenses         := Seq("GPL v2+" -> url("http://www.gnu.org/licenses/gpl-2.0.txt"))
+licenses         := Seq("GPL v3+" -> url("http://www.gnu.org/licenses/gpl-3.0.txt"))
 
-scalaVersion     := "2.10.3"
+scalaVersion     := "2.11.2"
 
-autoScalaLibrary := false       // this is just a Java project right now!
+autoScalaLibrary := false
 
-crossPaths       := false       // this is just a Java project right now!
+crossPaths       := false
 
 // retrieveManaged := true
 
 mainClass := Some("de.sciss.eisenkraut.Main")
+
+libraryDependencies += "de.sciss" % "weblaf" % "1.28"
 
 // ---- publishing ----
 
 publishMavenStyle := true
 
 publishTo :=
-  Some(if (version.value endsWith "-SNAPSHOT")
+  Some(if (isSnapshot.value)
     "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
   else
     "Sonatype Releases"  at "https://oss.sonatype.org/service/local/staging/deploy/maven2"

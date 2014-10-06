@@ -2,21 +2,9 @@
  *  ToolBar.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2013 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
  *
- *	This software is free software; you can redistribute it and/or
- *	modify it under the terms of the GNU General Public License
- *	as published by the Free Software Foundation; either
- *	version 2, june 1991 of the License, or (at your option) any later version.
- *
- *	This software is distributed in the hope that it will be useful,
- *	but WITHOUT ANY WARRANTY; without even the implied warranty of
- *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- *	General Public License for more details.
- *
- *	You should have received a copy of the GNU General Public
- *	License (gpl.txt) along with this software; if not, write to the Free Software
- *	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
@@ -35,11 +23,9 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import javax.swing.AbstractButton;
-import javax.swing.Action;
-import javax.swing.JToggleButton;
-import javax.swing.JToolBar;
+import javax.swing.*;
 
+import com.alee.laf.toolbar.WebToolBar;
 import de.sciss.app.BasicEvent;
 import de.sciss.app.EventManager;
 
@@ -54,7 +40,7 @@ import de.sciss.app.EventManager;
  *  @version	0.70, 07-Dec-07
  */
 public class ToolBar
-extends JToolBar
+extends JPanel // JToolBar
 implements EventManager.Processor
 {
 	/**
@@ -87,12 +73,14 @@ implements EventManager.Processor
 	 */
 	public ToolBar( int orient )
 	{
-		super( orient );
+        super(); // (orient);
+        setLayout(new BoxLayout(this, orient == SwingConstants.HORIZONTAL ? BoxLayout.X_AXIS : BoxLayout.Y_AXIS));
 
 //        if( AbstractApplication.getApplication().getUserPrefs().getBoolean( PrefsUtil.KEY_INTRUDINGSIZE, false )) {
 //            setBorder( BorderFactory.createEmptyBorder( 0, 0, 0, 16 )); // account for intruding grow box
 //        }
-		setFloatable( false );
+        // setFloatable(false);
+        // setBorder(null);
     }
 	
 	/**
@@ -161,8 +149,12 @@ implements EventManager.Processor
 	{
 		addSeparator( new Dimension( 8, 8 ));
 	}
-	
-	/**
+
+    public void addSeparator(Dimension d) {
+        add(Box.createRigidArea(d));
+    }
+
+    /**
 	 *	Registers a listener for receiving
 	 *	information about group selection changes.
 	 *	Note that only grouped toggle buttons are traced

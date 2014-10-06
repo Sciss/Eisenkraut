@@ -2,21 +2,9 @@
  *  DocumentFrame.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2013 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
  *
- *	This software is free software; you can redistribute it and/or
- *	modify it under the terms of the GNU General Public License
- *	as published by the Free Software Foundation; either
- *	version 2, june 1991 of the License, or (at your option) any later version.
- *
- *	This software is distributed in the hope that it will be useful,
- *	but WITHOUT ANY WARRANTY; without even the implied warranty of
- *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- *	General Public License for more details.
- *
- *	You should have received a copy of the GNU General Public
- *	License (gpl.txt) along with this software; if not, write to the Free Software
- *	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
@@ -287,7 +275,7 @@ implements ProgressComponent, TimelineListener,
 
 	// --- progress bar ---
 	
-	private final JTextField				ggAudioFileDescr;
+	private final JLabel /* JTextField */ ggAudioFileDescr;
 	private final ProgressPanel				pProgress;
 	private final CrossfadePanel			pOverlay;
 
@@ -416,11 +404,12 @@ bbb.add( markAxisHeader );
 		ggRevealFile		= new ModificationButton( ModificationButton.SHAPE_REVEAL );
 		actionRevealFile	= new ActionRevealFile();
 		ggRevealFile.setAction( actionRevealFile );
-		ggAudioFileDescr	= new JTextField( 32 );
-		ggAudioFileDescr.setEditable( false );
-		ggAudioFileDescr.setFocusable( false );
-		ggAudioFileDescr.setBackground( null );
-		ggAudioFileDescr.setBorder( null );
+        //		ggAudioFileDescr	= new JTextField( 32 );
+        //		ggAudioFileDescr.setEditable( false );
+        //		ggAudioFileDescr.setFocusable( false );
+        //		ggAudioFileDescr.setBackground( null );
+        //		ggAudioFileDescr.setBorder( null );
+        ggAudioFileDescr	= new JLabel();
 
 		lbSRC				= new JLabel( getResourceString( "buttonSRC" ));
 		lbSRC.setForeground( colrClear );
@@ -2358,7 +2347,7 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 			if( filterDlg == null ) {
 				filterDlg = new FilterDialog();
 			}
-			filterDlg.process( plugInClassName, doc, (e.getModifiers() & ActionEvent.ALT_MASK) != 0, false );
+			filterDlg.process( plugInClassName, doc, (e.getModifiers() & ActionEvent.SHIFT_MASK) != 0, false );
 			actionProcessAgain.setPlugIn( filterDlg.getPlugIn() );
 		}
 	}
