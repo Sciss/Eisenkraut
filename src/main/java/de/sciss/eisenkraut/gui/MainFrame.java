@@ -23,26 +23,19 @@
 
 package de.sciss.eisenkraut.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GraphicsEnvironment;
+import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
+import java.io.File;
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Locale;
-import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.ImageIcon;
-import javax.swing.JInternalFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.WindowConstants;
+import javax.swing.*;
+import javax.swing.border.AbstractBorder;
+import javax.swing.border.Border;
 
 import de.sciss.eisenkraut.Main;
 import de.sciss.eisenkraut.net.SuperColliderClient;
@@ -154,7 +147,63 @@ implements de.sciss.jcollider.Constants, ServerListener
 //		ggDumpOSC.addItem( getResourceString( "labelDumpOff" ), null, null );
 //		ggDumpOSC.addItem( getResourceString( "labelDumpText" ), null, new Color( 0xFF, 0xFA, 0x9D ), new Color( 0xFA, 0xE7, 0x9D ));
 //		ggDumpOSC.addItem( getResourceString( "labelDumpHex" ), null, new Color( 0xFA, 0x9D, 0xFF ), new Color( 0xE7, 0x9D, 0xFA ));
-		
+
+        JLabel ggImport = new JLabel("<html><body><i>Drop</i></body>", null, SwingConstants.CENTER);
+        ggImport.setForeground(Color.darkGray);
+        ggImport.setTransferHandler(new TransferHandler() {
+            @Override
+            public boolean canImport(TransferSupport support) {
+                return support.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
+            }
+
+            @Override
+            public boolean importData(TransferSupport support) {
+                if (support.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+                    try {
+                        java.util.List fs = (java.util.List)
+                                support.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
+                        for (int i = 0; i < fs.size(); i++) {
+                            File f = (File) fs.get(i);
+                            // System.out.println(f);
+                            ((BasicApplication) app).getMenuFactory().openDocument(f);
+                        }
+                        return true;
+                    } catch (IOException e) {
+                        return false;
+                    } catch (UnsupportedFlavorException e) {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            }
+        });
+        ggImport.setToolTipText("Drop audio files here to open them");
+        ggImport.setBorder(new AbstractBorder() {
+            @Override public Insets getBorderInsets(Component c, Insets insets) {
+                insets.top  = insets.bottom = 5;
+                insets.left = insets.right  = 8;
+                return insets;
+            }
+
+            private final Stroke strk = new BasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER,
+                    10.0f, new float[] { 3f, 3f }, 0.0f);
+
+            @Override
+            public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setColor(Color.darkGray);
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                // g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+                g2.setStroke(strk);
+                g2.drawRoundRect(x + 1, y + 1, width - 3, height - 3, 8, 8);
+            }
+        });
+        Dimension importPref = ggImport.getPreferredSize();
+        // importPref.width = 100;
+        ggImport.setPreferredSize(importPref);
+        ggImport.setMaximumSize  (importPref);
+
 		boxStatus2		= Box.createHorizontalBox();
 		msgStatus1		= new MessageFormat( getResourceString( "ptrnServerStatus1" ), Locale.US );
 		msgStatus2		= new MessageFormat( getResourceString( "ptrnServerStatus2" ), Locale.US );
@@ -188,6 +237,8 @@ implements de.sciss.jcollider.Constants, ServerListener
 		boxStatus1.add( ggStatusExp );
 		boxStatus1.add( lbStatus1 );
 		boxStatus1.add( ggBoot );
+        boxStatus1.add( Box.createHorizontalStrut(4));
+        boxStatus1.add(ggImport);
 		boxStatus1.add( Box.createHorizontalGlue() );
 
 //		boxStatus2.add( Box.createHorizontalStrut( 32 ));
