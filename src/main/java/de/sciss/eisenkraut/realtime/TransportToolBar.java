@@ -142,10 +142,14 @@ implements  TimelineListener, TransportListener,	// RealtimeConsumer,
         ggRewind		= new JButton();
 		GraphicsUtil.setToolIcons( ggRewind, GraphicsUtil.createToolIcons( GraphicsUtil.ICON_REWIND ));
 		ggRewind.addChangeListener( new CueListener( ggRewind, -100 ));
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_NUMPAD1, 0, false ), "startrwd" );
-		amap.put( "startrwd", new ActionCue( ggRewind, true ));
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_NUMPAD1, 0, true ), "stoprwd" );
-		amap.put( "stoprwd", new ActionCue( ggRewind, false ));
+        ActionCue actionRwdOn  = new ActionCue( ggRewind, true );
+        ActionCue actionRwdOff = new ActionCue( ggRewind, false );
+        actionRwdOn .setPair(actionRwdOff);
+        actionRwdOff.setPair(actionRwdOn );
+		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_OPEN_BRACKET, 0, false ), "startrwd" );
+		amap.put( "startrwd", actionRwdOn);
+		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_OPEN_BRACKET, 0, true ), "stoprwd" );
+		amap.put( "stoprwd", actionRwdOff);
 
 		actionStop		= new ActionStop();
         ggStop			= new JButton( actionStop );
@@ -166,15 +170,19 @@ implements  TimelineListener, TransportListener,	// RealtimeConsumer,
         ggFFwd			= new JButton();
 		GraphicsUtil.setToolIcons( ggFFwd, GraphicsUtil.createToolIcons( GraphicsUtil.ICON_FASTFORWARD ));
 		ggFFwd.addChangeListener( new CueListener( ggFFwd, 100 ));
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_NUMPAD2, 0, false ), "startfwd" );
-		amap.put( "startfwd", new ActionCue( ggFFwd, true ));
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_NUMPAD2, 0, true ), "stopfwd" );
-		amap.put( "stopfwd", new ActionCue( ggFFwd, false ));
+		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_CLOSE_BRACKET, 0, false ), "startfwd" );
+        ActionCue actionFwdOn  = new ActionCue( ggFFwd, true );
+        ActionCue actionFwdOff = new ActionCue( ggFFwd, false );
+        actionFwdOn .setPair(actionFwdOff);
+        actionFwdOff.setPair(actionFwdOn );
+		amap.put( "startfwd", actionFwdOn);
+		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_CLOSE_BRACKET, 0, true ), "stopfwd" );
+		amap.put( "stopfwd", actionFwdOff);
 
 		actionLoop		= new ActionLoop();
 		ggLoop			= new JToggleButton( actionLoop );
 		GraphicsUtil.setToolIcons( ggLoop, GraphicsUtil.createToolIcons( GraphicsUtil.ICON_LOOP ));
-		GUIUtil.createKeyAction( ggLoop, KeyStroke.getKeyStroke( KeyEvent.VK_DIVIDE, 0));
+		GUIUtil.createKeyAction( ggLoop, KeyStroke.getKeyStroke( KeyEvent.VK_SLASH, 0));
 		toolBar.addButton( ggRewind );
 		toolBar.addButton( ggStop );
 		toolBar.addButton( ggPlay );
@@ -518,18 +526,46 @@ msgPane.add( ggCurrent );
 	{
 		private final boolean			onOff;
 		private final AbstractButton	b;
-	
+        private final Timer             t;
+        private ActionCue pair;
+        private long lastWhen = 0L;
+
+        public void setPair(ActionCue p) {
+            pair = p;
+        }
+
+        public long getLastWhen() {
+            if (!onOff) t.stop();
+            return lastWhen;
+        }
+
 		protected ActionCue( AbstractButton b, boolean onOff )
 		{
 			this.onOff	= onOff;
 			this.b		= b;
+
+            if (onOff) t = null; else t = new javax.swing.Timer(5, new ActionListener() {
+               public void actionPerformed(ActionEvent e) {
+                   perform();
+               }
+            });
 		}
-		
+
+        private void perform() {
+            final ButtonModel bm = b.getModel();
+            if( bm.isPressed() != onOff ) bm.setPressed( onOff );
+            if( bm.isArmed()   != onOff ) bm.setArmed(   onOff );
+        }
+
 		public void actionPerformed( ActionEvent e )
 		{
-			final ButtonModel bm = b.getModel();
-			if( bm.isPressed() != onOff ) bm.setPressed( onOff );
-			if( bm.isArmed()   != onOff ) bm.setArmed(   onOff );
+            lastWhen = e.getWhen();
+            if (onOff) {
+                if (pair.getLastWhen() == lastWhen) return;  // Linux repeat bullshit
+                perform();
+            } else {
+                t.restart();
+            }
 		}
 	} // class actionCueClass
 		
@@ -591,12 +627,14 @@ msgPane.add( ggCurrent );
 		public void stateChanged( ChangeEvent e )
 		{
 			if( isCueing && !bm.isArmed() ) {
+                // System.out.println("---1");
 				isCueing	= false;
 				cueTimer.stop();
 				if( transportWasRunning ) {
 					transport.play( 1.0f );
 				}
 			} else if( !isCueing && bm.isArmed() ) {
+                // System.out.println("---2");
 				transportWasRunning = transport.isRunning();
 				cueStep		= step;
 				isCueing	= true;

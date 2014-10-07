@@ -369,8 +369,8 @@ if( doc.getFrame() == null ) {
 		mg.add( new MenuItem( "ioSetup", new ActionIOSetup( getResourceString( "frameIOSetup" ), null )), 0 );
 		mg.add( new MenuSeparator(), 1 );
 		mg.add( new MenuItem( "main", new ActionShowWindow( getResourceString( "frameMain" ), null, Main.COMP_MAIN )), 2 );
-		mg.add( new MenuItem( "observer", new ActionObserver( getResourceString( "paletteObserver" ), KeyStroke.getKeyStroke( KeyEvent.VK_NUMPAD3, MENU_SHORTCUT ))), 3 );
-		mg.add( new MenuItem( "ctrlRoom", new ActionCtrlRoom( getResourceString( "paletteCtrlRoom" ), KeyStroke.getKeyStroke( KeyEvent.VK_NUMPAD2, MENU_SHORTCUT ))), 4 );
+		mg.add( new MenuItem( "observer", new ActionObserver( getResourceString( "paletteObserver" ), KeyStroke.getKeyStroke( KeyEvent.VK_3, MENU_SHORTCUT ))), 3 );
+		mg.add( new MenuItem( "ctrlRoom", new ActionCtrlRoom( getResourceString( "paletteCtrlRoom" ), KeyStroke.getKeyStroke( KeyEvent.VK_2, MENU_SHORTCUT ))), 4 );
 //		mg.add( new MenuSeparator(), 5 );
 //		mgWindow.add( new MenuItem( "collect", ((WindowHandler) root.getWindowHandler()).getCollectAction() ));
 //		mgWindow.addSeparator();
