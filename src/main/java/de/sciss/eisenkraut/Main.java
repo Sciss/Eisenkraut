@@ -13,7 +13,7 @@
 
 package de.sciss.eisenkraut;
 
-import java.awt.EventQueue;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,6 +23,8 @@ import java.util.prefs.Preferences;
 import javax.swing.UIManager;
 
 import com.alee.laf.WebLookAndFeel;
+import com.alee.laf.checkbox.WebCheckBoxStyle;
+import com.alee.laf.progressbar.WebProgressBarStyle;
 import de.sciss.eisenkraut.gui.AudioFileInfoPalette;
 import de.sciss.eisenkraut.gui.ControlRoomFrame;
 import de.sciss.eisenkraut.gui.IOSetupFrame;
@@ -208,6 +210,12 @@ implements OSCRouter // ProgressComponent // , PreferenceChangeListener
         // WebLookAndFeel.install();
         // System.out.println(UIManager.getLookAndFeel().getName());
         UIManager.installLookAndFeel("WebLookAndFeel", "com.alee.laf.WebLookAndFeel");
+        WebCheckBoxStyle   .animated            = false;
+        WebProgressBarStyle.progressTopColor    = Color.lightGray;
+        WebProgressBarStyle.progressBottomColor = Color.gray;
+        // XXX TODO: how to really turn of animation?
+        WebProgressBarStyle.highlightWhite      = new Color(255, 255, 255, 0); // 48)
+        WebProgressBarStyle.highlightDarkWhite  = new Color(255, 255, 255, 0);
 
 		lafName = prefs.get( PrefsUtil.KEY_LOOKANDFEEL, null );
 		for( int i = 0; i < args.length; i++ ) {
