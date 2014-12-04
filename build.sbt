@@ -12,13 +12,11 @@ homepage         := Some(url("https://github.com/Sciss/Eisenkraut"))
 
 licenses         := Seq("GPL v3+" -> url("http://www.gnu.org/licenses/gpl-3.0.txt"))
 
-scalaVersion     := "2.11.2"
+scalaVersion     := "2.11.4"
 
 autoScalaLibrary := false
 
 crossPaths       := false
-
-// retrieveManaged := true
 
 mainClass := Some("de.sciss.eisenkraut.Main")
 
