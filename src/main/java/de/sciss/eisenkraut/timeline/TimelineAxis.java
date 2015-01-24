@@ -2,18 +2,13 @@
  *  TimelineAxis.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		12-May-05	re-created from de.sciss.meloncillo.timeline.TimelineAxis
- *		16-Jul-05	allows to switch between time and samples units
  */
 
 // XXX TO-DO : dispose, removeTimelineListener
@@ -50,9 +45,6 @@ import de.sciss.io.Span;
  *  time indices and to allow the
  *  user to position and select the
  *  timeline.
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 20-Mar-08
  */
 public class TimelineAxis
 extends Axis
@@ -75,7 +67,6 @@ implements	TimelineListener, MouseListener, MouseMotionListener,
 	 *  Constructs a new object for
 	 *  displaying the timeline ruler
 	 *
-	 *  @param  root	application root
 	 *  @param  doc		session Session
 	 */
 	public TimelineAxis( Session doc, ComponentHost host )

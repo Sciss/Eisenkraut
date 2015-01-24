@@ -2,18 +2,13 @@
  *  SyncCompoundSessionObjEdit.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		15-Jul-05	copied from de.sciss.meloncillo.edit.SyncCompoundSessionObjEdit,
- *					added representation name, uses LockManager instead of Session
  */
 
 package de.sciss.eisenkraut.edit;
@@ -32,16 +27,12 @@ import de.sciss.app.AbstractCompoundEdit;
  *  The synchronization is provided by waiting exclusively
  *  for a given door.
  *
- *  @author			Hanns Holger Rutz
- *  @version		0.57, 28-Sep-07
- *  @see			UndoManager
- *  @see			de.sciss.util.LockManager
+ *  @see            UndoManager
  */
-public class CompoundSessionObjEdit
-extends AbstractCompoundEdit
-{
+public class CompoundSessionObjEdit extends AbstractCompoundEdit {
+
 	private Object					source;
-	private final List				collSessionObjects;
+	private final List<SessionObject> collSessionObjects;
 	private final int				ownerModType;
 	private final Object			ownerModParam, ownerUndoParam;
 
@@ -58,53 +49,45 @@ extends AbstractCompoundEdit
 	 *	@param	ownerModType		XXX
 	 *	@param	ownerModParam		XXX
 	 *	@param	ownerUndoParam		XXX
-	 *  @param  doors				doors to use for locking, usually
-	 *								Session.DOOR_TRNS or Session.DOOR_TIMETRNSMTE
 	 *
-	 *  @see	de.sciss.util.LockManager
 	 *  @see	de.sciss.eisenkraut.session.SessionCollection
 	 *  @see	de.sciss.eisenkraut.session.SessionCollection.Event
-	 *
-	 *  @synchronization			waitExclusive on the given doors
 	 */
-	public CompoundSessionObjEdit( Object source, List collSessionObjects,
-								   int ownerModType, Object ownerModParam,
-								   Object ownerUndoParam, String representationName )
-	{
-		super( representationName );
-		
-		this.source				= source;
-		this.collSessionObjects = new ArrayList( collSessionObjects );
-		this.ownerModType		= ownerModType;
-		this.ownerModParam		= ownerModParam;
-		this.ownerUndoParam		= ownerUndoParam;
+	public CompoundSessionObjEdit(Object source, List<SessionObject> collSessionObjects,
+								  int ownerModType, Object ownerModParam,
+								  Object ownerUndoParam, String representationName) {
+		super(representationName);
+
+		this.source 			= source;
+		this.collSessionObjects = new ArrayList<SessionObject>(collSessionObjects);
+		this.ownerModType 		= ownerModType;
+		this.ownerModParam 		= ownerModParam;
+		this.ownerUndoParam 	= ownerUndoParam;
 	}
-	
+
 	/**
-	 *  calls <code>doc.transmitterCollection.modifiedAll</code>.
-	 *  The original edit source is discarded.
+	 * calls <code>doc.transmitterCollection.modifiedAll</code>.
+	 * The original edit source is discarded.
 	 */
-	protected void undoDone()
-	{
+	protected void undoDone() {
 		int i;
-		
-		for( i = 0; i < collSessionObjects.size(); i++ ) {
-			((SessionObject) collSessionObjects.get( i )).getMap().dispatchOwnerModification(
-				source, ownerModType, ownerUndoParam );
+
+		for (i = 0; i < collSessionObjects.size(); i++) {
+			(collSessionObjects.get(i)).getMap().dispatchOwnerModification(
+					source, ownerModType, ownerUndoParam);
 		}
 	}
 
 	/**
-	 *  calls <code>doc.transmitterCollection.modifiedAll</code>.
-	 *  The original edit source is discarded.
+	 * calls <code>doc.transmitterCollection.modifiedAll</code>.
+	 * The original edit source is discarded.
 	 */
-	protected void redoDone()
-	{
+	protected void redoDone() {
 		int i;
-		
-		for( i = 0; i < collSessionObjects.size(); i++ ) {
-			((SessionObject) collSessionObjects.get( i )).getMap().dispatchOwnerModification(
-				source, ownerModType, ownerModParam );
+
+		for (i = 0; i < collSessionObjects.size(); i++) {
+			(collSessionObjects.get(i)).getMap().dispatchOwnerModification(
+					source, ownerModType, ownerModParam);
 		}
 	}
 
@@ -114,16 +97,10 @@ extends AbstractCompoundEdit
 	 *  Finishes the compound edit and calls
 	 *  <code>doc.transmitterCollection.modifiedAll</code>
 	 *  using the source provided in the constructor.
-	 *
-	 *  @synchronization	the caller must
-	 *						block all <code>addEdit</code>
-	 *						and the <code>end</code> call
-	 *						into a sync block itself!
 	 */
-	public void end()
-	{
+	public void end() {
 		super.end();
 		redoDone();
-		source  = this;
+		source = this;
 	}
 }

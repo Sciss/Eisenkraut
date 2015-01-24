@@ -2,22 +2,13 @@
  *  TransportToolBar.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Change log:
- *		12-May-05	re-created from de.sciss.meloncillo.realtime.TransportPalette
- *		16-Jul-05	fixed empty loop spans
- *		25-Jul-05	permanently adds timeline + transport listener
- *					(crucial for instant loop span update)
- *		03-Aug-05	converted to tool bar ; cue shortcuts
- *		26-Feb-06	moved to double precision
  */
 
 package de.sciss.eisenkraut.realtime;
@@ -73,14 +64,11 @@ import de.sciss.util.ParamSpace;
  *	<code>Transport</code> class when these
  *	gadgets are clicked.
  *	<p><pre>
- *	Keyb.shortcuts :	space or numpad-0 : play / stop
+ *	Keyboard shortcuts :	space or numpad-0 : play / stop
  *						G : go to time
  *						shift + (alt) + space : play half or double speed
  *						numpad 1 / 2 : rewind / fast forward
  *	</pre>
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 02-May-08
  *
  *	@todo		(FIXED?) cueing sometimes uses an obsolete start position.
  *				idea: cue speed changes with zoom level
@@ -134,8 +122,8 @@ implements  TimelineListener, TransportListener,	// RealtimeConsumer,
 
 		final AbstractAction	actionPlay, actionStop, actionGoToTime;
 		final JButton			ggFFwd, ggRewind;
-		final InputMap			imap		= this.getInputMap( JComponent.WHEN_IN_FOCUSED_WINDOW );
-		final ActionMap			amap		= this.getActionMap();
+		final InputMap			iMap		= this.getInputMap( JComponent.WHEN_IN_FOCUSED_WINDOW );
+		final ActionMap			aMap		= this.getActionMap();
 
 		toolBar			= new ToolBar( SwingConstants.HORIZONTAL );
 
@@ -145,11 +133,11 @@ implements  TimelineListener, TransportListener,	// RealtimeConsumer,
         ActionCue actionRwdOn  = new ActionCue( ggRewind, true );
         ActionCue actionRwdOff = new ActionCue( ggRewind, false );
         actionRwdOn .setPair(actionRwdOff);
-        actionRwdOff.setPair(actionRwdOn );
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_OPEN_BRACKET, 0, false ), "startrwd" );
-		amap.put( "startrwd", actionRwdOn);
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_OPEN_BRACKET, 0, true ), "stoprwd" );
-		amap.put( "stoprwd", actionRwdOff);
+        actionRwdOff.setPair(actionRwdOn);
+		iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_OPEN_BRACKET, 0, false), "startrwd");
+		aMap.put("startrwd", actionRwdOn);
+		iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_OPEN_BRACKET, 0, true), "stoprwd");
+		aMap.put("stoprwd", actionRwdOff);
 
 		actionStop		= new ActionStop();
         ggStop			= new JButton( actionStop );
@@ -157,35 +145,35 @@ implements  TimelineListener, TransportListener,	// RealtimeConsumer,
 
 		actionPlay		= new ActionPlay();
         ggPlay			= new JButton( actionPlay );
-		GraphicsUtil.setToolIcons( ggPlay, GraphicsUtil.createToolIcons( GraphicsUtil.ICON_PLAY ));
+		GraphicsUtil.setToolIcons(ggPlay, GraphicsUtil.createToolIcons(GraphicsUtil.ICON_PLAY));
 
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_SPACE, 0 ), "playstop" );
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_SPACE, InputEvent.SHIFT_MASK ), "playstop" );
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_SPACE, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK ), "playstop" );
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_NUMPAD0, 0 ), "playstop" );
-		amap.put( "playstop", new ActionTogglePlayStop() );
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_SPACE, InputEvent.CTRL_MASK ), "playsel" );
-		amap.put( "playsel", new ActionPlaySelection() );
+		iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), "playstop");
+		iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.SHIFT_MASK), "playstop");
+		iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK), "playstop");
+		iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_NUMPAD0, 0), "playstop");
+		aMap.put("playstop", new ActionTogglePlayStop());
+		iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_MASK), "playsel");
+		aMap.put("playsel", new ActionPlaySelection());
 
         ggFFwd			= new JButton();
-		GraphicsUtil.setToolIcons( ggFFwd, GraphicsUtil.createToolIcons( GraphicsUtil.ICON_FASTFORWARD ));
+		GraphicsUtil.setToolIcons(ggFFwd, GraphicsUtil.createToolIcons(GraphicsUtil.ICON_FASTFORWARD));
 		ggFFwd.addChangeListener( new CueListener( ggFFwd, 100 ));
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_CLOSE_BRACKET, 0, false ), "startfwd" );
+		iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_CLOSE_BRACKET, 0, false), "startfwd");
         ActionCue actionFwdOn  = new ActionCue( ggFFwd, true );
         ActionCue actionFwdOff = new ActionCue( ggFFwd, false );
         actionFwdOn .setPair(actionFwdOff);
-        actionFwdOff.setPair(actionFwdOn );
-		amap.put( "startfwd", actionFwdOn);
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_CLOSE_BRACKET, 0, true ), "stopfwd" );
-		amap.put( "stopfwd", actionFwdOff);
+        actionFwdOff.setPair(actionFwdOn);
+		aMap.put("startfwd", actionFwdOn);
+		iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_CLOSE_BRACKET, 0, true), "stopfwd");
+		aMap.put("stopfwd", actionFwdOff);
 
 		actionLoop		= new ActionLoop();
 		ggLoop			= new JToggleButton( actionLoop );
-		GraphicsUtil.setToolIcons( ggLoop, GraphicsUtil.createToolIcons( GraphicsUtil.ICON_LOOP ));
-		GUIUtil.createKeyAction( ggLoop, KeyStroke.getKeyStroke( KeyEvent.VK_SLASH, 0));
+		GraphicsUtil.setToolIcons(ggLoop, GraphicsUtil.createToolIcons(GraphicsUtil.ICON_LOOP));
+		GUIUtil.createKeyAction(ggLoop, KeyStroke.getKeyStroke(KeyEvent.VK_SLASH, 0));
 		toolBar.addButton( ggRewind );
 		toolBar.addButton( ggStop );
-		toolBar.addButton( ggPlay );
+		toolBar.addButton(ggPlay);
 		toolBar.addButton( ggFFwd );
 		toolBar.addToggleButton( ggLoop, 2 );
 //        HelpGlassPane.setHelp( toolBar, "TransportTools" );
@@ -193,7 +181,7 @@ implements  TimelineListener, TransportListener,	// RealtimeConsumer,
 		actionGoToTime  = new ActionGoToTime();
 		lbTime			= new TimeLabel();
 //        HelpGlassPane.setHelp( lbTime, "TransportPosition" );
-		lbTime.setCursor( new Cursor( Cursor.HAND_CURSOR ));
+		lbTime.setCursor(new Cursor(Cursor.HAND_CURSOR));
 		lbTime.addMouseListener( new MouseAdapter() {
 			public void mouseClicked( MouseEvent e )
 			{
@@ -211,8 +199,8 @@ implements  TimelineListener, TransportListener,	// RealtimeConsumer,
 				lbTime.black();
 			}
 		});
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_G, 0 ), "gototime" );
-		amap.put( "gototime", actionGoToTime );
+		iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_G, 0), "gototime");
+		aMap.put("gototime", actionGoToTime);
 		
 		this.add( toolBar );
 Box b2 = Box.createVerticalBox();
@@ -238,7 +226,7 @@ this.add( Box.createHorizontalStrut( 4 ));
 		playTimer = new Timer( 27, new ActionListener() {
 			public void actionPerformed( ActionEvent e )
 			{
-				lbTime.setTime( new Double( transport.getCurrentFrame() / rate ));
+				lbTime.setTime(transport.getCurrentFrame() / rate);
 			}
 		});
 	
@@ -326,33 +314,24 @@ this.add( Box.createHorizontalStrut( 4 ));
 
 // ---------------- TimelineListener interface ---------------- 
 
-	public void timelineSelected( TimelineEvent e )
-	{
-		if( ggLoop.isSelected() ) {
+	public void timelineSelected(TimelineEvent e) {
+		if (ggLoop.isSelected()) {
 			actionLoop.updateLoop();
 		}
-    }
-
-	public void timelineChanged( TimelineEvent e )
-	{
-//		if( !doc.bird.attemptShared( Session.DOOR_TIME, 250 )) return;
-//		try {
-			rate = doc.timeline.getRate();
-			lbTime.setTime( new Double( transport.getCurrentFrame() / rate ));
-//		}
-//		finally {
-//			doc.bird.releaseShared( Session.DOOR_TIME );
-//		}
 	}
-	
-    public void timelineScrolled( TimelineEvent e ) { /* ignore */ }
 
-	public void timelinePositioned( TimelineEvent e )
-	{
+	public void timelineChanged(TimelineEvent e) {
+		rate = doc.timeline.getRate();
+		lbTime.setTime(transport.getCurrentFrame() / rate);
+	}
+
+	public void timelineScrolled(TimelineEvent e) { /* ignore */ }
+
+	public void timelinePositioned(TimelineEvent e) {
 		final long pos = doc.timeline.getPosition();
-	
-		if( !isCueing ) cuePos = pos;
-		lbTime.setTime( new Double( pos / rate ));
+
+		if (!isCueing) cuePos = pos;
+		lbTime.setTime(pos / rate);
 	}
 
 // ---------------- TransportListener interface ---------------- 

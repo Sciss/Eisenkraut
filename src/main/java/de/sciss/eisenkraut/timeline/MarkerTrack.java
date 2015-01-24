@@ -2,18 +2,13 @@
  *  MarkerTrack.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		13-May-05   created from de.sciss.meloncillo.transmitter.AbstractTransmitter
- *		15-Oct-06	inherits OSC stuff from MarkerTrail
  */
 
 package de.sciss.eisenkraut.timeline;
@@ -39,14 +34,10 @@ import de.sciss.timebased.MarkerStake;
 import de.sciss.timebased.Stake;
 import de.sciss.timebased.Trail;
 
-/**
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
- */
 public class MarkerTrack
-extends Track
-implements OSCRouter
-{
+		extends Track
+		implements OSCRouter {
+
 	private final MarkerTrail trail;
 
 	private static final String		OSC_MARKERS			= "markers";
@@ -172,7 +163,7 @@ implements OSCRouter
 				if( idx1 > 0 ) {
 					idx1	= trail.editGetLeftMostIndex( idx1, true, null );
 				}
-				values[ i ] = new Integer( idx1 );
+				values[ i ] = idx1;
 			}
 			return values;
 		}
@@ -219,24 +210,22 @@ implements OSCRouter
 		return null;
 	}
 
-	public Object[] oscGet_at( RoutedOSCMessage rom )
-	{
-		final List	coll	= new ArrayList();
-		int			argIdx	= 3;
-		int			idx1;
+	public Object[] oscGet_at(RoutedOSCMessage rom) {
+		final List<Object> coll = new ArrayList<Object>();
+		int argIdx = 3;
+		int idx1;
 		try {
-			for( ; argIdx < rom.msg.getArgCount(); argIdx++ ) {
-				idx1	= ((Number) rom.msg.getArg( argIdx )).intValue();
-				if( (idx1 >= 0) && (idx1 < trail.getNumStakes()) ) {
-					coll.add( trail.get( idx1, true ));
+			for (; argIdx < rom.msg.getArgCount(); argIdx++) {
+				idx1 = ((Number) rom.msg.getArg(argIdx)).intValue();
+				if ((idx1 >= 0) && (idx1 < trail.getNumStakes())) {
+					coll.add(trail.get(idx1, true));
 				} else {
-					coll.add( new Marker( -1, "" ));
+					coll.add(new Marker(-1, ""));
 				}
 			}
-			return oscGetMarkers( coll );
-		}
-		catch( ClassCastException e1 ) {
-			OSCRoot.failedArgType( rom, argIdx );
+			return oscGetMarkers(coll);
+		} catch (ClassCastException e1) {
+			OSCRoot.failedArgType(rom, argIdx);
 		}
 		return null;
 	}
@@ -258,7 +247,7 @@ implements OSCRouter
 		Marker			m;
 		for( int i = 0, j = 0; i < args.length; j++ ) {
 			m = (Marker) coll.get( j );
-			args[ i++ ] = new Long( m.pos );
+			args[ i++ ] = m.pos;
 			args[ i++ ] = m.name;
 		}
 		return args;
@@ -266,22 +255,22 @@ implements OSCRouter
 
 	public Object oscQuery_count()
 	{
-		return new Integer( trail.getNumStakes() );
+		return trail.getNumStakes();
 	}
 
 	public Object oscQuery_spanStart()
 	{
-		return new Long( trail.getSpan().start );
+		return trail.getSpan().start;
 	}
 	
 	public Object oscQuery_spanStop()
 	{
-		return new Long( trail.getSpan().stop );
+		return trail.getSpan().stop;
 	}
 	
 	public Object oscQuery_trackSelected()
 	{
-		return new Integer( doc.selectedTracks.contains( doc.markerTrack ) ? 1 : 0 );
+		return doc.selectedTracks.contains(doc.markerTrack) ? 1 : 0;
 	}
 
 	/**
@@ -295,7 +284,7 @@ implements OSCRouter
 		if( num == 0 ) return;
 //		final long					timelineLen	= doc.timeline.getLength();	// XXX sync
 		final BasicCompoundEdit		ce;
-		final List					coll		= new ArrayList( num );
+		final List<MarkerStake> coll		= new ArrayList<MarkerStake>( num );
 		int							argIdx		= 1;
 		long						pos;
 		String						name;
@@ -340,7 +329,7 @@ implements OSCRouter
 	public void oscCmd_remove( RoutedOSCMessage rom )
 	{
 		final BasicCompoundEdit	ce;
-		final List					coll;
+		final List  				coll;
 		final long					n1, n2;
 		int							i1, i2;
 		int							argIdx		= 1;
@@ -357,10 +346,10 @@ implements OSCRouter
 				argIdx++;
 				i1		= Math.max( 0, ((Number) rom.msg.getArg( argIdx )).intValue() );
 				argIdx++;
-				i2		= Math.min( trail.getNumStakes(), ((Number) rom.msg.getArg( argIdx )).intValue() );
-				coll	= new ArrayList( Math.max( 1, i2 - i1 ));
-				while( i1 < i2 ) {
-					coll.add( trail.get( i1++ ));
+				i2 = Math.min(trail.getNumStakes(), ((Number) rom.msg.getArg(argIdx)).intValue());
+				coll = new ArrayList(Math.max(1, i2 - i1));
+				while (i1 < i2) {
+					coll.add(trail.get(i1++));
 				}
 
 			} else if( rom.msg.getArg( argIdx ).equals( "at" )) {

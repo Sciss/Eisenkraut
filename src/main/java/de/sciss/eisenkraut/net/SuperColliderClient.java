@@ -2,18 +2,13 @@
  *  SuperColliderClient.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		04-Aug-05	created 
- *		15-Sep-05	added limiter
  */
 
 package de.sciss.eisenkraut.net;
@@ -68,16 +63,9 @@ import de.sciss.jcollider.UGenInfo;
 import de.sciss.jcollider.gui.NodeTreePanel;
 import de.sciss.util.Param;
 
-/**
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 29-Apr-08
- *
- *	@todo		volume should be managed in separate synths pre limiters
- *				so that pre-fader metering becomes possible
- */
 public class SuperColliderClient
-implements OSCRouter, Constants, ServerListener, DocumentListener
-{
+		implements OSCRouter, Constants, ServerListener, DocumentListener {
+
 	private ServerOptions			so;
 	protected Server				server				= null;
 	private boolean					serverIsReady		= false;	// = running + defs have been loaded
@@ -505,20 +493,22 @@ implements OSCRouter, Constants, ServerListener, DocumentListener
 		Param					p;
 		final String			abCfgID		= audioPrefs.get( PrefsUtil.KEY_AUDIOBOX, AudioBoxConfig.ID_DEFAULT );
 		final AudioBoxConfig	abCfg		= new AudioBoxConfig( audioPrefs.node( PrefsUtil.NODE_AUDIOBOXES ).node( abCfgID ));
-		
-		p	= Param.fromPrefs( audioPrefs, PrefsUtil.KEY_AUDIORATE, null );
-		if( p != null ) so.setSampleRate( p.val );
-		so.setNumInputBusChannels( abCfg.numInputChannels );
-		so.setNumOutputBusChannels( abCfg.numOutputChannels );
-		p	= Param.fromPrefs( audioPrefs, PrefsUtil.KEY_AUDIOBUSSES, null );
-		if( p != null ) so.setNumAudioBusChannels( Math.max( abCfg.numInputChannels + abCfg.numOutputChannels, (int) p.val ));
-		p	= Param.fromPrefs( audioPrefs, PrefsUtil.KEY_SCMEMSIZE, null );
-		if( p != null ) so.setMemSize( (int) p.val << 10 );
-		p	= Param.fromPrefs( audioPrefs, PrefsUtil.KEY_SCBLOCKSIZE, null );
-		if( p != null ) so.setBlockSize( (int) p.val );
-		if( !abCfg.name.equals( "Default" )) so.setDevice( abCfg.name );
-		so.setLoadDefs( false );
-		so.setRendezvous( audioPrefs.getBoolean( PrefsUtil.KEY_SCRENDEZVOUS, true ));
+
+		p = Param.fromPrefs(audioPrefs, PrefsUtil.KEY_AUDIORATE, null);
+		if (p != null) so.setSampleRate(p.val);
+		so.setNumInputBusChannels(abCfg.numInputChannels);
+		so.setNumOutputBusChannels(abCfg.numOutputChannels);
+		p = Param.fromPrefs(audioPrefs, PrefsUtil.KEY_AUDIOBUSSES, null);
+		if (p != null)
+			so.setNumAudioBusChannels(Math.max(abCfg.numInputChannels + abCfg.numOutputChannels, (int) p.val));
+		p = Param.fromPrefs(audioPrefs, PrefsUtil.KEY_SCMEMSIZE, null);
+		if (p != null) so.setMemSize((int) p.val << 10);
+		p = Param.fromPrefs(audioPrefs, PrefsUtil.KEY_SCBLOCKSIZE, null);
+		if (p != null) so.setBlockSize((int) p.val);
+		if (!abCfg.name.equals("Default")) so.setDevice(abCfg.name);
+		so.setLoadDefs(false);
+		so.setRendezvous(audioPrefs.getBoolean(PrefsUtil.KEY_SCRENDEZVOUS, false));
+
 //System.err.println( "abCfgID ="+abCfgID+" ("+abCfgID.equals( AudioBoxConfig.NAME_DEFAULT )+") ; in "+abCfg.numInputChannels+"; out "+abCfg.numOutputChannels );
 
 		// udp-port-number
@@ -531,19 +521,19 @@ implements OSCRouter, Constants, ServerListener, DocumentListener
 //		catch( NumberFormatException e1 ) {
 //			printError( "boot", e1 );
 //		}
-		p					= Param.fromPrefs( audioPrefs, PrefsUtil.KEY_SCPORT, null );
-		serverPort			= p == null ? DEFAULT_PORT : (int) p.val;
-		val					= audioPrefs.get( PrefsUtil.KEY_SCPROTOCOL, OSCChannel.TCP );
-		so.setProtocol( val );
+		p 			= Param.fromPrefs(audioPrefs, PrefsUtil.KEY_SCPORT, null);
+		serverPort 	= p == null ? DEFAULT_PORT : (int) p.val;
+		val 		= audioPrefs.get(PrefsUtil.KEY_SCPROTOCOL, OSCChannel.TCP);
+		so.setProtocol(val);
 		
 //		so.setEnv( "SC_JACK_NAME", "Eisenkraut" );
-		
-		val		= audioPrefs.get( PrefsUtil.KEY_SUPERCOLLIDERAPP, null );
-		if( val == null ) {
-			System.err.println( getResourceString( "errSCSynthAppNotFound" ));
+
+		val = audioPrefs.get(PrefsUtil.KEY_SUPERCOLLIDERAPP, null);
+		if (val == null) {
+			System.err.println(getResourceString("errSCSynthAppNotFound"));
 			return false;
 		}
-		Server.setProgram( val );
+		Server.setProgram(val);
 
 //		if( server != null ) {
 //			server.dispose();	// removes listeners as well

@@ -2,17 +2,13 @@
  *  XMLRepresentation.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		13-May-05	created from de.sciss.meloncillo.io.XMLRepresentation
  */
 
 package de.sciss.eisenkraut.io;
@@ -27,11 +23,6 @@ import org.w3c.dom.Element;
  *  Classes implementing this interface
  *  support import and export of their
  *  structure from/to XML
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
- *
- *  @todo   this could be much more elaborate
  */
 public interface XMLRepresentation
 {

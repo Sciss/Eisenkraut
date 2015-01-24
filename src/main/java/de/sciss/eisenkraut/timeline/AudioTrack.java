@@ -2,17 +2,13 @@
  *  AudioTrack.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		13-May-05   created from de.sciss.meloncillo.transmitter.AbstractTransmitter
  */
 
 package de.sciss.eisenkraut.timeline;
@@ -33,17 +29,10 @@ import de.sciss.timebased.Trail;
  *  It provides the basic mechanism for XML import and
  *  export, it handles all methods except
  *  <code>getTrackEditor</code>.
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 15-Oct-06
- *
- *	@todo		dispose
  */
 public class AudioTrack
-extends Track
-implements OSCRouter
-{
-//	public static final int			OWNER_WAVE			=	0x3000;
+		extends Track
+		implements OSCRouter {
 
 	public static final String		MAP_KEY_PANAZIMUTH	= "panazimuth";
 	public static final String		MAP_KEY_PANSPREAD	= "panspread";
@@ -75,10 +64,10 @@ implements OSCRouter
 
 		map.putContext( this, MAP_KEY_PANAZIMUTH, new MapManager.Context( MapManager.Context.FLAG_OBSERVER_DISPLAY,
 																		   MapManager.Context.TYPE_DOUBLE, null, "labelAzimuth",
-																		   null, new Double( 0.0 )));
+																		   null, 0.0));
 		map.putContext( this, MAP_KEY_PANSPREAD, new MapManager.Context( MapManager.Context.FLAG_OBSERVER_DISPLAY,
 																		   MapManager.Context.TYPE_DOUBLE, null, "labelSpread",
-																		   null, new Double( 0.0 )));
+																		   null, 0.0));
 
 		osc			= new OSCRouterWrapper( coll, this );
 	}
@@ -112,36 +101,31 @@ implements OSCRouter
 	}
 
 	// ------------- OSCRouter interface -------------
-	
-	public String oscGetPathComponent()
-	{
-		return String.valueOf( chan );
+
+	public String oscGetPathComponent() {
+		return String.valueOf(chan);
 	}
 
-	public void oscRoute( RoutedOSCMessage rom )
-	{
-		osc.oscRoute( rom );
-	}
-	
-	public void oscAddRouter( OSCRouter subRouter )
-	{
-		osc.oscAddRouter( subRouter );
+	public void oscRoute(RoutedOSCMessage rom) {
+		osc.oscRoute(rom);
 	}
 
-	public void oscRemoveRouter( OSCRouter subRouter )
-	{
-		osc.oscRemoveRouter( subRouter );
+	public void oscAddRouter(OSCRouter subRouter) {
+		osc.oscAddRouter(subRouter);
 	}
 
-	public Object oscQuery_flags()
-	{
+	public void oscRemoveRouter(OSCRouter subRouter) {
+		osc.oscRemoveRouter(subRouter);
+	}
+
+	public Object oscQuery_flags() {
 //		return new Integer( getFlags() );
-		return getMap().getValue( MAP_KEY_FLAGS );
+		return getMap().getValue(MAP_KEY_FLAGS);
 	}
 
 	public Object oscQuery_audible()
 	{
-		return new Integer( isAudible() ? 1 : 0 );
+		return isAudible() ? 1 : 0;
 	}
 
 	public Object oscQuery_panAzimuth()
@@ -156,7 +140,7 @@ implements OSCRouter
 
 	public Object oscQuery_trackSelected()
 	{
-		return new Integer( coll.isSelected( this ) ? 1 : 0 );
+		return coll.isSelected(this) ? 1 : 0;
 	}
 
 	// flags <(int) flagsToSet> <(int) flagsToClear>
@@ -172,7 +156,7 @@ implements OSCRouter
 			oldFlags	= getFlags();
 			newFlags	= (oldFlags | flagsSet) & ~flagsClear;
 			if( oldFlags == newFlags ) return;
-			getMap().putValue( this, MAP_KEY_FLAGS, new Integer( newFlags ));
+			getMap().putValue( this, MAP_KEY_FLAGS, newFlags);
 		}
 		catch( ClassCastException e1 ) {
 			OSCRoot.failedArgType( rom, argIdx );
@@ -199,8 +183,8 @@ implements OSCRouter
 			}
 			argIdx++;
 			spread		= Math.max( -1.0, Math.min( 1.0, ((Number) rom.msg.getArg( argIdx )).doubleValue() ));
-			getMap().putValue( this, MAP_KEY_PANAZIMUTH, new Double( azi ));
-			getMap().putValue( this, MAP_KEY_PANSPREAD, new Double( spread ));
+			getMap().putValue( this, MAP_KEY_PANAZIMUTH, azi);
+			getMap().putValue( this, MAP_KEY_PANSPREAD, spread);
 		}
 		catch( ClassCastException e1 ) {
 			OSCRoot.failedArgType( rom, argIdx );

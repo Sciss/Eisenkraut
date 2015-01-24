@@ -2,17 +2,13 @@
  *  RotateChannels.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		15-Jul-05	created
  */
 
 package de.sciss.eisenkraut.render;
@@ -31,15 +27,9 @@ import de.sciss.gui.PrefParamField;
 import de.sciss.util.Param;
 import de.sciss.util.ParamSpace;
 
-/**
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
- */
 public class RotateChannels
-extends AbstractRenderPlugIn
-{
-	private static final String KEY_NUMROT	= "numRotation";
-//	private int nimRod;
+		extends AbstractRenderPlugIn {
+	private static final String KEY_NUMROT = "numRotation";
 
 	private static final Param DEFAULT_NUMROT = new Param( 1, ParamSpace.NONE | ParamSpace.ABS );
 

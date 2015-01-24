@@ -2,7 +2,7 @@
  *  PrefsUtil.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
@@ -353,11 +353,12 @@ public class PrefsUtil
 		String			value;
 		Preferences		childPrefs, childPrefs2;
 		final String	fs			= File.separator;
-		final boolean	isMacOS		= System.getProperty( "os.name" ).indexOf( "Mac OS" ) >= 0;
-        final boolean	isWindows	= System.getProperty( "os.name" ).indexOf( "Windows" ) >= 0;
+		final boolean	isMacOS		= System.getProperty("os.name").indexOf("Mac OS" ) >= 0;
+		final boolean	isWindows	= System.getProperty("os.name").indexOf("Windows") >= 0;
+		final boolean	isLinux		= !(isMacOS || isWindows);	// Well...
 		final List		warnings	= new ArrayList();
-	
-		putDontOverwrite( IOUtil.getUserPrefs(), IOUtil.KEY_TEMPDIR, System.getProperty( "java.io.tmpdir" ));
+
+		putDontOverwrite(IOUtil.getUserPrefs(), IOUtil.KEY_TEMPDIR, System.getProperty("java.io.tmpdir"));
 
 		// general
 		putDontOverwrite( mainPrefs, KEY_LOOKANDFEEL, UIManager.getSystemLookAndFeelClassName() );
@@ -381,27 +382,26 @@ public class PrefsUtil
 
         putDontOverwrite( childPrefs, KEY_AUTOPLAYFROMFINDER, AUTOPLAYFROMFINDER_NONE );
 
-		// audioboxes
+		// audio boxes
 		value = AudioBoxConfig.ID_DEFAULT;
 		putDontOverwrite( childPrefs, KEY_AUDIOBOX, value );
 		try {
-			if( !childPrefs.nodeExists( NODE_AUDIOBOXES )) {
-				childPrefs2	= childPrefs.node( NODE_AUDIOBOXES );
-				new AudioBoxConfig( value, "Default", 8, 8, true ).toPrefs( childPrefs2.node( value ));
+			if (!childPrefs.nodeExists(NODE_AUDIOBOXES)) {
+				childPrefs2 = childPrefs.node(NODE_AUDIOBOXES);
+				new AudioBoxConfig(value, isLinux ? "Eisenkraut" : "Default", 8, 8, true).toPrefs(childPrefs2.node(value));
 			}
-		}
-		catch( BackingStoreException e1 ) {
-			warnings.add( e1.toString() );
+		} catch (BackingStoreException e1) {
+			warnings.add(e1.toString());
 		}
 
 		putDontOverwrite( childPrefs, KEY_AUDIORATE, new Param( 0, ParamSpace.FREQ | ParamSpace.HERTZ ).toString() );
 		putDontOverwrite( childPrefs, KEY_AUDIOBUSSES, new Param( 256, ParamSpace.NONE ).toString() );
 		putDontOverwrite( childPrefs, KEY_SCMEMSIZE, new Param( 8, ParamSpace.NONE ).toString() );
 		putDontOverwrite( childPrefs, KEY_SCBLOCKSIZE, new Param( 64, ParamSpace.NONE ).toString() );
-		putBooleanDontOverwrite( childPrefs, KEY_SCRENDEZVOUS, true );
+		putBooleanDontOverwrite(childPrefs, KEY_SCRENDEZVOUS, false);
 //		putBooleanDontOverwrite( childPrefs, KEY_AUTOBOOT, false );
 
-		// outputconfigs
+		// output configs
 		value = "out1to2";
 		putDontOverwrite( childPrefs, KEY_OUTPUTCONFIG, value );
 		try {
@@ -421,7 +421,7 @@ public class PrefsUtil
 			warnings.add( e1.toString() );
 		}
 
-		// inputconfigs
+		// input configs
 		try {
 			if( !childPrefs.nodeExists( NODE_INPUTCONFIGS )) {
 				childPrefs2 = childPrefs.node( NODE_INPUTCONFIGS );
@@ -438,9 +438,8 @@ public class PrefsUtil
 //				new RoutingConfig( value, 2, new int[] { 1, 0 }, -90f ).toPrefs(
 //					childPrefs2.node( "Reversed Stereo" ));
 			}
-		}
-		catch( BackingStoreException e1 ) {
-			warnings.add( e1.toString() );
+		} catch (BackingStoreException e1) {
+			warnings.add(e1.toString());
 		}
 
 //		try {
@@ -451,8 +450,9 @@ public class PrefsUtil
 //			value   = "127.0.0.1:57109";	// not 57110 which may interfere with a running copy of sclang
 //		}
 //		putDontOverwrite( childPrefs, KEY_SUPERCOLLIDEROSC, value );
-		putDontOverwrite( childPrefs, KEY_SCPROTOCOL, OSCChannel.TCP );
-		putDontOverwrite( childPrefs, KEY_SCPORT, new Param( 0, ParamSpace.NONE | ParamSpace.ABS ).toString() );
+
+		putDontOverwrite(childPrefs, KEY_SCPROTOCOL, OSCChannel.TCP);
+		putDontOverwrite(childPrefs, KEY_SCPORT, new Param(0, ParamSpace.NONE | ParamSpace.ABS).toString());
 		
 		// sc app
 		if( childPrefs.get( KEY_SUPERCOLLIDERAPP, null ) == null ) {
@@ -484,7 +484,11 @@ public class PrefsUtil
 
 		// OSC
 		childPrefs  = OSCRoot.getInstance().getPreferences();
-		if( childPrefs.get( OSCGUI.KEY_SWINGAPP, null ) == null ) {
+		putDontOverwrite   	   (childPrefs, OSCRoot.KEY_PROTOCOL, OSCChannel.TCP      );
+		putIntDontOverwrite	   (childPrefs, OSCRoot.KEY_PORT	, OSCRoot.DEFAULT_PORT);
+		putBooleanDontOverwrite(childPrefs, OSCRoot.KEY_ACTIVE	, isLinux			  ); // used to enforce MDA
+
+		if (childPrefs.get(OSCGUI.KEY_SWINGAPP, null) == null) {
 			final String[] folders = new String[ value == null ? 2 : 4 ];
 			folders[ 0 ] = fs + "Applications" + fs + "SwingOSC";
 			folders[ 1 ] = "C:\\Program Files\\SwingOSC";
@@ -496,7 +500,7 @@ public class PrefsUtil
 //			if( f == null ) {
 //				warnings.add( AbstractApplication.getApplication().getResourceString( "errSCSynthAppNotFound" ));
 //			}
-			if( f != null ) putDontOverwrite( childPrefs, OSCGUI.KEY_SWINGAPP, f.getAbsolutePath() );
+			if (f != null) putDontOverwrite(childPrefs, OSCGUI.KEY_SWINGAPP, f.getAbsolutePath());
 		}
 		
 		// view

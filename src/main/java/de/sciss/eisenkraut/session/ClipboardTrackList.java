@@ -2,17 +2,13 @@
  *  ClipboardTrackList.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		27-Jan-06	created
  */
 
 package de.sciss.eisenkraut.session;
@@ -26,7 +22,6 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,25 +32,17 @@ import de.sciss.io.Span;
 import de.sciss.timebased.Trail;
 import de.sciss.util.Disposable;
 
-/**
- *  @author				Hanns Holger Rutz
- *  @version			0.70, 28-Apr-08
- *
- *	@todo				disposeAll is not a safe decision because another
- *						document might be in the middle of pasting this track list!!
- *
- *	@synchronization	all methods must be called in the event thread
- */
 public class ClipboardTrackList
-implements Transferable, ClipboardOwner, Disposable
-{
+		implements Transferable, ClipboardOwner, Disposable {
+
 	private static final boolean DEBUG	= false;
 
 	public static final DataFlavor		trackListFlavor	= new DataFlavor( ClipboardTrackList.class, null );
 
 	// the items in this map are only removed in disposeAll(), it's therefore
 	// crucial that disposeAll() is called when a document is closed!
-	private static final Map	mapTrackLists	= new HashMap();	// key = Document, value = Set (element = ClipboardTrackList)
+	private static final Map<Session, Set<ClipboardTrackList>> mapTrackLists =
+			new HashMap<Session, Set<ClipboardTrackList>>();	// key = Document, value = Set (element = ClipboardTrackList)
 
 	private final static DataFlavor[]	flavors			= {
 		trackListFlavor // , AudioFileRegion.flavor
@@ -66,9 +53,9 @@ implements Transferable, ClipboardOwner, Disposable
 	private boolean						disposed		= false;
 	
 	// key = Class of Trail ; value = Track.Info
-	private final Map			mapInfos	= new HashMap();
+	private final Map<Class<?>, Track.Info> mapInfos	= new HashMap<Class<?>, Track.Info>();
 	// key = Class of Trail; value = Trail (sub)
-	private final Map			mapTrails	= new HashMap();
+	private final Map<Class<?>, Trail> mapTrails	= new HashMap<Class<?>, Trail>();
 
 	public ClipboardTrackList( Session doc )
 	{
@@ -84,66 +71,52 @@ implements Transferable, ClipboardOwner, Disposable
 		final List				infos = Track.getInfos( tracks, doc.tracks.getAll() );
 		Track.Info				ti;
 		Trail					subTrail;
-		Set						setTrackLists;
-		
-		for( int i = 0; i < infos.size(); i++ ) {
-			ti			= (Track.Info) infos.get( i );
-			subTrail	= ti.trail.getCuttedTrail( span, Trail.TOUCH_SPLIT, 0 );
-			mapTrails.put( ti.trail.getClass(), subTrail );
-			mapInfos.put( ti.trail.getClass(), ti );
+		Set<ClipboardTrackList> setTrackLists;
+
+		for (Object info : infos) {
+			ti = (Track.Info) info;
+			subTrail = ti.trail.getCuttedTrail(span, Trail.TOUCH_SPLIT, 0);
+			mapTrails.put(ti.trail.getClass(), subTrail);
+			mapInfos .put(ti.trail.getClass(), ti);
 		}
 		
-		setTrackLists	= (Set) mapTrackLists.get( doc );
-		if( setTrackLists == null ) {
-			setTrackLists	= new HashSet();
-			mapTrackLists.put( doc, setTrackLists );
+		setTrackLists = mapTrackLists.get(doc);
+		if (setTrackLists == null) {
+			setTrackLists = new HashSet<ClipboardTrackList>();
+			mapTrackLists.put(doc, setTrackLists);
 		}
-		setTrackLists.add( this );
-		if( DEBUG ) System.err.println( "new : "+hashCode() );
+		setTrackLists.add(this);
+		if (DEBUG) System.err.println("new : " + hashCode());
 	}
 	
 	public Span getSpan()
 	{
 		return span;
 	}
-	
-//	public int getTrailNum()
-//	{
-//		return trackClasses.length;
-//	}
-//
-//	public Class getTrailClass( int idx )
-//	{
-//		return trackClasses[ idx ];
-//	}
-	
-	public int getTrackNum( Class trailClass )
-	{
-		final Track.Info ti = (Track.Info) mapInfos.get( trailClass );
-		if( ti == null ) return 0;
+
+	public int getTrackNum(Class<? extends Trail> trailClass) {
+		final Track.Info ti = mapInfos.get(trailClass);
+		if (ti == null) return 0;
 		return ti.numTracks;
 	}
-	
-	public boolean[] getTrackMap( Class trailClass )
-	{
-		final Track.Info ti = (Track.Info) mapInfos.get( trailClass );
-		if( ti == null ) return new boolean[ 0 ];
+
+	public boolean[] getTrackMap(Class trailClass) {
+		final Track.Info ti = mapInfos.get(trailClass);
+		if (ti == null) return new boolean[0];
 		return ti.trackMap;
 	}
 
-	public Trail getSubTrail( Class trailClass )
-	{
-		return( (Trail) mapTrails.get( trailClass ));
+	public Trail getSubTrail(Class trailClass) {
+		return (mapTrails.get(trailClass));
 	}
-	
-	public void dispose()
-	{
-		if( DEBUG ) System.err.println( "dispose : "+hashCode() );
-		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
-		if( disposed ) return;
 
-		for( Iterator iter = mapTrails.values().iterator(); iter.hasNext(); ) {
-			((Trail) iter.next()).dispose();
+	public void dispose() {
+		if (DEBUG) System.err.println("dispose : " + hashCode());
+		if (!EventQueue.isDispatchThread()) throw new IllegalMonitorStateException();
+		if (disposed) return;
+
+		for (Trail trail : mapTrails.values()) {
+			trail.dispose();
 		}
 		
 		mapInfos.clear();
@@ -154,15 +127,14 @@ implements Transferable, ClipboardOwner, Disposable
 
 		disposed = true;
 	}
-	
-	public static void disposeAll( Session doc )
-	{
-		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
 
-		final Set setTrackLists = (Set) mapTrackLists.remove( doc );
-		if( setTrackLists != null ) {
-			for( Iterator iter = setTrackLists.iterator(); iter.hasNext(); ) {
-				((ClipboardTrackList) iter.next()).dispose();
+	public static void disposeAll(Session doc) {
+		if (!EventQueue.isDispatchThread()) throw new IllegalMonitorStateException();
+
+		final Set<ClipboardTrackList> setTrackLists = mapTrackLists.remove(doc);
+		if (setTrackLists != null) {
+			for (ClipboardTrackList setTrackList : setTrackLists) {
+				setTrackList.dispose();
 			}
 		}
 
@@ -185,16 +157,8 @@ implements Transferable, ClipboardOwner, Disposable
 
 	// ---------------- ClipboardOwner interface ---------------- 
 
-	public void lostOwnership( Clipboard clipboard, Transferable contents )
-	{
-// we'll always get some sun.awt.datatransfer.TransferableProxy as the contents
-// objects, not ourselves ; so we simply assume that since we only "own"
-// ourselves, we can safely dipose the track list here
-//		if( contents == this ) {
-			dispose();
-//		} else {
-//			System.err.println( "Yukk! Clipboard transmutation??? " + contents + " != " + this );
-//		}
+	public void lostOwnership(Clipboard clipboard, Transferable contents) {
+		dispose();
 	}
 						  
 	// ---------------- Transferable interface ---------------- 
@@ -204,12 +168,11 @@ implements Transferable, ClipboardOwner, Disposable
 		return disposed ? noFlavors : flavors;
 	}
 
-	public boolean isDataFlavorSupported( DataFlavor flavor )
-	{
-		if( disposed ) return false;
-	
-		for( int i = 0; i < flavors.length; i++ ) {
-			if( flavor.equals( flavors[i] )) return true;
+	public boolean isDataFlavorSupported(DataFlavor flavor) {
+		if (disposed) return false;
+
+		for (DataFlavor flavor1 : flavors) {
+			if (flavor.equals(flavor1)) return true;
 		}
 		return false;
 	}
@@ -223,16 +186,15 @@ implements Transferable, ClipboardOwner, Disposable
 	 *  @throws UnsupportedFlavorException  if the flavor is not <code>trackListFlavor</code>
 	 *  @throws IOException when data cannot be transferred
 	 */
-	public Object getTransferData( DataFlavor flavor )
-	throws UnsupportedFlavorException, IOException
-	{
-		if( !disposed && flavor.equals( trackListFlavor )) {
+	public Object getTransferData(DataFlavor flavor)
+			throws UnsupportedFlavorException, IOException {
+		if (!disposed && flavor.equals(trackListFlavor)) {
 			return this;
 //		} else if( flavor.equals( AudioFileRegion.flavor ) && (size() == 1) ) {
 //			final SampledChunk ts = get( 0 );
 //			return new AudioFileRegion( ts.f.getFile(), ts.span );
 		} else {
-			throw new UnsupportedFlavorException( flavor );
+			throw new UnsupportedFlavorException(flavor);
 		}
 	}
 }

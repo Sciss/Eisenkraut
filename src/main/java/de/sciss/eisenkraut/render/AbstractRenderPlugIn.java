@@ -2,17 +2,13 @@
  *  AbstractRenderPlugIn.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		15-Jul-05	created
  */
 
 package de.sciss.eisenkraut.render;
@@ -30,14 +26,8 @@ import de.sciss.io.AudioFileDescr;
 import de.sciss.io.IOUtil;
 import de.sciss.io.InterleavedStreamFile;
 
-/**
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
- */
-public abstract class AbstractRenderPlugIn
-implements RenderPlugIn
-{
-	private List	collTempFiles	= null;	// lazy creation
+public abstract class AbstractRenderPlugIn implements RenderPlugIn {
+	private List<AudioFile> collTempFiles	= null;	// lazy creation
 
 	protected Preferences	prefs = null;
 
@@ -145,44 +135,38 @@ implements RenderPlugIn
 			deleteAllTempFiles();
 		}
 	}
-	
+
 	/**
-	 *	Default behaviour : simply calls consumer.consumerCancel() and
-	 *	delete all temp files
+	 * Default behaviour : simply calls consumer.consumerCancel() and
+	 * delete all temp files
 	 */
-	public void producerCancel( RenderSource source )
-	throws IOException
-	{
+	public void producerCancel(RenderSource source)
+			throws IOException {
 		try {
-			source.context.getConsumer().consumerCancel( source );
-		}
-		finally {
+			source.context.getConsumer().consumerCancel(source);
+		} finally {
 			deleteAllTempFiles();
 		}
 	}
 
-	private void deleteAllTempFiles()
-	{
-		if( this.collTempFiles != null ) {
-			while( !this.collTempFiles.isEmpty() ) {
-				deleteTempFile( (AudioFile) this.collTempFiles.get( 0 ));
+	private void deleteAllTempFiles() {
+		if (this.collTempFiles != null) {
+			while (!this.collTempFiles.isEmpty()) {
+				deleteTempFile(this.collTempFiles.get(0));
 			}
 		}
 	}
 
-	protected void deleteTempFile( InterleavedStreamFile f )
-	{
-		if( this.collTempFiles != null ) this.collTempFiles.remove( f );
+	protected void deleteTempFile(InterleavedStreamFile f) {
+		if (this.collTempFiles != null) this.collTempFiles.remove(f);
 		try {
 			f.close();
-		}
-		catch( IOException e1 ) { /* ignore */ }
+		} catch (IOException e1) { /* ignore */ }
 		f.getFile().delete();
 	}
 
-	protected InterleavedStreamFile createTempFile( int numChannels, double rate )
-	throws IOException
-	{
+	protected InterleavedStreamFile createTempFile(int numChannels, double rate)
+			throws IOException {
 		final AudioFileDescr afd = new AudioFileDescr();
 		AudioFile af;
 		
@@ -193,80 +177,67 @@ implements RenderPlugIn
 		afd.sampleFormat	= AudioFileDescr.FORMAT_FLOAT;
 		afd.file			= IOUtil.createTempFile( "fsc", ".aif" );
 		af					= AudioFile.openAsWrite( afd );
-		
-		if( this.collTempFiles == null ) {
-			this.collTempFiles	= new ArrayList();
+
+		if (this.collTempFiles == null) {
+			this.collTempFiles = new ArrayList<AudioFile>();
 		}
-		this.collTempFiles.add( af );
+		this.collTempFiles.add(af);
 		return af;
 	}
 
-	protected static void fill( float[][] buf, int off, int len, float value )
-	{
-		float[] convBuf;
-	
-		for( int ch = 0; ch < buf.length; ch++ ) {
-			convBuf = buf[ ch ];
-			for( int i = off, j = off + len; i < j; ) {
-				convBuf[ i++ ] = value;
+	protected static void fill(float[][] buf, int off, int len, float value) {
+		for (float[] chBuf : buf) {
+			for (int i = off, j = off + len; i < j; ) {
+				chBuf[i++] = value;
 			}
 		}
 	}
 
-	protected static void multiply( float[][] buf, int off, int len, float value )
-	{
-		float[] convBuf;
-	
-		for( int ch = 0; ch < buf.length; ch++ ) {
-			convBuf = buf[ ch ];
-			for( int i = off, j = off + len; i < j; ) {
-				convBuf[ i++ ] *= value;
+	protected static void multiply(float[][] buf, int off, int len, float value) {
+		for (float[] chBuf : buf) {
+			for (int i = off, j = off + len; i < j; ) {
+				chBuf[i++] *= value;
 			}
 		}
 	}
 
-	public static void multiply( float[] buf, int off, int len, float value )
-	{
-		for( int i = off + len; off < i; ) {
-			buf[ off++ ] *= value;
+	public static void multiply(float[] buf, int off, int len, float value) {
+		for (int i = off + len; off < i; ) {
+			buf[off++] *= value;
 		}
 	}
 
-	protected static void add( float[][] bufA, int offA, float[][] bufB, int offB, int len )
-	{
-		float[] convBuf1, convBuf2;
-	
-		for( int ch = 0; ch < bufA.length; ch++ ) {
-			convBuf1 = bufA[ ch ];
-			convBuf2 = bufB[ ch ];
-			for( int i = offA, j = offB, k = offA + len; i < k; ) {
-				convBuf1[ i++ ] += convBuf2[ j++ ];
+	protected static void add(float[][] bufA, int offA, float[][] bufB, int offB, int len) {
+		float[] chBuf1, chBuf2;
+
+		for (int ch = 0; ch < bufA.length; ch++) {
+			chBuf1 = bufA[ch];
+			chBuf2 = bufB[ch];
+			for (int i = offA, j = offB, k = offA + len; i < k; ) {
+				chBuf1[i++] += chBuf2[j++];
 			}
 		}
 	}
 
-	public static void add( float[] bufA, int offA, float[] bufB, int offB, int len )
-	{
-		for( int i = offA + len; offA < i; ) {
-			bufA[ offA++ ] += bufB[ offB++ ];
+	public static void add(float[] bufA, int offA, float[] bufB, int offB, int len) {
+		for (int i = offA + len; offA < i; ) {
+			bufA[offA++] += bufB[offB++];
 		}
 	}
 
-	protected static void subtract( float[][] bufA, int offA, float[][] bufB, int offB, int len )
-	{
-		float[] convBuf1, convBuf2;
-	
-		for( int ch = 0; ch < bufA.length; ch++ ) {
-			convBuf1 = bufA[ ch ];
-			convBuf2 = bufB[ ch ];
-			for( int i = offA, j = offB, k = offA + len; i < k; ) {
-				convBuf1[ i++ ] -= convBuf2[ j++ ];
+	protected static void subtract(float[][] bufA, int offA, float[][] bufB, int offB, int len) {
+		float[] chBuf1, chBuf2;
+
+		for (int ch = 0; ch < bufA.length; ch++) {
+			chBuf1 = bufA[ch];
+			chBuf2 = bufB[ch];
+			for (int i = offA, j = offB, k = offA + len; i < k; ) {
+				chBuf1[i++] -= chBuf2[j++];
 			}
 		}
 	}
-	
-	protected static String getResourceString( String key )
-	{
-		return AbstractApplication.getApplication().getResourceString( key );
+
+	protected static String getResourceString(String key) {
+		return AbstractApplication.getApplication().getResourceString(key);
 	}
 }

@@ -2,22 +2,13 @@
  *  SuperColliderPlayer.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		04-Aug-05	created
- *		23-Sep-05	correctly de-allocates buffers and busses
- *					when dispose() is called (fixed bug with bus allocator running out of busses)
- *		06-Nov-05	more precise metering
- *		16-Jan-06	supports multi-mono ;click free overlapping buffer reader in SRC mode ; larger disk buffer
- *					(see Wolkenpumpe)
  */
 
 package de.sciss.eisenkraut.net;
@@ -57,18 +48,12 @@ import de.sciss.jcollider.SynthDef;
 import de.sciss.jcollider.UGen;
 import de.sciss.util.Disposable;
 
-/**
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
- *
- *	@todo		why is there actually a Context class instead of using outer class fields directly?
- */
 public class SuperColliderPlayer
-implements	de.sciss.jcollider.Constants,
-			TransportListener, // RealtimeConsumer,
-			SessionCollection.Listener, Disposable,
-			TimelineListener, OSCRouter
-{
+		implements de.sciss.jcollider.Constants,
+		TransportListener, // RealtimeConsumer,
+		SessionCollection.Listener, Disposable,
+		TimelineListener, OSCRouter {
+
 	private static final boolean DEBUG_FOLD		= false;
 	
 	private static final int DISKBUF_PAD		= 4;	// be sure to match with phasor synth def!!

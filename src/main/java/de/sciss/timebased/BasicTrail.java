@@ -2,23 +2,13 @@
  *  BasicTrail.java
  *  de.sciss.timebased package
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		06-Jan-06	created
- *		25-Feb-06	implements TreeNode ; moved to double precision
- *		01-May-06	clearly distinugishes addPerform edits
- *		15-Oct-06	added getAll( int, int, boolean )
- *		19-Nov-07	removed retainAll calls which are extremely slow
- *		11-Feb-08	fixed editGetRange (calls getRightMostIndex instead of editGetRightMostIndex)
- *		18-Mar-08	editRemove dispatches even when modSpan is empty
  */
 
 package de.sciss.timebased;
@@ -41,34 +31,30 @@ import de.sciss.app.AbstractCompoundEdit;
 import de.sciss.io.Span;
 import de.sciss.util.ListEnum;
 
-/**
- *	@version	0.21, 28-Jun-08
- *	@author		Hanns Holger Rutz
- *
- *	@todo		addPerform( new Edit-Dispatch ) ueberpruefen (evtl. redundant)
- */
 public abstract class BasicTrail
-implements Trail, EventManager.Processor
-{
+		implements Trail, EventManager.Processor {
+
 	private static final boolean		DEBUG				= false;
 
-	protected static final Comparator	startComparator		= new StartComparator();
-	protected static final Comparator	stopComparator		= new StopComparator();
+	protected static final Comparator<Stake> startComparator	= new StartComparator();
+	protected static final Comparator<Stake> stopComparator		= new StopComparator();
 //	private static final List	collEmpty			= new ArrayList( 1 );
 	
-	private final List					collStakesByStart	= new ArrayList();	// sorted using StartComparator
-	private final List					collStakesByStop	= new ArrayList();	// sorted using StopComparator
+	private final List<Stake> collStakesByStart	= new ArrayList<Stake>();	// sorted using StartComparator
+	private final List<Stake> collStakesByStop	= new ArrayList<Stake>();	// sorted using StopComparator
 
-	private List						collEditByStart		= null;
-	private List						collEditByStop		= null;
+	private List<Stake>				collEditByStart		= null;
+	private List<Stake>				collEditByStop		= null;
 	private AbstractCompoundEdit		currentEdit			= null;
 
 	private double						rate;
 	
 	private EventManager				elm					= null;		// lazy creation
-	private List						dependants			= null;		// lazy creation
+	private List<BasicTrail> dependants			= null;		// lazy creation
 
 	// Element : Trail
+
+	private final Object sync = new Object();
 	
 	public BasicTrail()
 	{
@@ -79,19 +65,9 @@ implements Trail, EventManager.Processor
 	{
 		return rate;
 	}
-	
-	public void setRate( double rate )
-	{
-		this.rate	= rate;
-		
-//		// ____ dep ____
-//		if( dependants != null ) {
-//			synchronized( dependants ) {
-//				for( int i = 0; i < dependants.size(); i++ ) {
-//					((Trail) dependants.get( i )).setRate( rate );
-//				}
-//			}
-//		}
+
+	public void setRate(double rate) {
+		this.rate = rate;
 	}
 
 	public void clear( Object source )
@@ -102,10 +78,10 @@ implements Trail, EventManager.Processor
 		clearIgnoreDependants();
 
 		// ____ dep ____
-		if( dependants != null ) {
-			synchronized( dependants ) {
-				for( int i = 0; i < dependants.size(); i++ ) {
-					((BasicTrail) dependants.get( i )).clear( source );
+		if (dependants != null) {
+			synchronized (sync) {
+				for (int i = 0; i < dependants.size(); i++) {
+					((BasicTrail) dependants.get(i)).clear(source);
 				}
 			}
 		}
@@ -114,13 +90,12 @@ implements Trail, EventManager.Processor
 			dispatchModification( source, span );
 		}
 	}
-	
-	protected void clearIgnoreDependants()
-	{
+
+	protected void clearIgnoreDependants() {
 		Stake stake;
-	
-		while( !collStakesByStart.isEmpty() ) {
-			stake = (Stake) collStakesByStart.remove( 0 );
+
+		while (!collStakesByStart.isEmpty()) {
+			stake = collStakesByStart.remove(0);
 //			stake.setTrail( null );
 			stake.dispose();
 		}
@@ -135,48 +110,42 @@ implements Trail, EventManager.Processor
 		// crucial here that dependants are disposed _before_ this object
 		// coz they might otherwise try be keep running stuff which is already disposed
 		if( dependants != null ) {
-			synchronized( dependants ) {
+			synchronized(sync) {
 				final Object[] dep = dependants.toArray();
-				for( int i = 0; i < dep.length; i++ ) {
-					((BasicTrail) dep[ i ]).dispose();
+				for (Object aDep : dep) {
+					((BasicTrail) aDep).dispose();
 				}
 			}
 		}
 
-		for( int i = 0; i < collStakesByStart.size(); i++ ) {
-			((Stake) collStakesByStart.get( i )).dispose();
-		}
+		for (Stake aCollStakesByStart : collStakesByStart) ((Stake) aCollStakesByStart).dispose();
 	
 		collStakesByStart.clear();
 		collStakesByStop.clear();
 	}
 
-	protected List editGetCollByStart( AbstractCompoundEdit ce )
-	{
-		if( (ce == null) || (collEditByStart == null) ) {
+	protected List<Stake> editGetCollByStart(AbstractCompoundEdit ce) {
+		if ((ce == null) || (collEditByStart == null)) {
 			return collStakesByStart;
 		} else {
 			return collEditByStart;
 		}
 	}
 
-	protected List editGetCollByStop( AbstractCompoundEdit ce )
-	{
-		if( (ce == null) || (collEditByStop == null) ) {
+	protected List<Stake> editGetCollByStop(AbstractCompoundEdit ce) {
+		if ((ce == null) || (collEditByStop == null)) {
 			return collStakesByStop;
 		} else {
 			return collEditByStop;
 		}
 	}
 
-	public Span getSpan()
-	{
-		return editGetSpan( null );
+	public Span getSpan() {
+		return editGetSpan(null);
 	}
-	
-	public Span editGetSpan( AbstractCompoundEdit ce )
-	{
-		return new Span( editGetStart( ce ), editGetStop( ce ));
+
+	public Span editGetSpan(AbstractCompoundEdit ce) {
+		return new Span(editGetStart(ce), editGetStop(ce));
 	}
 	
 	private long editGetStart( AbstractCompoundEdit ce )
@@ -204,10 +173,8 @@ implements Trail, EventManager.Processor
 
 		// ____ dep ____
 		if( dependants != null ) {
-			synchronized( dependants ) {
-				for( int i = 0; i < dependants.size(); i++ ) {
-					((BasicTrail) dependants.get( i )).editBegin( ce );
-				}
+			synchronized(sync) {
+				for (BasicTrail dependant : dependants) dependant.editBegin(ce);
 			}
 		}
 	}
@@ -221,9 +188,9 @@ implements Trail, EventManager.Processor
 
 		// ____ dep ____
 		if( dependants != null ) {
-			synchronized( dependants ) {
-				for( int i = 0; i < dependants.size(); i++ ) {
-					((BasicTrail) dependants.get( i )).editEnd( ce );
+			synchronized(sync) {
+				for (BasicTrail dependant : dependants) {
+					dependant.editEnd(ce);
 				}
 			}
 		}
@@ -242,22 +209,22 @@ implements Trail, EventManager.Processor
 	private void ensureEditCopy()
 	{
 		if( collEditByStart == null ) {
-			collEditByStart = new ArrayList( collStakesByStart );
-			collEditByStop	= new ArrayList( collStakesByStop );
+			collEditByStart = new ArrayList<Stake>( collStakesByStart );
+			collEditByStop	= new ArrayList<Stake>( collStakesByStop );
 		}
 	}
 
 	// returns stakes that intersect OR TOUCH the span
-	public List getRange( Span span, boolean byStart )
+	public List<Stake> getRange( Span span, boolean byStart )
 	{
 		return editGetRange( span, byStart, null );
 	}
 	
 	// returns stakes that intersect OR TOUCH the span
-	public List editGetRange( Span span, boolean byStart, AbstractCompoundEdit ce )
+	public List<Stake> editGetRange( Span span, boolean byStart, AbstractCompoundEdit ce )
 	{
-		final List	collByStart, collByStop;
-		List		collResult;
+		final List<Stake>	collByStart, collByStop;
+		List<Stake>	collResult;
 		int			idx;
 		
 		if( ce == null ) {
@@ -269,10 +236,8 @@ implements Trail, EventManager.Processor
 			collByStop	= collEditByStop == null ? collStakesByStop : collEditByStop;
 		}
 	
-//long t1 = System.currentTimeMillis();
 		if( byStart ) {
-			idx			= Collections.binarySearch( collByStop, new Long( span.start ), stopComparator );
-//long t2 = System.currentTimeMillis();
+			idx			= Collections.binarySearch( collByStop, span.start, stopComparator );
 			if( idx < 0 ) {
 				idx		= -(idx + 1);
 			} else {
@@ -280,39 +245,32 @@ implements Trail, EventManager.Processor
 				//  there is no guarantee which one will be found"
 				idx		= getLeftMostIndex( collByStop, idx, false );
 			}
-//	long t3 = System.currentTimeMillis();
-			collResult	= new ArrayList( collByStop.subList( idx, collByStop.size() ));
-			
+			collResult	= new ArrayList<Stake>( collByStop.subList( idx, collByStop.size() ));
+
 			Collections.sort( collResult, startComparator );
 			
-//	long t4 = System.currentTimeMillis();
-			idx			= Collections.binarySearch( collResult, new Long( span.stop ), startComparator );
-//	long t5 = System.currentTimeMillis();
+			idx			= Collections.binarySearch( collResult, span.stop, startComparator );
 			if( idx < 0 ) {
 				idx		= -(idx + 1);
 			} else {
 				idx		= getRightMostIndex( collResult, idx, true ) + 1;
 			}
-//	long t6 = System.currentTimeMillis();
 			collResult	= collResult.subList( 0, idx );
-//	long t7 = System.currentTimeMillis();
-//	System.out.println( "editGetRange " + (t2-t1) + " / " + (t3-t2) + " / " + (t4-t3) + " / " + (t5-t4) + " / " + (t6-t5) + " / " + (t7-t6) );
-	
+
 		} else {
-			idx			= Collections.binarySearch( collByStart, new Long( span.stop ), startComparator );
-//long t2 = System.currentTimeMillis();
+			idx			= Collections.binarySearch( collByStart, span.stop, startComparator );
 			if( idx < 0 ) {
 				idx		= -(idx + 1);
 			} else {
 				idx		= getRightMostIndex( collByStart, idx, true ) + 1;
 			}
 //long t3 = System.currentTimeMillis();
-			collResult	= new ArrayList( collByStart.subList( 0, idx ));
+			collResult	= new ArrayList<Stake>( collByStart.subList( 0, idx ));
 		
 			Collections.sort( collResult, stopComparator );
 		
 //long t4 = System.currentTimeMillis();
-			idx		= Collections.binarySearch( collResult, new Long( span.start ), stopComparator );
+			idx		= Collections.binarySearch( collResult, span.start, stopComparator );
 //long t5 = System.currentTimeMillis();
 			if( idx < 0 ) {
 				idx		= -(idx + 1);
@@ -328,62 +286,6 @@ implements Trail, EventManager.Processor
 		return collResult;
 	}
 
-/*
-	// returns stakes that intersect OR TOUCH the span
-	public List editGetRangeGAGA( Span span, boolean byStart, AbstractCompoundEdit ce )
-	{
-		final List	collByStart, collByStop, collUntil, collFrom, collResult;
-		int						idx;
-		
-		if( ce == null ) {
-			collByStart = collStakesByStart;
-			collByStop	= collStakesByStop;
-		} else {
-			checkEdit( ce );
-			collByStart	= collEditByStart == null ? collStakesByStart : collEditByStart;
-			collByStop	= collEditByStop == null ? collStakesByStop : collEditByStop;
-		}
-	
-long t1 = System.currentTimeMillis();
-		// "If the list contains multiple elements equal to the specified object,
-		//  there is no guarantee which one will be found"
-		idx			= Collections.binarySearch( collByStart, new Long( span.stop ), startComparator );
-long t2 = System.currentTimeMillis();
-		if( idx < 0 ) {
-			idx		= -(idx + 1);
-		} else {
-			idx		= editGetRightMostIndex( idx, true, ce ) + 1;
-		}
-long t3 = System.currentTimeMillis();
-		collUntil	= collByStart.subList( 0, idx );
-long t4 = System.currentTimeMillis();
-		idx			= Collections.binarySearch( collByStop, new Long( span.start ), stopComparator );
-long t5 = System.currentTimeMillis();
-		if( idx < 0 ) {
-			idx		= -(idx + 1);
-		} else {
-			idx		= editGetLeftMostIndex( idx, false, ce );
-		}
-long t6 = System.currentTimeMillis();
-		collFrom	= collByStop.subList( idx, collByStop.size() );
-long t7 = System.currentTimeMillis();
-
-		// XXX retainAll is slow? see de.sciss.inertia.session.Track for alternative
-		// algorithm (which doesn't ensure the result is sorted by start however!)
-		
-		if( byStart ) {
-			collResult	= new ArrayList( collUntil );
-			collResult.retainAll( collFrom ); // XXX EXTREMELY SLOW!!!
-		} else {
-			collResult	= new ArrayList( collFrom );
-			collResult.retainAll( collUntil ); // XXX EXTREMELY SLOW!!!
-		}
-long t8 = System.currentTimeMillis();
-System.out.println( "editGetRange " + (t2-t1) + " / " + (t3-t2) + " / " + (t4-t3) + " / " + (t5-t4) + " / " + (t6-t5) + " / " + (t7-t6) + " / " + (t8-t7) );
-		return collResult;
-	}
-*/
-	
 	public void insert( Object source, Span span )
 	{
 		editInsert( source, span, getDefaultTouchMode(), null );
@@ -393,10 +295,9 @@ System.out.println( "editGetRange " + (t2-t1) + " / " + (t3-t2) + " / " + (t4-t3
 	{
 		editInsert( source, span, touchMode, null );
 	}
-	
-	public void editInsert( Object source, Span span, AbstractCompoundEdit ce )
-	{
-		editInsert( source, span, getDefaultTouchMode(), ce );
+
+	public void editInsert(Object source, Span span, AbstractCompoundEdit ce) {
+		editInsert(source, span, getDefaultTouchMode(), ce);
 	}
 	
 	public void editInsert( Object source, Span span, int touchMode, AbstractCompoundEdit ce )
@@ -408,60 +309,56 @@ System.out.println( "editGetRange " + (t2-t1) + " / " + (t3-t2) + " / " + (t4-t3
 		
 		if( (delta == 0) || (start > totStop) ) return;
 		
-		final List	collRange		= editGetRange( new Span( start, totStop ), true, ce );
+		final List<Stake> collRange		= editGetRange( new Span( start, totStop ), true, ce );
 		
 		if( collRange.isEmpty() ) return;
 		
-		final List	collToAdd		= new ArrayList();
-		final List	collToRemove	= new ArrayList();
+		final List<Stake>	collToAdd		= new ArrayList<Stake>();
+		final List<Stake>	collToRemove	= new ArrayList<Stake>();
 		final Span	modSpan;
-		Stake		stake;
 		Span		stakeSpan;
 		
 		switch( touchMode ) {
 		case TOUCH_NONE:
 			// XXX could use binarySearch ?
-			for( int i = 0; i < collRange.size(); i++ ) {
-				stake		= (Stake) collRange.get( i );
-				stakeSpan	= stake.getSpan();
-				if( stakeSpan.start >= start ) {
-					collToRemove.add( stake );
-					collToAdd.add( stake.shiftVirtual( delta ));
+			for (Stake stake : collRange) {
+				stakeSpan = stake.getSpan();
+				if (stakeSpan.start >= start) {
+					collToRemove.add(stake);
+					collToAdd.add(stake.shiftVirtual(delta));
 				}
 			}
 			break;
 			
 		case TOUCH_SPLIT:
-			for( int i = 0; i < collRange.size(); i++ ) {
-				stake		= (Stake) collRange.get( i );
-				stakeSpan	= stake.getSpan();
-				if( stakeSpan.stop <= start ) continue;
-				
-				collToRemove.add( stake );
+			for (Stake stake : collRange) {
+				stakeSpan = stake.getSpan();
+				if (stakeSpan.stop <= start) continue;
 
-				if( stakeSpan.start >= start ) {			// not splitted
-					collToAdd.add( stake.shiftVirtual( delta ));
+				collToRemove.add(stake);
+
+				if (stakeSpan.start >= start) {            // not splitted
+					collToAdd.add(stake.shiftVirtual(delta));
 				} else {
-					collToAdd.add( stake.replaceStop( start ));
-					stake = stake.replaceStart( start );
-					collToAdd.add( stake.shiftVirtual( delta ));
-					stake.dispose();						// delete temp product
+					collToAdd.add(stake.replaceStop(start));
+					stake = stake.replaceStart(start);
+					collToAdd.add(stake.shiftVirtual(delta));
+					stake.dispose();                        // delete temp product
 				}
 			}
 			break;
 			
 		case TOUCH_RESIZE:
 System.err.println( "BasicTrail.insert, touchmode resize : not tested" );
-			for( int i = 0; i < collRange.size(); i++ ) {
-				stake		= (Stake) collRange.get( i );
-				stakeSpan	= stake.getSpan();
-				if( stakeSpan.stop > start ) {
-					collToRemove.add( stake );
+			for (Stake stake : collRange) {
+				stakeSpan = stake.getSpan();
+				if (stakeSpan.stop > start) {
+					collToRemove.add(stake);
 
-					if( stakeSpan.start > start ) {
-						collToAdd.add( stake.shiftVirtual( delta ));
+					if (stakeSpan.start > start) {
+						collToAdd.add(stake.shiftVirtual(delta));
 					} else {
-						collToAdd.add( stake.replaceStop( stakeSpan.stop + delta ));
+						collToAdd.add(stake.replaceStop(stakeSpan.stop + delta));
 					}
 				}
 			}
@@ -475,9 +372,9 @@ System.err.println( "BasicTrail.insert, touchmode resize : not tested" );
 
 		// ____ dep ____
 		if( dependants != null ) {
-			synchronized( dependants ) {
-				for( int i = 0; i < dependants.size(); i++ ) {
-					((BasicTrail) dependants.get( i )).editInsert( source, span, touchMode, ce  );
+			synchronized(sync) {
+				for (BasicTrail dependant : dependants) {
+					dependant.editInsert(source, span, touchMode, ce);
 				}
 			}
 		}
@@ -545,54 +442,51 @@ System.err.println( "BasicTrail.insert, touchmode resize : not tested" );
 		
 		if( (delta == 0) || (start > totStop) ) return;
 		
-		final List	collRange		= editGetRange( new Span( start, totStop ), true, ce );
+		final List<Stake>	collRange		= editGetRange( new Span( start, totStop ), true, ce );
 		
 		if( collRange.isEmpty() ) return;
 		
-		final List	collToAdd		= new ArrayList();
-		final List	collToRemove	= new ArrayList();
+		final List<Stake>	collToAdd		= new ArrayList<Stake>();
+		final List<Stake>	collToRemove	= new ArrayList<Stake>();
 		final Span	modSpan;
-		Stake		stake;
 		Span		stakeSpan;
 		
 		switch( touchMode ) {
 		case TOUCH_NONE:
 			// XXX could use binarySearch ?
-			for( int i = 0; i < collRange.size(); i++ ) {
-				stake		= (Stake) collRange.get( i );
-				stakeSpan	= stake.getSpan();
-				if( stakeSpan.start < start ) continue;
+			for (Stake stake : collRange) {
+				stakeSpan = stake.getSpan();
+				if (stakeSpan.start < start) continue;
 
-				collToRemove.add( stake );
+				collToRemove.add(stake);
 
-				if( stakeSpan.start >= stop ) {
-					collToAdd.add( stake.shiftVirtual( delta ));
+				if (stakeSpan.start >= stop) {
+					collToAdd.add(stake.shiftVirtual(delta));
 				}
 			}
 			break;
 			
 		case TOUCH_SPLIT:
-			for( int i = 0; i < collRange.size(); i++ ) {
-				stake		= (Stake) collRange.get( i );
-				stakeSpan	= stake.getSpan();
-				if( stakeSpan.stop > start ) {
-				
-					collToRemove.add( stake );
-	
-					if( stakeSpan.start >= start ) {			// start portion not splitted
-						if( stakeSpan.start >= stop ) {			// just shifted
-							collToAdd.add( stake.shiftVirtual( delta ));
-						} else if( stakeSpan.stop > stop ) {	// stop portion splitted (otherwise completely removed!)
-							stake = stake.replaceStart( stop );
-							collToAdd.add( stake.shiftVirtual( delta ));
-							stake.dispose();					// delete temp product
+			for (Stake stake : collRange) {
+				stakeSpan = stake.getSpan();
+				if (stakeSpan.stop > start) {
+
+					collToRemove.add(stake);
+
+					if (stakeSpan.start >= start) {            // start portion not splitted
+						if (stakeSpan.start >= stop) {            // just shifted
+							collToAdd.add(stake.shiftVirtual(delta));
+						} else if (stakeSpan.stop > stop) {    // stop portion splitted (otherwise completely removed!)
+							stake = stake.replaceStart(stop);
+							collToAdd.add(stake.shiftVirtual(delta));
+							stake.dispose();                    // delete temp product
 						}
 					} else {
-						collToAdd.add( stake.replaceStop( start ));	// start portion splitted
-						if( stakeSpan.stop > stop ) {			// stop portion splitted
-							stake = stake.replaceStart( stop );
-							collToAdd.add( stake.shiftVirtual( delta ));
-							stake.dispose();					// delete temp product
+						collToAdd.add(stake.replaceStop(start));    // start portion splitted
+						if (stakeSpan.stop > stop) {            // stop portion splitted
+							stake = stake.replaceStart(stop);
+							collToAdd.add(stake.shiftVirtual(delta));
+							stake.dispose();                    // delete temp product
 						}
 					}
 				}
@@ -601,26 +495,25 @@ System.err.println( "BasicTrail.insert, touchmode resize : not tested" );
 			
 		case TOUCH_RESIZE:
 System.err.println( "BasicTrail.remove, touchmode resize : not tested" );
-			for( int i = 0; i < collRange.size(); i++ ) {
-				stake		= (Stake) collRange.get( i );
-				stakeSpan	= stake.getSpan();
-				if( stakeSpan.stop > start ) {
-				
-					collToRemove.add( stake );
-	
-					if( stakeSpan.start >= start ) {			// start portion not modified
-						if( stakeSpan.start >= stop ) {			// just shifted
-							collToAdd.add( stake.shiftVirtual( delta ));
-						} else if( stakeSpan.stop > stop ) {	// stop portion splitted (otherwise completely removed!)
-							stake = stake.replaceStart( stop );
-							collToAdd.add( stake.shiftVirtual( delta ));
-							stake.dispose();					// delete temp product
+			for (Stake stake : collRange) {
+				stakeSpan = stake.getSpan();
+				if (stakeSpan.stop > start) {
+
+					collToRemove.add(stake);
+
+					if (stakeSpan.start >= start) {            // start portion not modified
+						if (stakeSpan.start >= stop) {            // just shifted
+							collToAdd.add(stake.shiftVirtual(delta));
+						} else if (stakeSpan.stop > stop) {    // stop portion splitted (otherwise completely removed!)
+							stake = stake.replaceStart(stop);
+							collToAdd.add(stake.shiftVirtual(delta));
+							stake.dispose();                    // delete temp product
 						}
 					} else {
-						if( stakeSpan.stop <= stop ) {
-							collToAdd.add( stake.replaceStop( start ));
+						if (stakeSpan.stop <= stop) {
+							collToAdd.add(stake.replaceStop(start));
 						} else {
-							collToAdd.add( stake.replaceStop( stakeSpan.stop + delta ));
+							collToAdd.add(stake.replaceStop(stakeSpan.stop + delta));
 						}
 					}
 				}
@@ -633,21 +526,21 @@ System.err.println( "BasicTrail.remove, touchmode resize : not tested" );
 
 if( DEBUG ) {
 	System.err.println( this.getClass().getName() + " : removing : " );
-	for( int i = 0; i < collToRemove.size(); i++ ) {
-		System.err.println( "  span "+((Stake) collToRemove.get( i )).getSpan() );
+	for (Stake aCollToRemove : collToRemove) {
+		System.err.println("  span " + aCollToRemove.getSpan());
 	}
 	System.err.println( " : adding : " );
-	for( int i = 0; i < collToAdd.size(); i++ ) {
-		System.err.println( "  span "+((Stake) collToAdd.get( i )).getSpan() );
+	for (Object aCollToAdd : collToAdd) {
+		System.err.println("  span " + ((Stake) aCollToAdd).getSpan());
 	}
 }
 		modSpan		= Span.union( removeAllPr( collToRemove, ce ), addAllPr( collToAdd, ce ));
 
 		// ____ dep ____
 		if( dependants != null ) {
-			synchronized( dependants ) {
-				for( int i = 0; i < dependants.size(); i++ ) {
-					((BasicTrail) dependants.get( i )).editRemove( source, span, touchMode, ce  );
+			synchronized(sync) {
+				for (BasicTrail dependant : dependants) {
+					dependant.editRemove(source, span, touchMode, ce);
 				}
 			}
 		}
@@ -684,39 +577,39 @@ if( DEBUG ) {
 		
 		if( collRange.isEmpty() ) return;
 		
-		final List	collToAdd		= new ArrayList();
-		final List	collToRemove	= new ArrayList();
+		final List<Stake> collToAdd		= new ArrayList<Stake>();
+		final List<Stake> collToRemove	= new ArrayList<Stake>();
 		final Span	modSpan;
 		Stake		stake;
 		Span		stakeSpan;
 		
 		switch( touchMode ) {
 		case TOUCH_NONE:
-			for( int i = 0; i < collRange.size(); i++ ) {
-				stake		= (Stake) collRange.get( i );
-				stakeSpan	= stake.getSpan();
-				if( stakeSpan.start >= start ) {
-					collToRemove.add( stake );
+			for (Object aCollRange1 : collRange) {
+				stake = (Stake) aCollRange1;
+				stakeSpan = stake.getSpan();
+				if (stakeSpan.start >= start) {
+					collToRemove.add(stake);
 				}
 			}
 			break;
 			
 		case TOUCH_SPLIT:
-			for( int i = 0; i < collRange.size(); i++ ) {
-				stake		= (Stake) collRange.get( i );
-				stakeSpan	= stake.getSpan();
-				if( stakeSpan.stop > start ) {
-					
-					collToRemove.add( stake );
-	
-					if( stakeSpan.start >= start ) {			// start portion not splitted
-						if( stakeSpan.stop > stop ) {			// stop portion splitted (otherwise completely removed!)
-							collToAdd.add( stake.replaceStart( stop ));
+			for (Object aCollRange1 : collRange) {
+				stake = (Stake) aCollRange1;
+				stakeSpan = stake.getSpan();
+				if (stakeSpan.stop > start) {
+
+					collToRemove.add(stake);
+
+					if (stakeSpan.start >= start) {            // start portion not splitted
+						if (stakeSpan.stop > stop) {            // stop portion splitted (otherwise completely removed!)
+							collToAdd.add(stake.replaceStart(stop));
 						}
 					} else {
-						collToAdd.add( stake.replaceStop( start ));	// start portion splitted
-						if( stakeSpan.stop > stop ) {				// stop portion splitted
-							collToAdd.add( stake.replaceStart( stop ));
+						collToAdd.add(stake.replaceStop(start));    // start portion splitted
+						if (stakeSpan.stop > stop) {                // stop portion splitted
+							collToAdd.add(stake.replaceStart(stop));
 						}
 					}
 				}
@@ -725,22 +618,22 @@ if( DEBUG ) {
 			
 		case TOUCH_RESIZE:
 System.err.println( "BasicTrail.clear, touchmode resize : not tested" );
-			for( int i = 0; i < collRange.size(); i++ ) {
-				stake		= (Stake) collRange.get( i );
-				stakeSpan	= stake.getSpan();
-				if( stakeSpan.stop > start ) {
-					
-					collToRemove.add( stake );
-	
-					if( stakeSpan.start >= start ) {		// start portion not modified
-						if( stakeSpan.stop > stop ) {		// stop portion splitted (otherwise completely removed!)
-							collToAdd.add( stake.replaceStart( stop ));
+			for (Object aCollRange : collRange) {
+				stake = (Stake) aCollRange;
+				stakeSpan = stake.getSpan();
+				if (stakeSpan.stop > start) {
+
+					collToRemove.add(stake);
+
+					if (stakeSpan.start >= start) {        // start portion not modified
+						if (stakeSpan.stop > stop) {        // stop portion splitted (otherwise completely removed!)
+							collToAdd.add(stake.replaceStart(stop));
 						}
 					} else {
-						if( stakeSpan.stop <= stop ) {
-							collToAdd.add( stake.replaceStop( start ));
+						if (stakeSpan.stop <= stop) {
+							collToAdd.add(stake.replaceStop(start));
 						} else {
-							collToAdd.add( stake.replaceStop( stakeSpan.stop - span.getLength() ));
+							collToAdd.add(stake.replaceStop(stakeSpan.stop - span.getLength()));
 						}
 					}
 				}
@@ -753,21 +646,21 @@ System.err.println( "BasicTrail.clear, touchmode resize : not tested" );
 
 if( DEBUG ) {
 	System.err.println( this.getClass().getName() + " : removing : " );
-	for( int i = 0; i < collToRemove.size(); i++ ) {
-		System.err.println( "  span "+((Stake) collToRemove.get( i )).getSpan() );
+	for (Stake aCollToRemove : collToRemove) {
+		System.err.println("  span " + aCollToRemove.getSpan());
 	}
 	System.err.println( " : adding : " );
-	for( int i = 0; i < collToAdd.size(); i++ ) {
-		System.err.println( "  span "+((Stake) collToAdd.get( i )).getSpan() );
+	for (Stake aCollToAdd : collToAdd) {
+		System.err.println("  span " + aCollToAdd.getSpan());
 	}
 }
 		modSpan		= Span.union( removeAllPr( collToRemove, ce ), addAllPr( collToAdd, ce ));
 
 		// ____ dep ____
 		if( dependants != null ) {
-			synchronized( dependants ) {
-				for( int i = 0; i < dependants.size(); i++ ) {
-					((BasicTrail) dependants.get( i )).editClear( source, span, touchMode, ce  );
+			synchronized(sync) {
+				for (BasicTrail dependant : dependants) {
+					dependant.editClear(source, span, touchMode, ce);
 				}
 			}
 		}
@@ -784,13 +677,13 @@ if( DEBUG ) {
 	public Trail getCuttedTrail( Span span, int touchMode, long shiftVirtual )
 	{
 		final BasicTrail		trail	= createEmptyCopy();
-		final List				stakes	= getCuttedRange( span, true, touchMode, shiftVirtual );
+		final List<Stake>		stakes	= getCuttedRange( span, true, touchMode, shiftVirtual );
 		
 //		trail.setRate( this.getRate() );
 
 //		Collections.sort( stakes, startComparator );
 		trail.collStakesByStart.addAll( stakes );
-		Collections.sort( stakes, stopComparator );
+		Collections.sort(stakes, stopComparator);
 		trail.collStakesByStop.addAll( stakes );
 	
 		return trail;
@@ -798,73 +691,69 @@ if( DEBUG ) {
 	
 	protected abstract BasicTrail createEmptyCopy();
 
-	public static List getCuttedRange( List stakes, Span span, boolean byStart,
-												 int touchMode, long shiftVirtual )
-	{
-		if( stakes.isEmpty() ) return stakes;
+	public static List<Stake> getCuttedRange(List<Stake> stakes, Span span, boolean byStart,
+											 int touchMode, long shiftVirtual) {
+		if (stakes.isEmpty()) return stakes;
 		
-		final List		collResult		= new ArrayList();
+		final List<Stake> collResult		= new ArrayList<Stake>();
 		final long		start			= span.start;
 		final long		stop			= span.stop;
 		final boolean	shift			= shiftVirtual != 0;
-		Stake			stake, stake2;
 		Span			stakeSpan;
 		
 		switch( touchMode ) {
 		case TOUCH_NONE:
-			for( int i = 0; i < stakes.size(); i++ ) {
-				stake		= (Stake) stakes.get( i );
-				stakeSpan	= stake.getSpan();
-				if( stakeSpan.start >= start ) {
-					if( shift ) {
-						collResult.add( stake.shiftVirtual( shiftVirtual ));
+			for (Stake stake : stakes) {
+				stakeSpan = stake.getSpan();
+				if (stakeSpan.start >= start) {
+					if (shift) {
+						collResult.add(stake.shiftVirtual(shiftVirtual));
 					} else {
-						collResult.add( stake.duplicate() );
+						collResult.add(stake.duplicate());
 					}
 				}
 			}
 			break;
 			
 		case TOUCH_SPLIT:
-			for( int i = 0; i < stakes.size(); i++ ) {
-				stake		= (Stake) stakes.get( i );
-				stakeSpan	= stake.getSpan();
-				
-				if( stakeSpan.start >= start ) {			// start portion not splitted
-					if( stakeSpan.stop <= stop ) {			// completely included, just make a copy
-						if( shift ) {
-							collResult.add( stake.shiftVirtual( shiftVirtual ));
+			for (Stake stake : stakes) {
+				stakeSpan = stake.getSpan();
+
+				if (stakeSpan.start >= start) {            // start portion not splitted
+					if (stakeSpan.stop <= stop) {            // completely included, just make a copy
+						if (shift) {
+							collResult.add(stake.shiftVirtual(shiftVirtual));
 						} else {
-							collResult.add( stake.duplicate() );
+							collResult.add(stake.duplicate());
 						}
-					} else {								// adjust stop
-						stake = stake.replaceStop( stop );
-						if( shift ) {
-							stake2	= stake;
-							stake	= stake.shiftVirtual( shiftVirtual );
-							stake2.dispose();	// delete temp product
+					} else {                                // adjust stop
+						stake = stake.replaceStop(stop);
+						if (shift) {
+							final Stake stake2 = stake;
+							stake = stake.shiftVirtual(shiftVirtual);
+							stake2.dispose();    // delete temp product
 						}
-						collResult.add( stake );
+						collResult.add(stake);
 					}
 				} else {
-					if( stakeSpan.stop <= stop ) {			// stop included, just adjust start
-						stake = stake.replaceStart( start );
-						if( shift ) {
-							stake2	= stake;
-							stake	= stake.shiftVirtual( shiftVirtual );
-							stake2.dispose();	// delete temp product
+					if (stakeSpan.stop <= stop) {            // stop included, just adjust start
+						stake = stake.replaceStart(start);
+						if (shift) {
+							final Stake stake2 = stake;
+							stake = stake.shiftVirtual(shiftVirtual);
+							stake2.dispose();    // delete temp product
 						}
-						collResult.add( stake );
-					} else {								// adjust both start and stop
-						stake2	= stake.replaceStart( start );
-						stake	= stake2.replaceStop( stop );
-						stake2.dispose();	// delete temp product
-						if( shift ) {
-							stake2	= stake;
-							stake	= stake.shiftVirtual( shiftVirtual );
-							stake2.dispose();	// delete temp product
+						collResult.add(stake);
+					} else {                                // adjust both start and stop
+						final Stake stake2 = stake.replaceStart(start);
+						stake = stake2.replaceStop(stop);
+						stake2.dispose();    // delete temp product
+						if (shift) {
+							final Stake stake3 = stake;
+							stake = stake.shiftVirtual(shiftVirtual);
+							stake3.dispose();    // delete temp product
 						}
-						collResult.add( stake );
+						collResult.add(stake);
 					}
 				}
 			}
@@ -877,7 +766,7 @@ if( DEBUG ) {
 		return collResult;
 	}
 
-	public List getCuttedRange( Span span, boolean byStart, int touchMode, long shiftVirtual )
+	public List<Stake> getCuttedRange( Span span, boolean byStart, int touchMode, long shiftVirtual )
 	{
 		return BasicTrail.getCuttedRange( getRange( span, byStart ), span, byStart, touchMode, shiftVirtual );
 	}
@@ -944,13 +833,12 @@ if( DEBUG ) {
 	{
 		return editIndexOf( pos, byStart, null );
 	}
-	
-	public int editIndexOf( long pos, boolean byStart, AbstractCompoundEdit ce )
-	{
-		if( byStart ) {
-			return Collections.binarySearch( editGetCollByStart( ce ), new Long( pos ), startComparator );
+
+	public int editIndexOf(long pos, boolean byStart, AbstractCompoundEdit ce) {
+		if (byStart) {
+			return Collections.binarySearch(editGetCollByStart(ce), pos, startComparator);
 		} else {
-			return Collections.binarySearch( editGetCollByStop( ce ), new Long( pos ), stopComparator );
+			return Collections.binarySearch(editGetCollByStop(ce), pos, stopComparator);
 		}
 	}
 
@@ -1050,37 +938,29 @@ if( DEBUG ) {
 		return idx;
 	}
 
-	public List getAll( boolean byStart )
-	{
-		final List coll = byStart ? collStakesByStart : collStakesByStop;
-		return new ArrayList( coll );
+	public List<Stake> getAll(boolean byStart) {
+		final List<Stake> coll = byStart ? collStakesByStart : collStakesByStop;
+		return new ArrayList<Stake>(coll);
 	}
 
-	public List getAll( int startIdx, int stopIdx, boolean byStart )
-	{
-		final List coll = byStart ? collStakesByStart : collStakesByStop;
-		return new ArrayList( coll.subList( startIdx, stopIdx ));
-	}
-	
-	public void add( Object source, Stake stake )
-	throws IOException
-	{
-//		if( DEBUG ) System.err.println( "add "+stake.getClass().getName() );
-		editAddAll( source, Collections.singletonList( stake ), null );	// ____ dep ____ handled there
+	public List<Stake> getAll(int startIdx, int stopIdx, boolean byStart) {
+		final List<Stake> coll = byStart ? collStakesByStart : collStakesByStop;
+		return new ArrayList<Stake>(coll.subList(startIdx, stopIdx));
 	}
 
-	public void editAdd( Object source, Stake stake, AbstractCompoundEdit ce )
-	throws IOException
-	{
-//		if( DEBUG ) System.err.println( "addAdd "+stake.getClass().getName() );
-		editAddAll( source, Collections.singletonList( stake ), ce );	// ____ dep ____ handled there
+	public void add(Object source, Stake stake)
+			throws IOException {
+		editAddAll(source, Collections.singletonList(stake), null);    // ____ dep ____ handled there
 	}
 
-	public void addAll( Object source, List stakes )
-	throws IOException
-	{
-//		if( DEBUG ) System.err.println( "addAll "+stakes.size() );
-		editAddAll( source, stakes, null );
+	public void editAdd(Object source, Stake stake, AbstractCompoundEdit ce)
+			throws IOException {
+		editAddAll(source, Collections.singletonList(stake), ce);    // ____ dep ____ handled there
+	}
+
+	public void addAll(Object source, List stakes)
+			throws IOException {
+		editAddAll(source, stakes, null);
 	}
 
 	public void editAddAll( Object source, List stakes, AbstractCompoundEdit ce )
@@ -1097,10 +977,8 @@ if( DEBUG ) {
 
 		// ____ dep ____
 		if( (dependants != null) && (span != null) ) {
-			synchronized( dependants ) {
-				for( int i = 0; i < dependants.size(); i++ ) {
-					((BasicTrail) dependants.get( i )).addAllDep( source, stakes, ce, span );
-				}
+			synchronized(sync) {
+				for (BasicTrail dependant : dependants) dependant.addAllDep(source, stakes, ce, span);
 			}
 		}
 
@@ -1130,12 +1008,12 @@ if( DEBUG ) {
 		long		stop	= Long.MIN_VALUE;
 		Stake		stake;
 		final Span	span;
-		
-		for( int i = 0; i < stakes.size(); i++ ) {
-			stake	= (Stake) stakes.get( i );
-			sortAddStake( stake, ce );
-			start	= Math.min( start, stake.getSpan().start );
-			stop	= Math.max( stop, stake.getSpan().stop );
+
+		for (Object stake1 : stakes) {
+			stake = (Stake) stake1;
+			sortAddStake(stake, ce);
+			start = Math.min(start, stake.getSpan().start);
+			stop  = Math.max(stop, stake.getSpan().stop);
 		}
 		span		= new Span( start, stop );
 		if( ce != null ) ce.addPerform( new Edit( this, stakes, span, EDIT_ADD ));
@@ -1143,22 +1021,19 @@ if( DEBUG ) {
 		return span;
 	}
 
-	public void remove( Object source, Stake stake )
-	throws IOException
-	{
-		editRemoveAll( source, Collections.singletonList( stake ), null );
+	public void remove(Object source, Stake stake)
+			throws IOException {
+		editRemoveAll(source, Collections.singletonList(stake), null);
 	}
 
-	public void editRemove( Object source, Stake stake, AbstractCompoundEdit ce )
-	throws IOException
-	{
-		editRemoveAll( source, Collections.singletonList( stake ), ce );	// ____ dep ____ handled there
+	public void editRemove(Object source, Stake stake, AbstractCompoundEdit ce)
+			throws IOException {
+		editRemoveAll(source, Collections.singletonList(stake), ce);    // ____ dep ____ handled there
 	}
 
-	public void removeAll( Object source, List stakes )
-	throws IOException
-	{
-		editRemoveAll( source, stakes, null );
+	public void removeAll(Object source, List stakes)
+			throws IOException {
+		editRemoveAll(source, stakes, null);
 	}
 
 	public void editRemoveAll( Object source, List stakes, AbstractCompoundEdit ce )
@@ -1174,9 +1049,9 @@ if( DEBUG ) {
 
 		// ____ dep ____
 		if( (dependants != null) && (span != null) ) {
-			synchronized( dependants ) {
-				for( int i = 0; i < dependants.size(); i++ ) {
-					((BasicTrail) dependants.get( i )).removeAllDep( source, stakes, ce, span );
+			synchronized(sync) {
+				for (BasicTrail dependant : dependants) {
+					dependant.removeAllDep(source, stakes, ce, span);
 				}
 			}
 		}
@@ -1189,31 +1064,29 @@ if( DEBUG ) {
 			}
 		}
 	}
-	
+
 	/**
-	 *	To be overwritten by dependants.
+	 * To be overwritten by dependants.
 	 */
-	protected void removeAllDep( Object source, List stakes, AbstractCompoundEdit ce, Span span )
-	throws IOException
-	{
+	protected void removeAllDep(Object source, List<Stake> stakes, AbstractCompoundEdit ce, Span span)
+			throws IOException {
 		/* empty */
 	}
 
-	private Span removeAllPr( List stakes, AbstractCompoundEdit ce )
-	{
-		if( stakes.isEmpty() ) return null;
+	private Span removeAllPr(List<Stake> stakes, AbstractCompoundEdit ce) {
+		if (stakes.isEmpty()) return null;
 	
 		long		start	= Long.MAX_VALUE;
 		long		stop	= Long.MIN_VALUE;
 		Stake		stake;
 		final Span	span;
-	
-		for( int i = 0; i < stakes.size(); i++ ) {
-			stake	= (Stake) stakes.get( i );
-			sortRemoveStake( stake, ce );
-			start	= Math.min( start, stake.getSpan().start );
-			stop	= Math.max( stop, stake.getSpan().stop );
-			if( ce == null ) stake.dispose();
+
+		for (Object stake1 : stakes) {
+			stake = (Stake) stake1;
+			sortRemoveStake(stake, ce);
+			start = Math.min(start, stake.getSpan().start);
+			stop = Math.max(stop, stake.getSpan().stop);
+			if (ce == null) stake.dispose();
 		}
 		span		= new Span( start, stop );
 		if( ce != null ) ce.addPerform( new Edit( this, stakes, span, EDIT_REMOVE ));
@@ -1236,7 +1109,7 @@ if( DEBUG ) {
     	
     	System.err.println( "total Span = " + totalSpan );
     	for( int i = 0; i < collStakesByStart.size(); i++ ) {
-    		stake		= (Stake) collStakesByStart.get( i );
+    		stake		= collStakesByStart.get( i );
     		stakeSpan	= stake.getSpan();
     		if( stakeSpan.start != lastStop ) {
     			System.err.println( "! broken contiguity for stake #" + i + " (" + stake + ") : "
@@ -1261,7 +1134,7 @@ if( DEBUG ) {
 
 	protected void sortAddStake( Stake stake, AbstractCompoundEdit ce)
 	{
-		final List	collByStart, collByStop;
+		final List<Stake>	collByStart, collByStop;
 		int						idx;
 
 		if( ce == null ) {
@@ -1317,50 +1190,45 @@ if( DEBUG ) {
 		elm.removeListener( listener );
 	}
 
-	public void addDependant( Trail sub )
-	{
-		if( dependants == null ) {
-			dependants = new ArrayList();
+	public void addDependant(BasicTrail sub) {
+		if (dependants == null) {
+			dependants = new ArrayList<BasicTrail>();
 		}
-		synchronized( dependants ) {
-			if( dependants.contains( sub )) {
-				System.err.println( "BasicTrail.addDependant : WARNING : duplicate add" );
+		synchronized (sync) {
+			if (dependants.contains(sub)) {
+				System.err.println("BasicTrail.addDependant : WARNING : duplicate add");
 			}
-			dependants.add( sub );
+			dependants.add(sub);
 		}
 	}
 
-	public void removeDependant( Trail sub )
-	{
-		synchronized( dependants ) {
-			if( !dependants.remove( sub )) {
-				System.err.println( "BasicTrail.removeDependant : WARNING : was not in list" );
+	public void removeDependant(BasicTrail sub) {
+		synchronized (sync) {
+			if (!dependants.remove(sub)) {
+				System.err.println("BasicTrail.removeDependant : WARNING : was not in list");
 			}
 		}
 	}
-	
-	public int getNumDependants()
-	{
-		if( dependants == null ) {
+
+	public int getNumDependants() {
+		if (dependants == null) {
 			return 0;
 		} else {
-			synchronized( dependants ) {
+			synchronized (sync) {
 				return dependants.size();
 			}
 		}
 	}
-	
-	public BasicTrail getDependant( int i )
-	{
-		synchronized( dependants ) {
-			return (BasicTrail) dependants.get( i );
+
+	public BasicTrail getDependant(int i) {
+		synchronized (sync) {
+			return dependants.get(i);
 		}
 	}
-	
-	protected void dispatchModification( Object source, Span span )
-	{
-		if( elm != null ) {
-			elm.dispatchEvent( new Trail.Event( this, source, span ));
+
+	protected void dispatchModification(Object source, Span span) {
+		if (elm != null) {
+			elm.dispatchEvent(new Trail.Event(this, source, span));
 		}
 	}
 
@@ -1447,7 +1315,7 @@ if( DEBUG ) {
 	extends BasicUndoableEdit
 	{
 		private final int				cmd;
-		private final List				stakes;
+		private final List<Stake>		stakes;
 		private final String			key;
 		private final BasicTrail		trail;
 //		private boolean					removed;
@@ -1459,7 +1327,7 @@ if( DEBUG ) {
 			this( t, null, span, EDIT_DISPATCH, "editChangeTrail" );
 		}
 	
-		protected Edit( BasicTrail t, List stakes, Span span, int cmd )
+		protected Edit( BasicTrail t, List<Stake> stakes, Span span, int cmd )
 		{
 			this( t, stakes, span, cmd, "editChangeTrail" );
 		}
@@ -1495,8 +1363,8 @@ if( DEBUG ) {
 		
 		private void disposeAll()
 		{
-			for( int i = 0; i < stakes.size(); i++ ) {
-				((Stake) stakes.get( i )).dispose();
+			for (Object stake : stakes) {
+				((Stake) stake).dispose();
 			}
 		}
 
@@ -1612,16 +1480,18 @@ if( DEBUG ) {
 	// ---------------- comparators ----------------
 
 	private static class StartComparator
-	implements Comparator
+	implements Comparator<Stake>
 	{
 		protected StartComparator() { /* empty */ }
 		
-		public int compare( Object o1, Object o2 )
-		{			
-			if( o1 instanceof Stake ) o1 = ((Stake) o1).getSpan();
-			if( o2 instanceof Stake ) o2 = ((Stake) o2).getSpan();
+		public int compare( Stake o1, Stake o2 )
+		{
+			Span s1 = null;
+			Span s2 = null;
+			if(o1 != null) s1 = o1.getSpan();
+			if(o2 != null) s2 = o2.getSpan();
 			
-			return Span.startComparator.compare( o1, o2 );
+			return Span.startComparator.compare( s1, s2 );
 		}
 				   
 		public boolean equals( Object o )
@@ -1631,21 +1501,21 @@ if( DEBUG ) {
 	}
 
 	private static class StopComparator
-	implements Comparator
+	implements Comparator<Stake>
 	{
 		protected StopComparator() { /* empty */ }
 
-		public int compare( Object o1, Object o2 )
-		{
-			if( o1 instanceof Stake ) o1 = ((Stake) o1).getSpan();
-			if( o2 instanceof Stake ) o2 = ((Stake) o2).getSpan();
-			
-			return Span.stopComparator.compare( o1, o2 );
+		public int compare(Stake o1, Stake o2) {
+			Span s1 = null;
+			Span s2 = null;
+			if (o1 != null) s1 = o1.getSpan();
+			if (o2 != null) s2 = o2.getSpan();
+
+			return Span.stopComparator.compare(s1, s2);
 		}
-				   
-		public boolean equals( Object o )
-		{
-			return( (o != null) && (o instanceof StopComparator) );
+
+		public boolean equals(Object o) {
+			return ((o != null) && (o instanceof StopComparator));
 		}
 	}
 }

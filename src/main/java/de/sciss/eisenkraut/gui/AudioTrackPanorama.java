@@ -2,18 +2,13 @@
  *  AudioTrackPanorama.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		23-Jul-05	created
- *		24-Aug-06	converted from PanoramaPalette to AudioTrackPanorama
  */
 
 package de.sciss.eisenkraut.gui;

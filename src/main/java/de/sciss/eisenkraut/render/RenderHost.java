@@ -2,17 +2,13 @@
  *  RenderHost.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		14-Jul-05	created from de.sciss.meloncillo.render.PlugInHost
  */
 
 package de.sciss.eisenkraut.render;
@@ -23,9 +19,6 @@ package de.sciss.eisenkraut.render;
  *	interface which adds support
  *	for progress bar and exception
  *	display.
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.56, 15-Sep-05
  */
 public interface RenderHost
 {
@@ -41,7 +34,7 @@ public interface RenderHost
 	 *	@see	javax.swing.JOptionPane#ERROR_MESSAGE 
 	 *	@see	javax.swing.JOptionPane#INFORMATION_MESSAGE 
 	 */
-	public void	showMessage( int type, String text );
+	public void showMessage(int type, String text);
 	
 	/**
 	 *	Determines if the host is active

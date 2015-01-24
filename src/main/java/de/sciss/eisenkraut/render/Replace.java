@@ -2,17 +2,13 @@
  *  Replace.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		19-May-09	created
  */
 
 package de.sciss.eisenkraut.render;
@@ -21,13 +17,9 @@ import java.io.IOException;
 
 import de.sciss.io.InterleavedStreamFile;
 
-/**
- * 	@author		Hanns Holger Rutz
- *	@version	0.70, 19-May-08
- */
 public class Replace
-extends AbstractRenderPlugIn
-{
+		extends AbstractRenderPlugIn {
+
 	private final InterleavedStreamFile	isf;
 	
 	private float[][]		prBuf;

@@ -2,17 +2,13 @@
  *  AbstractSessionObject.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		13-May-05	created from de.sciss.meloncillo.session.AbstractSessionObject
  */
 
 package de.sciss.eisenkraut.session;
@@ -30,14 +26,11 @@ import de.sciss.eisenkraut.io.XMLRepresentation;
 import de.sciss.eisenkraut.util.MapManager;
 import de.sciss.io.IOUtil;
 
-/**
- *	@version	0.70, 07-Dec-07
- */
 public abstract class AbstractSessionObject
-implements SessionObject, XMLRepresentation, MapManager.Listener
-{
+		implements SessionObject, XMLRepresentation, MapManager.Listener {
+
 	private	String		name;
-	private MapManager	map		= new MapManager( this, new HashMap() );
+	private MapManager map = new MapManager(this, new HashMap());
 
 	protected static final String XML_ATTR_NAME			= "name";
 	protected static final String XML_ATTR_CLASS		= "class";
@@ -52,26 +45,21 @@ implements SessionObject, XMLRepresentation, MapManager.Listener
 		init();
 	}
 	
-	/**
-	 */
-	protected AbstractSessionObject( AbstractSessionObject orig )
-	{
+	protected AbstractSessionObject(AbstractSessionObject orig) {
 		init();
-		map.cloneMap( orig.map );
-		this.setName( orig.getName() );
-	}
-	
-	protected void init()
-	{
-		map.addListener( this );
-		map.putContext( null, MAP_KEY_FLAGS, new MapManager.Context( MapManager.Context.FLAG_LIST_DISPLAY,
-																	 MapManager.Context.TYPE_INTEGER, null, null,
-																	 null, new Integer( 0 )));
+		map.cloneMap(orig.map);
+		this.setName(orig.getName());
 	}
 
-	public void dispose()
-	{
-		/* empty */ 
+	protected void init() {
+		map.addListener(this);
+		map.putContext(null, MAP_KEY_FLAGS, new MapManager.Context(MapManager.Context.FLAG_LIST_DISPLAY,
+				MapManager.Context.TYPE_INTEGER, null, null,
+				null, 0));
+	}
+
+	public void dispose() {
+		/* empty */
 	}
 
 // ---------------- SessionObject interface ---------------- 
@@ -101,9 +89,8 @@ implements SessionObject, XMLRepresentation, MapManager.Listener
 
 // ---------------- MapManager.Listener interface ---------------- 
 
-	public void mapChanged( MapManager.Event e )
-	{
-		/* empty */ 
+	public void mapChanged(MapManager.Event e) {
+		/* empty */
 	}
 
 	public void mapOwnerModified( MapManager.Event e )

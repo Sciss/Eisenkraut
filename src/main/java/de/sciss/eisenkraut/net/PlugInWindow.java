@@ -2,7 +2,7 @@
  *  PlugInWindow.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
@@ -32,12 +32,7 @@ import de.sciss.common.BasicApplication;
 import de.sciss.common.BasicMenuFactory;
 import de.sciss.common.ShowWindowAction;
 
-//import de.sciss.swingosc.ContentPane;
-//import de.sciss.swingosc.ScrollPane;
-
-public class PlugInWindow
-extends AppWindow
-{
+public class PlugInWindow extends AppWindow {
 	public static final int	FLAG_UNDECORATED	= 0x01;
 	public static final int	FLAG_SCROLLPANE		= 0x02;
 	public static final int	FLAG_NORESIZE		= 0x04;

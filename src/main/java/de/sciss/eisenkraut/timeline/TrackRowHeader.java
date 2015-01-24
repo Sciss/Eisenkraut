@@ -2,7 +2,7 @@
  *  TrackRowHeader.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
@@ -79,12 +79,11 @@ implements MouseListener, DynamicListening, Disposable
 	
 	private final MapManager.Listener trackListener;
 	private final SessionCollection.Listener selectedTracksListener;
-	
+
 	/**
 	 */
-	public TrackRowHeader( final Track t, final SessionCollection tracks, final SessionCollection selectedTracks,
-						   UndoManager undo )
-	{
+	public TrackRowHeader(final Track t, final SessionCollection tracks, final SessionCollection selectedTracks,
+						  UndoManager undo) {
 		super();
 		
 		this.t				= t;
@@ -97,10 +96,10 @@ implements MouseListener, DynamicListening, Disposable
 		setLayout( lay );
 		
  		lbTrackName = new JLabel();
-		lbTrackName.setFont( AbstractApplication.getApplication().getGraphicsHandler().getFont( GraphicsHandler.FONT_SYSTEM | GraphicsHandler.FONT_SMALL ));
+		lbTrackName.setFont( AbstractApplication.getApplication().getGraphicsHandler().getFont(GraphicsHandler.FONT_SMALL));
 		cons		= lay.getConstraints( lbTrackName );
 		cons.setX( Spring.constant( 7 ));
-// doesnt' work (why???)
+// doesn't work (why???)
 //		cons.setY( Spring.minus( Spring.max(	// min( X, Y ) = -max( -X, -Y )
 //			Spring.constant( -4 ), Spring.minus( Spring.sum(
 //				lay.getConstraints( this ).getHeight(), Spring.constant( -15 )))
@@ -262,12 +261,9 @@ implements MouseListener, DynamicListening, Disposable
 	 *  Alt+Click   = Toggle item & set all others to same new state
 	 *  Meta+Click  = Toggle item & set all others to opposite state
 	 *	</pre>
-	 *
-	 *	@synchronization	attempts exclusive on TRNS + GRP
 	 */
-	public void mousePressed( MouseEvent e )
-    {
-		UndoableEdit	edit;
+	public void mousePressed(MouseEvent e) {
+		UndoableEdit 	edit;
 		List			collTracks;
 	
 		if( e.isAltDown() ) {
@@ -291,10 +287,10 @@ implements MouseListener, DynamicListening, Disposable
 			if( e.isShiftDown() ) {
 				collTracks = selectedTracks.getAll();
 				selected = !selected;
-				if( selected ) {
-					collTracks.add( t );			// add us to selection
+				if (selected) {
+					collTracks.add(t);            // add us to selection
 				} else {
-					collTracks.remove( t );		// remove us from selection
+					collTracks.remove(t);        // remove us from selection
 				}
 			} else {
 				if( selected ) return;						// no action

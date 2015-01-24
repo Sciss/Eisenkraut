@@ -2,18 +2,13 @@
  *  TimelineToolBar.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		12-May-05	created from de.sciss.meloncillo.timeline.TimelineToolBar
- *		08-Sep-05	selectTool method
  */
 
 package de.sciss.eisenkraut.timeline;
@@ -43,19 +38,16 @@ import de.sciss.util.Disposable;
 
 /**
  *	A palette of tools for editing
- *	objects in the timline frame. Window
+ *	objects in the timeline frame. Window
  *	key commands are installed: F1 to F6
- *	for the tools and capslock for toggling
+ *	for the tools and caps lock for toggling
  *	the blending option.
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
  */
 public class TimelineToolBar
 extends ToolBar
 implements Disposable
 {
-	private final Map					mapToolButtons	= new HashMap();
+	private final Map<Integer, JToggleButton> mapToolButtons	= new HashMap<Integer, JToggleButton>();
 	
 	/**
 	 *	Creates a tool palette with
@@ -99,7 +91,7 @@ GUIUtil.createKeyAction( toggle, KeyStroke.getKeyStroke( KeyEvent.VK_F1 + i, 0 )
 		GUIUtil.createKeyAction( toggle, KeyStroke.getKeyStroke( KeyEvent.VK_F5, 0 ));
 //        HelpGlassPane.setHelp( toggle, "TimelineToolPointer" );
   		addToggleButton( toggle, 0 );
-		mapToolButtons.put( new Integer( toolAction.getID() ), toggle );
+		mapToolButtons.put(toolAction.getID(), toggle );
         
 //		toolAction		= new ToolAction( ToolAction.LINE );
 //        toggle			= new JToggleButton( toolAction );
@@ -125,7 +117,7 @@ GUIUtil.createKeyAction( toggle, KeyStroke.getKeyStroke( KeyEvent.VK_F1 + i, 0 )
 		GUIUtil.createKeyAction( toggle, KeyStroke.getKeyStroke( KeyEvent.VK_F6, 0 ));
 //        HelpGlassPane.setHelp( toggle, "TimelineToolZoom" );
   		addToggleButton( toggle, 0 );
-		mapToolButtons.put( new Integer( toolAction.getID() ), toggle );
+		mapToolButtons.put(toolAction.getID(), toggle );
       
 		addSeparator();
 		actionBlending  = doc.getBlendingAction();
@@ -206,7 +198,7 @@ GUIUtil.createKeyAction( button, KeyStroke.getKeyStroke( KeyEvent.VK_CAPS_LOCK, 
 	
 	public void selectTool( int toolID )
 	{
-		final AbstractButton b = (AbstractButton) mapToolButtons.get( new Integer( toolID ));
+		final AbstractButton b = mapToolButtons.get(toolID);
 		if( b != null ) b.doClick();
 	}
 	

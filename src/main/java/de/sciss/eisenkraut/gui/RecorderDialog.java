@@ -2,17 +2,13 @@
  *  RecorderDialog.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		20-Nov-05	created from de.sciss.inertia.net.RecorderDialog
  */
 
 package de.sciss.eisenkraut.gui;

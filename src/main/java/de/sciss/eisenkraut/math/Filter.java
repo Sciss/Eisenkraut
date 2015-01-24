@@ -2,26 +2,20 @@
  *  Filter.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
  */
 
 package de.sciss.eisenkraut.math;
 
-/**
- *	@version	0.71, 07-Dec-07
- */
 public class Filter
 {
-// -------- public Variablen --------
+// -------- public variables --------
 
 	public static final int	FLTSMPPERCROSSING	= 256;
 
@@ -37,7 +31,7 @@ public class Filter
 	
 	public static final int WIN_MAX				= 8;
 
-// -------- private Variablen --------
+// -------- private variables --------
 
 	private static final double LN10 = Math.log( 10 );
 

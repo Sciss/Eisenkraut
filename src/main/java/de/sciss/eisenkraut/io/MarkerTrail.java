@@ -2,21 +2,13 @@
  *  MarkerTrail.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		26-Jul-05	created
- *		02-Aug-05	confirms to new document handler
- *		06-Jan-06	subclass of BasicTrail
- *		06-May-06	supports OSC interface
- *		15-Oct-06	OSC stuff moved to MarkerTrack (seems way more logical)
  */
 
 package de.sciss.eisenkraut.io;

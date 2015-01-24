@@ -2,17 +2,13 @@
  *	AbstractFlagsPanel.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *      13-May-05	created from de.sciss.meloncillo.session.AbstractFlagsPanel
  */
 
 package de.sciss.eisenkraut.session;
@@ -29,13 +25,7 @@ import javax.swing.JToggleButton;
 
 import de.sciss.eisenkraut.gui.GraphicsUtil;
 
-/**
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
- */
-public abstract class AbstractFlagsPanel
-extends JPanel
-{
+public abstract class AbstractFlagsPanel extends JPanel {
 	// from de.sciss.meloncillo.session.SessionObject
 	public static final int FLAGS_SOLO			= 0x01;
 	public static final int FLAGS_MUTE			= 0x02;

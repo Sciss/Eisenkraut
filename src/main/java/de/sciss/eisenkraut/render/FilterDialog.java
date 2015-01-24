@@ -2,18 +2,13 @@
  *  FilterDialog.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		14-Jul-05	created from de.sciss.meloncillo.render.FilterDialog
- *		31-Aug-05	supports clipboard contents
  */
 
 package de.sciss.eisenkraut.render;
@@ -60,18 +55,15 @@ import de.sciss.io.Span;
 import de.sciss.util.Flag;
 
 /**
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
- *
  *	@todo		an option to render the transformed data
  *				into the clipboard.
  *	@todo		support of variable output time span
  */
 public class FilterDialog
-extends AppWindow
-implements	RenderConsumer, RenderHost,
-			ProcessingThread.Client
-{
+		extends AppWindow
+		implements RenderConsumer, RenderHost,
+		ProcessingThread.Client {
+
 	/*
 	 *  Session document reference
 	 */
@@ -553,7 +545,7 @@ implements	RenderConsumer, RenderHost,
 		final ConsumerContext	consc;
 		final Flag				hasSelectedAudio	= new Flag( false );
 		final RenderSource		source;
-		final List				tis					= context.getTrackInfos();
+		final List				tis					= context.getTrackInfo();
 		final int				inTrnsLen, outTrnsLen;
 		final int				minBlockSize, maxBlockSize, prefBlockSize;
 		final Set				newOptions;

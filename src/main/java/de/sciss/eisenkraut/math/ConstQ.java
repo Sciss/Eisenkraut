@@ -2,16 +2,13 @@
  *  ConstQ.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
  */
 
 package de.sciss.eisenkraut.math;
@@ -21,10 +18,6 @@ import java.util.prefs.Preferences;
 import de.sciss.util.Param;
 import de.sciss.util.ParamSpace;
 
-/**
- *	@version	0.70, 25-Apr-08
- *	@author		Hanns Holger Rutz
- */
 public class ConstQ
 {
 	public static final String KEY_MINFREQ		= "minfreq";		// Param (Hz)

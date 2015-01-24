@@ -2,20 +2,13 @@
  *  AbstractTool.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		12-May-05	created from de.sciss.meloncillo.gui.AbstractTool
- *		24-Sep-05	implements KeyListener and requests focus on mouse press
- *		01-Oct-05	removed KeyListener, uses Input/ActionMap now because
- *					making the component focusable was destroying other keyboard bindings
  */
 
 package de.sciss.eisenkraut.gui;

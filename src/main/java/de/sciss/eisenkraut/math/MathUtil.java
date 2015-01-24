@@ -2,17 +2,13 @@
  *  MathUtil.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		25-Jan-05	created from de.sciss.meloncillo.math.MathUtil
  */
 
 package de.sciss.eisenkraut.math;
@@ -20,9 +16,6 @@ package de.sciss.eisenkraut.math;
 /**
  *  This is a helper class containing utility static functions
  *  for common math operations and constants
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 22-Apr-08
  */
 public class MathUtil
 {

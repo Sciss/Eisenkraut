@@ -2,17 +2,13 @@
  *  ToolBar.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		15-Feb-05	created from de.sciss.meloncillo.gui.ToolBar
  */
 
 package de.sciss.eisenkraut.gui;
@@ -25,7 +21,6 @@ import java.util.HashMap;
 
 import javax.swing.*;
 
-import com.alee.laf.toolbar.WebToolBar;
 import de.sciss.app.BasicEvent;
 import de.sciss.app.EventManager;
 

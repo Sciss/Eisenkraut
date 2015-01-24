@@ -2,7 +2,7 @@
  *  TimelineScroll.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
@@ -59,10 +59,7 @@ import de.sciss.io.Span;
  *	<p>
  *	This class tracks the catch preferences
  *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 21-Oct-08
- *
- *  @todo		the display properties work well
+ *  TODO: the display properties work well
  *				with the Aqua look+and+feel, however
  *				are slightly wrong on Linux with platinum look+feel
  *				because the scroll gadgets have different positions.
@@ -103,10 +100,9 @@ implements AdjustmentListener, TimelineListener, DynamicListening, PreferenceCha
 	
 	/**
 	 *  Constructs a new <code>TimelineScroll</code> object.
+	 *	TODO: a clean way to determine the track rectangle ...
 	 *
 	 *  @param  doc		session Session
-	 *
-	 *	@todo	a clean way to determine the track rectangle ...
 	 */
     public TimelineScroll( Session doc )
     {
@@ -114,7 +110,7 @@ implements AdjustmentListener, TimelineListener, DynamicListening, PreferenceCha
         this.doc    = doc;
 
 		LookAndFeel laf = UIManager.getLookAndFeel();
-		if( (laf != null) && laf.isNativeLookAndFeel() && (laf.getName().toLowerCase().indexOf( "aqua" ) >= 0) ) {
+		if( (laf != null) && laf.isNativeLookAndFeel() && (laf.getName().toLowerCase().contains("aqua")) ) {
 			trackMarginLeft = 6;  // for Aqua look and feel	
 			trackMargin		= 39;
 		} else {
@@ -327,7 +323,7 @@ implements AdjustmentListener, TimelineListener, DynamicListening, PreferenceCha
 
 		if( !key.equals( PrefsUtil.KEY_CATCH )) return;
 		
-		prefCatch	= Boolean.valueOf( value ).booleanValue();
+		prefCatch	= Boolean.valueOf(value);
 		if( !prefCatch ) return;
 		
 		catchBypassCount	= 0;

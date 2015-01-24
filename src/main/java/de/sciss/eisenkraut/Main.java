@@ -2,7 +2,7 @@
  *  Main.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
@@ -72,12 +72,6 @@ import de.sciss.util.Flag;
  *  <p>
  *  The <code>Main</code> class extends the <code>Application</code>
  *  class from the <code>de.sciss.app</code> package.
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.74, 02-Nov-10
- *
- *	@todo		OSC /main/quit doesn't work repeatedly
- *				; seems to be a problem of menuFactory.closeAll!
  */
 public class Main
 extends BasicApplication
@@ -154,16 +148,6 @@ implements OSCRouter // ProgressComponent // , PreferenceChangeListener
 	 *  @see	#getComponent( Object )
 	 */
 	public static final Object					COMP_AUDIOINFO	= AudioFileInfoPalette.class.getName();
-	
-//	/*
-//	 *  Clipboard (global, systemwide)
-//	 */
-//	public static final Clipboard				clipboard		= Toolkit.getDefaultToolkit().getSystemClipboard();
-
-	/**
-	 */
-//	public final SCPlugInManager				scPlugInManager;
-
 
 	private final OSCRouterWrapper				osc;
 	private static final String					OSC_MAIN		= "main";
@@ -193,14 +177,15 @@ implements OSCRouter // ProgressComponent // , PreferenceChangeListener
 		final OSCRoot				oscServer;
 		final SuperColliderClient	superCollider;
 		String						lafName;
-		List						openDoc			= null;
+		List<String> openDoc			= null;
 
 		// ---- init prefs ----
 
-		oscServer			= new OSCRoot( prefs.node( OSCRoot.DEFAULT_NODE ), 0x4549 );
-		prefsVersion = prefs.getDouble( PrefsUtil.KEY_VERSION, 0.0 );
-		if( prefsVersion < APP_VERSION ) {
-			warnings = PrefsUtil.createDefaults( prefs, prefsVersion );
+		oscServer = new OSCRoot(prefs.node(OSCRoot.DEFAULT_NODE));
+
+		prefsVersion = prefs.getDouble(PrefsUtil.KEY_VERSION, 0.0);
+		if (prefsVersion < APP_VERSION) {
+			warnings = PrefsUtil.createDefaults(prefs, prefsVersion);
 		} else {
 			warnings = null;
 		}
@@ -217,37 +202,38 @@ implements OSCRouter // ProgressComponent // , PreferenceChangeListener
         WebProgressBarStyle.highlightWhite      = new Color(255, 255, 255, 0); // 48)
         WebProgressBarStyle.highlightDarkWhite  = new Color(255, 255, 255, 0);
 
-		lafName = prefs.get( PrefsUtil.KEY_LOOKANDFEEL, null );
-		for( int i = 0; i < args.length; i++ ) {
-			if( args[ i ].startsWith( "-" )) {
-				if( args[ i ].equals( "-laf" )) {
-					if( (i + 2) < args.length ) {
-						UIManager.installLookAndFeel( args[ i + 1 ], args[ i + 2 ]);
-						if( lafName == null ) lafName = args[ i + 2 ];
+		lafName = prefs.get(PrefsUtil.KEY_LOOKANDFEEL, null);
+		for (int i = 0; i < args.length; i++) {
+			if (args[i].startsWith("-")) {
+				if (args[i].equals("-laf")) {
+					if ((i + 2) < args.length) {
+						UIManager.installLookAndFeel(args[i + 1], args[i + 2]);
+						if (lafName == null) lafName = args[i + 2];
 						i += 2;
 					} else {
-						System.err.println( "Option -laf requires two additional arguments (screen-name and class-name)." );
-						System.exit( 1 );
+						System.err.println("Option -laf requires two additional arguments (screen-name and class-name).");
+						System.exit(1);
 					}
 				} else {
-					System.err.println( "Unknown option " + args[ i ]);
-					System.exit( 1 );
+					System.err.println("Unknown option " + args[i]);
+					System.exit(1);
 				}
 			} else {
-				if( openDoc == null ) openDoc = new ArrayList();
-				openDoc.add( args[ i ]);
+				if (openDoc == null) openDoc = new ArrayList<String>();
+				openDoc.add(args[i]);
 			}
 		}
+
+		oscServer.checkExisting(openDoc);
         
 		// ---- init look-and-feel ----
 
-		System.setProperty( "swing.aatext", "true" );
-		lookAndFeelUpdate( lafName );
+		lookAndFeelUpdate(lafName);
 
 //		JFrame.setDefaultLookAndFeelDecorated( true );
 
 		// ---- init infrastructure ----
-		// warning : reihenfolge is crucial
+		// warning : sequence is crucial
 //		oscServer			= new OSCRoot( prefs.node( OSCRoot.DEFAULT_NODE ), 0x4549 );
 		osc					= new OSCRouterWrapper( oscServer, this );
 		final CacheManager cache = new PrefCacheManager( prefs.node( PrefCacheManager.DEFAULT_NODE ));
@@ -261,9 +247,8 @@ implements OSCRouter // ProgressComponent // , PreferenceChangeListener
 			public void processStarted( ProcessingThread.Event e ) { /* empty */ }
 
 			// if the saving was successfull, we will call closeAll again
-			public void processStopped( ProcessingThread.Event e )
-			{
-				if( e.isDone() ) {
+			public void processStopped(ProcessingThread.Event e) {
+				if (e.isDone()) {
 					quit();
 				}
 			}
@@ -271,14 +256,11 @@ implements OSCRouter // ProgressComponent // , PreferenceChangeListener
 
 		try {
 			superCollider.init();
-		}
-		catch( IOException e1 ) {
-			BasicWindowHandler.showErrorDialog( null, e1, "SuperColliderClient Initialization" );
-			System.exit( 1 );
+		} catch (IOException e1) {
+			BasicWindowHandler.showErrorDialog(null, e1, "SuperColliderClient Initialization");
+			System.exit(1);
 			return;
 		}
-
-//		scPlugInManager		= new SCPlugInManager( this );
 
 		// ---- component views ----
 
@@ -290,24 +272,24 @@ implements OSCRouter // ProgressComponent // , PreferenceChangeListener
 		// means no preferences found, so
 		// do some more default initializations
 		// and display splash screen
-		if( prefsVersion == 0.0 ) {
-			ctrlRoom.setVisible( true );
-			observer.setVisible( true );
-			if( cache.getFolder().isDirectory() ) {
-				cache.setActive( true );
+		if (prefsVersion == 0.0) {
+			ctrlRoom.setVisible(true);
+			observer.setVisible(true);
+			if (cache.getFolder().isDirectory()) {
+				cache.setActive(true);
 			}
-    		new WelcomeScreen( this );
+			new WelcomeScreen(this);
 		}
 
-		if( warnings != null ) {
-			for( int i = 0; i < warnings.size(); i++ ) {
-				System.err.println( warnings.get( i ));
+		if (warnings != null) {
+			for (int i = 0; i < warnings.size(); i++) {
+				System.err.println(warnings.get(i));
 			}
 		}
 
 		oscServer.init();
-		
-		if( prefs.node( PrefsUtil.NODE_AUDIO ).getBoolean( PrefsUtil.KEY_AUTOBOOT, false )) {
+
+		if (prefs.node(PrefsUtil.NODE_AUDIO).getBoolean(PrefsUtil.KEY_AUTOBOOT, false)) {
 			superCollider.boot();
 		}
 		

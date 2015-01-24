@@ -2,16 +2,13 @@
  *  PrefConstQ.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
  */
 package de.sciss.eisenkraut.math;
 
@@ -29,22 +26,17 @@ import de.sciss.gui.SpringPanel;
 import de.sciss.gui.StringItem;
 import de.sciss.util.ParamSpace;
 
-/**
- *	@version	0.70, 15-Apr-08
- *	@author		Hanns Holger Rutz
- */
 public class ConstQPane
-extends SpringPanel
-implements PreferenceNodeSync, SwingConstants
-{
+		extends SpringPanel
+		implements PreferenceNodeSync, SwingConstants {
+
 	protected PrefParamField	ggMinFreq, ggMaxFreq;
 	private PrefParamField		ggBandsPerOct, ggMaxTimeRes;
 	private PrefComboBox		ggMaxFFTSize;
 	private Preferences			prefs	= null;
-	
-	public ConstQPane()
-	{
-		super( 2, 1, 4, 2 );
+
+	public ConstQPane() {
+		super(2, 1, 4, 2);
 
 		final ParamSpace spcFreq = ParamSpace.spcFreqHertz.reshape( 1, 96000, 27.5 );
 		final ParamSpace spcTime = ParamSpace.spcTimeMillis.reshape( 1, 2000, 5 );

@@ -2,19 +2,13 @@
  *  MarkerAxis.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
- *	contact@sciss.de
- *
- *
- *  Changelog:
- *		24-Jul-05	created
- *		19-Feb-06	doesn't use DynamicAncestorAdapter any more ; doc frame should
- *					call startListening / stopListening !
+ *	contact@sciss.de\
  */
 
 package de.sciss.eisenkraut.timeline;
@@ -78,21 +72,18 @@ import de.sciss.util.Param;
 import de.sciss.util.ParamSpace;
 
 /**
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 19-Nov-07
- *
- *	@todo		uses TimelineListener to
+ *	TODO:		uses TimelineListener to
  *				not miss document changes. should use 
  *				a document change listener!
  *
- *	@todo		marker sortierung sollte zentral von session o.ae. vorgenommen
+ *	TODO:		marker sortierung sollte zentral von session o.ae. vorgenommen
  *				werden sobald neues file geladen wird!
  *
- *	@todo		had to add 2 pixels to label y coordinate in java 1.5 ; have to check look back in 1.4
+ *	TODO:		had to add 2 pixels to label y coordinate in java 1.5 ; have to check look back in 1.4
  *
- *	@todo		repaintMarkers : have to provide dirtySpan that accounts for flag width, esp. for dnd!
+ *	TODO:		repaintMarkers : have to provide dirtySpan that accounts for flag width, esp. for dnd!
  *
- *	@todo		actionEditPrev/NextClass shortcuts funktionieren nicht
+ *	TODO:		actionEditPrev/NextClass shortcuts funktionieren nicht
  */
 public class MarkerAxis
 extends JComponent
@@ -174,17 +165,15 @@ implements	TimelineListener, MouseListener, MouseMotionListener, KeyListener,
 
 
 	/**
-	 *  Constructs a new object for
-	 *  displaying the timeline ruler
+	 * Constructs a new object for
+	 * displaying the timeline ruler
 	 *
-	 *  @param  root	application root
-	 *  @param  doc		session Session
+	 * @param doc session Session
 	 */
-	public MarkerAxis( Session doc, ComponentHost host )
-	{
+	public MarkerAxis(Session doc, ComponentHost host) {
 		super();
-        
-        this.doc    = doc;
+
+		this.doc    = doc;
 		this.host	= host;
 		
 		fntLabel	= AbstractApplication.getApplication().getGraphicsHandler().getFont( GraphicsHandler.FONT_LABEL | GraphicsHandler.FONT_MINI ).deriveFont( Font.ITALIC );
@@ -368,7 +357,8 @@ implements	TimelineListener, MouseListener, MouseMotionListener, KeyListener,
 			doc.markers.editAdd( this, new MarkerStake( pos, "Mark" ), ce );
 		}
 		catch( IOException e1 ) {	// should never happen
-			System.err.println( e1 );
+			System.err.println("addMarker:");
+			e1.printStackTrace();
 			ce.cancel();
 			return;
 		}
@@ -379,32 +369,30 @@ implements	TimelineListener, MouseListener, MouseMotionListener, KeyListener,
 		ce.end();
 		doc.getUndoManager().addEdit( ce );
 	}
-	
-	private void removeMarkerLeftTo( long pos )
-	{
-		final AbstractCompoundEdit	ce;
-		final MarkerStake		mark;
-	
-		mark	= getMarkerLeftTo( pos );
-		pos		= Math.max( 0, Math.min( doc.timeline.getLength(), pos ));
-		if( mark == null ) return;
-		
-		ce		= new BasicCompoundEdit( getResourceString( "editDeleteMarker" ));
-		doc.markers.editBegin( ce );
+
+	private void removeMarkerLeftTo(long pos) {
+		final AbstractCompoundEdit ce;
+		final MarkerStake mark;
+
+		mark 	= getMarkerLeftTo(pos);
+		// pos 	= Math.max(0, Math.min(doc.timeline.getLength(), pos));
+		if (mark == null) return;
+
+		ce = new BasicCompoundEdit(getResourceString("editDeleteMarker"));
+		doc.markers.editBegin(ce);
 		try {
-			doc.markers.editRemove( this, mark, ce );
-		}
-		catch( IOException e1 ) {	// should never happen
-			System.err.println( e1 );
+			doc.markers.editRemove(this, mark, ce);
+		} catch (IOException e1) {    // should never happen
+			System.err.println("removeMarkerLeftTo:");
+			e1.printStackTrace();
 			ce.cancel();
 			return;
-		}
-		finally {
-			doc.markers.editEnd( ce );
+		} finally {
+			doc.markers.editEnd(ce);
 		}
 		ce.perform();
 		ce.end();
-		doc.getUndoManager().addEdit( ce );
+		doc.getUndoManager().addEdit(ce);
 	}
 
 	private void editMarkerLeftTo( long pos )
@@ -463,16 +451,16 @@ implements	TimelineListener, MouseListener, MouseMotionListener, KeyListener,
 			amap			= spring.getActionMap();
 			imap			= spring.getInputMap( JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT );
 			ks				= KeyStroke.getKeyStroke( KeyEvent.VK_LEFT, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() );
-// XXX DOESN'T WORK ;-(
-//			ggMarkName.getInputMap().remove( ks );
+			// XXX DOESN'T WORK ;-(
+			//			ggMarkName.getInputMap().remove( ks );
 			imap.put( ks, "prev" );
 			a				= new ActionEditPrev();
 //			amap.put( "prev", a );
 			ggEditPrev		= new JButton( a );
 			amap.put( "prev", new DoClickAction( ggEditPrev ));
 			ks				= KeyStroke.getKeyStroke( KeyEvent.VK_RIGHT, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() );
-// XXX DOESN'T WORK ;-(
-//			ggMarkName.getInputMap().remove( ks );
+			// XXX DOESN'T WORK ;-(
+			//			ggMarkName.getInputMap().remove( ks );
 			imap.put( ks, "next" );
 			a				= new ActionEditNext();
 //			amap.put( "next", a );
@@ -515,11 +503,10 @@ implements	TimelineListener, MouseListener, MouseMotionListener, KeyListener,
 		ggMarkName.requestFocusInWindow();
 		ggMarkName.selectAll();
 	}
-	
-	protected void commitEditMarker()
-	{
-		final MarkerStake mark = doc.markers.get( editIdx );
-		if( mark == null ) return;
+
+	protected void commitEditMarker() {
+		final MarkerStake mark = doc.markers.get(editIdx);
+		if (mark == null) return;
 
 		final long				positionSmps;
 		final AbstractCompoundEdit	ce;
@@ -534,7 +521,8 @@ implements	TimelineListener, MouseListener, MouseMotionListener, KeyListener,
 			doc.markers.editAdd( this, new MarkerStake( positionSmps, ggMarkName.getText() ), ce );
 		}
 		catch( IOException e1 ) {	// should never happen
-			System.err.println( e1 );
+			System.err.println("Edit marker:");
+			e1.printStackTrace();
 			ce.cancel();
 			return;
 		}
@@ -680,7 +668,8 @@ implements	TimelineListener, MouseListener, MouseMotionListener, KeyListener,
 						doc.markers.editAdd( this, dragLastMark, ce );
 					}
 					catch( IOException e1 ) {	// should never happen
-						System.err.println( e1 );
+						System.err.println("Move marker:");
+						e1.printStackTrace();
 						ce.cancel();
 						return;
 					}

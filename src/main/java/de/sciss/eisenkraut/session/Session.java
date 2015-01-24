@@ -2,20 +2,13 @@
  *  Session.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		25-Jan-05	created
- *		15-Jul-05	removed SessionChangeListener stuff. relies more on SessionCollection.Listener
- *					for doc.tracks
- *		21-Jan-06	implements OSCRouter ; moved a lot of actions from DocumentFrame to this class
  */
 
 package de.sciss.eisenkraut.session;
@@ -74,16 +67,10 @@ import de.sciss.common.BasicDocument;
 import de.sciss.common.BasicWindowHandler;
 import de.sciss.common.ProcessingThread;
 
-/**
- *  @author		Hanns Holger Rutz
- *  @version	0.71, 16-Oct-08
- *
- *	@todo		try get rid of the GUI stuff in here
- */
 public class Session
-extends BasicDocument
-implements OSCRouter
-{
+		extends BasicDocument
+		implements OSCRouter {
+
 	private final AudioFileDescr			displayAFD;
 	private AudioFileDescr[]				afds;
 	private String							name;
@@ -100,13 +87,6 @@ implements OSCRouter
 	private static final int[]				waveDecims		= { 8, 12, 16 };
 //	private static final int[]				sonaDecims		= { 0, 8 /*, 16 */ };
 
-//	/**
-//	 *  Use this <code>LockManager</code> to gain access to
-//	 *  <code>receiverCollection</code>, <code>transmitterCollection</code>,
-//	 *  <code>timeline</code> and a transmitter's <code>AudioTrail</code>.
-//	 */
-//	public final LockManager				bird			= new LockManager( 3 );
-	
 	/**
 	 *  Bitmask for putting a lock on the <code>timeline</code>
 	 */
@@ -229,7 +209,6 @@ implements OSCRouter
 	 *	@return	<code>true</code> if a new process can be launched, <code>false</code>
 	 *			if a previous process is ongoing and a new process cannot be launched
 	 *	@throws	IllegalMonitorStateException	if called from outside the event thread
-	 *	@synchronization	must be called in the event thread
 	 */
 	public boolean checkProcess()
 	{
@@ -246,32 +225,25 @@ implements OSCRouter
 	 *	@return	<code>true</code> if a new process can be launched, <code>false</code>
 	 *			if a previous process is ongoing and a new process cannot be launched
 	 *	@throws	IllegalMonitorStateException	if called from outside the event thread
-	 *	@synchronization	must be called in the event thread
 	 */
-	public boolean checkProcess( int timeout )
-	{
-//System.out.println( "checking..." );
-		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
-		if( pt == null ) return true;
-		if( timeout == 0 ) return false;
+	public boolean checkProcess(int timeout) {
+		if (!EventQueue.isDispatchThread()) throw new IllegalMonitorStateException();
+		if (pt == null) return true;
+		if (timeout == 0) return false;
 
-//System.out.println( "sync " + timeout );
 		pt.sync( timeout );
-//System.out.println( "sync done" );
 		return( (pt == null) || !pt.isRunning() );
 	}
-	
-	public void cancelProcess( boolean sync )
-	{
-		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
-		if( pt == null ) return;
-		pt.cancel(  sync );
+
+	public void cancelProcess(boolean sync) {
+		if (!EventQueue.isDispatchThread()) throw new IllegalMonitorStateException();
+		if (pt == null) return;
+		pt.cancel(sync);
 	}
-	
-	public String getProcessName()
-	{
-		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
-		if( pt == null ) return null;
+
+	public String getProcessName() {
+		if (!EventQueue.isDispatchThread()) throw new IllegalMonitorStateException();
+		if (pt == null) return null;
 		return pt.getName();
 	}
 	
@@ -280,11 +252,9 @@ implements OSCRouter
 	 * 	can exist at a time. To ensure that no other thread is running,
 	 * 	call <code>checkProcess()</code>.
 	 * 
-	 * 	@param	pt	the thread to launch
 	 * 	@throws	IllegalMonitorStateException	if called from outside the event thread
 	 * 	@throws	IllegalStateException			if another process is still running
 	 * 	@see	#checkProcess()
-	 * 	@synchronization	must be called in the event thread
 	 */
 	public void start( ProcessingThread process )
 	{
@@ -393,24 +363,24 @@ implements OSCRouter
 //		audioTracks.clear( source );
 if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repeatedly" );
 		
-		final List		collNewTracks	= new ArrayList();
+		final List<Track> collNewTracks	= new ArrayList<Track>();
 		final int		numChannels		= at.getChannelNum();
 		final double	deltaAngle		= 360.0 / numChannels;
 		final double	startAngle		= numChannels < 2 ? 0.0 : -deltaAngle/2;	// reasonable for mono to octo
 		AudioTrack		t;
-		
-		audioTracks.setTrail( at );
-		
-		for( int ch = 0; ch < at.getChannelNum(); ch++ ) {
+
+		audioTracks.setTrail(at);
+
+		for (int ch = 0; ch < at.getChannelNum(); ch++) {
 //			t = new AudioTrack( at, ch );
-			t = new AudioTrack( audioTracks, ch );
-			t.setName( String.valueOf( ch + 1 ));
-			t.getMap().putValue( source, AudioTrack.MAP_KEY_PANAZIMUTH, new Double( startAngle + ch * deltaAngle ));
-			collNewTracks.add( t );
+			t = new AudioTrack(audioTracks, ch);
+			t.setName(String.valueOf(ch + 1));
+			t.getMap().putValue(source, AudioTrack.MAP_KEY_PANAZIMUTH, startAngle + ch * deltaAngle);
+			collNewTracks.add(t);
 		}
-		audioTracks.addAll( source, collNewTracks );
-		tracks.addAll( source, collNewTracks );
-		selectedTracks.addAll( source, collNewTracks );
+		audioTracks   .addAll(source, collNewTracks);
+		tracks        .addAll(source, collNewTracks);
+		selectedTracks.addAll(source, collNewTracks);
 //		tracks.resumeDispatcher();
 //		dispatchChange( source );
 
@@ -488,7 +458,7 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 					displayAFD.file	= afds[ 0 ].file;
 					name			= displayAFD.file.getName(); 
 				} else {
-					final StringBuffer strBuf = new StringBuffer();
+					final StringBuilder strBuf = new StringBuilder();
 					strBuf.append( pname.substring( 0, left ));
 					for( int i = 0; i < afds.length; i++ ) {
 						strBuf.append( i == 0 ? '[' : ',' );
@@ -588,90 +558,63 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 	{
 		return actionTrim;
 	}
-	
-	public ProcessingThread insertSilence( long pos, long numFrames )
-	{
-		return actionSilence.initiate( pos, numFrames );
+
+	public ProcessingThread insertSilence(long pos, long numFrames) {
+		return actionSilence.initiate(pos, numFrames);
 	}
 
-	public ProcessingThread closeDocument( boolean force, Flag wasClosed )
-	{
-		return frame.closeDocument( force, wasClosed );	// XXX should be in here not frame!!!
+	public ProcessingThread closeDocument(boolean force, Flag wasClosed) {
+		return frame.closeDocument(force, wasClosed);    // XXX should be in here not frame!!!
 	}
-	
-	public ClipboardTrackList getSelectionAsTrackList()
-	{
+
+	public ClipboardTrackList getSelectionAsTrackList() {
 		return actionCopy.getSelectionAsTrackList();
 	}
-	
-	public ProcessingThread pasteTrackList( ClipboardTrackList tl, long insertPos, String procName, int mode )
-	{
-		return actionPaste.initiate( tl, insertPos, procName, mode );
+
+	public ProcessingThread pasteTrackList(ClipboardTrackList tl, long insertPos, String procName, int mode) {
+		return actionPaste.initiate(tl, insertPos, procName, mode);
 	}
 
-	public static Session newEmpty( AudioFileDescr afd )
-	throws IOException
-	{
-		return newEmpty( afd, true, true );
+	public static Session newEmpty(AudioFileDescr afd)
+			throws IOException {
+		return newEmpty(afd, true, true);
 	}
 
 	// NOTE: does not add the document to a handler
-	public static Session newEmpty( AudioFileDescr afd, boolean createTransport, boolean createOSC )
-	throws IOException
-	{
-		final Session			doc			= new Session( afd, createOSC );
-		final AudioTrail		at			= AudioTrail.newFrom( afd );	// does _not_ throw an IOException
+	public static Session newEmpty(AudioFileDescr afd, boolean createTransport, boolean createOSC)
+			throws IOException {
 
-//		try {
-			doc.setAudioTrail( null, at );
-//			if( createOSC ) doc.createOSC();
-			if( createTransport ) doc.createTransport();
-//			if( createDecimated ) {
-//				doc.createDecimatedWaveTrail();
-//				doc.createDecimatedSonaTrail();
-//			}
-//		}
-//		catch( IOException e1 ) {
-//			doc.dispose();
-//			throw e1;
-//		}
+		final Session doc = new Session(afd, createOSC);
+		final AudioTrail at = AudioTrail.newFrom(afd);    // does _not_ throw an IOException
+
+		doc.setAudioTrail(null, at);
+		if (createTransport) doc.createTransport();
 
 		return doc;
 	}
-	
-	public static Session newFrom( File path )
-	throws IOException
-	{
-		return newFrom( path, true, true );
+
+	public static Session newFrom(File path)
+			throws IOException {
+		return newFrom(path, true, true);
 	}
 
-	public static Session newFrom( File path, boolean createTransport, boolean createOSC )
-	throws IOException
-	{
+	public static Session newFrom(File path, boolean createTransport, boolean createOSC)
+			throws IOException {
+
 		final AudioFile			af	= AudioFile.openAsRead( path );
 		final AudioFileDescr	afd	= af.getDescr();
-		Session					doc	= null;
+		Session					doc;
 		AudioTrail				at	= null;
 		
 		try {
-// System.err.println( "readMarkers" );
 			af.readMarkers();
 			at					= AudioTrail.newFrom( af );
 			doc					= new Session( afd, createOSC );
 			doc.setAudioTrail( null, at );
-//			if( createOSC ) doc.createOSC();
 			if( createTransport ) doc.createTransport();
-//			if( createDecimated ) {
-//				doc.createDecimatedWaveTrail();
-//				doc.createDecimatedSonaTrail();
-//			}
 			return doc;
-		}
-		catch( IOException e1 ) {
-//			if( doc != null ) {
-//				doc.dispose();
-//			} else
-			if( at != null ) {
+		} catch (IOException e1) {
+			if (at != null) {
 				at.dispose();
 			} else {
 				af.cleanUp();
@@ -679,20 +622,19 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 			throw e1;
 		}
 	}
-	
-	public static Session newFrom( File[] paths )
-	throws IOException
-	{
-		return newFrom( paths, true, true );
+
+	public static Session newFrom(File[] paths)
+			throws IOException {
+		return newFrom(paths, true, true);
 	}
 
-	public static Session newFrom( File[] paths, boolean createTransport, boolean createOSC )
-	throws IOException
-	{
+	public static Session newFrom(File[] paths, boolean createTransport, boolean createOSC)
+			throws IOException {
+
 		final AudioFile[]		afs		= new AudioFile[ paths.length ];
 		final AudioFileDescr[]	afds	= new AudioFileDescr[ paths.length ]; 
 		AudioTrail				at		= null;
-		Session					doc		= null;
+		Session					doc;
 	
 		try {
 			for( int i = 0; i < paths.length; i++ ) {
@@ -705,24 +647,15 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 						throw new IOException( getResourceString( "errHeadersNotMatching" ));
 					}
 				}
-//				System.err.println( "readMarkers" );
 				afs[ i ].readMarkers();
 			}
 			at					= AudioTrail.newFrom( afs );
 			doc					= new Session( afds, createOSC );
 			doc.setAudioTrail( null, at );
-//			if( createOSC ) doc.createOSC();
 			if( createTransport ) doc.createTransport();
-//			if( createDecimated ) {
-//				doc.createDecimatedWaveTrail();
-//				doc.createDecimatedSonaTrail();
-//			}
 			return doc;
 		}
 		catch( IOException e1 ) {
-//			if( doc != null ) {
-//				doc.dispose();
-//			} else
 			if( at != null ) {
 				at.dispose();
 			} else {
@@ -804,17 +737,12 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 		final boolean			force;
 
 		try {
-			if( rom.msg.getArgCount() > 1 ) {
-				force = ((Number) rom.msg.getArg( 1 )).intValue() != 0;
-			} else {
-				force = false;
-			}
-			proc = closeDocument( force, new Flag( false ));
-			if( proc != null ) start( proc );
+			force = rom.msg.getArgCount() > 1 && ((Number) rom.msg.getArg(1)).intValue() != 0;
+			proc = closeDocument(force, new Flag(false));
+			if (proc != null) start(proc);
 		}
 		catch( IndexOutOfBoundsException e1 ) {
 			OSCRoot.failedArgCount( rom );
-			return;
 		}
 		catch( ClassCastException e1 ) {
 			OSCRoot.failedArgType( rom, 1 );
@@ -906,11 +834,9 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 		}
 		catch( IndexOutOfBoundsException e1 ) {
 			OSCRoot.failedArgCount( rom );
-			return;
 		}
 		catch( ClassCastException e1 ) {
 			OSCRoot.failedArgType( rom, argIdx );
-			return;
 		}
 	}
 
@@ -920,8 +846,6 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 	 *	blending if activated.
 	 *
 	 *	"replace", <fileName>[, <fileOffset> ]
-	 *
-	 *	@todo	XXX FilterDialog should return a ProcessingThread, so we can properly close the file after pasting
 	 */
 	public void oscCmd_replace( RoutedOSCMessage rom )
 	{
@@ -967,32 +891,27 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 //		actionProcessAgain.setPlugIn( filterDlg.getPlugIn() );
 	}
 
-	public Object oscQuery_id()
-	{
-		return new Integer( getNodeID() );
+	public Object oscQuery_id() {
+		return getNodeID();
 	}
 
-	public Object oscQuery_dirty()
-	{
-		return new Integer( isDirty() ? 1 : 0 );
+	public Object oscQuery_dirty() {
+		return isDirty() ? 1 : 0;
 	}
-	
-	public Object oscQuery_editMode()
-	{
-		return EDITMODES[ getEditMode() ];
+
+	public Object oscQuery_editMode() {
+		return EDITMODES[getEditMode()];
 	}
-	
-	public Object oscQuery_name()
-	{
+
+	public Object oscQuery_name() {
 		return getName();
 	}
-	
-	public Object oscQuery_file()
-	{
-		final StringBuffer sb = new StringBuffer();
-		for( int i = 0; i < afds.length; i++ ) {
-			if( i > 0 ) sb.append( File.pathSeparator );
-			sb.append(  afds[ i ].file.getAbsolutePath() );
+
+	public Object oscQuery_file() {
+		final StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < afds.length; i++) {
+			if (i > 0) sb.append(File.pathSeparator);
+			sb.append(afds[i].file.getAbsolutePath());
 		}
 		return sb.toString();
 	}
@@ -1067,12 +986,9 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 		 *	other objects to add listeners. So it's the
 		 *	job of the caller to invoke the processing thread's
 		 *	<code>start</code> method.
-		 *
-		 *  @synchronization	this method is to be called in the event thread
 		 */
-		protected ProcessingThread initiate( String procName, Span span, AudioFileDescr[] descrs,
-											 int[] channelMap, boolean saveMarkers, boolean asCopy )
-		{
+		protected ProcessingThread initiate(String procName, Span span, AudioFileDescr[] descrs,
+											int[] channelMap, boolean saveMarkers, boolean asCopy) {
 			final ProcessingThread proc;
 		
 			getTransport().stop();
@@ -1082,9 +998,9 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 			proc				= new ProcessingThread( this, getFrame(), procName );
 			proc.putClientArg( "afds", descrs );
 			proc.putClientArg( "doc", Session.this );
-			proc.putClientArg( "asCopy", new Boolean( asCopy ));
+			proc.putClientArg( "asCopy", asCopy);
 			proc.putClientArg( "chanMap", channelMap );
-			proc.putClientArg( "markers", new Boolean( saveMarkers ));
+			proc.putClientArg( "markers", saveMarkers);
 			proc.putClientArg( "span", span == null ? new Span( 0, timeline.getLength() ) : span );
 			return proc;
 		}
@@ -1102,7 +1018,7 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 			final AudioFileDescr[]			clientAFDs	= (AudioFileDescr[]) context.getClientArg( "afds" );
 			final int						numFiles	= clientAFDs.length;
 			final Session					doc			= (Session) context.getClientArg( "doc" );
-			final boolean					saveMarkers	= ((Boolean) context.getClientArg( "markers" )).booleanValue();
+			final boolean					saveMarkers	= (Boolean) context.getClientArg("markers");
 			final Span						span		= (Span) context.getClientArg( "span" );
 			final int[]						channelMap	= (int[]) context.getClientArg( "chanMap" );
 			final AudioTrail				audioTrail	= doc.getAudioTrail();
@@ -1147,7 +1063,7 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 			final AudioFileDescr[]			clientAFDs	= (AudioFileDescr[]) context.getClientArg( "afds" );
 			final AudioFile[]				afs			= (AudioFile[]) context.getClientArg( "afs" );
 			final Session					doc			= (Session) context.getClientArg( "doc" );
-			final boolean					asCopy		= ((Boolean) context.getClientArg( "asCopy" )).booleanValue();
+			final boolean					asCopy		= (Boolean) context.getClientArg("asCopy");
 			File							tempF;
 					
 			if( context.getReturnCode() == DONE ) {	// ------------------------------- DONE -------------------------------
@@ -1245,12 +1161,12 @@ tryRename:					  {
 				}
 			} else {	// ------------------------------- FAILED or CANCELLED -------------------------------
 				if( afs != null ) {
-					for( int i = 0; i < afs.length; i++ ) {
-						if( afs[ i ] != null ) {
-							afs[ i ].cleanUp();
-							if( !afs[ i ].getFile().delete() ) {
-								System.err.println( "The file '" + afs[ i ].getFile().getAbsolutePath() + "' "+
-													"(created during saving) could not be deleted!" );
+					for (AudioFile af : afs) {
+						if (af != null) {
+							af.cleanUp();
+							if (!af.getFile().delete()) {
+								System.err.println("The file '" + af.getFile().getAbsolutePath() + "' " +
+										"(created during saving) could not be deleted!");
 							}
 						}
 					}
@@ -1314,19 +1230,17 @@ tryRename:					  {
 //			}
 		}
 
-		protected boolean perform()
-		{
-			boolean						success	= false;
-			final ClipboardTrackList	tl		= getSelectionAsTrackList();
+		protected boolean perform() {
+			boolean success = false;
+			final ClipboardTrackList tl = getSelectionAsTrackList();
 
-			if( tl == null ) return success;
+			if (tl == null) return false;
 
 			try {
-				AbstractApplication.getApplication().getClipboard().setContents( tl, tl );
+				AbstractApplication.getApplication().getClipboard().setContents(tl, tl);
 				success = true;
-			}
-			catch( IllegalStateException e1 ) {
-				System.err.println( getResourceString( "errClipboard" ));
+			} catch (IllegalStateException e1) {
+				System.err.println(getResourceString("errClipboard"));
 			}
 
 			return success;
@@ -1368,8 +1282,7 @@ tryRename:					  {
 			catch( UnsupportedFlavorException e11 ) {
 				System.err.println( e11.getLocalizedMessage() );
 				return;
-			}
-			catch( IllegalStateException e11 ) {
+			} catch( IllegalStateException e11 ) {
 				System.err.println( getResourceString( "errClipboard" ));
 				return;
 			}
@@ -1469,16 +1382,16 @@ tryRename:					  {
 
 			proc	= new ProcessingThread( this, getFrame(), procName );
 			proc.putClientArg( "tl", tl );
-			proc.putClientArg( "pos", new Long( insertPos ));
-			proc.putClientArg( "mode", new Integer( mode ));
+			proc.putClientArg( "pos", insertPos);
+			proc.putClientArg( "mode", mode);
 			proc.putClientArg( "tis", tis );
-			proc.putClientArg( "pasteLen", new Long( pasteLength ));
-			proc.putClientArg( "exp", new Boolean( expTimeline ));
+			proc.putClientArg( "pasteLen", pasteLength);
+			proc.putClientArg( "exp", expTimeline);
 			proc.putClientArg( "bcPre", bcPre );
 			proc.putClientArg( "bcPost", bcPost );
 			proc.putClientArg( "insertSpan", insertSpan );
 			proc.putClientArg( "copySpan", copySpan );
-			proc.putClientArg( "cut", new Boolean( cutTimeline ));
+			proc.putClientArg( "cut", cutTimeline);
 			proc.putClientArg( "cutSpan", cutTimelineSpan );
 			proc.putClientArg( "edit", edit );
 
@@ -1494,76 +1407,68 @@ tryRename:					  {
 		throws IOException
 		{
 			final ClipboardTrackList		tl					= (ClipboardTrackList) context.getClientArg( "tl" );
-			final long						insertPos			= ((Long) context.getClientArg( "pos" )).longValue();
-			final int						mode				= ((Integer) context.getClientArg( "mode" )).intValue();
-			final List						tis					= (List) context.getClientArg( "tis" );
+			final long						insertPos			= (Long) context.getClientArg("pos");
+			final int						mode				= (Integer) context.getClientArg("mode");
+			final List<Track.Info> 			tis					= (List<Track.Info>) context.getClientArg( "tis" );
 			final AbstractCompoundEdit		edit				= (AbstractCompoundEdit) context.getClientArg( "edit" );
 			final BlendContext				bcPre				= (BlendContext) context.getClientArg( "bcPre" );
 			final BlendContext				bcPost				= (BlendContext) context.getClientArg( "bcPost" );
 			final Span						insertSpan			= (Span) context.getClientArg( "insertSpan" );
 			final Span						copySpan			= (Span) context.getClientArg( "copySpan" );
-			final boolean					cutTimeline			= ((Boolean) context.getClientArg( "cut" )).booleanValue();
+			final boolean					cutTimeline			= (Boolean) context.getClientArg("cut");
 			final Span						cutTimelineSpan		= (Span) context.getClientArg( "cutSpan" );
 			final long						delta				= insertPos - tl.getSpan().start;
-			Track.Info						ti;
 			Trail							srcTrail;
 			AudioTrail						audioTrail;
 			boolean[]						trackMap;
 			boolean							isAudio, pasteAudio;
 
-			for( int i = 0; i < tis.size(); i++ ) {
-				ti		= (Track.Info) tis.get( i );
-				if( ti.selected ) {	// ----------------- selected tracks -----------------
+			for (Track.Info ti : tis) {
+				if (ti.selected) {    // ----------------- selected tracks -----------------
 					try {
-						ti.trail.editBegin( edit );
-						isAudio	= ti.trail instanceof AudioTrail;
-						srcTrail = tl.getSubTrail( ti.trail.getClass() );
-					
-						if( isAudio ) {
-							pasteAudio = (srcTrail != null) && (((AudioTrail) srcTrail).getChannelNum() > 0);
-						} else {
-							pasteAudio = false;
-						}
-						
-						if( mode == EDIT_INSERT ) {
-							ti.trail.editInsert( this, insertSpan, edit );
-							if( cutTimeline ) ti.trail.editRemove( this, cutTimelineSpan, edit );
+						ti.trail.editBegin(edit);
+						isAudio = ti.trail instanceof AudioTrail;
+						srcTrail = tl.getSubTrail(ti.trail.getClass());
+
+						pasteAudio = isAudio && (srcTrail != null) && (((AudioTrail) srcTrail).getChannelNum() > 0);
+
+						if (mode == EDIT_INSERT) {
+							ti.trail.editInsert(this, insertSpan, edit);
+							if (cutTimeline) ti.trail.editRemove(this, cutTimelineSpan, edit);
 //							} else if( (mode == EDIT_OVERWRITE) && (pasteAudio || !isAudio) ) { // Audio needs to be cleared even in Mix mode!
-						} else if( pasteAudio || ((mode == EDIT_OVERWRITE) && !isAudio) ) { // Audio needs to be cleared even in Mix mode!
-							ti.trail.editClear( this, insertSpan, edit );
+						} else if (pasteAudio || ((mode == EDIT_OVERWRITE) && !isAudio)) { // Audio needs to be cleared even in Mix mode!
+							ti.trail.editClear(this, insertSpan, edit);
 						}
-						
-						if( pasteAudio ) {
-							audioTrail			= (AudioTrail) ti.trail;
-							trackMap	= tl.getTrackMap( ti.trail.getClass() );
-							
-//System.err.println( "clipboard tm : " );
-//for( int x = 0; x < trackMap.length; x++ ) { System.err.println( "  " + trackMap[ x ]); }
-							int[] trackMap2 = new int[ audioTrail.getChannelNum() ];
-							for( int j = 0, k = 0; j < trackMap2.length; j++ ) {
-								if( ti.trackMap[ j ]) {	// target track selected
-									for( ; (k < trackMap.length) && !trackMap[ k ] ; k++ ) ;
-									if( k < trackMap.length ) {	// source track exiting
-										trackMap2[ j ] = k++;
-									} else if( tl.getTrackNum( ti.trail.getClass() ) > 0 ) {		// ran out of source tracks, fold over (simple mono -> stereo par exemple)
-										for( k = 0; !trackMap[ k ] ; k++ ) ;
-										trackMap2[ j ] = k++;
+
+						if (pasteAudio) {
+							audioTrail = (AudioTrail) ti.trail;
+							trackMap = tl.getTrackMap(ti.trail.getClass());
+
+							int[] trackMap2 = new int[audioTrail.getChannelNum()];
+							for (int j = 0, k = 0; j < trackMap2.length; j++) {
+								if (ti.trackMap[j]) {    // target track selected
+									for (; (k < trackMap.length) && !trackMap[k]; k++) ;
+									if (k < trackMap.length) {    // source track exiting
+										trackMap2[j] = k++;
+									} else if (tl.getTrackNum(ti.trail.getClass()) > 0) {        // ran out of source tracks, fold over (simple mono -> stereo par exemple)
+										for (k = 0; !trackMap[k]; k++) ;
+										trackMap2[j] = k++;
 									} else {
-										trackMap2[ j ] = -1;		// there aren't any clipboard tracks ....
+										trackMap2[j] = -1;        // there aren't any clipboard tracks ....
 									}
-								} else {							// target track not selected
-									trackMap2[ j ] = -1;
+								} else {                            // target track not selected
+									trackMap2[j] = -1;
 								}
 							}
-							if( !audioTrail.copyRangeFrom( (AudioTrail) srcTrail, copySpan, insertPos, mode, this, edit, trackMap2, bcPre, bcPost )) return CANCELLED;
+							if (!audioTrail.copyRangeFrom((AudioTrail) srcTrail, copySpan, insertPos, mode, this, edit, trackMap2, bcPre, bcPost))
+								return CANCELLED;
 
-						} else if( (ti.numTracks == 1) && (tl.getTrackNum( ti.trail.getClass() ) == 1) ) {
-							ti.trail.editAddAll( this, srcTrail.getCuttedRange(
-								copySpan, true, srcTrail.getDefaultTouchMode(), delta ), edit );
+						} else if ((ti.numTracks == 1) && (tl.getTrackNum(ti.trail.getClass()) == 1)) {
+							ti.trail.editAddAll(this, srcTrail.getCuttedRange(
+									copySpan, true, srcTrail.getDefaultTouchMode(), delta), edit);
 						}
-					}
-					finally {
-						ti.trail.editEnd( edit );
+					} finally {
+						ti.trail.editEnd(edit);
 					}
 				}
 			}
@@ -1571,12 +1476,11 @@ tryRename:					  {
 			return DONE;
 		}
 
-		public void processFinished( ProcessingThread context )
-		{
+		public void processFinished(ProcessingThread context) {
 			final ProcessingThread.Client	doneAction	= (ProcessingThread.Client) context.getClientArg( "doneAction" );
 			final AbstractCompoundEdit		edit		= (AbstractCompoundEdit) context.getClientArg( "edit" );
-			final boolean					expTimeline	= ((Boolean) context.getClientArg( "exp" )).booleanValue();
-			final long						pasteLength	= ((Long) context.getClientArg( "pasteLen" )).longValue();
+			final boolean					expTimeline	= (Boolean) context.getClientArg("exp");
+			final long						pasteLength	= (Long) context.getClientArg("pasteLen");
 			final Span						insertSpan	= (Span) context.getClientArg( "insertSpan" );
 			
 			if( (context.getReturnCode() == DONE) ) {
@@ -1607,7 +1511,7 @@ tryRename:					  {
 	} // class actionPasteClass
 
 	/**
-	 *	@todo	when a cutted region spans entire view,
+	 *	TODO: when a cutted region spans entire view,
 	 *			selecting undo results in empty visible span
 	 */
 	private class ActionDelete
@@ -1727,11 +1631,11 @@ tryRename:					  {
 
 			final ProcessingThread proc = new ProcessingThread( this, getFrame(), procName );
 			proc.putClientArg( "span", span );
-			proc.putClientArg( "mode", new Integer( mode ));
+			proc.putClientArg( "mode", mode);
 			proc.putClientArg( "tis", tis );
 			proc.putClientArg( "edit", edit );
 			proc.putClientArg( "bc", bc );
-			proc.putClientArg( "cut", new Boolean( cutTimeline ));
+			proc.putClientArg( "cut", cutTimeline);
 			proc.putClientArg( "cutSpan", cutTimelineSpan );
 			return proc;
 		}
@@ -1745,50 +1649,49 @@ tryRename:					  {
 		throws IOException
 		{
 			final Span						span				= (Span) context.getClientArg( "span" );
-			final int						mode				= ((Integer) context.getClientArg( "mode" )).intValue();
+			final int						mode				= (Integer) context.getClientArg("mode");
 			final List						tis					= (List) context.getClientArg( "tis" );
 			final AbstractCompoundEdit		edit				= (AbstractCompoundEdit) context.getClientArg( "edit" );
 			final BlendContext				bc					= (BlendContext) context.getClientArg( "bc" );
 			final long						left				= bc == null ? 0L : bc.getLeftLen();
 			final long						right				= bc == null ? 0L : bc.getRightLen();
-			final boolean					cutTimeline			= ((Boolean) context.getClientArg( "cut" )).booleanValue();
+			final boolean					cutTimeline			= (Boolean) context.getClientArg("cut");
 			final Span						cutTimelineSpan		= (Span) context.getClientArg( "cutSpan" );
 			AudioTrail						audioTrail;
 			Track.Info						ti;
 			boolean							isAudio;
 
-			for( int i = 0; i < tis.size(); i++ ) {
-				ti		= (Track.Info) tis.get( i );
+			for (Object ti1 : tis) {
+				ti = (Track.Info) ti1;
 				try {
-					ti.trail.editBegin( edit );
+					ti.trail.editBegin(edit);
 					isAudio = ti.trail instanceof AudioTrail;
-					if( ti.selected ) {
-						if( mode == EDIT_INSERT ) {
-							if( isAudio ) {
-								if( bc == null ) {
-									ti.trail.editRemove( this, span, edit );
+					if (ti.selected) {
+						if (mode == EDIT_INSERT) {
+							if (isAudio) {
+								if (bc == null) {
+									ti.trail.editRemove(this, span, edit);
 								} else {
-									ti.trail.editRemove( this, new Span( span.start - left, span.stop + right ), edit );
-									ti.trail.editInsert( this, new Span( span.start - left, span.start + right ), edit );
+									ti.trail.editRemove(this, new Span(span.start - left, span.stop + right), edit);
+									ti.trail.editInsert(this, new Span(span.start - left, span.start + right), edit);
 								}
 								audioTrail = (AudioTrail) ti.trail;
-								audioTrail.clearRange( span, EDIT_INSERT, this, edit, ti.trackMap, bc );
+								audioTrail.clearRange(span, EDIT_INSERT, this, edit, ti.trackMap, bc);
 							} else {
-								ti.trail.editRemove( this, span, edit );
+								ti.trail.editRemove(this, span, edit);
 							}
 						} else {
-							ti.trail.editClear( this, span, edit );
-							if( isAudio ) {
+							ti.trail.editClear(this, span, edit);
+							if (isAudio) {
 								audioTrail = (AudioTrail) ti.trail;
-								audioTrail.clearRange( span, EDIT_OVERWRITE, this, edit, ti.trackMap, bc );
+								audioTrail.clearRange(span, EDIT_OVERWRITE, this, edit, ti.trackMap, bc);
 							}
 						}
-					} else if( cutTimeline ) {
-						ti.trail.editRemove( this, cutTimelineSpan, edit );
+					} else if (cutTimeline) {
+						ti.trail.editRemove(this, cutTimelineSpan, edit);
 					}
-				}
-				finally {
-					ti.trail.editEnd( edit );
+				} finally {
+					ti.trail.editEnd(edit);
 				}
 			}
 			return DONE;
@@ -1824,13 +1727,13 @@ tryRename:					  {
 		
 		protected void perform()
 		{
-			final Span						selSpan, deleteBefore, deleteAfter;
-			final BasicCompoundEdit		edit;
-			final List						tis;
-			Track.Info						ti;
-			boolean							success	= false;
+			final Span				selSpan, deleteBefore, deleteAfter;
+			final BasicCompoundEdit	edit;
+			final List<Track.Info>	tis;
+			Track.Info				ti;
+			boolean					success	= false;
 
-			edit			= new BasicCompoundEdit( getValue( NAME ).toString() );
+			edit = new BasicCompoundEdit(getValue(NAME).toString());
 			
 			try {
 				selSpan			= timeline.getSelectionSpan();
@@ -1844,15 +1747,14 @@ tryRename:					  {
 				edit.addPerform( TimelineVisualEdit.position( this, Session.this, 0 ));
 
 				if( !deleteAfter.isEmpty() || !deleteBefore.isEmpty() ) {
-					for( int i = 0; i < tis.size(); i++ ) {
-						ti = (Track.Info) tis.get( i );
-						ti.trail.editBegin( edit );
+					for (Object ti1 : tis) {
+						ti = (Track.Info) ti1;
+						ti.trail.editBegin(edit);
 						try {
-							if( !deleteAfter.isEmpty() ) ti.trail.editRemove( this, deleteAfter, edit );
-							if(	!deleteBefore.isEmpty() ) ti.trail.editRemove( this, deleteBefore, edit );
-						}
-						finally {
-							ti.trail.editEnd( edit );
+							if (!deleteAfter.isEmpty()) ti.trail.editRemove(this, deleteAfter, edit);
+							if (!deleteBefore.isEmpty()) ti.trail.editRemove(this, deleteBefore, edit);
+						} finally {
+							ti.trail.editEnd(edit);
 						}
 					}
 				}
@@ -1872,8 +1774,8 @@ tryRename:					  {
 	} // class actionTrimClass
 
 	/**
-	 *	@todo	when edit mode != EDIT_INSERT, audio tracks are cleared which should be bypassed and vice versa
-	 *	@todo	waveform display not automatically updated when edit mode != EDIT_INSERT
+	 *	TODO:	when edit mode != EDIT_INSERT, audio tracks are cleared which should be bypassed and vice versa
+	 *	TODO:	waveform display not automatically updated when edit mode != EDIT_INSERT
 	 */
 	private class ActionSilence
 	extends MenuAction
@@ -1968,24 +1870,21 @@ tryRename:					  {
 		public int processRun( ProcessingThread context )
 		throws IOException
 		{
-			final List					tis			= (List) context.getClientArg( "tis" );
+			final List<Track.Info>		tis			= (List<Track.Info>) context.getClientArg( "tis" );
 			final AbstractCompoundEdit	edit		= (AbstractCompoundEdit) context.getClientArg( "edit" );
 			final Span					insertSpan	= (Span) context.getClientArg( "span" );
-			Track.Info					ti;
 			AudioTrail					audioTrail;
 
-			for( int i = 0; i < tis.size(); i++ ) {
-				ti = (Track.Info) tis.get( i );
-				ti.trail.editBegin( edit );
+			for (Track.Info ti : tis) {
+				ti.trail.editBegin(edit);
 				try {
-					ti.trail.editInsert( this, insertSpan, edit );
-					if( ti.trail instanceof AudioTrail ) {
-						audioTrail			= (AudioTrail) ti.trail;							
-						audioTrail.editAdd( this, audioTrail.allocSilent( insertSpan ), edit );
+					ti.trail.editInsert(this, insertSpan, edit);
+					if (ti.trail instanceof AudioTrail) {
+						audioTrail = (AudioTrail) ti.trail;
+						audioTrail.editAdd(this, audioTrail.allocSilent(insertSpan), edit);
 					}
-				}
-				finally {
-					ti.trail.editEnd( edit );
+				} finally {
+					ti.trail.editEnd(edit);
 				}
 			}
 			return DONE;

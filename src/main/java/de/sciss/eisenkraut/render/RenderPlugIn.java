@@ -2,17 +2,13 @@
  *  RenderPlugIn.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		14-Jul-05	created (somewhat modelled from Meloncillo)
  */
 
 package de.sciss.eisenkraut.render;
@@ -24,12 +20,7 @@ import javax.swing.JComponent;
 
 import de.sciss.util.Disposable;
 
-/**
- *	@version	0.1, 07-Dec-07
- */
-public interface RenderPlugIn
-extends Disposable
-{
+public interface RenderPlugIn extends Disposable {
 	public static final int POLICY_BYPASS	= 0;
 	public static final int POLICY_CLEAR	= 1;
 	public static final int POLICY_MODIFY	= 2;
@@ -57,10 +48,8 @@ extends Disposable
 	/**
 	 *  This gets called right after the
 	 *  instantiation of a new render module
-	 *
-	 *	@param	doc		Session document
 	 */
-	public void init( Preferences prefs );
+	public void init(Preferences prefs);
 
 	public void dispose();
 

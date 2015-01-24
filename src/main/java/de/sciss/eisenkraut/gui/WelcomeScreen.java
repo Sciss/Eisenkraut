@@ -2,17 +2,13 @@
  *  WelcomeScreen.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		07-Mar-05	created from de.sciss.meloncillo.debug.WelcomeScreen
  */
 
 package de.sciss.eisenkraut.gui;

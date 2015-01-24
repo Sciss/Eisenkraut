@@ -2,23 +2,13 @@
  *  MainFrame.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		25-Jan-05	created
- *		12-May-05	uses new synthesizers based on a Phasor and
- *					BufRd ugens, which allow sample accurate timing
- *					(crucial when cutting and re-arranging the sound file)
- *		13-Jul-05	bugfix with channel inputs
- *		22-Jul-05	sample-rate-conversion, adjusts to channel changes, etc.
- *		05-Aug-05	split of from SuperColliderFrame to be a mere GUI component
  */
 
 package de.sciss.eisenkraut.gui;

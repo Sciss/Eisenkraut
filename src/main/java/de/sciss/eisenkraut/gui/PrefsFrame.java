@@ -2,18 +2,13 @@
  *  PrefsFrame.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Change log:
- *		25-Jan-05	created from de.sciss.meloncillo.gui.PrefsFrame
- *		22-Jul-05	TEMPDIR refers to IOUtil
  */
 
 package de.sciss.eisenkraut.gui;

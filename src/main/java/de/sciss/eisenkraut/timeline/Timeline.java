@@ -2,21 +2,13 @@
  *  Timeline.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		28-Jan-05	created from de.sciss.meloncillo.timeline.Timeline
- *		08-Sep-05	rate changed to floating point precision
- *		17-Sep-05	rate can be set using map manager (allows out-of-the-box undoable edit)
- *		21-Jan-06	added edit-methods, added OSC support
- *		25-Feb-06	rate is double precision
  */
 
 package de.sciss.eisenkraut.timeline;
@@ -47,23 +39,18 @@ import de.sciss.io.Span;
  *  which get fired when methods like setPosition are
  *  called.
  *
- *  @author		Hanns Holger Rutz
- *  @version	0.71, 05-Nov-08
- *
- *	@todo		view based stuff (visible span) should be removed
+ *	TODO: view based stuff (visible span) should be removed
  */
 public class Timeline
-extends AbstractSessionObject
-implements EventManager.Processor, OSCRouter
-{
-//	private static final boolean		DEBUG_CONCURRENCY		= true;
-	
+		extends AbstractSessionObject
+		implements EventManager.Processor, OSCRouter {
+
 	public static final String			MAP_KEY_RATE			= "rate";
 	private static final String			MAP_KEY_LENGTH			= "len";
 	private static final String			MAP_KEY_POSITION		= "pos";
 
-	private double						rate;				// sampleframes per second
-	private long						length;				// total number of sampleframes
+	private double						rate;				// sample frames per second
+	private long						length;				// total number of sample frames
 	private long						position;			// current head position
     private Span						visibleSpan;		// what's being viewed in the TimelineFrame
     private Span						selectionSpan;
@@ -102,12 +89,12 @@ implements EventManager.Processor, OSCRouter
 		
 		final MapManager map = getMap();
 
-		map.putContext( this, MAP_KEY_RATE, new MapManager.Context( 0, MapManager.Context.TYPE_DOUBLE, null, null, null,
-																	new Double( 1000 )));
-		map.putContext( this, MAP_KEY_LENGTH, new MapManager.Context( 0, MapManager.Context.TYPE_LONG, null, null, null,
-																	  new Long( 0 )));
-		map.putContext( this, MAP_KEY_POSITION, new MapManager.Context( 0, MapManager.Context.TYPE_LONG, null, null, null,
-																		new Long( 0 )));
+		map.putContext(this, MAP_KEY_RATE, new MapManager.Context(0, MapManager.Context.TYPE_DOUBLE, null, null, null,
+				(double) 1000));
+		map.putContext(this, MAP_KEY_LENGTH, new MapManager.Context(0, MapManager.Context.TYPE_LONG, null, null, null,
+				(long) 0));
+		map.putContext(this, MAP_KEY_POSITION, new MapManager.Context(0, MapManager.Context.TYPE_LONG, null, null, null,
+				(long) 0));
 
 		osc	= new OSCRouterWrapper( doc, this );
 
@@ -238,7 +225,7 @@ implements EventManager.Processor, OSCRouter
 		if( !java.awt.EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
         this.rate = rate;
 		if( source != null ) dispatchChange( source );
-		getMap().putValue( this, MAP_KEY_RATE, new Double( rate ));
+		getMap().putValue( this, MAP_KEY_RATE, rate);
     }
 
 	/**
@@ -261,7 +248,7 @@ implements EventManager.Processor, OSCRouter
 		if( !java.awt.EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
         this.length = length;
 		if( source != null ) dispatchChange( source );
-		getMap().putValue( this, MAP_KEY_LENGTH, new Long( length ));
+		getMap().putValue( this, MAP_KEY_LENGTH, length);
     }
 
 	/**
@@ -282,7 +269,7 @@ implements EventManager.Processor, OSCRouter
 		if( !java.awt.EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
         this.position = position;
 		if( source != null ) dispatchPosition( source );
-		getMap().putValue( this, MAP_KEY_POSITION, new Long( position ));
+		getMap().putValue( this, MAP_KEY_POSITION, position);
 	}
 
 	/**
@@ -407,7 +394,7 @@ implements EventManager.Processor, OSCRouter
 	private void dispatchPosition( Object source )
 	{
 		TimelineEvent e2 = new TimelineEvent( source, TimelineEvent.POSITIONED,
-											  System.currentTimeMillis(), 0, new Double( getPosition() ));
+											  System.currentTimeMillis(), 0, (double) getPosition());
 		elm.dispatchEvent( e2 );
 	}
     
@@ -496,37 +483,37 @@ implements EventManager.Processor, OSCRouter
 	
 	public Object oscQuery_position()
 	{
-		return new Long( getPosition() );
+		return getPosition();
 	}
 
 	public Object oscQuery_selectionStart()
 	{
-		return new Long( getSelectionSpan().start );
+		return getSelectionSpan().start;
 	}
 
 	public Object oscQuery_selectionStop()
 	{
-		return new Long( getSelectionSpan().stop );
+		return getSelectionSpan().stop;
 	}
 
 	public Object oscQuery_viewStart()
 	{
-		return new Long( getVisibleSpan().start );
+		return getVisibleSpan().start;
 	}
 
 	public Object oscQuery_viewStop()
 	{
-		return new Long( getVisibleSpan().stop );
+		return getVisibleSpan().stop;
 	}
 	
 	public Object oscQuery_rate()
 	{
-		return new Double( getRate() );
+		return getRate();
 	}
 
 	public Object oscQuery_length()
 	{
-		return new Long( getLength() );
+		return getLength();
 	}
 
 	public void oscCmd_position( RoutedOSCMessage rom )

@@ -2,7 +2,7 @@
  *  NRTFile.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
@@ -24,11 +24,7 @@ import de.sciss.net.OSCChannel;
 import de.sciss.net.OSCMessage;
 import de.sciss.net.OSCPacket;
 
-/**
- *	@todo	this can go eventually into jcollider
- */
-public class NRTFile
-{
+public class NRTFile {
 	private final RandomAccessFile	raf;
 	private final FileChannel		fch;
 	private double					time;

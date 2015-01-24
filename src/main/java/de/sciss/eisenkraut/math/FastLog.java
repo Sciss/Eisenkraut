@@ -2,18 +2,15 @@
  *  FastLog.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		22-Apr-08	created
  */
+
 package de.sciss.eisenkraut.math;
 
 /**
@@ -21,9 +18,6 @@ package de.sciss.eisenkraut.math;
  *	as described in O. Vinyals, G. Friedland, N. Mirghafori
  *	"Revisiting a basic function on current CPUs: A fast logarithm implementation
  *	with adjustable accuracy" (2007).
- *
- *	@author		Hanns Holger Rutz
- *	@version	0.70, 22-Apr-08
  *
  *	@see		java.lang.Float#floatToRawIntBits( float )
  */

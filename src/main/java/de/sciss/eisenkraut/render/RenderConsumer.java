@@ -2,17 +2,13 @@
  *  RenderConsumer.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		14-Jul-05   created from de.sciss.meloncillo.render.RenderConsumer
  */
 
 package de.sciss.eisenkraut.render;
@@ -28,16 +24,13 @@ import java.io.IOException;
  *	unlike <code>RenderPlugIn</code>, the
  *	consumer cannot specify itself which
  *	data it wishes to receive (pull)
- *	but is provided with a preconfigured
+ *	but is provided with a pre-configured
  *	source object and requests (push).
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
  */
 public interface RenderConsumer
 {
 	/**
-	 *	Initiates the consumation.
+	 *	Initiates the consumption.
 	 *	The consumer should check the source's
 	 *	request fields to find out which
 	 *	data is to be written out.
@@ -45,7 +38,7 @@ public interface RenderConsumer
 	 *	@param	source	render source featuring
 	 *					the target requests
 	 *	@return	<code>false</code> if an error occurs
-	 *			and consumation should be aborted
+	 *			and consumption should be aborted
 	 *
 	 *	@throws	IOException	if a read/write error occurs
 	 */
@@ -58,7 +51,7 @@ public interface RenderConsumer
 	 *	@param	source	render source featuring
 	 *					the target requests and the rendered data block.
 	 *	@return	<code>false</code> if an error occurs
-	 *			and consumation should be aborted
+	 *			and consumption should be aborted
 	 *
 	 *	@throws	IOException	if a read/write error occurs
 	 */
@@ -71,7 +64,7 @@ public interface RenderConsumer
 	 *
 	 *	@param	source	render source
 	 *	@return	<code>false</code> if an error occurs
-	 *			and consumation should be aborted
+	 *			and consumption should be aborted
 	 *
 	 *	@throws	IOException	if a read/write error occurs
 	 */

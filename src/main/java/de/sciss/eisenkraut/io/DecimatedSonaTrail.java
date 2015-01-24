@@ -2,18 +2,13 @@
  *  DecimatedSonaTrail.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		18-Feb-08	created
- *		15-Apr-08	extracted back from DecimatedWaveTrail
  */
 
 package de.sciss.eisenkraut.io;

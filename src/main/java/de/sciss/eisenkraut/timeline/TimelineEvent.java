@@ -2,17 +2,13 @@
  *  TimelineEvent.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		28-Jan-05	created from de.sciss.meloncillo.timeline.TimelineEvent
  */
 
 package de.sciss.eisenkraut.timeline;
@@ -23,9 +19,6 @@ import de.sciss.app.BasicEvent;
  *  This kind of event is fired
  *  from a <code>Timeline</code> when
  *  the user or an application object modified the timeline.
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.56, 05-May-06
  *
  *  @see		Timeline#addTimelineListener( TimelineListener )
  *  @see		TimelineListener
@@ -100,17 +93,11 @@ extends BasicEvent
 		return actionObj;
 	}
 
-	public boolean incorporate( BasicEvent oldEvent )
-	{
-		if( oldEvent instanceof TimelineEvent &&
-			this.getSource() == oldEvent.getSource() &&
-			this.getID() == oldEvent.getID() ) {
-			
-			// XXX beware, when the actionID and actionObj
-			// are used, we have to deal with them here
-			
-			return true;
-
-		} else return false;
+	public boolean incorporate(BasicEvent oldEvent) {
+		// XXX beware, when the actionID and actionObj
+		// are used, we have to deal with them here
+		return oldEvent instanceof TimelineEvent &&
+				this.getSource() == oldEvent.getSource() &&
+				this.getID() == oldEvent.getID();
 	}
 }

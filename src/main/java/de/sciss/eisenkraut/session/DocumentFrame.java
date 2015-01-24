@@ -2,24 +2,13 @@
  *  DocumentFrame.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *      25-Jan-05	created from de.sciss.meloncillo.timeline.TimelineFrame
- *		22-Mar-05	fixed but in vertical zoom
- *		15-Jul-05	lot's of. removed some exclusive locks (fixes overview update in catch mode)
- *					; overview loading loads one more sample frame, so display
- *					is in coherence with timeline selection and TimelineAxis
- *		02-Aug-05	renamed to DocumentFrame ; conforms to new document handler
- *		23-Sep-05	correctly disposes overview display images ; abandons backing store
- *					image approach in TimelineViewport (seems to fix memory leak)
  */
 
 package de.sciss.eisenkraut.session;
@@ -144,18 +133,14 @@ import de.sciss.util.Flag;
 
 import org.unicode.Normalizer;
 
-/**
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 28-Jun-08
- */
 public class DocumentFrame
-extends AppWindow
-implements ProgressComponent, TimelineListener,
-		   ClipboardOwner, ToolActionListener,
-		   DecimatedWaveTrail.AsyncListener,
-		   TransportListener, PreferenceChangeListener,
-		   SwingConstants
-{
+		extends AppWindow
+		implements ProgressComponent, TimelineListener,
+		ClipboardOwner, ToolActionListener,
+		DecimatedWaveTrail.AsyncListener,
+		TransportListener, PreferenceChangeListener,
+		SwingConstants {
+
 	protected final Session					doc;
 	
     private final TimelineAxis				timeAxis;
@@ -178,8 +163,8 @@ implements ProgressComponent, TimelineListener,
 	private final JPanel					flagsPanel;
 	private final JPanel					rulersPanel;
 	private final JPanel					metersPanel;
-	private final List						collChannelHeaders		= new ArrayList();
-	protected final List					collChannelRulers		= new ArrayList();
+	private final List<AudioTrackRowHeader> collChannelHeaders		= new ArrayList<AudioTrackRowHeader>();
+	protected final List<Axis> collChannelRulers		= new ArrayList<Axis>();
 //	private final List						collChannelMeters		= new ArrayList();
 	private PeakMeter[]						channelMeters			= new PeakMeter[ 0 ];
 	
@@ -190,7 +175,7 @@ implements ProgressComponent, TimelineListener,
 
 	// --- tools ---
 	
-	private final   Map						tools					= new HashMap();
+	private final Map<Integer, TimelineTool> tools					= new HashMap<Integer, TimelineTool>();
 	private			AbstractTool			activeTool				= null;
 	private final	TimelinePointerTool		pointerTool;
 
@@ -248,8 +233,8 @@ implements ProgressComponent, TimelineListener,
 	protected Rectangle	vpRecentRect			= new Rectangle();
 	protected int		vpPosition				= -1;
 	private Rectangle   vpPositionRect			= new Rectangle();
-	protected final ArrayList vpSelections		= new ArrayList();
-	protected final ArrayList vpSelectionColors	= new ArrayList();
+	protected final ArrayList<Rectangle> vpSelections		= new ArrayList<Rectangle>();
+	protected final ArrayList<Color> vpSelectionColors	= new ArrayList<Color>();
 	protected Rectangle	vpSelectionRect			= new Rectangle();
 	
 	private Rectangle   vpUpdateRect			= new Rectangle();
@@ -337,8 +322,8 @@ implements ProgressComponent, TimelineListener,
 		lmm					= new PeakMeterManager( superCollider.getMeterManager() );
 
 		final Container					cp			= getContentPane();
-		final InputMap					imap		= getInputMap( JComponent.WHEN_IN_FOCUSED_WINDOW );
-		final ActionMap					amap		= getActionMap();
+		final InputMap					iMap		= getInputMap( JComponent.WHEN_IN_FOCUSED_WINDOW );
+		final ActionMap					aMap		= getActionMap();
 		final AbstractButton			ggAudioInfo, ggRevealFile;
 		final int						myMeta		= BasicMenuFactory.MENU_SHORTCUT == InputEvent.CTRL_MASK ?
 			InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK : BasicMenuFactory.MENU_SHORTCUT;	// META on Mac, CTRL+SHIFT on PC
@@ -434,7 +419,7 @@ bbb.add( markAxisHeader );
 		updateCursorFormat();
 
 // ----- afr export -----
-		final JButton ggExportAFR = new JButton( getResourceString( "buttonDragRegion" ), new ImageIcon( getClass().getResource( "dragicon.png" )));
+		final JButton ggExportAFR = new JButton(getResourceString("buttonDragRegion"), new ImageIcon(getClass().getResource("dragicon.png")));
 		ggExportAFR.setTransferHandler( new AFRTransferHandler() );
 		final MouseInputAdapter expAFRmia = new MouseInputAdapter() {
 			private MouseEvent dndInit = null;
@@ -507,36 +492,36 @@ bbb.add( markAxisHeader );
 					checkDecimatedTrails();
 					setPreferredSize( getSize() );
 
-					waveView.setVisible( false );
-					channelHeaderPanel.setVisible( false );
-					markAxis.setVisible( false );
-					markAxisHeader.setVisible( false );
-					scroll.setVisible( false );
-					timeTB.setVisible( false );
+					waveView.setVisible(false);
+					channelHeaderPanel.setVisible(false);
+					markAxis.setVisible(false);
+					markAxisHeader.setVisible(false);
+					scroll.setVisible(false);
+					timeTB.setVisible(false);
 					actionZoomAllOut.perform();
 
 					final int h = d.height - (waveView.getHeight() + scroll.getHeight() +
-					 	(viewMarkers ? markAxis.getHeight() : 0));
-					setSize( new Dimension( d.width - timeTB.getWidth(), h ));
-					cbr.setMinimumHeight( h );
-					cbr.setMaximumHeight( h );
-					cbr.add( getWindow() );
+							(viewMarkers ? markAxis.getHeight() : 0));
+					setSize(new Dimension(d.width - timeTB.getWidth(), h));
+					cbr.setMinimumHeight(h);
+					cbr.setMaximumHeight(h);
+					cbr.add(getWindow());
 				}
 			}
 		});
 		topPane.add( ggTreeExp );
-		
-		gp.setGradientShift( 0, topPane.getPreferredSize().height );
-		
-		cp.add( topPane, BorderLayout.NORTH );
-		cp.add( ggTrackPanel, BorderLayout.CENTER );
-		cp.add( box, BorderLayout.SOUTH );
+
+		gp.setGradientShift(0, topPane.getPreferredSize().height);
+
+		cp.add(topPane, BorderLayout.NORTH);
+		cp.add(ggTrackPanel, BorderLayout.CENTER);
+		cp.add(box, BorderLayout.SOUTH);
 		
 		// --- Tools ---
-		
+
 		pointerTool = new TimelinePointerTool();
-		tools.put( new Integer( ToolAction.POINTER ), pointerTool );
-		tools.put( new Integer( ToolAction.ZOOM ), new TimelineZoomTool() );
+		tools.put(ToolAction.POINTER, pointerTool);
+		tools.put(ToolAction.ZOOM, new TimelineZoomTool());
 
 		// ---- TopPainter ----
 
@@ -545,28 +530,28 @@ bbb.add( markAxisHeader );
 			{
 				Rectangle r;
 
-				r = new Rectangle( 0, 0, wavePanel.getWidth(), wavePanel.getHeight() ); // getViewRect();
-				if( !vpRecentRect.equals( r )) {
-					recalcTransforms( r );
+				r = new Rectangle(0, 0, wavePanel.getWidth(), wavePanel.getHeight()); // getViewRect();
+				if (!vpRecentRect.equals(r)) {
+					recalcTransforms(r);
 				}
 
-				for( int i = 0; i < vpSelections.size(); i++ ) {
-					r = (Rectangle) vpSelections.get( i );
-					g2.setColor( (Color) vpSelectionColors.get( i ));
-					g2.fillRect( vpSelectionRect.x, r.y - vpRecentRect.y, vpSelectionRect.width, r.height );
+				for (int i = 0; i < vpSelections.size(); i++) {
+					r = vpSelections.get(i);
+					g2.setColor(vpSelectionColors.get(i));
+					g2.fillRect(vpSelectionRect.x, r.y - vpRecentRect.y, vpSelectionRect.width, r.height);
 				}
-				
-				if( markVisible ) {
-					markAxis.paintFlagSticks( g2, vpRecentRect );
-				}
-				
-				g2.setColor( colrPosition );
-				g2.drawLine( vpPosition, 0, vpPosition, vpRecentRect.height );
 
-				if( vpZoomRect != null ) {
-					g2.setColor( colrZoom );
-					g2.setStroke( vpZoomStroke[ vpZoomStrokeIdx ]);
-					g2.drawRect( vpZoomRect.x, vpZoomRect.y, vpZoomRect.width, vpZoomRect.height );
+				if (markVisible) {
+					markAxis.paintFlagSticks(g2, vpRecentRect);
+				}
+
+				g2.setColor(colrPosition);
+				g2.drawLine(vpPosition, 0, vpPosition, vpRecentRect.height);
+
+				if (vpZoomRect != null) {
+					g2.setColor(colrZoom);
+					g2.setStroke(vpZoomStroke[vpZoomStrokeIdx]);
+					g2.drawRect(vpZoomRect.x, vpZoomRect.y, vpZoomRect.width, vpZoomRect.height);
 				}
 			}
 		};
@@ -689,63 +674,63 @@ bbb.add( markAxisHeader );
 
 		actionShowWindow	= new ShowWindowAction( this );
 
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_DOWN, InputEvent.CTRL_MASK ), "incvmax" );
-		amap.put( "incvmax", actionIncVertMax );
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_UP, InputEvent.CTRL_MASK ), "decvmax" );
-		amap.put( "decvmax", actionDecVertMax );
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_DOWN, InputEvent.CTRL_MASK | InputEvent.ALT_MASK ), "incvmin" );
-		amap.put( "incvmin", actionIncVertMin );
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_UP, InputEvent.CTRL_MASK | InputEvent.ALT_MASK ), "decvmin" );
-		amap.put( "decvmin", actionDecVertMin );
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LEFT, InputEvent.CTRL_MASK ), "inch" );
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_OPEN_BRACKET, BasicMenuFactory.MENU_SHORTCUT ), "inch" );
-		amap.put( "inch", actionIncHoriz );
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_RIGHT, InputEvent.CTRL_MASK ), "dech" );
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_CLOSE_BRACKET, BasicMenuFactory.MENU_SHORTCUT ), "dech" );
-		amap.put( "dech", actionDecHoriz );
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_RIGHT, myMeta ), "samplvl" );
-		amap.put( "samplvl", new ActionSpanWidth( 0.0f ));
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_ENTER, 0 ), "retn" );
-		amap.put( "retn", new ActionScroll( SCROLL_SESSION_START ));
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LEFT, 0 ), "left" );
-		amap.put( "left", new ActionScroll( SCROLL_SELECTION_START ));
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_RIGHT, 0 ), "right" );
-		amap.put( "right", new ActionScroll( SCROLL_SELECTION_STOP ));
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_F, InputEvent.ALT_MASK ), "fit" );
-		amap.put( "fit", new ActionScroll( SCROLL_FIT_TO_SELECTION ));
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_A, InputEvent.ALT_MASK ), "entire" );
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LEFT, myMeta ), "entire" );
-		amap.put( "entire", actionZoomAllOut );
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_ENTER, InputEvent.SHIFT_MASK ), "seltobeg" );
-		amap.put( "seltobeg", new ActionSelect( SELECT_TO_SESSION_START ));
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_ENTER, InputEvent.SHIFT_MASK + InputEvent.ALT_MASK ), "seltoend" );
-		amap.put( "seltoend", new ActionSelect( SELECT_TO_SESSION_END ));
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_UP, 0 ), "postoselbegc" );
-		amap.put( "postoselbegc", doc.timeline.getPosToSelAction( true, true ));
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_DOWN, 0 ), "postoselendc" );
-		amap.put( "postoselendc", doc.timeline.getPosToSelAction( false, true ));
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_UP, InputEvent.ALT_MASK ), "postoselbeg" );
-		amap.put( "postoselbeg", doc.timeline.getPosToSelAction( true, false ));
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_DOWN, InputEvent.ALT_MASK ), "postoselend" );
-		amap.put( "postoselend", doc.timeline.getPosToSelAction( false, false ));
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_M, 0 ), "dropmark" );
-		amap.put( "dropmark", new ActionDropMarker() );
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_TAB       , 0 ), "selnextreg" );
-        imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LESS      , 0 ), "selnextreg" );
-        imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_BACK_QUOTE, 0 ), "selnextreg" );
-		amap.put( "selnextreg", new ActionSelectRegion( SELECT_NEXT_REGION ));
-        imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_TAB       , InputEvent.ALT_MASK ), "selprevreg" );
-        imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LESS      , InputEvent.CTRL_MASK), "selprevreg" );
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_BACK_QUOTE, InputEvent.CTRL_MASK), "selprevreg" );
-		amap.put( "selprevreg", new ActionSelectRegion( SELECT_PREV_REGION ));
-        imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_TAB       , InputEvent.SHIFT_MASK), "extnextreg" );
-        imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LESS      , InputEvent.SHIFT_MASK), "extnextreg" );
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_BACK_QUOTE, InputEvent.SHIFT_MASK), "extnextreg" );
-		amap.put( "extnextreg", new ActionSelectRegion( EXTEND_NEXT_REGION ));
-        imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_TAB       , InputEvent.ALT_MASK  + InputEvent.SHIFT_MASK ), "extprevreg" );
-        imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LESS      , InputEvent.CTRL_MASK + InputEvent.SHIFT_MASK ), "extprevreg" );
-		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_BACK_QUOTE, InputEvent.CTRL_MASK + InputEvent.SHIFT_MASK ), "extprevreg" );
-		amap.put( "extprevreg", new ActionSelectRegion( EXTEND_PREV_REGION ));
+		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_DOWN, InputEvent.CTRL_MASK ), "incvmax" );
+		aMap.put( "incvmax", actionIncVertMax );
+		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_UP, InputEvent.CTRL_MASK ), "decvmax" );
+		aMap.put( "decvmax", actionDecVertMax );
+		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_DOWN, InputEvent.CTRL_MASK | InputEvent.ALT_MASK ), "incvmin" );
+		aMap.put( "incvmin", actionIncVertMin );
+		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_UP, InputEvent.CTRL_MASK | InputEvent.ALT_MASK ), "decvmin" );
+		aMap.put( "decvmin", actionDecVertMin );
+		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LEFT, InputEvent.CTRL_MASK ), "inch" );
+		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_OPEN_BRACKET, BasicMenuFactory.MENU_SHORTCUT ), "inch" );
+		aMap.put( "inch", actionIncHoriz );
+		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_RIGHT, InputEvent.CTRL_MASK ), "dech" );
+		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_CLOSE_BRACKET, BasicMenuFactory.MENU_SHORTCUT ), "dech" );
+		aMap.put( "dech", actionDecHoriz );
+		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_RIGHT, myMeta ), "samplvl" );
+		aMap.put( "samplvl", new ActionSpanWidth( 0.0f ));
+		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_ENTER, 0 ), "retn" );
+		aMap.put( "retn", new ActionScroll( SCROLL_SESSION_START ));
+		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LEFT, 0 ), "left" );
+		aMap.put( "left", new ActionScroll( SCROLL_SELECTION_START ));
+		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_RIGHT, 0 ), "right" );
+		aMap.put( "right", new ActionScroll( SCROLL_SELECTION_STOP ));
+		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_F, InputEvent.ALT_MASK ), "fit" );
+		aMap.put( "fit", new ActionScroll( SCROLL_FIT_TO_SELECTION ));
+		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_A, InputEvent.ALT_MASK ), "entire" );
+		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LEFT, myMeta ), "entire" );
+		aMap.put( "entire", actionZoomAllOut );
+		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_ENTER, InputEvent.SHIFT_MASK ), "seltobeg" );
+		aMap.put( "seltobeg", new ActionSelect( SELECT_TO_SESSION_START ));
+		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_ENTER, InputEvent.SHIFT_MASK + InputEvent.ALT_MASK ), "seltoend" );
+		aMap.put( "seltoend", new ActionSelect( SELECT_TO_SESSION_END ));
+		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_UP, 0 ), "postoselbegc" );
+		aMap.put( "postoselbegc", doc.timeline.getPosToSelAction( true, true ));
+		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_DOWN, 0 ), "postoselendc" );
+		aMap.put( "postoselendc", doc.timeline.getPosToSelAction( false, true ));
+		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_UP, InputEvent.ALT_MASK ), "postoselbeg" );
+		aMap.put( "postoselbeg", doc.timeline.getPosToSelAction( true, false ));
+		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_DOWN, InputEvent.ALT_MASK ), "postoselend" );
+		aMap.put( "postoselend", doc.timeline.getPosToSelAction( false, false ));
+		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_M, 0 ), "dropmark" );
+		aMap.put( "dropmark", new ActionDropMarker() );
+		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_TAB       , 0 ), "selnextreg" );
+        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LESS      , 0 ), "selnextreg" );
+        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_BACK_QUOTE, 0 ), "selnextreg" );
+		aMap.put( "selnextreg", new ActionSelectRegion( SELECT_NEXT_REGION ));
+        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_TAB       , InputEvent.ALT_MASK ), "selprevreg" );
+        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LESS      , InputEvent.CTRL_MASK), "selprevreg" );
+		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_BACK_QUOTE, InputEvent.CTRL_MASK), "selprevreg" );
+		aMap.put( "selprevreg", new ActionSelectRegion( SELECT_PREV_REGION ));
+        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_TAB       , InputEvent.SHIFT_MASK), "extnextreg" );
+        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LESS      , InputEvent.SHIFT_MASK), "extnextreg" );
+		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_BACK_QUOTE, InputEvent.SHIFT_MASK), "extnextreg" );
+		aMap.put( "extnextreg", new ActionSelectRegion( EXTEND_NEXT_REGION ));
+        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_TAB       , InputEvent.ALT_MASK  + InputEvent.SHIFT_MASK ), "extprevreg" );
+        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LESS      , InputEvent.CTRL_MASK + InputEvent.SHIFT_MASK ), "extprevreg" );
+		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_BACK_QUOTE, InputEvent.CTRL_MASK + InputEvent.SHIFT_MASK ), "extprevreg" );
+		aMap.put( "extprevreg", new ActionSelectRegion( EXTEND_PREV_REGION ));
 
 		setFocusTraversalKeysEnabled( false ); // we want the tab! we gotta have that tab! ouwe!
 
@@ -788,7 +773,7 @@ bbb.add( markAxisHeader );
 		updateEditEnabled( false );
 
 		AbstractWindowHandler.setDeepFont( cp, Collections.singletonList( timeTB ));
-		GUIUtil.setDeepFont( timeTB, app.getGraphicsHandler().getFont( GraphicsHandler.FONT_SYSTEM | GraphicsHandler.FONT_MINI ));
+		GUIUtil.setDeepFont( timeTB, app.getGraphicsHandler().getFont(GraphicsHandler.FONT_MINI));
 		app.getMenuFactory().addToWindowMenu( actionShowWindow );	// MUST BE BEFORE INIT()!!
 
 		init();
@@ -933,68 +918,43 @@ bbb.add( markAxisHeader );
 		lmm.clearInputs();
 	}
 
-//	protected boolean alwaysPackSize()
-//	{
-//		return false;
-//	}
-
-	public void setSRCEnabled( boolean onOff )
-	{
-		lbSRC.setForeground( onOff ? Color.red : colrClear );
+	public void setSRCEnabled(boolean onOff) {
+		lbSRC.setForeground(onOff ? Color.red : colrClear);
 	}
 
-	public void setForceMeters( boolean onOff )
-	{
-		if( onOff != forceMeters ) {
+	public void setForceMeters(boolean onOff) {
+		if (onOff != forceMeters) {
 			forceMeters = onOff;
 			showHideMeters();
 			final int holdDur = forceMeters ? -1 : PeakMeter.DEFAULT_HOLD_DUR;
-			for( int i = 0; i < channelMeters.length; i++ ) {
-				channelMeters[ i ].setHoldDuration( holdDur );
+			for (PeakMeter channelMeter : channelMeters) {
+				channelMeter.setHoldDuration(holdDur);
 			}
-//			if( !forceMeters && !transport.isRunning() ) {
-//				timeMetersPause = System.currentTimeMillis() + 5000;
-//			}
 		}
 	}
-	
-	public float getMaxMeterHold()
-	{
+
+	public float getMaxMeterHold() {
 		float hold = Float.NEGATIVE_INFINITY;
-		for( int i = 0; i < channelMeters.length; i++ ) {
-			hold = Math.max( hold, channelMeters[ i ].getHoldDecibels() );
+		for (PeakMeter channelMeter : channelMeters) {
+			hold = Math.max(hold, channelMeter.getHoldDecibels());
 		}
 		return hold;
 	}
-	
-	public void clearMeterHold()
-	{
-		for( int i = 0; i < channelMeters.length; i++ ) {
-			channelMeters[ i ].clearHold();
-		}
-	}
-	
-	private void showHideMeters()
-	{
-		final boolean visible	= chanMeters || forceMeters;
 
-		if( metersPanel.isVisible() != visible ) {
-			metersPanel.setVisible( visible );
-//			if( visible) metersPanel.revalidate();
-//			if( visible) {
-//				metersPanel.setSize( metersPanel.getPreferredSize().width, waveHeaderPanel.getHeight() ); // pack();
-//				for( int i = 0; i < channelMeters.length; i++ ) {
-//					channelMeters[ i ].setSize( channelMeters[ i ].getPreferredSize().width, waveHeaderPanel.getHeight() / channelMeters.length );
-//					channelMeters[ i ].setVisible( true );
-//				}
-//				metersPanel.revalidate();
-//			}
-//System.err.println( "metersPanel.getComponentCount() = "+metersPanel.getComponentCount()+"; size = "+metersPanel.getWidth()+", "+metersPanel.getHeight() );
-//			waveHeaderView.makeCompactGrid();
-//			startStopMeters();
+	public void clearMeterHold() {
+		for (PeakMeter channelMeter : channelMeters) {
+			channelMeter.clearHold();
 		}
 	}
-	
+
+	private void showHideMeters() {
+		final boolean visible = chanMeters || forceMeters;
+
+		if (metersPanel.isVisible() != visible) {
+			metersPanel.setVisible(visible);
+		}
+	}
+
 	/**
 	 *  Recreates the main frame's title bar
 	 *  after a sessions name changed (clear/load/save as session)
@@ -1017,9 +977,9 @@ bbb.add( markAxisHeader );
 		} else {
 			name			= doc.getName();
 			try {
-				for( int i = 0; i < afds.length; i++ ) {
-					final File f1 = afds[ i ].file;
-					if( f1 == null ) continue;
+				for (AudioFileDescr afd : afds) {
+					final File f1 = afd.file;
+					if (f1 == null) continue;
 					writeProtected |= !f1.canWrite() || ((f1.getParentFile() != null) && !f1.getParentFile().canWrite());
 				}
 			} catch( SecurityException e ) { /* ignored */ }
@@ -1090,7 +1050,7 @@ bbb.add( markAxisHeader );
 
 	protected void documentUpdate()
 	{
-		final List				collChannelMeters;
+		final List<PeakMeter> collChannelMeters;
 		PeakMeter[]				meters;
 		AudioTrackRowHeader		chanHead;
 		AudioTrack				t;
@@ -1102,19 +1062,17 @@ bbb.add( markAxisHeader );
 		oldChannels	= collChannelHeaders.size();
 
 		meters				= channelMeters;
-		collChannelMeters	= new ArrayList( meters.length );
-		for( int ch = 0; ch < meters.length; ch++ ) {
-			collChannelMeters.add( meters[ ch ]);
-		}
+		collChannelMeters	= new ArrayList<PeakMeter>( meters.length );
+		Collections.addAll(collChannelMeters, meters);
 	
 		// first kick out editors whose tracks have been removed
 		for( int ch = 0; ch < oldChannels; ch++ ) {
-			chanHead	= (AudioTrackRowHeader) collChannelHeaders.get( ch );
+			chanHead	= collChannelHeaders.get( ch );
 			t			= (AudioTrack) chanHead.getTrack();
 			if( !doc.audioTracks.contains( t )) {
-				chanHead	= (AudioTrackRowHeader) collChannelHeaders.remove( ch );
-				chanMeter	= (PeakMeter) collChannelMeters.remove( ch );
-				chanRuler	= (Axis) collChannelRulers.remove( ch );
+				chanHead	= collChannelHeaders.remove( ch );
+				chanMeter	= collChannelMeters.remove( ch );
+				chanRuler	= collChannelRulers.remove( ch );
 				oldChannels--;
 				// XXX : dispose trnsEdit (e.g. free vectors, remove listeners!!)
 				flagsPanel.remove( chanHead );
@@ -1130,7 +1088,7 @@ bbb.add( markAxisHeader );
 newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 			t			= (AudioTrack) doc.audioTracks.get( ch );
 			for( int ch2 = 0; ch2 < oldChannels; ch2++ ) {
-				chanHead = (AudioTrackRowHeader) collChannelHeaders.get( ch );
+				chanHead = collChannelHeaders.get( ch );
 				if( chanHead.getTrack() == t ) continue newLp;
 			}
 			
@@ -1149,7 +1107,7 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 		
 		meters	= new PeakMeter[ collChannelMeters.size() ];
 		for( int ch = 0; ch < meters.length; ch++ ) {
-			meters[ ch ] = (PeakMeter) collChannelMeters.get( ch );
+			meters[ ch ] = collChannelMeters.get( ch );
 		}
 		channelMeters	= meters;
 		lmm.setView( new PeakMeterGroup( meters ));
@@ -1217,15 +1175,15 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 		lmm.dispose();
 		wavePanel.dispose();
 		while( !collChannelHeaders.isEmpty() ) {
-			chanHead = (AudioTrackRowHeader) collChannelHeaders.remove( 0 );
+			chanHead = collChannelHeaders.remove( 0 );
 			chanHead.dispose();
 		}
 		while( !collChannelRulers.isEmpty() ) {
-			chanRuler = (Axis) collChannelRulers.remove( 0 );
+			chanRuler = collChannelRulers.remove( 0 );
 			chanRuler.dispose();
 		}
-		for( int ch = 0; ch < channelMeters.length; ch++ ) {
-			channelMeters[ ch ].dispose();
+		for (PeakMeter channelMeter : channelMeters) {
+			channelMeter.dispose();
 		}
 		channelMeters = new PeakMeter[ 0 ];
 		markAxis.stopListening();
@@ -1333,18 +1291,18 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 		}
 		BasicWindowHandler.showDialog( d );
 //		d.setVisible( true );
-		if( dont.isSet() ) {
+		if (dont.isSet()) {
 			choice = 2;
 		} else {
 			final Object value = op.getValue();
-			if( (value == null) || (value == options[ 1 ])) {
+			if ((value == null) || (value == options[1])) {
 				choice = 1;
-			} else if( value == options[ 0 ]) {
+			} else if (value == options[0]) {
 				choice = 0;
-			} else if( value == options[ 2 ]) {
+			} else if (value == options[2]) {
 				choice = 2;
 			} else {
-				choice = -1;	// throws assertion error in switch block
+				choice = -1;    // throws assertion error in switch block
 			}
 		}
 
@@ -1614,36 +1572,29 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 	{
 		pProgress.showMessage( type, text );
 	}
-	
-	public void displayError( Exception e, String processName )
-	{
-		BasicWindowHandler.showErrorDialog( getWindow(), e, processName );
+
+	public void displayError(Exception e, String processName) {
+		BasicWindowHandler.showErrorDialog(getWindow(), e, processName);
 	}
 
-	protected void updateAFDGadget()
-	{
-		final AudioFileDescr	displayAFD	= doc.getDisplayDescr();
-		final AudioFileDescr[]	afds		= doc.getDescr();
-		displayAFD.rate						= timelineRate;
-		displayAFD.length					= timelineLen;
-		for( int i = 0; i < afds.length; i++ ) {
-			afds[ i ].rate					= displayAFD.rate;
-			afds[ i ].length				= displayAFD.length;
+	protected void updateAFDGadget() {
+		final AudioFileDescr displayAFD = doc.getDisplayDescr();
+		final AudioFileDescr[] afds = doc.getDescr();
+		displayAFD.rate = timelineRate;
+		displayAFD.length = timelineLen;
+		for (AudioFileDescr afd : afds) {
+			afd.rate = displayAFD.rate;
+			afd.length = displayAFD.length;
 		}
-		ggAudioFileDescr.setText( displayAFD.getFormat() );
-		
-		pOverlay.performFade( 0f, 1000, 250 );
-//		if( !ggAudioFileDescr.isVisible() ) {
-//			hideProgressBarTimer.stop();
-//			hideProgressBarListener.actionPerformed( null );
-//		}
+		ggAudioFileDescr.setText(displayAFD.getFormat());
+
+		pOverlay.performFade(0f, 1000, 250);
 	}
 
-	protected void updateCursorFormat()
-	{
-		final AudioFileDescr displayAFD	= doc.getDisplayDescr();
-		csrInfoBits						= displayAFD.bitsPerSample;
-		csrInfoIsInt					= displayAFD.sampleFormat == AudioFileDescr.FORMAT_INT;
+	protected void updateCursorFormat() {
+		final AudioFileDescr displayAFD = doc.getDisplayDescr();
+		csrInfoBits 	= displayAFD.bitsPerSample;
+		csrInfoIsInt 	= displayAFD.sampleFormat == AudioFileDescr.FORMAT_INT;
 	}
 
 	protected void updateVerticalRuler()
@@ -1673,9 +1624,9 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 			spc = null;
 		}
 
-		for( int i = 0; i < collChannelRulers.size(); i++ ) {
-			chanRuler	= (Axis) collChannelRulers.get( i );
-			chanRuler.setSpace( spc );
+		for (Axis collChannelRuler : collChannelRulers) {
+			chanRuler = collChannelRuler;
+			chanRuler.setSpace(spc);
 		}
 	}
 
@@ -1774,66 +1725,65 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 //	}
 
 // ---------------- ToolListener interface ---------------- 
- 
+
 	// sync: attemptShared DOOR_TRNS
-	public void toolChanged( ToolActionEvent e )
-	{
-		if( activeTool != null ) {
-			activeTool.toolDismissed( waveView );
+	public void toolChanged(ToolActionEvent e) {
+		if (activeTool != null) {
+			activeTool.toolDismissed(waveView);
 		}
 
-		activeTool = (AbstractTool) tools.get( new Integer( e.getToolAction().getID() ));
-		if( activeTool != null ) {
-			waveView.setCursor( e.getToolAction().getDefaultCursor() );
-			activeTool.toolAcquired( waveView );
+		activeTool = tools.get(e.getToolAction().getID());
+		if (activeTool != null) {
+			waveView.setCursor(e.getToolAction().getDefaultCursor());
+			activeTool.toolAcquired(waveView);
 		} else {
-			waveView.setCursor( null );
+			waveView.setCursor(null);
 		}
 	}
 
 // ---------------- PreferenceChangeListener interface ---------------- 
 
-	public void preferenceChange( PreferenceChangeEvent e )
-	{
+	public void preferenceChange(PreferenceChangeEvent e) {
 		final String key = e.getKey();
-				
-		if( key == PrefsUtil.KEY_VIEWNULLLINIE ) {
-			waveView.setNullLinie( e.getNode().getBoolean( e.getKey(), false ));
-		} else if( key == PrefsUtil.KEY_VIEWVERTICALRULERS ) {
-			final boolean visible = e.getNode().getBoolean( e.getKey(), false );
-			rulersPanel.setVisible( visible );
-		} else if( key == PrefsUtil.KEY_VIEWCHANMETERS ) {
-			chanMeters = e.getNode().getBoolean( e.getKey(), false );
+
+		if (key.equals(PrefsUtil.KEY_VIEWNULLLINIE)) {
+			waveView.setNullLinie(e.getNode().getBoolean(e.getKey(), false));
+		} else if (key.equals(PrefsUtil.KEY_VIEWVERTICALRULERS)) {
+			final boolean visible = e.getNode().getBoolean(e.getKey(), false);
+			rulersPanel.setVisible(visible);
+		} else if (key.equals(PrefsUtil.KEY_VIEWCHANMETERS)) {
+			chanMeters = e.getNode().getBoolean(e.getKey(), false);
 			showHideMeters();
-		} else if( key == PrefsUtil.KEY_VIEWMARKERS ) {
-			viewMarkers = e.getNode().getBoolean( e.getKey(), false );
-			markVisible	= viewMarkers && waveExpanded;
-			if( waveExpanded ) {
-				markAxis.setVisible( markVisible );
-				markAxisHeader.setVisible( markVisible );
+		} else if (key.equals(PrefsUtil.KEY_VIEWMARKERS)) {
+			viewMarkers = e.getNode().getBoolean(e.getKey(), false);
+			markVisible = viewMarkers && waveExpanded;
+			if (waveExpanded) {
+				markAxis.setVisible(markVisible);
+				markAxisHeader.setVisible(markVisible);
 				wavePanel.updateAll();
 			}
-			if( markVisible ) {
+			if (markVisible) {
 				markAxis.startListening();
 			} else {
 				markAxis.stopListening();
 			}
-		} else if( key == PrefsUtil.KEY_TIMEUNITS ) {
-			final boolean timeSmps = e.getNode().getInt( key, PrefsUtil.TIME_SAMPLES ) == PrefsUtil.TIME_SAMPLES;
-			msgCsr1.applyPattern( timeSmps ? smpPtrn : timePtrn );
-		} else if( key == PrefsUtil.KEY_VERTSCALE) {
-			verticalScale = e.getNode().getInt( key, PrefsUtil.VSCALE_AMP_LIN );
+
+		} else if (key.equals(PrefsUtil.KEY_TIMEUNITS)) {
+			final boolean timeSmps = e.getNode().getInt(key, PrefsUtil.TIME_SAMPLES) == PrefsUtil.TIME_SAMPLES;
+			msgCsr1.applyPattern(timeSmps ? smpPtrn : timePtrn);
+		} else if (key.equals(PrefsUtil.KEY_VERTSCALE)) {
+			verticalScale = e.getNode().getInt(key, PrefsUtil.VSCALE_AMP_LIN);
 			checkDecimatedTrails(); // needs to be before setVert.scale / updateRuler!
-			waveView.setVerticalScale( verticalScale );
+
+			waveView.setVerticalScale(verticalScale);
 			updateVerticalRuler();
 		}
 	}
-	
+
 // ---------------- ClipboardOwner interface ---------------- 
 
-	public void lostOwnership( Clipboard clipboard, Transferable contents )
-	{
-		// XXX evtl. dispose() aufrufen
+	public void lostOwnership(Clipboard clipboard, Transferable contents) {
+		// XXX possibly call dispose()
 	}
 	
 // ---------------- internal action classes ---------------- 
@@ -2032,18 +1982,18 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 			boolean		saveMarkers	= true;
 			int[] 		channelMap	= null;
 			if( selection ) {
-				for( int i = 0; i < infos.size(); i++ ) {
-					Track.Info ti = (Track.Info) infos.get( i );
-					if( ti.trail instanceof AudioTrail ) {
+				for (Object info : infos) {
+					Track.Info ti = (Track.Info) info;
+					if (ti.trail instanceof AudioTrail) {
 						int numSelChannels = 0;
-						for( int j = 0; j < ti.trackMap.length; j++ ) {
-							if( ti.trackMap[ j ]) numSelChannels++;
+						for (int j = 0; j < ti.trackMap.length; j++) {
+							if (ti.trackMap[j]) numSelChannels++;
 						}
-						channelMap = new int[ numSelChannels ];
-						for( int j = 0, k = 0; j < ti.trackMap.length; j++ ) {
-							if( ti.trackMap[ j ]) channelMap[ k++ ] = j;
+						channelMap = new int[numSelChannels];
+						for (int j = 0, k = 0; j < ti.trackMap.length; j++) {
+							if (ti.trackMap[j]) channelMap[k++] = j;
 						}
-					} else if( ti.trail instanceof MarkerTrail ) {
+					} else if (ti.trail instanceof MarkerTrail) {
 						saveMarkers = ti.selected;
 					}
 				}
@@ -2066,8 +2016,6 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 		 *  @return the AudioFileDescr representing the chosen file path
 		 *			and format or <code>null</code>
 		 *			if the dialog was cancelled.
-		 *
-		 *	@todo	should warn user if saveMarkers is true and format does not support it
 		 */
 		protected AudioFileDescr[] query( AudioFileDescr[] protoType, int[] channelMap, boolean saveMarkers,
 										  boolean asCopySettings, boolean selectionSettings, Flag openAfterSaveSettings )
@@ -2110,9 +2058,9 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 				if( channelMap == null ) {
 					channelsUsed[ j ] = protoType[ j ].channels;
 				} else {
-					for( int k = 0; k < channelMap.length; k++ ) {
-						if( (channelMap[ k ] >= chanOff) && (channelMap[ k ] < chanOff + protoType[ j ].channels) ) {
-							channelsUsed[ j ]++;
+					for (int aChannelMap : channelMap) {
+						if ((aChannelMap >= chanOff) && (aChannelMap < chanOff + protoType[j].channels)) {
+							channelsUsed[j]++;
 						}
 					}
 				}
@@ -2454,20 +2402,20 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 				String path				= n.normalize( f.getParentFile().getAbsoluteFile().toURI().toURL().toExternalForm() ); // getAbsolutePath() ).replaceAll( " ", "%20" );
 //				String path				= n.normalize( f.getAbsoluteFile().toURL().toExternalForm() ); // getAbsolutePath() ).replaceAll( " ", "%20" );
 				path					= path.substring( 5 );
-StringBuffer sb = new StringBuffer();
+StringBuilder sb = new StringBuilder();
 //char ch;
 int  chI;
 byte[] hex = "0123456789abcdef".getBytes();
 byte[] enc = path.getBytes( "UTF-8" );
-for( int i = 0; i < enc.length; i++ ) {
-	chI = enc[ i ]; // parentDir.charAt( i );
+				for (byte anEnc : enc) {
+					chI = anEnc; // parentDir.charAt( i );
 //	chI = (int) ch;
-	if( (chI < 33) || (chI > 127) ) {
-		sb.append( "%" + (char) hex[ (chI >> 4) & 0x0F ] + (char) hex[ chI & 0x0F ]);
-	} else {
-		sb.append( (char) chI );
-	}
-}
+					if ((chI < 33) || (chI > 127)) {
+						sb.append("%").append((char) hex[(chI >> 4) & 0x0F]).append((char) hex[chI & 0x0F]);
+					} else {
+						sb.append((char) chI);
+					}
+				}
 path = sb.toString();
 //int i = path.lastIndexOf( '/' ) + 1;
 final String parentDir = path;
@@ -2977,7 +2925,7 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 	private abstract class TimelineTool
 	extends AbstractTool
 	{
-		private final List	collObservedComponents	= new ArrayList();
+		private final List<Component> collObservedComponents	= new ArrayList<Component>();
 	
 		private boolean adjustCatchBypass	= false;
 		
@@ -2989,40 +2937,37 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 			
 			if( c instanceof Container ) addMouseListeners( (Container) c );
 		}
-		
+
 		// additionally installs mouse input listeners on child components
-		private void addMouseListeners( Container c )
-		{
-			Component	c2;
-			
-			for( int i = 0; i < c.getComponentCount(); i++ ) {
-				c2 = c.getComponent( i );
-				collObservedComponents.add( c2 );
-				c2.addMouseListener( this );
-				c2.addMouseMotionListener( this );
-				if( c2 instanceof Container ) addMouseListeners( (Container) c2 );	// recurse
-			}
-		}
-		
-		// additionally removes mouse input listeners from child components
-		private void removeMouseListeners()
-		{
-			Component	c;
-		
-			while( !collObservedComponents.isEmpty() ) {
-				c	= (Component) collObservedComponents.remove( 0 );
-				c.removeMouseListener( this );
-				c.removeMouseMotionListener( this );
+		private void addMouseListeners(Container c) {
+			Component c2;
+
+			for (int i = 0; i < c.getComponentCount(); i++) {
+				c2 = c.getComponent(i);
+				collObservedComponents.add(c2);
+				c2.addMouseListener(this);
+				c2.addMouseMotionListener(this);
+				if (c2 instanceof Container) addMouseListeners((Container) c2);    // recurse
 			}
 		}
 
-		public void toolDismissed( Component c )
-		{
-			super.toolDismissed( c );
+		// additionally removes mouse input listeners from child components
+		private void removeMouseListeners() {
+			Component c;
+
+			while (!collObservedComponents.isEmpty()) {
+				c = collObservedComponents.remove(0);
+				c.removeMouseListener(this);
+				c.removeMouseMotionListener(this);
+			}
+		}
+
+		public void toolDismissed(Component c) {
+			super.toolDismissed(c);
 
 			removeMouseListeners();
-			
-			if( adjustCatchBypass ) {
+
+			if (adjustCatchBypass) {
 				adjustCatchBypass = false;
 				removeCatchBypass();
 			}
@@ -3138,8 +3083,8 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 			float					f1;
 			
 			argsCsr[3]		= chName;
-			argsCsr[0]		= new Long( pos );
-			argsCsr[1]		= new Integer( (int) (seconds / 60) );
+			argsCsr[0]		= pos;
+			argsCsr[1]		= (int) (seconds / 60);
 			argsCsr[2]		= new Float( seconds % 60 );
 			
 			csrInfo[0]		= msgCsr1.format( argsCsr );
@@ -3154,15 +3099,15 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 				}
 				catch( IOException e1 ) { return; }
 				f1			= data[ ch ][ 0 ];
-				argsCsr[4]	= new Float( f1 );
-				argsCsr[5]	= new Float( Math.log( Math.abs( f1 )) * TWENTYDIVLOG10 );
-				csrInfo[1]	= msgCsr2PCMFloat.format( argsCsr );
-				if( csrInfoIsInt ) {
-					argsCsr[6]	= new Long( (long) (f1 * (1L << (csrInfoBits - 1))) );
-					argsCsr[7]	= new Integer( csrInfoBits );
-					csrInfo[2]	= msgCsr3PCMInt.format( argsCsr );
+				argsCsr[4] = f1;
+				argsCsr[5] = new Float(Math.log(Math.abs(f1)) * TWENTYDIVLOG10);
+				csrInfo[1] = msgCsr2PCMFloat.format(argsCsr);
+				if (csrInfoIsInt) {
+					argsCsr[6] = (long) (f1 * (1L << (csrInfoBits - 1)));
+					argsCsr[7] = csrInfoBits;
+					csrInfo[2] = msgCsr3PCMInt.format(argsCsr);
 				} else {
-					csrInfo[2]	= "";
+					csrInfo[2] = "";
 				}
 				break;
 				
@@ -3175,10 +3120,10 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 				}
 				catch( IOException e1 ) { return; }
 				f1			= Math.max( frame[ 0 ], -frame[ 1 ] );	// peak pos/neg
-				argsCsr[4]	= new Float( f1 );
+				argsCsr[4]	= f1;
 				argsCsr[5]	= new Float( Math.log( f1 ) * TWENTYDIVLOG10 );
 				f1			= (float) Math.sqrt( frame[ 2 ]);	// mean sqr pos/neg
-				argsCsr[6]	= new Float( f1 );
+				argsCsr[6]	= f1;
 				argsCsr[7]	= new Float( Math.log( f1 ) * TWENTYDIVLOG10 );
 				csrInfo[1]	= msgCsr2Peak.format( argsCsr );
 				csrInfo[2]	= msgCsr3RMS.format( argsCsr );
@@ -3455,25 +3400,25 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 		
 		private void clickZoom( float factor, MouseEvent e )
 		{
-			long	pos, visiLen, start, stop;
-			Span	visiSpan;
+			long	pos, visibleLen, start, stop;
+			Span	visibleSpan;
 			
-			visiSpan	= timelineVis;
-			visiLen		= visiSpan.getLength();
-			pos			= visiSpan.getStart() + (long) ((double) e.getX() / (double) getComponent().getWidth() *
-													visiSpan.getLength());
-			visiLen		= (long) (visiLen * factor + 0.5f);
-			if( visiLen < 2 ) return;
+			visibleSpan	= timelineVis;
+			visibleLen		= visibleSpan.getLength();
+			pos			= visibleSpan.getStart() + (long) ((double) e.getX() / (double) getComponent().getWidth() *
+													visibleSpan.getLength());
+			visibleLen		= (long) (visibleLen * factor + 0.5f);
+			if( visibleLen < 2 ) return;
 			
-			start		= Math.max( 0, Math.min( timelineLen, pos - (long) ((pos - visiSpan.getStart()) * factor + 0.5f) ));
-			stop		= start + visiLen;
+			start		= Math.max( 0, Math.min( timelineLen, pos - (long) ((pos - visibleSpan.getStart()) * factor + 0.5f) ));
+			stop		= start + visibleLen;
 			if( stop > timelineLen ) {
 				stop	= timelineLen;
-				start	= Math.max( 0, stop - visiLen );
+				start	= Math.max( 0, stop - visibleLen );
 			}
-			visiSpan	= new Span( start, stop );
-			if( !visiSpan.isEmpty() ) {
-				doc.timeline.editScroll( this, visiSpan );
+			visibleSpan	= new Span( start, stop );
+			if( !visibleSpan.isEmpty() ) {
+				doc.timeline.editScroll( this, visibleSpan );
 			}
 		}
 

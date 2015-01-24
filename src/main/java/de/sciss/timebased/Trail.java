@@ -2,7 +2,7 @@
  *  Trail.java
  *  de.sciss.timebased package
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
@@ -89,12 +89,9 @@ extends Disposable, TreeNode
 
 // -------------------------- inner Listener interface --------------------------
 
-	/**
-	 */
 	public interface Listener
-	extends EventListener
-	{
-		public void trailModified( Trail.Event e );
+			extends EventListener {
+		public void trailModified(Trail.Event e);
 	}
 
 // --------------------- internal classes ---------------------

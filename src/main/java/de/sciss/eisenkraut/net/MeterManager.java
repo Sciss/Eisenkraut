@@ -2,17 +2,13 @@
  *  MeterManager.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		13-Jul-06	created
  */
 
 package de.sciss.eisenkraut.net;
@@ -42,14 +38,10 @@ import de.sciss.jcollider.Synth;
 import de.sciss.net.OSCBundle;
 import de.sciss.net.OSCMessage;
 
-/**
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 03-Jul-08
- */
 public class MeterManager
-implements OSCResponderNode.Action, Constants, ServerListener, ActionListener,
-		   EventManager.Processor
-{
+		implements OSCResponderNode.Action, Constants, ServerListener, ActionListener,
+		EventManager.Processor {
+
 	private List					collAllClients		= new ArrayList();
 	private List					collActiveClients	= new ArrayList();
 	private Map						mapClients			= new HashMap();	// key = MeterListener, value = MeterClient

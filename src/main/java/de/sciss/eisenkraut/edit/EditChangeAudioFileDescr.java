@@ -2,17 +2,13 @@
  *  EditChangeAudioFileDescr.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		17-Sep-05	copied from de.sciss.inertia.edit.EditPutMapValue
  */
 
 package de.sciss.eisenkraut.edit;
@@ -22,58 +18,45 @@ import de.sciss.app.PerformableEdit;
 
 import de.sciss.io.AudioFileDescr;
 
-/**
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 01-May-06
- */
-public class EditChangeAudioFileDescr
-extends BasicUndoableEdit
-{
+public class EditChangeAudioFileDescr extends BasicUndoableEdit {
+
 	private Object					source;
 	private final AudioFileDescr	afd;
 	private final String			key;
 	private final Object			oldValue, newValue;
 	private final String			name;
 
-	/**
-	 */
-	public EditChangeAudioFileDescr( Object source, AudioFileDescr afd, String key, Object value, String name )
-	{
+	public EditChangeAudioFileDescr(Object source, AudioFileDescr afd, String key, Object value, String name) {
 		super();
-		this.source			= source;
-		this.afd			= afd;
-		this.key			= key;
-		newValue			= value;
-		oldValue			= afd.getProperty( key );
-		this.name			= name;
+		this.source = source;
+		this.afd 	= afd;
+		this.key 	= key;
+		newValue 	= value;
+		oldValue 	= afd.getProperty(key);
+		this.name 	= name;
 	}
 
-	public EditChangeAudioFileDescr( Object source, AudioFileDescr afd, String key, Object value )
-	{
-		this( source, afd, key, value, null );
+	public EditChangeAudioFileDescr(Object source, AudioFileDescr afd, String key, Object value) {
+		this(source, afd, key, value, null);
 	}
 
-	public PerformableEdit perform()
-	{
-		afd.setProperty( source, key, newValue );
+	public PerformableEdit perform() {
+		afd.setProperty(source, key, newValue);
 		source = this;
 		return this;
 	}
 
-	public void undo()
-	{
+	public void undo() {
 		super.undo();
-		afd.setProperty( source, key, oldValue );
+		afd.setProperty(source, key, oldValue);
 	}
-	
-	public void redo()
-	{
+
+	public void redo() {
 		super.redo();
 		perform();
 	}
 
-	public String getPresentationName()
-	{
-		return name == null ? getResourceString( "editChangeAFD" ) : name;
+	public String getPresentationName() {
+		return name == null ? getResourceString("editChangeAFD") : name;
 	}
 }

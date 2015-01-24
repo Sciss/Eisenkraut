@@ -2,17 +2,13 @@
  *  SessionObject.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		13-May-05	created from de.sciss.meloncillo.session.SessionObject
  */
 
 package de.sciss.eisenkraut.session;
@@ -20,13 +16,7 @@ package de.sciss.eisenkraut.session;
 import de.sciss.eisenkraut.util.MapManager;
 import de.sciss.util.Disposable;
 
-/**
- *	@author		Hanns Holger Rutz
- *	@version	0.70, 07-Dec-07
- */
-public interface SessionObject
-extends Disposable
-{
+public interface SessionObject extends Disposable {
 	/**
 	 *	Code for <code>MapManager.Event.getOwnerModType()</code>:
 	 *	the object has been renamed
@@ -64,17 +54,16 @@ extends Disposable
 	 *  Changes the object's logical name.
 	 *  This name is used for displaying on the GUI.
 	 *
-	 *  @param  newName		new object's name.
-	 *
-	 *  @see	SessionCollection#findByName( String )
-	 *  @see	SessionCollection#createUniqueName( MessageFormat, Object[], List )
-	 *
-	 *  @warning	callers should check that the session's
+	 * 	Warning: callers should check that the session's
 	 *				collection doesn't contain objects
 	 *				with duplicate logical names because
 	 *				they might deduce file names from
 	 *				their logical names when saving their
 	 *				data model!
+	 *
+	 *  @param  newName		new object's name.
+	 *
+	 *  @see	SessionCollection#findByName( String )
 	 */
 	public void setName( String newName );
 

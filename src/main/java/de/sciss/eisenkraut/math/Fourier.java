@@ -2,17 +2,13 @@
  *  Fourier.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		04-Aug-04   commented
  */
  
 package de.sciss.eisenkraut.math;
@@ -21,13 +17,10 @@ package de.sciss.eisenkraut.math;
  *  A collection of algorithms related to the
  *  discrete Fourier transform. The source was
  *  mainly taken from FScape.
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.6, 04-Aug-04
  */
 public class Fourier
 {
-// -------- public Variablen --------
+// -------- public variables --------
 
 	/**
 	 *  Fourier Transform direction : analyse
@@ -38,11 +31,11 @@ public class Fourier
 	 */
 	public static final int	INVERSE	=	-1;
 
-// -------- private Variablen --------
+// -------- private variables --------
 
 	private static final double PI2 = Math.PI * 2;
 
-// -------- public Methoden --------
+// -------- public methods --------
 
 	private Fourier() { /* empty */ }
 

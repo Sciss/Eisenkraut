@@ -2,18 +2,13 @@
  *  RoutedOSCMessage.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		20-Jan-06	created
- *		28-Apr-08	extends BasicEvent
  */
 
 package de.sciss.eisenkraut.net;
@@ -24,13 +19,7 @@ import java.net.SocketAddress;
 import de.sciss.app.BasicEvent;
 import de.sciss.net.OSCMessage;
 
-/**
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 28-Apr-08
- */
-public class RoutedOSCMessage
-extends BasicEvent
-{
+public class RoutedOSCMessage extends BasicEvent {
 	public final OSCMessage			msg;
 	public final SocketAddress		addr;
 	public final long				when;
@@ -38,10 +27,7 @@ extends BasicEvent
 	
 	private final String[]			path;
 	private final int				pathIdx;
-//	private final List				routers;
-	
-//	public RoutedOSCMessage( OSCMessage msg, SocketAddress addr, long when, OSCRoot server,
-//							 String[] path, int pathIdx, List routers )
+
 	public RoutedOSCMessage( OSCMessage msg, SocketAddress addr, long when, OSCRoot server, String[] path, int pathIdx )
 	{
 		super( addr, 0, when );
@@ -51,7 +37,6 @@ extends BasicEvent
 		this.server		= server;
 		this.path		= path;
 		this.pathIdx	= pathIdx;
-//		this.routers	= routers;
 	}
 
 	public boolean incorporate( BasicEvent oldEvent )
@@ -59,13 +44,6 @@ extends BasicEvent
 		return false;
 	}
 
-//	public void route()
-//	{
-//		for( int i = 0; i < routers.size(); i++ ) {
-//			((OSCRouter) routers.get( i )).routeMessage( this );
-//		}
-//	}
-	
 	public int getPathIndex()
 	{
 		return pathIdx;

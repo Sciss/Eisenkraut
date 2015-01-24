@@ -2,17 +2,13 @@
  *	FlagsPanel.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		13-May-05	created from de.sciss.meloncillo.session.FlagsPanel
  */
  
 package de.sciss.eisenkraut.session;
@@ -21,13 +17,10 @@ import de.sciss.app.DynamicAncestorAdapter;
 import de.sciss.app.DynamicListening;
 import de.sciss.eisenkraut.util.MapManager;
 
-/**
- *	@version	0.70, 07-Dec-07
- */
 public class FlagsPanel
-extends AbstractFlagsPanel
-implements DynamicListening, SessionCollection.Listener
-{
+		extends AbstractFlagsPanel
+		implements DynamicListening, SessionCollection.Listener {
+
 	private final SessionCollection sc;
 	protected SessionObject so;
 
@@ -57,7 +50,7 @@ implements DynamicListening, SessionCollection.Listener
 	
 		map		= so.getMap();
 		o		= map.getValue( SessionObject.MAP_KEY_FLAGS );
-		flags	= o == null ? 0 : ((Integer) o).intValue();
+		flags	= o == null ? 0 : (Integer) o;
 		
 		if( set ) {
 			flagsNew	= flags | mask;
@@ -75,7 +68,7 @@ implements DynamicListening, SessionCollection.Listener
 			}
 		}
 		if( flags != flagsNew ) {
-			map.putValue( this, SessionObject.MAP_KEY_FLAGS, new Integer( flagsNew ));
+			map.putValue( this, SessionObject.MAP_KEY_FLAGS, flagsNew);
 		}
 		if( soloChange ) broadcastFlags( 0, true );
 	}
@@ -98,7 +91,7 @@ implements DynamicListening, SessionCollection.Listener
 			so2		= sc.get( i );
 			map		= so2.getMap();
 			o		= map.getValue( SessionObject.MAP_KEY_FLAGS );
-			flags	= o == null ? 0 : ((Integer) o).intValue();
+			flags	= o == null ? 0 : (Integer) o;
 			
 			if( set ) {
 				flagsNew	= flags | mask;
@@ -112,56 +105,40 @@ implements DynamicListening, SessionCollection.Listener
 			}
 			
 			if( flags != flagsNew ) {
-				map.putValue( this, SessionObject.MAP_KEY_FLAGS, new Integer( flagsNew ));
+				map.putValue( this, SessionObject.MAP_KEY_FLAGS, flagsNew);
 			}
 		}
 	}
 
-	// sync : attempt shared on doors
-	protected boolean isAny( int mask, boolean set )
-	{
-		int				i, flags;
-		SessionObject	so2;
-		Object			o;
-		MapManager		map;
+	protected boolean isAny(int mask, boolean set) {
+		int i, flags;
+		SessionObject so2;
+		Object o;
+		MapManager map;
 
-//		if( !lm.attemptShared( doors, 250 )) return false;
-//		try {
-			for( i = 0; i < sc.size(); i++ ) {
-				so2		= sc.get( i );
-				map		= so2.getMap();
-				o		= map.getValue( SessionObject.MAP_KEY_FLAGS );
-				flags	= o == null ? 0 : ((Integer) o).intValue();
-				
-				if( set ) {
-					if( (flags & mask) != 0 ) return true;
-				} else {
-					if( (flags & mask) == 0 ) return true;
-				}
+		for (i = 0; i < sc.size(); i++) {
+			so2 = sc.get(i);
+			map = so2.getMap();
+			o = map.getValue(SessionObject.MAP_KEY_FLAGS);
+			flags = o == null ? 0 : (Integer) o;
+
+			if (set) {
+				if ((flags & mask) != 0) return true;
+			} else {
+				if ((flags & mask) == 0) return true;
 			}
-			
-			return false;
-//		}
-//		finally {
-//			lm.releaseShared( doors );
-//		}
+		}
+
+		return false;
 	}
 
-	// sync : shared on doors
-	private void updateButtons()
-	{
-		final Object	o;
-		final int		flags;
-	
-//		lm.waitShared( doors );
-//		try {
-			o		= so.getMap().getValue( SessionObject.MAP_KEY_FLAGS );
-			flags	= o == null ? 0 : ((Integer) o).intValue();
-			updateButtons( flags );
-//		}
-//		finally {
-//			lm.releaseShared( doors );
-//		}
+	private void updateButtons() {
+		final Object o;
+		final int flags;
+
+		o = so.getMap().getValue(SessionObject.MAP_KEY_FLAGS);
+		flags = o == null ? 0 : (Integer) o;
+		updateButtons(flags);
 	}
 
 // ---------------- DynamicListening interface ---------------- 

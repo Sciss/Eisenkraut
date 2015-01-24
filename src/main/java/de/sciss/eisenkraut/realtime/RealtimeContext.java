@@ -2,18 +2,13 @@
  *  RealtimeContext.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		15-Feb-05	created from de.sciss.meloncillo.realtime.RealtimeContext
- *		08-Sep-05	rate is floating point precision
  */
 
 package de.sciss.eisenkraut.realtime;
@@ -27,18 +22,10 @@ import java.util.Set;
 import de.sciss.io.Span;
 
 /**
- *  Analogon to RenderContext
+ *  Analogue to RenderContext
  *  for the realtime engine
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
- *
- *  @todo	users should make use of
- *			set/getSourceBlockSize() !
  */
-public class RealtimeContext
-//extends PlugInContext
-{
+public class RealtimeContext {
 	private final Span				time;
 	private final double			sourceRate;
 	private final List				tracks;

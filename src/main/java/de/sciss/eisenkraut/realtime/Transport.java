@@ -2,33 +2,19 @@
  *  Transport.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		25-Jan-05	created from de.sciss.meloncillo.realtime.Transport
- *		15-Jul-05	timeline insertion follows playback
- *		18-Jul-05	fixes a wrong return statement in the run() method
- *		22-Jul-05	doesn't extend Thread any more (allows re-running if thread dies)
- *		02-Aug-05	conforms to new document handler
- *		08-Sep-05	modified stopAndWait as to return directly if transport wasn't running
- *					; uses floating point rates
- *		21-Jan-06	added OSC support
- *		25-Feb-06	moved to double precision
- *		20-Sep-06	radically stripped down, removed realtime consumer stuff, everything in event thread now
  */
 
 package de.sciss.eisenkraut.realtime;
 
 import java.awt.EventQueue;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import de.sciss.app.AbstractApplication;
@@ -47,38 +33,28 @@ import de.sciss.eisenkraut.util.PrefsUtil;
 /**
  *	The realtime "motor" or "clock". The transport
  *	deals with realtime playback of the timeline.
- *	It provides means for registering and unregistering
+ *	It provides means for registering and un-registering
  *	realtime consumers and communicates with a
  *	RealtimeProducer which is responsible for the
- *	actual data production. Transort clocking is
+ *	actual data production. Transport clocking is
  *	performed within an extra thread from within
  *	the consumer's methods are called and registered
  *	transport listeners are informed about actions.
- * 
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 26-Aug-08
- *
- *	@todo	the methods for adding and removing consumers should
- *			be moved to the realtime host interface?
- *
- *	@todo	changing sample rate while playing doesn't have an effect
- *
- *	@synchronization	all methods must be executed in event thread!
  */
 public class Transport
-implements TimelineListener, OSCRouter, Disposable
-{
-	protected final Session				doc;
+		implements TimelineListener, OSCRouter, Disposable {
 
-    private	boolean						looping			= false;
-	private boolean						loopInPlay		= false;
-	private long						loopStart, loopStop;
-	private double						rate;
-	private double						frameFactor;
-	private long						lastUpdate;
-	
+	protected final Session doc;
+
+	private boolean looping 	= false;
+	private boolean loopInPlay 	= false;
+	private long 	loopStart, loopStop;
+	private double 	rate;
+	private double 	frameFactor;
+	private long 	lastUpdate;
+
 	// high level listeners
-	private final List					collListeners  = new ArrayList();
+	private final List<TransportListener> collListeners  = new ArrayList<TransportListener>();
 
 	// realtime control
 	private long						startFrame;
@@ -121,16 +97,6 @@ implements TimelineListener, OSCRouter, Disposable
 		doc.timeline.removeTimelineListener( this );
 	}
 	
-//	public AbstractAction getPlayAction()
-//	{
-//		return actionPlay;
-//	}
-
-//	public AbstractAction getStopAction()
-//	{
-//		return actionStop;
-//	}
-
 	public Session getDocument()
 	{
 		return doc;
@@ -142,32 +108,29 @@ implements TimelineListener, OSCRouter, Disposable
 	 *	@param	listener	the listener to register for information
 	 *						about transport actions such as play or stop
 	 */
-	public void addTransportListener( TransportListener listener )
-	{
-		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
-	
-		collListeners.add( listener );
-		if( running ) {
-			listener.transportPlay( this, updateCurrentFrame(), rateScale );
+	public void addTransportListener(TransportListener listener) {
+		if (!EventQueue.isDispatchThread()) throw new IllegalMonitorStateException();
+
+		collListeners.add(listener);
+		if (running) {
+			listener.transportPlay(this, updateCurrentFrame(), rateScale);
 		}
 	}
 
 	/**
-	 *	Unregisters a transport listener
+	 * Unregisters a transport listener
 	 *
-	 *	@param	listener	the listener to remove from the event dispatching
+	 * @param    listener    the listener to remove from the event dispatching
 	 */
-	public void removeTransportListener( TransportListener listener )
-	{
-		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
+	public void removeTransportListener(TransportListener listener) {
+		if (!EventQueue.isDispatchThread()) throw new IllegalMonitorStateException();
 
-		collListeners.remove( listener );
+		collListeners.remove(listener);
 	}
 
-	private void dispatchStop( long pos )
-	{
-		for( Iterator iter = collListeners.iterator(); iter.hasNext(); ) {
-			((TransportListener) iter.next()).transportStop( this, pos );
+	private void dispatchStop(long pos) {
+		for (TransportListener collListener : collListeners) {
+			(collListener).transportStop(this, pos);
 		}
 		if( AbstractApplication.getApplication().getUserPrefs().getBoolean(
 			PrefsUtil.KEY_INSERTIONFOLLOWSPLAY, false )) {
@@ -178,199 +141,48 @@ implements TimelineListener, OSCRouter, Disposable
 		}
 	}
 
-	private void dispatchPosition( long pos )
-	{
-		for( Iterator iter = collListeners.iterator(); iter.hasNext(); ) {
-			((TransportListener) iter.next()).transportPosition( this, pos, rateScale );
+	private void dispatchPosition(long pos) {
+		for (TransportListener collListener : collListeners) {
+			(collListener).transportPosition(this, pos, rateScale);
 		}
 	}
 
-	private void dispatchPlay( long pos )
-	{
-		for( Iterator iter = collListeners.iterator(); iter.hasNext(); ) {
-			((TransportListener) iter.next()).transportPlay( this, pos, rateScale );
+	private void dispatchPlay(long pos) {
+		for (TransportListener collListener : collListeners) {
+			(collListener).transportPlay(this, pos, rateScale);
 		}
 	}
 
-	private void dispatchReadjust( long pos )
-	{
-		for( Iterator iter = collListeners.iterator(); iter.hasNext(); ) {
-			((TransportListener) iter.next()).transportReadjust( this, pos, rateScale );
+	private void dispatchReadjust(long pos) {
+		for (TransportListener collListener : collListeners) {
+			(collListener).transportReadjust(this, pos, rateScale);
 		}
 	}
 
-	private void dispatchQuit()
-	{
-		for( Iterator iter = collListeners.iterator(); iter.hasNext(); ) {
+	private void dispatchQuit() {
+		for (TransportListener collListener : collListeners) {
 			try {
-				((TransportListener) iter.next()).transportQuit( this );
-			}
-			catch( Exception e1 ) {
-				System.err.println( "[@transport]" + e1.getLocalizedMessage() );
+				(collListener).transportQuit(this);
+			} catch (Exception e1) {
+				System.err.println("[@transport]" + e1.getLocalizedMessage());
 			}
 		}
 	}
-	
-//	/**
-//	 *	The transport core is
-//	 *	executed within the thread's run method
-//	 */
-//    public void run()
-//    {
-//		// all initial values are just here to please the compiler
-//		// who doesn't know commandLp is exited only after at least
-//		// one CMD_PLAY (see assertion in CMD_CONFIG_RESUME)
-//        long			startTime = 0, sysTime;
-//        long			frameCount = 0, oldFrameCount = 0;
-//        double			currentRate, targetRate = 1.0;
-//		int				i;
-////		UndoableEdit	edit;
-//		RealtimeConsumerRequest	r;
-//
-//		do {
-//			synchronized( this ) {
-//commandLp:		do {
-//					switch( rt_command ) {
-//					case CMD_CONFIG_PAUSE:
-//						notifyAll();
-//						break;
-//						
-//					case CMD_CONFIG_RESUME:
-//						assert startTime > 0 : startTime;
-//						notifyAll();
-//						break commandLp;
-//						
-//					case CMD_STOP:
-//						dispatchStop( currentFrame );
-//						// translate into a valid time offset
-//						if( !doc.bird.attemptExclusive( Session.DOOR_TIME, 400 )) break;
-//						try {
-//							currentFrame	= Math.max( 0, Math.min( doc.timeline.getLength(), currentFrame ));
-//							if( AbstractApplication.getApplication().getUserPrefs().getBoolean(
-//								PrefsUtil.KEY_INSERTIONFOLLOWSPLAY, false )) {
-//
-////								doc.getUndoManager().addEdit( TimelineVisualEdit.position( this, doc, currentFrame ));
-//								doc.timeline.editPosition( this, currentFrame );
-////								doc.timeline.setPosition( this, currentFrame );
-//							} else {
-//								// this is for notifying objects for visual update
-//								doc.timeline.setPosition( this, doc.timeline.getPosition() );
-//							}
-////							edit	= new EditSetTimelinePosition( this, doc, currentFrame );
-////							doc.getUndoManager().addEdit( edit );
-//						}
-//						finally {
-//							doc.bird.releaseExclusive( Session.DOOR_TIME );
-//						}
-//						notifyAll();
-//						break;
-//						
-//					case CMD_PLAY:
-//					case CMD_POSITION:
-//						if( rt_command == CMD_PLAY ) {
-//							dispatchPlay( startFrame );
-//						} else {
-//							dispatchPosition( startFrame );
-//						}
-//						// THRU
-//						targetRate		= rt_context.getSourceRate() * rateScale;
-//						// e.g. bufSizeH == 512 --> 0x1FF . Maske fuer frameCount
-//						// wir geben dem producer einen halben halben buffer zeit (in millisec)
-//						// d.h. bei 1000 Hz und halber buffer size von 512 sind das 256 millisec.
-//						startTime		= System.currentTimeMillis() - 1;   // division by zero vermeiden
-//						frameCount		= 0;
-//						currentFrame			= startFrame;
-//						notifyAll();
-//						break commandLp;
-//						
-//					case CMD_QUIT:
-//						dispatchQuit();
-//						notifyAll();
-//						return;
-//						
-//					default:
-//						assert rt_command == CMD_IGNORE : rt_command;
-//						break;
-//					}
-//					// sleep until next rt_command arrives
-//					try {
-//						wait();
-//					}
-//					catch( InterruptedException e1 ) {}
-//				} while( true );
-//			} // synchronized( this )
-// 
-//rt_loop:	while( threadRunning ) {
-//				frameCount += rt_notifyTickStep;
-//				currentFrame	   += rt_notifyTickStep;
-//				sysTime		= System.currentTimeMillis();
-//				currentRate = (double) (1000 * frameCount) / (sysTime - startTime);
-//				while( currentRate > targetRate ) { // wir sind der zeit voraus
-//					Thread.yield();
-//					sysTime		= System.currentTimeMillis();
-//					currentRate = (double) (1000 * frameCount) / (sysTime - startTime);
-//				}
-//
-//				// handle stop + loop
-//				if( currentFrame >= stopFrame ) {
-//					if( isLooping() ) {
-//						startFrame   = loopStart;
-//						if( startFrame >= stopFrame ) {
-//							goStop();
-//							break rt_loop;
-//						}
-//						dispatchPosition( startFrame );
-//						currentFrame		= startFrame;
-//						startTime	= System.currentTimeMillis() - 1;
-//						frameCount	= 0;
-////						rt_producer.requestProduction(
-////							new Span( startFrame, startFrame + rt_producer.source.bufSizeH ),
-////							true, sysTime + deadline );
-////						rt_producer.requestProduction(
-////							new Span( startFrame + rt_producer.source.bufSizeH,
-////									  startFrame + rt_producer.source.bufSize ),
-////							false, sysTime + deadline );
-//
-//					} else {
-//						goStop();
-//						break rt_loop;
-//					}
-//				}
-//				
-//				for( i = 0; i < rt_numConsumers; i++ ) {
-//					// XXX performativer mit bitshifted mask + AND ?
-//					r = rt_requests[ i ];
-//					if( r.active && r.notifyTicks && (frameCount % r.notifyTickStep == 0) ) {
-//						rt_consumers[ i ].realtimeTick( rt_context, currentFrame );
-////						rt_consumers[ i ].realtimeTick( rt_context, rt_producer.source, currentFrame );
-//					}
-//				}
-//
-//				try {
-//					Thread.sleep( 0, 1 );
-//				} catch( InterruptedException e1 ) {}
-//			} // while( threadRunning )
-//		} while( true );
-//    }
-    
+
 	/**
 	 *  Requests the thread to start
 	 *  playing. TransportListeners
 	 *  are informed when the
 	 *  playing really starts.
-	 *
-	 *  @synchronization	To be called in the event thread.
 	 */
-    public void play( double scale )
-    {
-		playSpan( new Span( doc.timeline.getPosition(), doc.timeline.getLength() ), scale );	// XXX sync?
-    }
+	public void play(double scale) {
+		playSpan(new Span(doc.timeline.getPosition(), doc.timeline.getLength()), scale);    // XXX sync?
+	}
 
-    public void playSpan( Span span, double scale )
-	{
-		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
+	public void playSpan(Span span, double scale) {
+		if (!EventQueue.isDispatchThread()) throw new IllegalMonitorStateException();
 
-		if( running ) return;
+		if (running) return;
 
 		startFrame		= span.start;
 		loopInPlay		= isLooping() && loopStop > startFrame;
@@ -393,16 +205,13 @@ implements TimelineListener, OSCRouter, Disposable
 	 *
 	 *  @param  loopSpan	Span describing the new loop start and stop.
 	 *						Passing null stops looping. 
-	 *
-	 *	@synchronization	If loopSpan != null, the caller must have sync on doc.timeline!
 	 */
 	public void setLoop( Span loopSpan )
 	{
 		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
 
 		long	testFrame;
-//		boolean readjust = false;
-		
+
 		if( loopSpan != null ) {
 			if( !looping || (loopStart != loopSpan.start) || (loopStop != loopSpan.stop) ) {
 				loopStart   = loopSpan.start;
@@ -418,10 +227,9 @@ implements TimelineListener, OSCRouter, Disposable
 					if( loopInPlay && (testFrame >= loopStop) ) {
 						testFrame = ((testFrame - loopStart) % (loopStop - loopStart)) + loopStart;
 					}
-					// seemingless re-adjustment of startFrame
+					// seamless re-adjustment of startFrame
 					// so currentFrame doesn't jump
 					if( testFrame != currentFrame ) {	
-//System.err.println( "testFrame is " + testFrame + "; should be " + currentFrame );
 						startFrame -= testFrame - currentFrame;
 					}
 					dispatchReadjust( startFrame );
@@ -432,10 +240,9 @@ implements TimelineListener, OSCRouter, Disposable
 				if( running && loopInPlay ) {
 					// check for possible jumps
 					testFrame = startFrame + (long) ((lastUpdate - startTime) * frameFactor + 0.5);
-					// seemingless re-adjustment of startFrame
+					// seamless re-adjustment of startFrame
 					// so currentFrame doesn't jump
 					if( testFrame != currentFrame ) {
-// System.err.println( "testFrame is " + testFrame + "; should be " + currentFrame );
 						startFrame -= testFrame - currentFrame;
 					}
 				}
@@ -448,13 +255,7 @@ implements TimelineListener, OSCRouter, Disposable
 			}
 		}
 	}
-/*
-	currentFrame = startFrame + (long) ((now - startTime) * frameFactor + 0.5);
-	if( loopInPlay ) {
-		if( currentFrame >= loopStop ) {
-			currentFrame = ((currentFrame - loopStart) % (loopStop - loopStart)) + loopStart;
-		}
-*/
+
 	/**
 	 *  Returns whether looping
 	 *  is active or not
@@ -466,21 +267,6 @@ implements TimelineListener, OSCRouter, Disposable
 		return looping;
 	}
 
-// we can uncomment this any time when the method is really needed
-//	/**
-//	 *  Returns whether current playback
-//	 *  involves the loop region.
-//	 *	(i.e. loop is active and playback was
-//	 *	started with position <= loop end; it needn't be
-//	 *	that the playback position is >= loop start though!)
-//	 *
-//	 *	@return	<code>true</code> if loop is relevant in current playback
-//	 */
-//	public boolean isInLoop()
-//	{
-//		return loopInPlay;
-//	}
-
 	/**
 	 *	'Folds' a time span with regard to current loop settings.
 	 *	That is, if a transport listener is calculating linear increasing
@@ -491,15 +277,15 @@ implements TimelineListener, OSCRouter, Disposable
 	 *	This does not check against the document length so span stops
 	 *	beyond doc.timeline.getLength() are possible and allowed.
 	 *
+	 *	Note: this method is not thread safe, hence should be called in the event
+	 *			thread. this means, the trigger responder in SuperColliderPlayer
+	 *			must be deferred!!!
+	 *
 	 *	@param	unfolded	the linear extrapolated time span from transport play
 	 *	@param	loopMin		a minimum length of the loop such as to prevent cpu overload or
 	 *						osc message overflow (imagine the user would make a 1 sample long loop).
 	 *						leave to zero if no minimum required.
 	 *	@return				an array of folded spans (array length is >= 1)
-	 *
-	 *	@todo	this method is not thread safe, hence should be called in the event
-	 *			thread. this means, the trigger responder in SuperColliderPlayer
-	 *			must be deferred!!!
 	 */
 	public Span[] foldSpans( Span unfolded, int loopMin )
 	{
@@ -605,9 +391,10 @@ implements TimelineListener, OSCRouter, Disposable
 		rate			= doc.timeline.getRate();
 		frameFactor		= rateScale * rate / 1000;
 	}
-	
-	public void timelineSelected( TimelineEvent e ) { /* ignored */ }
-    public void timelineScrolled( TimelineEvent e ) { /* ignored */ }
+
+	public void timelineSelected(TimelineEvent e) { /* ignored */ }
+
+	public void timelineScrolled(TimelineEvent e) { /* ignored */ }
 
 // --------------- RealtimeHost interface ---------------
 
@@ -622,59 +409,48 @@ implements TimelineListener, OSCRouter, Disposable
 		return running;
 	}
 
-	public void	showMessage( int type, String text )
-	{
-		System.err.println( text );
-//		((ProgressComponent) root.getComponent( Main.COMP_MAIN )).showMessage( type, text );
+	public void showMessage(int type, String text) {
+		System.err.println(text);
 	}
 
 	// ------------- OSCRouter interface -------------
-	
-	public String oscGetPathComponent()
-	{
+
+	public String oscGetPathComponent() {
 		return OSC_TRANSPORT;
 	}
-	
-	public void oscRoute( RoutedOSCMessage rom )
-	{
-		osc.oscRoute( rom );
-	}
-	
-	public void oscAddRouter( OSCRouter subRouter )
-	{
-		osc.oscAddRouter( subRouter );
+
+	public void oscRoute(RoutedOSCMessage rom) {
+		osc.oscRoute(rom);
 	}
 
-	public void oscRemoveRouter( OSCRouter subRouter )
-	{
-		osc.oscRemoveRouter( subRouter );
+	public void oscAddRouter(OSCRouter subRouter) {
+		osc.oscAddRouter(subRouter);
 	}
-	
-	public Object oscQuery_position()
-	{
-		return new Long( getCurrentFrame() );
+
+	public void oscRemoveRouter(OSCRouter subRouter) {
+		osc.oscRemoveRouter(subRouter);
 	}
-	
-	public Object oscQuery_running()
-	{
-		return new Integer( isRunning() ? 1 : 0 );
+
+	public Object oscQuery_position() {
+		return getCurrentFrame();
 	}
-	
-	public void oscCmd_play( RoutedOSCMessage rom )
-	{
+
+	public Object oscQuery_running() {
+		return isRunning() ? 1 : 0;
+	}
+
+	public void oscCmd_play(RoutedOSCMessage rom) {
 		try {
 			final float r = rom.msg.getArgCount() == 1 ? 1.0f :
-				Math.max( 0.25f, Math.min( 4f, ((Number) rom.msg.getArg( 1 )).floatValue() ));
+					Math.max(0.25f, Math.min(4f, ((Number) rom.msg.getArg(1)).floatValue()));
 //			actionPlay.perform( r );
-			play( r );
-		}
-		catch( ClassCastException e1 ) {
-			OSCRoot.failedArgType( rom, 1 );
+			play(r);
+		} catch (ClassCastException e1) {
+			OSCRoot.failedArgType(rom, 1);
 		}
 	}
 
-	public void oscCmd_stop( RoutedOSCMessage rom )
-	{
+	public void oscCmd_stop(RoutedOSCMessage rom) {
 		stop();
 	}
 }

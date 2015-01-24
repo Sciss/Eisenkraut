@@ -2,19 +2,13 @@
  *  BlendContext.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		07-Feb-05	created from de.sciss.meloncillo.io.BlendContext
- *		13-Jul-05	manages blending curve
- *		13-Jul-06	allows null channels
  */
 
 package de.sciss.eisenkraut.io;

@@ -2,17 +2,13 @@
  *  Gain.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		16-Jul-05	created
  */
 
 package de.sciss.eisenkraut.render;
@@ -33,14 +29,10 @@ import de.sciss.util.DefaultUnitTranslator;
 import de.sciss.util.Param;
 import de.sciss.util.ParamSpace;
 
-/**
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
- */
 public class Gain
-extends AbstractRenderPlugIn
-implements RandomAccessRequester
-{
+		extends AbstractRenderPlugIn
+		implements RandomAccessRequester {
+
 	private static final String KEY_GAIN		= "gain";
 	private static final String KEY_GAINTYPE	= "gaintype";
 
@@ -109,7 +101,7 @@ implements RandomAccessRequester
 		prHost			= source.context.getHost();
 		
 		if( prNormalize ) {	// needs to scan twice, hence random access
-			source.context.setOption( RenderContext.KEY_PREFBLOCKSIZE, new Integer( BLOCKSIZE ));
+			source.context.setOption( RenderContext.KEY_PREFBLOCKSIZE, BLOCKSIZE);
 			source.context.setOption( RenderContext.KEY_RANDOMACCESS, this );
 			// request first block
 			prRenderLength	= prTotalSpan.getLength();

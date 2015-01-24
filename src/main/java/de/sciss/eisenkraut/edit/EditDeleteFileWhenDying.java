@@ -2,17 +2,13 @@
  *  EditDeleteFileWhenDying.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		20-Nov-05	created
  */
 
 package de.sciss.eisenkraut.edit;
@@ -31,53 +27,47 @@ import de.sciss.io.InterleavedStreamFile;
  *	when it's <code>die()</code> method is called.
  *	Alternatively, using the constructor with a plain <code>File</code>
  *	object will simply delete that file.
- *	Usefull for undoing recordings for example.
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 01-May-06
+ *	Useful for undoing recordings for example.
  */
-public class EditDeleteFileWhenDying
-extends BasicUndoableEdit
-{
+public class EditDeleteFileWhenDying extends BasicUndoableEdit {
+
 	private final InterleavedStreamFile isf;
 	private final File					f;
 
 	/**
-	 *  @param isf	the file to close and delete when <code>die()</code> is called
+	 * @param isf the file to close and delete when <code>die()</code> is called
 	 */
-	public EditDeleteFileWhenDying( InterleavedStreamFile isf )
-	{
+	public EditDeleteFileWhenDying(InterleavedStreamFile isf) {
 		super();
-		this.isf	= isf;
-		f			= isf.getFile();
+		this.isf = isf;
+		f = isf.getFile();
 	}
 
 	/**
-	 *  @param f	the file to delete when <code>die()</code> is called
+	 * @param f the file to delete when <code>die()</code> is called
 	 */
-	public EditDeleteFileWhenDying( File f )
-	{
+	public EditDeleteFileWhenDying(File f) {
 		super();
-		isf			= null;
-		this.f		= f;
+		isf = null;
+		this.f = f;
 	}
-	
-	public PerformableEdit perform() { return this; }
 
-	public void die()
-	{
+	public PerformableEdit perform() {
+		return this;
+	}
+
+	public void die() {
 //System.err.println( "die!" );
-		if( isf != null ) {
+		if (isf != null) {
 			try {
 				isf.close();
-			}
-			catch( IOException e1 ) {
-				System.err.println( "File not closed : " + f.getAbsolutePath() );
+			} catch (IOException e1) {
+				System.err.println("File not closed : " + f.getAbsolutePath());
 			}
 		}
-		if( f != null ) {
-			if( !f.delete() ) {
-				System.err.println( "File not deleted : " + f.getAbsolutePath() );
+		if (f != null) {
+			if (!f.delete()) {
+				System.err.println("File not deleted : " + f.getAbsolutePath());
 			}
 		}
 		super.die();

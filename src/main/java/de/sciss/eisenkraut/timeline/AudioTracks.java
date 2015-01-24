@@ -2,7 +2,7 @@
  *  AudioTracks.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
@@ -28,10 +28,10 @@ import de.sciss.timebased.Trail;
 import de.sciss.util.Flag;
 
 public class AudioTracks
-extends SessionCollection
-implements OSCRouter
-{
-	private static final String		OSC_AUDIO		= "audio";
+		extends SessionCollection
+		implements OSCRouter {
+
+	private static final String OSC_AUDIO = "audio";
 
 	private final OSCRouterWrapper	osc;
 	private final Session			doc;
@@ -55,26 +55,25 @@ implements OSCRouter
 	{
 		return trail;
 	}
-	
-	public boolean isSelected( AudioTrack t )
-	{
-		return doc.selectedTracks.contains( t );
+
+	public boolean isSelected(AudioTrack t) {
+		return doc.selectedTracks.contains(t);
 	}
 
-	public static boolean checkSyncedAudio( List tis, boolean changesTimeline, ProcessingThread context, Flag hasSelectedAudio )
-	{
+	public static boolean checkSyncedAudio(List tis, boolean changesTimeline, ProcessingThread context, Flag hasSelectedAudio) {
 		Track.Info ti;
 
 		hasSelectedAudio.set( false );
-	
-		for( int i = 0; i < tis.size(); i++ ) {
-			ti = (Track.Info) tis.get( i );
-			if( changesTimeline && !ti.getChannelSync() ) {
-				if( context != null ) context.setException( new IllegalStateException( AbstractApplication.getApplication().getResourceString( "errAudioWillLooseSync" )));
+
+		for (Object ti1 : tis) {
+			ti = (Track.Info) ti1;
+			if (changesTimeline && !ti.getChannelSync()) {
+				if (context != null)
+					context.setException(new IllegalStateException(AbstractApplication.getApplication().getResourceString("errAudioWillLooseSync")));
 				return false;
 			}
-			if( (ti.trail instanceof AudioTrail) && ti.selected ) {
-				hasSelectedAudio.set( true );
+			if ((ti.trail instanceof AudioTrail) && ti.selected) {
+				hasSelectedAudio.set(true);
 			}
 		}
 		return true;
@@ -104,6 +103,6 @@ implements OSCRouter
 
 	public Object oscQuery_count()
 	{
-		return new Integer( size() );
+		return size();
 	}
 }

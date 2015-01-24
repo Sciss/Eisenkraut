@@ -2,18 +2,13 @@
  *  SessionCollection.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		13-May-05	created from de.sciss.meloncillo.session.SessionCollection
- *		27-Jan-06	allows null sources ; lazy EventManager creation
  */
 
 package de.sciss.eisenkraut.session;
@@ -30,64 +25,38 @@ import de.sciss.app.BasicEvent;
 import de.sciss.app.EventManager;
 import de.sciss.eisenkraut.util.MapManager;
 
-/**
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
- */
 public class SessionCollection
-extends AbstractSessionObject
-implements EventManager.Processor
-{
-	protected final List			collObjects			= new ArrayList();
+		extends AbstractSessionObject
+		implements EventManager.Processor {
+
+	protected final List<SessionObject> collObjects			= new ArrayList<SessionObject>();
 	protected final MapManager.Listener	objectListener;
 
-	protected static final Set EMPTY_SET				= new HashSet( 1 );
-	
-//	private final Set	dynamicSet	= new HashSet();
+	protected static final Set<String> EMPTY_SET = new HashSet<String>(1);
 
 	// --- event handling ---
 
-	protected EventManager elm = null;	// lazy
+	protected EventManager elm = null;    // lazy
 
 	/**
-	 *  Creates a new empty collection.
+	 * Creates a new empty collection.
 	 */
-	public SessionCollection()
-	{
+	public SessionCollection() {
 		super();
-	
+
 		objectListener = new MapManager.Listener() {
-			public void mapChanged( MapManager.Event e )
-			{
-				dispatchObjectMapChange( e );
+			public void mapChanged(MapManager.Event e) {
+				dispatchObjectMapChange(e);
 			}
 
-			public void mapOwnerModified( MapManager.Event e )
-			{
-				dispatchObjectMapChange( e );
+			public void mapOwnerModified(MapManager.Event e) {
+				dispatchObjectMapChange(e);
 			}
 		};
 	}
-	
-//	public void addDynamic( Object source, Object dynamic )
-//	{
-//		boolean result = dynamicSet.add( dynamic );
-//		if( source != null && result ) {
-//			dispatchObjectMapChange( MapManger.Event e );
-//		}
-//	}
-//
-//	public void removeDynamic( Object source, Object dynamic )
-//	{
-//		boolean result = dynamicSet.remove( dynamic );
-//		if( source != null && result ) {
-//			dispatchObjectMapChange( MapManger.Event e );
-//		}
-//	}
-	
-	public void dispose()
-	{
-		clear( null );
+
+	public void dispose() {
+		clear(null);
 		super.dispose();
 	}
 
@@ -120,9 +89,8 @@ implements EventManager.Processor
 	 *
 	 *  @see	List#get( int )
 	 */
-	public SessionObject get( int index )
-	{
-		return (SessionObject) collObjects.get( index );
+	public SessionObject get(int index) {
+		return collObjects.get(index);
 	}
 
 	/**
@@ -134,9 +102,8 @@ implements EventManager.Processor
 	 *			the elements (session objects) reference of course
 	 *			the same objects.
 	 */
-	public List getAll()
-	{
-		return new ArrayList( collObjects );
+	public List<SessionObject> getAll() {
+		return new ArrayList<SessionObject>(collObjects);
 	}
 
 	/**
@@ -152,12 +119,11 @@ implements EventManager.Processor
 	 *  @see	SessionCollection.Event#ACTION_ADDED
 	 *  @see	java.util.Collection#add( Object )
 	 */
-	public void add( Object source, SessionObject so )
-	{
-		collObjects.add( so );
-		so.getMap().addListener( objectListener );
-		if( source != null ) {
-			dispatchCollectionChange( source, Collections.singletonList( so ), Event.ACTION_ADDED );
+	public void add(Object source, SessionObject so) {
+		collObjects.add(so);
+		so.getMap().addListener(objectListener);
+		if (source != null) {
+			dispatchCollectionChange(source, Collections.singletonList(so), Event.ACTION_ADDED);
 		}
 	}
 
@@ -174,12 +140,11 @@ implements EventManager.Processor
 	 *  @see	SessionCollection.Event#ACTION_ADDED
 	 *  @see	java.util.Collection#add( Object )
 	 */
-	public void add( Object source, int idx, SessionObject so )
-	{
-		collObjects.add( idx, so );
-		so.getMap().addListener( objectListener );
-		if( source != null ) {
-			dispatchCollectionChange( source, Collections.singletonList( so ), Event.ACTION_ADDED );
+	public void add(Object source, int idx, SessionObject so) {
+		collObjects.add(idx, so);
+		so.getMap().addListener(objectListener);
+		if (source != null) {
+			dispatchCollectionChange(source, Collections.singletonList(so), Event.ACTION_ADDED);
 		}
 	}
 
@@ -197,16 +162,14 @@ implements EventManager.Processor
 	 *
 	 *  @see	SessionCollection.Event#COLLECTION_CHANGED
 	 *  @see	SessionCollection.Event#ACTION_ADDED
-	 *  @see	java.util.Collection#addAll( Collection )
 	 */
-	public boolean addAll( Object source, List c )
-	{
-		final boolean result = collObjects.addAll( c );
-		if( result ) {
-			for( int i = 0; i < c.size(); i++ ) {
-				((SessionObject) c.get( i )).getMap().addListener( objectListener );
+	public boolean addAll(Object source, List<? extends SessionObject> c) {
+		final boolean result = collObjects.addAll(c);
+		if (result) {
+			for (SessionObject aC : c) {
+				aC.getMap().addListener(objectListener);
 			}
-			if( source != null ) dispatchCollectionChange( source, c, Event.ACTION_ADDED );
+			if (source != null) dispatchCollectionChange(source, c, Event.ACTION_ADDED);
 		}
 		return result;
 	}
@@ -252,14 +215,12 @@ implements EventManager.Processor
 	 *
 	 *  @see	SessionCollection.Event#COLLECTION_CHANGED
 	 *  @see	SessionCollection.Event#ACTION_REMOVED
-	 *  @see	java.util.Collection#removeAll( Collection )
 	 */
-	public boolean removeAll( Object source, List c )
-	{
-		boolean result = collObjects.removeAll( c );
+	public boolean removeAll(Object source, List<SessionObject> c) {
+		boolean result = collObjects.removeAll(c);
 		if( result ) {
-			for( int i = 0; i < c.size(); i++ ) {
-				((SessionObject) c.get( i )).getMap().removeListener( objectListener );
+			for (Object aC : c) {
+				((SessionObject) aC).getMap().removeListener(objectListener);
 			}
 			if( source != null ) dispatchCollectionChange( source, c, Event.ACTION_REMOVED );
 		}
@@ -329,15 +290,14 @@ implements EventManager.Processor
 	 *  @see	SessionCollection.Event#ACTION_REMOVED
 	 *  @see	java.util.Collection#clear()
 	 */
-	public void clear( Object source )
-	{
-		if( !isEmpty() ) {
-			final List c = (source == null) ? null : getAll();
-			for( int i = 0; i < collObjects.size(); i++ ) {
-				((SessionObject) collObjects.get( i )).getMap().removeListener( objectListener );
+	public void clear(Object source) {
+		if (!isEmpty()) {
+			final List<SessionObject> c = (source == null) ? null : getAll();
+			for (SessionObject collObject : collObjects) {
+				collObject.getMap().removeListener(objectListener);
 			}
 			collObjects.clear();
-			if( source != null ) dispatchCollectionChange( source, c, Event.ACTION_REMOVED );
+			if (source != null) dispatchCollectionChange(source, c, Event.ACTION_REMOVED);
 		}
 	}
 
@@ -369,18 +329,17 @@ implements EventManager.Processor
 	 *			<code>args[0]</code> contains the next index of
 	 *			iterative calling of this method.
 	 */
-	public static String createUniqueName( MessageFormat ptrn, Object[] args, List theseNot )
-	{
-		final StringBuffer	strBuf	= new StringBuffer();
-		int					i		= ((Number) args[ 0 ]).intValue();
-		String				name;
-		
+	public static String createUniqueName(MessageFormat ptrn, Object[] args, List<SessionObject> theseNot) {
+		final StringBuffer strBuf = new StringBuffer();
+		int i = ((Number) args[0]).intValue();
+		String name;
+
 		do {
-			strBuf.setLength( 0 );
-			name		= ptrn.format( args, strBuf, null ).toString();
-			args[ 0 ]	= new Integer( ++i );
-		} while( findByName( theseNot, name ) != null );
-		
+			strBuf.setLength(0);
+			name = ptrn.format(args, strBuf, null).toString();
+			args[0] = ++i;
+		} while (findByName(theseNot, name) != null);
+
 		return name;
 	}
 
@@ -402,13 +361,9 @@ implements EventManager.Processor
 		return findByName( collObjects, name );
 	}
 
-	public static SessionObject findByName( List coll, String name )
-	{
-		SessionObject	so;
-	
-		for( int i = 0; i < coll.size(); i++ ) {
-			so = (SessionObject) coll.get( i );
-			if( so.getName().equalsIgnoreCase( name )) return so;
+	public static SessionObject findByName(List<SessionObject> coll, String name) {
+		for (SessionObject so : coll) {
+			if (so.getName().equalsIgnoreCase(name)) return so;
 		}
 		return null;
 	}
@@ -475,7 +430,7 @@ implements EventManager.Processor
 	}
 
 	// utility function to create and dispatch a SessionObjectCollectionEvent
-	protected void dispatchCollectionChange( Object source, List affected, int type )
+	protected void dispatchCollectionChange( Object source, List<? extends SessionObject> affected, int type )
 	{
 		if( elm != null ) {
 			final Event e2 = new Event( source, System.currentTimeMillis(), affected, type );
@@ -540,47 +495,41 @@ implements EventManager.Processor
 		public static final int ACTION_REMOVED		= 1;
 		public static final int ACTION_CHANGED		= 2;
 
-		private final List	affectedColl;
-		private final int				affectedType;
-		private final Set				affectedSet;
-		private final Object			affectedParam;
+		private final List<Object> 	affectedColl;
+		private final int			affectedType;
+		private final Set<?> 		affectedSet;
+		private final Object		affectedParam;
 
 		/**
 		 *  Constructs a new <code>SessionObjectCollectionEvent</code>.
 		 *
 		 *  @param  source		who originated the action / event
-		 *  @param  ID			one of <code>CHANGED</code>, <code>TRANSFORMED</code>
-		 *						or <code>SELECTED</code>.
-		 *  @param  when		system time when the event occured
-		 *  @param  actionID	unused, must be zero at the moment
-		 *  @param  actionObj	currently unused (provide null)
+		 *  @param  when		system time when the event occurred
 		 */
-		protected Event( Object source, long when, List affectedColl, int type )
-		{
-			super( source, COLLECTION_CHANGED, when );
-		
-			this.affectedColl	= new ArrayList( affectedColl );
-			this.affectedType	= type;
-			this.affectedParam	= null;
-			this.affectedSet	= EMPTY_SET;
+		protected Event(Object source, long when, List<? extends SessionObject> affectedColl, int type) {
+			super(source, COLLECTION_CHANGED, when);
+
+			this.affectedColl 	= new ArrayList<Object>(affectedColl);
+			this.affectedType 	= type;
+			this.affectedParam 	= null;
+			this.affectedSet 	= EMPTY_SET;
 		}
-		
-		protected Event( Event superEvent, List affectedColl )
-		{
-			super( superEvent.getSource(), superEvent.getID(), superEvent.getWhen() );
-			
-			this.affectedColl	= new ArrayList( affectedColl );
-			this.affectedType	= superEvent.getModificationType();
-			this.affectedParam	= getModificationParam();
-			this.affectedSet	= new HashSet( superEvent.affectedSet );
+
+		protected Event(Event superEvent, List<Object> affectedColl) {
+			super(superEvent.getSource(), superEvent.getID(), superEvent.getWhen());
+
+			this.affectedColl 	= new ArrayList<Object>(affectedColl);
+			this.affectedType 	= superEvent.getModificationType();
+			this.affectedParam 	= getModificationParam();
+			this.affectedSet 	= new HashSet<Object>(superEvent.affectedSet);
 		}
 		
 		protected Event( Object source, long when, MapManager.Event e )
 		{
 			super( source, e.getID() == MapManager.Event.MAP_CHANGED ? MAP_CHANGED : OBJECT_CHANGED, when );
 
-			this.affectedColl	= new ArrayList( 1 );
-			this.affectedColl.add( e.getOwner() );
+			this.affectedColl = new ArrayList<Object>(1);
+			this.affectedColl.add(e.getOwner());
 
 			if( getID() == MAP_CHANGED ) {
 				this.affectedType	= ACTION_CHANGED;
@@ -593,9 +542,9 @@ implements EventManager.Processor
 			}
 		}
 
-		public List getCollection()
+		public List<Object> getCollection()
 		{
-			return new ArrayList( affectedColl );
+			return new ArrayList<Object>( affectedColl );
 		}
 
 		public boolean collectionContains( SessionObject so )
@@ -603,23 +552,20 @@ implements EventManager.Processor
 			return affectedColl.contains( so );
 		}
 
-		public boolean collectionContainsAny( List coll )
-		{
-			for( int i = 0; i < coll.size(); i++ ) {
-				if( affectedColl.contains( coll.get( i ))) return true;
+		public boolean collectionContainsAny(List<Object> coll) {
+			for (Object aColl : coll) {
+				if (affectedColl.contains(aColl)) return true;
 			}
 			return false;
 		}
 
-		public boolean setContains( String key )
-		{
-			return( affectedSet.contains( key ));
+		public boolean setContains(String key) {
+			return (affectedSet.contains(key));
 		}
 
-		public boolean setContainsAny( List coll )
-		{
-			for( int i = 0; i < coll.size(); i++ ) {
-				if( affectedSet.contains( coll.get( i ))) return true;
+		public boolean setContainsAny(List<Object> coll) {
+			for (Object aColl : coll) {
+				if (affectedSet.contains(aColl)) return true;
 			}
 			return false;
 		}
@@ -633,28 +579,16 @@ implements EventManager.Processor
 		{
 			return affectedParam;
 		}
-		
-		public boolean incorporate( BasicEvent oldEvent )
-		{
-//			if( oldEvent instanceof Event &&
-//				this.getSource() == oldEvent.getSource() &&
-//				this.getID() == oldEvent.getID() ) {
-//				
-//				// XXX beware, when the actionID and actionObj
-//				// are used, we have to deal with them here
-//				
-//				return true;
-//
-//			} else return false;
-			return false;	// XXX for now
+
+		public boolean incorporate(BasicEvent oldEvent) {
+			return false;    // XXX for now
 		}
 	}
 
 // -------------------------- inner Listener interface --------------------------
 
 	public interface Listener
-	extends EventListener
-	{
+			extends EventListener {
 		/**
 		 *  Invoked when the collection was changed by
 		 *  adding or removing elements
@@ -662,10 +596,10 @@ implements EventManager.Processor
 		 *  @param  e   the event describing
 		 *				the collection change
 		 */
-		public void sessionCollectionChanged( SessionCollection.Event e );
+		public void sessionCollectionChanged(SessionCollection.Event e);
 
-		public void sessionObjectMapChanged( SessionCollection.Event e );
+		public void sessionObjectMapChanged(SessionCollection.Event e);
 
-		public void sessionObjectChanged( SessionCollection.Event e );
+		public void sessionObjectChanged(SessionCollection.Event e);
 	}
 }

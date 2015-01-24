@@ -2,18 +2,13 @@
  *  Track.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		13-May-05   created from de.sciss.meloncillo.transmitter.AbstractTransmitter
- *		15-Jan-06	audio specific stuff moved to AudioTrack class
  */
 
 package de.sciss.eisenkraut.timeline;
@@ -35,13 +30,9 @@ import de.sciss.timebased.Trail;
  *  It provides the basic mechanism for XML import and
  *  export, it handles all methods except
  *  <code>getTrackEditor</code>.
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
  */
 public abstract class Track
-extends AbstractSessionObject
-{
+		extends AbstractSessionObject {
 	/**
 	 *  Constructs a new empty transmitter.
 	 *  Basic initialization is achieved by
@@ -60,34 +51,34 @@ extends AbstractSessionObject
 		getTrail().clear( source );
 	}
 
-	public static List getInfos( List selectedTracks, List allTracks )
+	public static List<Info> getInfos(List selectedTracks, List allTracks)
 	{
 		Track					track;
 		Trail					trail;
 		Track.Info				ti;
 		int						chan;
-		final Map				mapInfos	= new HashMap();
-		final List				collInfos	= new ArrayList();
-		
-		for( int i = 0; i < allTracks.size(); i++ ) {
-			track	= (Track) allTracks.get( i );
+		final Map<Class<?>, Info> mapInfos	= new HashMap<Class<?>, Info>();
+		final List<Info> collInfos	= new ArrayList<Info>();
+
+		for (Object allTrack : allTracks) {
+			track = (Track) allTrack;
 //System.err.println( "for track "+track.getClass().getName()+" ..." );
-			trail	= track.getTrail();
+			trail = track.getTrail();
 //System.err.println( "... trail = "+trail.getClass().getName() );
-			ti		= (Track.Info) mapInfos.get( trail.getClass() );		
-			if( ti == null ) {
-				ti	= new Info( trail );
-				mapInfos.put( ti.trail.getClass(), ti );
-				collInfos.add( ti );
+			ti = mapInfos.get(trail.getClass());
+			if (ti == null) {
+				ti = new Info(trail);
+				mapInfos.put(ti.trail.getClass(), ti);
+				collInfos.add(ti);
 			}
-			if( track instanceof AudioTrack ) {
-				chan	= ((AudioTrack) track).getChannelIndex();
+			if (track instanceof AudioTrack) {
+				chan = ((AudioTrack) track).getChannelIndex();
 			} else {
-				chan	= 0;
+				chan = 0;
 			}
-			if( selectedTracks.contains( track )) {
-				ti.selected			= true;
-				ti.trackMap[ chan ] = true;
+			if (selectedTracks.contains(track)) {
+				ti.selected = true;
+				ti.trackMap[chan] = true;
 				ti.numTracks++;
 			}
 		}

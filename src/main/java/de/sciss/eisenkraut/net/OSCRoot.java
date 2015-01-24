@@ -2,7 +2,7 @@
  *  OSCRoot.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
@@ -18,7 +18,9 @@
 package de.sciss.eisenkraut.net;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.List;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -27,21 +29,15 @@ import java.util.regex.Pattern;
 import de.sciss.app.AbstractApplication;
 import de.sciss.app.BasicEvent;
 import de.sciss.app.EventManager;
-import de.sciss.net.OSCChannel;
-import de.sciss.net.OSCListener;
-import de.sciss.net.OSCMessage;
-import de.sciss.net.OSCPacket;
-import de.sciss.net.OSCServer;
+import de.sciss.net.*;
 import de.sciss.util.Param;
 import de.sciss.util.ParamSpace;
 
-/**
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 28-Apr-08
- */
 public class OSCRoot
-implements OSCRouter, OSCListener, EventManager.Processor, PreferenceChangeListener
-{
+		implements OSCRouter, OSCListener, EventManager.Processor, PreferenceChangeListener {
+
+	public static final int DEFAULT_PORT	= 0x4549;	// 'E', 'I'
+
 	/**
 	 *	Convenient name for preferences node
 	 */
@@ -84,22 +80,21 @@ implements OSCRouter, OSCListener, EventManager.Processor, PreferenceChangeListe
 //	private int								uniqueID		= 0;
 	
 	private static OSCRoot				instance;
-	
-	public OSCRoot( Preferences prefs, int defaultPort )
+
+	public OSCRoot(Preferences prefs)
 	{
 		super();
-		
-		if( instance != null ) throw new IllegalStateException( "Only one instance allowed" );
+
+		if (instance != null) throw new IllegalStateException("Only one instance allowed");
 		
 		instance		= this;
-	
 		this.prefs		= prefs;
-		
-		defaultPortParam = new Param( defaultPort, ParamSpace.NONE | ParamSpace.ABS );
-		
-		if( prefs.get( KEY_PORT, null ) == null ) {	// create defaults
-			prefs.putBoolean( KEY_ACTIVE, false );
-			prefs.put( KEY_PORT, defaultPortParam.toString() );
+
+		defaultPortParam = new Param(DEFAULT_PORT, ParamSpace.NONE | ParamSpace.ABS);
+
+		if (prefs.get(KEY_PORT, null) == null) {    // create defaults
+			prefs.putBoolean(KEY_ACTIVE, false);
+			prefs.put(KEY_PORT, defaultPortParam.toString());
 		}
 		elm = new EventManager( this );
 		osc = new OSCRouterWrapper( null, this );
@@ -150,12 +145,10 @@ implements OSCRouter, OSCListener, EventManager.Processor, PreferenceChangeListe
 		return instance;
 	}
 
-	public void init()
-	{
-		if( prefs.getBoolean( KEY_ACTIVE, false )) {
-			boot();
-		}
-		prefs.addPreferenceChangeListener( this );
+	/** If the OSC server preferences says the server is active, this will boot the server. */
+	public void init() {
+		if (prefs.getBoolean(KEY_ACTIVE, false)) boot();
+		prefs.addPreferenceChangeListener(this);
 	}
 
 	public Preferences getPreferences()
@@ -171,10 +164,47 @@ implements OSCRouter, OSCListener, EventManager.Processor, PreferenceChangeListe
 	public void boot()
 	{
 		try {
-			boot( prefs.get( KEY_PROTOCOL, OSCChannel.TCP ), (int) Param.fromPrefs( prefs, KEY_PORT, defaultPortParam ).val, true );
+			boot(getOSCProtocol(), getOSCPort(), true);
 		}
 		catch( IOException e1 ) {
 			System.err.println( e1.getClass().getName() + " : " + e1.getLocalizedMessage() );
+		}
+	}
+
+	private String getOSCProtocol() {
+		return prefs.get(KEY_PROTOCOL, OSCChannel.TCP);
+	}
+
+	private int getOSCPort() {
+		return (int) Param.fromPrefs(prefs, KEY_PORT, defaultPortParam).val;
+	}
+
+	/**
+	 * Checks if an instance of Eisenkraut is already running. This only works
+	 * for an active TCP server! In that case, it will submit document-open
+	 * OSC commands to that other application instance and exit the JVM afterwards,
+	 * ensuring that only one application instance exists.
+	 */
+	public void checkExisting(List<String> paths) {
+		final String protocol = getOSCProtocol();
+		if (protocol.equals(OSCChannel.TCP)) {
+			final int port = getOSCPort();
+			try {
+				final OSCTransmitter t = OSCTransmitter.newUsing(protocol, 0, true);
+				try {
+					t.setTarget(new InetSocketAddress("127.0.0.1", port));
+					t.connect();
+					if (paths != null) for (int i = 0; i < paths.size(); i++ ) {
+						t.send(new OSCMessage("/doc", new Object[] {"open", paths.get(i) }));
+					}
+					System.exit(0);
+
+				} finally {
+					t.dispose();
+				}
+			} catch (IOException ex) {
+				// ignore
+			}
 		}
 	}
 
@@ -358,95 +388,81 @@ implements OSCRouter, OSCListener, EventManager.Processor, PreferenceChangeListe
 		failedUnknownPath( rom, rom.getPathIndex() );
 	}
 
-	public static void failedUnknownCmd( RoutedOSCMessage rom )
-	{
-		System.err.println( "FAILURE " +rom.msg.getName() + " " + rom.msg.getArg( 0 ).toString() + " Command not found" );
+	public static void failedUnknownCmd(RoutedOSCMessage rom) {
+		System.err.println("FAILURE " + rom.msg.getName() + " " + rom.msg.getArg(0).toString() + " Command not found");
 	}
 
-	public static void failedUnknownPath( RoutedOSCMessage rom, int pathIdx )
-	{
-		final int		endIdx;
-		int				startIdx = 0;
-		final String	fullCmd	= rom.msg.getName();
-		
-		if( rom.getPathCount() > 0 ) {
-			startIdx += rom.getPathComponent( 0 ).length();
+	public static void failedUnknownPath(RoutedOSCMessage rom, int pathIdx) {
+		final int endIdx;
+		int startIdx = 0;
+		final String fullCmd = rom.msg.getName();
+
+		if (rom.getPathCount() > 0) {
+			startIdx += rom.getPathComponent(0).length();
 		}
-		for( int i = 1; i < pathIdx; i++ ) {
-			startIdx += rom.getPathComponent( i ).length() + 1;
+		for (int i = 1; i < pathIdx; i++) {
+			startIdx += rom.getPathComponent(i).length() + 1;
 		}
-		endIdx	= Math.min( fullCmd.length(),
-			startIdx + (pathIdx < rom.getPathCount() ? rom.getPathComponent( pathIdx ).length() + 1 : 0 ));
-	
-		System.err.println( "FAILURE " +fullCmd.substring( 0, startIdx ) + "!" +
-							fullCmd.substring( startIdx, endIdx ) + "!" +
-							fullCmd.substring( endIdx ) + " Path not found" );
-	}
-	
-	public static void failedArgCount( RoutedOSCMessage rom )
-	{
-		failed( rom.msg, "Illegal argument count (" + rom.msg.getArgCount() + ")" );
-	}
-	
-	public static void failedArgType( RoutedOSCMessage rom, int argIdx )
-	{
-		failed( rom.msg, "Illegal argument type (" + rom.msg.getArg( argIdx ) + ")" );
-	}
-	
-	public static void failedQuery( RoutedOSCMessage rom, String property )
-	{
-		failed( rom.msg, "Illegal query property (" + property + ")" );
-	}
-	
-	public static void failedGet( RoutedOSCMessage rom, String param )
-	{
-		failed( rom.msg, "Illegal get command (" + param + ")" );
-	}
-	
-	public static void failedArgValue( RoutedOSCMessage rom, int argIdx )
-	{
-		failed( rom.msg, "Illegal argument value (" + rom.msg.getArg( argIdx ) + ")" );
-	}
-	
-	public static void failed( RoutedOSCMessage rom, Throwable t )
-	{
-		failed( rom.msg, t.getClass().getName() + " : " + t.getLocalizedMessage() );
+		endIdx = Math.min(fullCmd.length(),
+				startIdx + (pathIdx < rom.getPathCount() ? rom.getPathComponent(pathIdx).length() + 1 : 0));
+
+		System.err.println("FAILURE " + fullCmd.substring(0, startIdx) + "!" +
+				fullCmd.substring(startIdx, endIdx) + "!" +
+				fullCmd.substring(endIdx) + " Path not found");
 	}
 
-	public static void failed( OSCMessage msg, String why )
-	{
-		System.err.println( "FAILURE " + msg.getName() + " " + why );
+	public static void failedArgCount(RoutedOSCMessage rom) {
+		failed(rom.msg, "Illegal argument count (" + rom.msg.getArgCount() + ")");
+	}
+
+	public static void failedArgType(RoutedOSCMessage rom, int argIdx) {
+		failed(rom.msg, "Illegal argument type (" + rom.msg.getArg(argIdx) + ")");
+	}
+
+	public static void failedQuery(RoutedOSCMessage rom, String property) {
+		failed(rom.msg, "Illegal query property (" + property + ")");
+	}
+
+	public static void failedGet(RoutedOSCMessage rom, String param) {
+		failed(rom.msg, "Illegal get command (" + param + ")");
+	}
+
+	public static void failedArgValue(RoutedOSCMessage rom, int argIdx) {
+		failed(rom.msg, "Illegal argument value (" + rom.msg.getArg(argIdx) + ")");
+	}
+
+	public static void failed(RoutedOSCMessage rom, Throwable t) {
+		failed(rom.msg, t.getClass().getName() + " : " + t.getLocalizedMessage());
+	}
+
+	public static void failed(OSCMessage msg, String why) {
+		System.err.println("FAILURE " + msg.getName() + " " + why);
 	}
 
 	// ------------ Runnable interface ------------
 
 	// called from the event thread
 	// when new messages have been queued
-	public void processEvent( BasicEvent e )
-	{
-		osc.oscRoute( (RoutedOSCMessage) e );
+	public void processEvent(BasicEvent e) {
+		osc.oscRoute((RoutedOSCMessage) e);
 	}
 
 	// ------------ OSCRouter interface ------------
 
-	public String oscGetPathComponent()
-	{
+	public String oscGetPathComponent() {
 		return null;
 	}
-	
-	public void oscRoute( RoutedOSCMessage rom )
-	{
-		osc.oscRoute( rom );
-	}
-	
-	public void oscAddRouter( OSCRouter subRouter )
-	{
-		osc.oscAddRouter( subRouter );
+
+	public void oscRoute(RoutedOSCMessage rom) {
+		osc.oscRoute(rom);
 	}
 
-	public void oscRemoveRouter( OSCRouter subRouter )
-	{
-		osc.oscRemoveRouter( subRouter );
+	public void oscAddRouter(OSCRouter subRouter) {
+		osc.oscAddRouter(subRouter);
+	}
+
+	public void oscRemoveRouter(OSCRouter subRouter) {
+		osc.oscRemoveRouter(subRouter);
 	}
 	
 	/*
@@ -474,48 +490,17 @@ implements OSCRouter, OSCListener, EventManager.Processor, PreferenceChangeListe
 		}
 	}
 
-//	public void routeMessage( RoutedOSCMessage rom )
-//	{
-//		final String cmd = rom.getPathComponent();
-//	
-//		try {
-//			if( cmd.equals( OSC_SYNC )) {
-//				send( new OSCMessage( "/synced", new Object[] { rom.msg.getArg( 0 )}), rom.addr );
-//			} else if( cmd.equals( OSC_DUMP )) {
-//				cmdDumpOSC( rom );
-//			} else {
-//				failedUnknownCmd( rom );
-//			}
-//		}
-//		catch( IndexOutOfBoundsException e1 ) {
-//			failedArgCount( rom );
-//		}
-//		catch( IOException e1 ) {
-//			failed( rom, e1 );
-//		}
-//	}
-
 	// ------------ OSCListener interface ------------
-	
-	public void messageReceived( OSCMessage msg, SocketAddress addr, long when )
-	{
-		final String[]			path	= oscPathPtrn.split( msg.getName() );
-//		final List	r;
-		
-		if( path.length < 2 ) {
-			failedUnknownPath( msg );
+
+	public void messageReceived(OSCMessage msg, SocketAddress addr, long when) {
+		final String[] path = oscPathPtrn.split(msg.getName());
+
+		if (path.length < 2) {
+			failedUnknownPath(msg);
 			return;
 		}
 
-//		synchronized( mapRouters ) {
-//			r = (java.util.List) mapRouters.get( path[ 1 ]);
-//		}
-		
-//		if( r != null ) {
-			elm.dispatchEvent( new RoutedOSCMessage( msg, addr, when, this, path, 0 ));
-//		} else {
-//			failedUnknownCmd( msg );
-//		}
+		elm.dispatchEvent(new RoutedOSCMessage(msg, addr, when, this, path, 0));
 	}
 	
 // ------- PreferenceChangeListener interface -------
@@ -525,7 +510,7 @@ implements OSCRouter, OSCListener, EventManager.Processor, PreferenceChangeListe
 		final String	key = e.getKey();
 
 		if( key.equals( KEY_ACTIVE )) {
-			if( Boolean.valueOf( e.getNewValue() ).booleanValue() ) {
+			if (Boolean.valueOf(e.getNewValue()).booleanValue()) {
 				if( !isRunning() ) {
 					boot();
 				}
@@ -536,65 +521,4 @@ implements OSCRouter, OSCListener, EventManager.Processor, PreferenceChangeListe
 			}
 		}
  	}
-
-//	private static void printError( String name, Throwable t )
-//	{
-//		System.err.print( name + " : " );
-//		t.printStackTrace( System.err );
-//	}
-
-	// ------------- internal classes -------------
-	
-//	private class SyncResponder
-//	implements OSCListener
-//	{
-//		private OSCMessage				doneMsg	= null;
-//		private final OSCResponderNode	resp1;
-//		private final OSCResponderNode	resp2;
-//		private final int				argIdx;
-//		private final Object			argMatch;
-//		
-//		private SyncResponder( InetSocketAddress addr, String doneCmdName, String failCmdName, int argIdx, Object argMatch )
-//		throws IOException
-//		{
-//			this.argIdx		= argIdx;
-//			this.argMatch	= argMatch;
-//			resp1			= new OSCResponderNode( addr, doneCmdName, this );
-//			resp2			= failCmdName == null ? null : new OSCResponderNode( addr, failCmdName, this );
-//		}
-//		
-//		private void add()
-//		throws IOException
-//		{
-//			resp1.add();
-//			if( resp2 != null ) resp2.add();
-//		}
-//
-//		private void remove()
-//		{
-//			try {
-//				resp1.remove();
-//			}
-//			catch( IOException e1 ) {
-//				printError( "SyncResponder.remove", e1 );
-//			}
-//			try {
-//				if( resp2 != null ) resp2.remove();
-//			}
-//			catch( IOException e1 ) {
-//				printError( "SyncResponder.remove", e1 );
-//			}
-//		}
-//		
-//		public void messageReceived( OSCMessage msg, SocketAddress sender, long time )
-//		{
-//			if( (msg.getArgCount() > argIdx) && (msg.getArg( argIdx ).equals( argMatch ))) {
-//				doneMsg	= msg;
-//				remove();
-//				synchronized( this ) {
-//					this.notifyAll();
-//				}
-//			}
-//		}
-//	}
 }

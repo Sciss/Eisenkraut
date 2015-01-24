@@ -2,19 +2,13 @@
  *  RenderContext.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		12-Jul-05	created from de.sciss.meloncillo.plugin.PlugInContext
- *		31-Aug-05	clipboard contents key
- *		08-Sep-05	rate is floating point precision
  */
 
 package de.sciss.eisenkraut.render;
@@ -35,12 +29,8 @@ import de.sciss.io.Span;
  *	the plug-in and provides a mechanism for
  *	communication through setting of map
  *	entries.
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
  */
-public class RenderContext
-{
+public class RenderContext {
 	/**
 	 *  This variable is merely
 	 *  for free use by the plugin.
@@ -96,31 +86,30 @@ public class RenderContext
 
 	private final RenderHost		host;
 	private final RenderConsumer	consumer;
-	private final List				trackInfos;
+	private final List trackInfo;
 	private final Span				time;
 	private final double			sourceRate;
 	private int						sourceBlockSize;
 	
-	private final Map		options			= new HashMap();
-	private final Set		modifiedOptions = new HashSet();
+	private final Map<Object, Object> options			= new HashMap<Object, Object>();
+	private final Set<Object> modifiedOptions = new HashSet<Object>();
 	
 	/**
 	 *  Constructs a new RenderContext.
 	 *
+	 *	Warning: the collections are <b>not</b> copied, hence
+	 *				the caller is responsible for ensuring their
+	 *				constancy.
+ 	 *
 	 *  @param  host				the object responsible for hosting
 	 *								the rendering process
 	 *  @param  sourceRate			the source sense data rate
-	 *
-	 *	@warning	the collections are <b>not</b> copied, hence
-	 *				the caller is responsible for ensuring their
-	 *				constancy.
 	 */
-	public RenderContext( RenderHost host, RenderConsumer consumer, List trackInfos,
-						  Span time, double sourceRate )
-	{
-		this.host			= host;
+	public RenderContext(RenderHost host, RenderConsumer consumer, List trackInfo,
+						 Span time, double sourceRate) {
+		this.host = host;
 		this.consumer		= consumer;
-		this.trackInfos		= trackInfos;
+		this.trackInfo 		= trackInfo;
 		this.time			= time;
 		this.sourceRate		= sourceRate;
 	}
@@ -146,9 +135,9 @@ public class RenderContext
 
 	/**
 	 */
-	public List getTrackInfos()
+	public List getTrackInfo()
 	{
-		return trackInfos;
+		return trackInfo;
 	}
 
 	/**
@@ -208,10 +197,9 @@ public class RenderContext
 	 *					should "know" what kind of key required what
 	 *					kind of value class
 	 */
-	public void setOption( Object key, Object value )
-	{
-		options.put( key, value );
-		modifiedOptions.add( key );
+	public void setOption(Object key, Object value) {
+		options.put(key, value);
+		modifiedOptions.add(key);
 	}
 	
 	/**
@@ -222,10 +210,9 @@ public class RenderContext
 	 *					are copied to the context options and
 	 *					appear in the modified options list
 	 */
-	public void setOptions( Map map )
-	{
-		options.putAll( map );
-		modifiedOptions.addAll( map.keySet() );
+	public void setOptions(Map<Object, Object> map) {
+		options.putAll(map);
+		modifiedOptions.addAll(map.keySet());
 	}
 	
 	/**
@@ -234,9 +221,8 @@ public class RenderContext
 	 *	@return		the value corresponding to the key
 	 *				or null if the option wasn't set.
 	 */
-	public Object getOption( Object key )
-	{
-		return options.get( key );
+	public Object getOption(Object key) {
+		return options.get(key);
 	}
 	
 	/**
@@ -251,11 +237,10 @@ public class RenderContext
 	 *	@return	a set of keys which were modified
 	 *			since the last invocation of this method
 	 */
-	public Set getModifiedOptions()
-	{
-		Set result = new HashSet( modifiedOptions );
+	public Set<Object> getModifiedOptions() {
+		Set<Object> result = new HashSet<Object>(modifiedOptions);
 		modifiedOptions.clear();
-	
+
 		return result;
 	}
 }

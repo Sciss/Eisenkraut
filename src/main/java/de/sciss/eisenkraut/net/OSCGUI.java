@@ -2,18 +2,13 @@
  *  OSCGUI.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		10-Sep-06	created
- *		07-May-08	removing necessity to compile with SwingOSC (just using reflection)
  */
 
 package de.sciss.eisenkraut.net;
@@ -52,16 +47,12 @@ import de.sciss.util.DynamicURLClassLoader;
 
 /**
  * 	A basic management for custom menus via OSC and access to SwingOSC
- * 
- *	@author		Hanns Holger Rutz
- *	@version	0.71, 13-Jul-09
  */
 public class OSCGUI
-implements OSCRouter, Disposable
-{
+		implements OSCRouter, Disposable {
+
 	private static final String		OSC_GUI			= "gui";
-//	private static final String		OSC_ID			= "id";
-	
+
 	private static final int		SWING_PORT		= 12345;
 	
 	public static final String		KEY_SWINGAPP	= "swingapp";

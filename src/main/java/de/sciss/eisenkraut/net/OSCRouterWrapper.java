@@ -2,17 +2,13 @@
  *  OSCRouterWrapper.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		05-May-06	created
  */
  
 package de.sciss.eisenkraut.net;
@@ -23,28 +19,20 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 05-May-06
- */
 public class OSCRouterWrapper
-implements OSCRouter
-{
+		implements OSCRouter {
+
 	private final OSCRouter	r;
 	private final OSCRouter	superRouter;
 	private final Map		mapSubRouters	= new HashMap();
 	
 	private static final Class[] oscCmdMethodTypes		= { RoutedOSCMessage.class };
 	private static final Class[] oscGetMethodTypes		= { RoutedOSCMessage.class };
-	
-	/**
-	 *	@synchronization	call only in event thread
-	 */
-	public OSCRouterWrapper( OSCRouter superRouter, OSCRouter thisRouter )
-	{
+
+	public OSCRouterWrapper(OSCRouter superRouter, OSCRouter thisRouter) {
 		r = thisRouter;
-		this.superRouter	= superRouter;
-		if( superRouter != null ) superRouter.oscAddRouter( r );
+		this.superRouter = superRouter;
+		if (superRouter != null) superRouter.oscAddRouter(r);
 	}
 	
 	public void remove()

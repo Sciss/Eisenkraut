@@ -2,19 +2,13 @@
  *  PrefCacheManager.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *		16-Jul-05	created
- *		23-Sep-05	fixes a problem of cache folder not automatically been generated
- *		28-Jul-07	refactored from de.sciss.eisenkraut.io.CacheManager
  */
 
 package de.sciss.eisenkraut.io;

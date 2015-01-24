@@ -2,18 +2,13 @@
  *  DocumentHandler.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2014 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2015 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *      21-May-05	created
- *		20-Jan-06	implements OSCRouter
  */
 
 package de.sciss.eisenkraut.session;
@@ -29,14 +24,10 @@ import de.sciss.eisenkraut.net.OSCRouter;
 import de.sciss.eisenkraut.net.OSCRouterWrapper;
 import de.sciss.eisenkraut.net.RoutedOSCMessage;
 
-/**
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
- */
 public class DocumentHandler
-extends de.sciss.app.AbstractDocumentHandler
-implements OSCRouter
-{
+		extends de.sciss.app.AbstractDocumentHandler
+		implements OSCRouter {
+
 	private static final String OSC_DOC			= "doc";
 	// sub level
 	private static final String OSC_ACTIVE		= "active";
@@ -44,31 +35,29 @@ implements OSCRouter
 	private static final String OSC_ID			= "id";
 
 	// key = Integer( nodeID ) ; value = Session
-	private final Map	mapIDs		= new HashMap();
+	private final Map<Integer, Document> mapIDs;
 	
 	private final OSCRouterWrapper	osc;
 	private final Main				root;
 
-	public DocumentHandler( Main root )
-	{
-		super( true );	// we are multi-document aware
-		this.root	= root;
-		this.osc	= new OSCRouterWrapper( OSCRoot.getInstance(), this );
+	public DocumentHandler(Main root) {
+		super(true);    // we are multi-document aware
+		this.root = root;
+		this.osc = new OSCRouterWrapper(OSCRoot.getInstance(), this);
+		mapIDs = new HashMap<Integer, Document>();
 	}
-	
-	public void addDocument( Object source, Document doc )
-	{
-		synchronized( this.sync ) {
-			super.addDocument( source, doc );
-			this.mapIDs.put( new Integer( ((Session) doc).getNodeID() ), doc );
+
+	public void addDocument(Object source, Document doc) {
+		synchronized (this.sync) {
+			super.addDocument(source, doc);
+			this.mapIDs.put(((Session) doc).getNodeID(), doc);
 		}
 	}
 
-	public void removeDocument( Object source, Document doc )
-	{
-		synchronized( this.sync ) {
-			this.mapIDs.remove( new Integer( ((Session) doc).getNodeID() ));
-			super.removeDocument( source, doc );
+	public void removeDocument(Object source, Document doc) {
+		synchronized (this.sync) {
+			this.mapIDs.remove(((Session) doc).getNodeID());
+			super.removeDocument(source, doc);
 		}
 	}
 
@@ -88,32 +77,31 @@ implements OSCRouter
 		}
 	}
 	
-	private void oscRouteNext( RoutedOSCMessage rom )
-	{
+	private void oscRouteNext( RoutedOSCMessage rom ) throws NumberFormatException {
 		final String	subPath;
 		final Document	doc;
 		
 		try {
 			subPath = rom.getPathComponent();
 
-			if( subPath.equals( OSC_ACTIVE )) {
+			if (subPath.equals(OSC_ACTIVE)) {
 				doc = getActiveDocument();
-			} else if( subPath.equals( OSC_ID )) {
+			} else if (subPath.equals(OSC_ID)) {
 				rom = rom.next();
-				final Integer id = new Integer( rom.getPathComponent() );
-				synchronized( this.sync ) {
-					doc = (Document) this.mapIDs.get( id );
+				final Integer id = new Integer(rom.getPathComponent());
+				synchronized (this.sync) {
+					doc = this.mapIDs.get(id);
 				}
-			} else if( subPath.equals( OSC_INDEX )) {
+			} else if (subPath.equals(OSC_INDEX)) {
 				rom = rom.next();
-				final int idx = Integer.parseInt( rom.getPathComponent() );
-				if( getDocumentCount() > idx ) {
-					doc = getDocument( idx );
+				final int idx = Integer.parseInt(rom.getPathComponent());
+				if (getDocumentCount() > idx) {
+					doc = getDocument(idx);
 				} else {
 					doc = null;
 				}
 			} else {
-				OSCRoot.failedUnknownPath( rom );
+				OSCRoot.failedUnknownPath(rom);
 				return;
 			}
 
@@ -128,42 +116,29 @@ implements OSCRouter
 			}
 			
 			((OSCRouter) doc).oscRoute( rom );
+		} catch (IndexOutOfBoundsException e1) {
+			OSCRoot.failedUnknownPath(rom);
 		}
-		catch( IndexOutOfBoundsException e1 ) {
-			OSCRoot.failedUnknownPath( rom );
-		}
-		catch( NumberFormatException e1 ) {
-			OSCRoot.failedUnknownPath( rom );
-		}
-	}
-	
-	public void oscAddRouter( OSCRouter subRouter )
-	{
-		osc.oscAddRouter( subRouter );
 	}
 
-	public void oscRemoveRouter( OSCRouter subRouter )
-	{
-		osc.oscRemoveRouter( subRouter );
-	}
-	
-	public Object oscQuery_count()
-	{
-		return new Integer( getDocumentCount() );
+	public void oscAddRouter(OSCRouter subRouter) {
+		osc.oscAddRouter(subRouter);
 	}
 
-	public void oscCmd_open( RoutedOSCMessage rom )
-	{
+	public void oscRemoveRouter(OSCRouter subRouter) {
+		osc.oscRemoveRouter(subRouter);
+	}
+
+	public Object oscQuery_count() {
+		return getDocumentCount();
+	}
+
+	public void oscCmd_open(RoutedOSCMessage rom) {
 		try {
-			final String path = rom.msg.getArg( 1 ).toString();
-			root.getMenuFactory().openDocument( new File( path ));
+			final String path = rom.msg.getArg(1).toString();
+			root.getMenuFactory().openDocument(new File(path));
+		} catch (IndexOutOfBoundsException e1) {
+			OSCRoot.failedArgCount(rom);
 		}
-		catch( IndexOutOfBoundsException e1 ) {
-			OSCRoot.failedArgCount( rom );
-			return;
-		}
-//		catch( ClassCastException e1 ) {
-//			OSCRoot.failedArgType( rom, 1 );
-//		}
 	}
 }
