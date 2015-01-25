@@ -64,10 +64,11 @@ import de.sciss.io.Span;
  *				are slightly wrong on Linux with platinum look+feel
  *				because the scroll gadgets have different positions.
  */
+@SuppressWarnings("serial")
 public class TimelineScroll
-extends JScrollBar
-implements AdjustmentListener, TimelineListener, DynamicListening, PreferenceChangeListener
-{
+		extends JScrollBar
+		implements AdjustmentListener, TimelineListener, DynamicListening, PreferenceChangeListener {
+
 	public static final int 	TYPE_UNKNOWN		= 0;
 	public static final int 	TYPE_DRAG			= 1;
 	public static final int 	TYPE_TRANSPORT		= 2;

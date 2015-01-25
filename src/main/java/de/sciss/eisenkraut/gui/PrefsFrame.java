@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.prefs.BackingStoreException;
@@ -119,9 +118,9 @@ implements SwingConstants
 	protected final Preferences		abPrefs;
 	
 	// audio box config
-	protected final List			collAudioBoxConfigs	= new ArrayList();
-	private final Set				setAudioBoxIDs		= new HashSet();
-	protected final Set				setAudioBoxNames	= new HashSet();
+	protected final List<AudioBoxConfig> collAudioBoxConfigs	= new ArrayList<AudioBoxConfig>();
+	private final Set<String> setAudioBoxIDs		= new HashSet<String>();
+	protected final Set<String> setAudioBoxNames	= new HashSet<String>();
 	protected static final String[]	audioBoxColNames	= { "prefsAudioDevice", "prefsAudioInputChannels", "prefsAudioOutputChannels", "prefsAudioDeviceActive" };
 	
 	private static final StringItem[] RATE_ITEMS = {
@@ -153,7 +152,7 @@ implements SwingConstants
 		final String					txtWarnLookAndFeel	= getResourceString( "warnLookAndFeelUpdate" );
 
 		final TreeExpanderButton		ggTreeAudio;
-		final List						collAudioAdvanced;
+		final List<JComponent> collAudioAdvanced;
 		SpringPanel						tab;
 		PrefParamField					ggParam;
 		BasicPathField					ggPath;
@@ -231,9 +230,9 @@ implements SwingConstants
 		tab.gridAdd( lb, 0, row );
 		ggChoice = new PrefComboBox();
 		lafInfos = UIManager.getInstalledLookAndFeels();
-        for( int i = 0; i < lafInfos.length; i++ ) {
-            ggChoice.addItem( new StringItem( lafInfos[i].getClassName(), lafInfos[i].getName() ));
-        }
+		for (UIManager.LookAndFeelInfo lafInfo : lafInfos) {
+			ggChoice.addItem(new StringItem(lafInfo.getClassName(), lafInfo.getName()));
+		}
 		ggChoice.setPreferences( prefs, key );
 		ggChoice.addActionListener( new WarnPrefsChange( ggChoice, ggChoice, haveWarned, txtWarnLookAndFeel, title ));
 		
@@ -344,8 +343,8 @@ implements SwingConstants
 		ggParam  = new PrefParamField();
 		ggParam.addSpace( ParamSpace.spcFreqHertz );
 		ggCombo = new JComboBox();
-		for( int i = 0; i < RATE_ITEMS.length; i++ ) {
-			ggCombo.addItem( RATE_ITEMS[ i ]);
+		for (StringItem RATE_ITEM : RATE_ITEMS) {
+			ggCombo.addItem(RATE_ITEM);
 		}
 		ggParam.setBorder( new ComboBoxEditorBorder() );
 		ggCombo.setEditor( ggParam );
@@ -364,7 +363,7 @@ implements SwingConstants
 		b.add( new JLabel( getResourceString( "prefsAdvanced" )));
 		tab.gridAdd( b, 0, row );
 
-		collAudioAdvanced = new ArrayList();
+		collAudioAdvanced = new ArrayList<JComponent>();
 
 		row++;
 		key2	= "prefsSuperColliderOSC";
@@ -471,13 +470,13 @@ final SpringPanel tabAudio = tab;
 				for( int i = 0; i < collAudioAdvanced.size(); ) {
 					d2 = 0;
 					for( int j = i + 2; i < j; i++ ) {
-						d2 = Math.max( d2, ((JComponent) collAudioAdvanced.get( i )).getPreferredSize().height );
+						d2 = Math.max( d2, collAudioAdvanced.get( i ).getPreferredSize().height );
 					}
 					delta = delta + d2 + 2;
 				}
 
-				for( int i = 0; i < collAudioAdvanced.size(); i++ ) {
-					((JComponent) collAudioAdvanced.get( i )).setVisible( visible );
+				for (JComponent aCollAudioAdvanced : collAudioAdvanced) {
+					aCollAudioAdvanced.setVisible(visible);
 				}
 				tabAudio.makeCompactGrid();
 				getWindow().setSize( width, height + (visible ? delta : -delta ));
@@ -693,7 +692,7 @@ final SpringPanel tabAudio = tab;
 				
 					try {
 						for( int i = modelIndices.length - 1; i >= 0; i-- ) {
-							cfg = (AudioBoxConfig) collAudioBoxConfigs.get( modelIndices[ i ]);
+							cfg = collAudioBoxConfigs.get( modelIndices[ i ]);
 							removeAudioBox( cfg );
 						}
 					}
@@ -710,7 +709,7 @@ final SpringPanel tabAudio = tab;
 		ggAssistent.addActionListener( new ActionListener() {
 			public void actionPerformed( ActionEvent e )
 			{
-				showAudioBoxAssistent();
+				showAudioBoxAssistant();
 			}
 		});
 ggAssistent.setEnabled( false );  // XXX ;-(  sadly we didn't get the text output changes to scsynth yet
@@ -739,14 +738,12 @@ ggAssistent.setEnabled( false );  // XXX ;-(  sadly we didn't get the text outpu
 		final ControlRoomFrame f = (ControlRoomFrame) AbstractApplication.getApplication().getComponent( Main.COMP_CTRLROOM );
 		if( f != null ) f.refillAudioBoxes();
 	}
-	
-	protected void addAudioBox( AudioBoxConfig cfg )
-//	throws BackingStoreException
-	{
-		collAudioBoxConfigs.add( cfg );
-		cfg.toPrefs( abPrefs.node( cfg.id ));
-		setAudioBoxIDs.add( cfg.id );
-		setAudioBoxNames.add( cfg.name );
+
+	protected void addAudioBox(AudioBoxConfig cfg) {
+		collAudioBoxConfigs.add(cfg);
+		cfg.toPrefs(abPrefs.node(cfg.id));
+		setAudioBoxIDs.add(cfg.id);
+		setAudioBoxNames.add(cfg.name);
 	}
 	
 	protected void removeAudioBox( AudioBoxConfig cfg )
@@ -769,40 +766,11 @@ ggAssistent.setEnabled( false );  // XXX ;-(  sadly we didn't get the text outpu
 		newCfg.toPrefs( abPrefs.node( newCfg.id ));
 		collAudioBoxConfigs.set( idx, newCfg );
 	}
-	
-//	// XXX chanNums are my guesses, should be checked, list should be extended
-//	private static final Object[] kAudioBoxSizes = {
-//		"Mobile I/O 2882", new Integer(18), new Integer(18),
-//		"Fireface 800", new Integer(0), new Integer(0),
-//		"Fireface 400", new Integer(0), new Integer(0),
-//		"MOTU Traveler", new Integer(0), new Integer(0),
-//		"MOTU 828", new Integer(18), new Integer(18),
-//		"PreSonus FIREBOX", new Integer(0), new Integer(0),
-//		"PreSonus FIREBOX", new Integer(0), new Integer(0),
-//	};
-//	
-//	private AudioBoxConfig guessAudioBoxChannels( AudioBoxConfig cfg )
-//	{
-//		int numIns = 8, numOuts = 8;	// sucky default
-//		
-//		for( int i = 0; i < kAudioBoxNames.length; i++ ) {
-//			if( cfg.name.startsWith( kAudioBoxNames[ i ]) {
-//				numIns	= kAudioBoxIns[ i ];
-//				numOuts	= kAudioBoxOuts[ i ];
-//				break;
-//			}
-//		}
-//		return cfg.changeChannels( numIns, numOuts );
-//	}
-	
-	protected void showAudioBoxAssistent()
-	{
+
+	protected void showAudioBoxAssistant() {
 		final String				scsynthPath;
 		final Flag					keepThreadRunning	= new Flag( true );
 		final Flag					threadRunning		= new Flag( true );
-//		final JOptionPane			op;
-//		final JDialog				dlg;
-//		final SpringPanel			pane;
 		final JPanel				pane;
 		final SpringPanel			pane2;
 		final Thread				testThread;
@@ -818,12 +786,12 @@ ggAssistent.setEnabled( false );  // XXX ;-(  sadly we didn't get the text outpu
 		int							row, action;
 		AudioBoxConfig				cfg;
 		
-		final List					collDetected		= Collections.synchronizedList( new ArrayList() );
-		final List 					collAdd				= new ArrayList();
-		final List 					collActivate		= new ArrayList();
-		final List 					collRemove			= new ArrayList();
+		final List<AudioBoxConfig> collDetected	= Collections.synchronizedList( new ArrayList<AudioBoxConfig>() );
+		final List<AudioBoxConfig> collAdd				= new ArrayList<AudioBoxConfig>();
+		final List<AudioBoxConfig> collActivate		= new ArrayList<AudioBoxConfig>();
+		final List<AudioBoxConfig> collRemove			= new ArrayList<AudioBoxConfig>();
 		
-		// this doesn't show up obivously, so we add it manually...
+		// this doesn't show up obviously, so we add it manually...
 		collDetected.add( new AudioBoxConfig( AudioBoxConfig.ID_DEFAULT, "Default", 8, 8, true ));
 		
 		scsynthPath = audioPrefs.get( PrefsUtil.KEY_SUPERCOLLIDERAPP, null );
@@ -874,7 +842,8 @@ ggAssistent.setEnabled( false );  // XXX ;-(  sadly we didn't get the text outpu
 		pane2.gridAdd( ggScroll, 0, row++, 2, 1 );
 		pane2.gridAdd( new JLabel( "Action:", RIGHT ), 0, row );
 		ggComboRemove = new JComboBox( new Object[] { "Ignore", "Make inactive", "Remove from list" });		
-		pane2.gridAdd( ggComboRemove, 1, row++ );
+		pane2.gridAdd( ggComboRemove, 1, row);
+		// row++;
 		pane2.setVisible( false );
 		pane.add( pane2, BorderLayout.CENTER );
 		AbstractWindowHandler.setDeepFont( pane );
@@ -889,23 +858,24 @@ ggAssistent.setEnabled( false );  // XXX ;-(  sadly we didn't get the text outpu
 //				String			name;
 				AudioBoxConfig	cfg3, cfg2;
 
-				for( Iterator iter = collDetected.iterator(); iter.hasNext(); ) {
-					cfg2 = (AudioBoxConfig) iter.next();
-					if( !setAudioBoxNames.contains( cfg2.name )) {
-						collAdd.add( cfg2 );
+				for (AudioBoxConfig aCollDetected1 : collDetected) {
+					cfg2 = aCollDetected1;
+					if (!setAudioBoxNames.contains(cfg2.name)) {
+						collAdd.add(cfg2);
 					} else {
-						cfg3 = boxForName( cfg2.name );
-						if( (cfg3 != null) && !cfg3.active ) collActivate.add( cfg3 );
+						cfg3 = boxForName(cfg2.name);
+						if ((cfg3 != null) && !cfg3.active) collActivate.add(cfg3);
 					}
 				}
-iterRemove:		for( Iterator iter = collAudioBoxConfigs.iterator(); iter.hasNext(); ) {
-					cfg3 = (AudioBoxConfig) iter.next();
-					for( Iterator iter2 = collDetected.iterator(); iter2.hasNext(); ) {
-						cfg2 = (AudioBoxConfig) iter2.next();
-						if( cfg2.name.equals( cfg3.name )) continue iterRemove;
-					}
-					collRemove.add( cfg3 );
-				}
+iterRemove:
+for (AudioBoxConfig collAudioBoxConfig : collAudioBoxConfigs) {
+	cfg3 = collAudioBoxConfig;
+	for (AudioBoxConfig aCollDetected : collDetected) {
+		cfg2 = aCollDetected;
+		if (cfg2.name.equals(cfg3.name)) continue iterRemove;
+	}
+	collRemove.add(cfg3);
+}
 				
 				Collections.sort( collAdd );
 				Collections.sort( collActivate );
@@ -978,7 +948,7 @@ iterRemove:		for( Iterator iter = collAudioBoxConfigs.iterator(); iter.hasNext()
 							try {
 								while( inStream.available() > 0 ) {
 									len = Math.min( inBuf.length, inStream.available() );
-									inStream.read( inBuf, 0, len );
+									inStream.read(inBuf, 0, len);
 									baos.write( inBuf, 0, len );
 								}
 							}
@@ -1041,17 +1011,10 @@ iterRemove:		for( Iterator iter = collAudioBoxConfigs.iterator(); iter.hasNext()
 
 		testThread.start();
 		ggSpinner.setActive( true );
-//		dlg.setVisible( true );		
 
 		final JOptionPane op = new JOptionPane( pane,
 		                                        JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION,
 		                                        new ImageIcon( GUIUtil.class.getResource( "assistent_64x64.png" )));
-//		result = JOptionPane.showOptionDialog( getWindow(), pane,
-//				getResourceString( "prefsAudioDevicesAssistent" ),
-//				JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, 
-//				new ImageIcon( GUIUtil.class.getResource( "assistent_64x64.png" )),
-//				null, null );
-//		dlg = op.createDialog( getWindow(), getResourceString( "prefsAudioDevicesAssistent" ) );
 		result = BasicWindowHandler.showDialog( op, getWindow(), getResourceString( "prefsAudioDevicesAssistent" ));
 
 		synchronized( threadRunning ) {
@@ -1069,47 +1032,47 @@ iterRemove:		for( Iterator iter = collAudioBoxConfigs.iterator(); iter.hasNext()
 			try {
 				action = ggComboAdd.getSelectedIndex();
 				if( action > 0 ) {
-					for( int i = 0; i < collAdd.size(); i++ ) {
-						cfg = (AudioBoxConfig) collAdd.get( i );
-						cfg = cfg.changeID( createUniqueAudioBoxID() );
-						switch( action ) {
-						case 1:
-							addAudioBox( cfg );
-							break;
-						default:
-							assert false : action;
-							break;
+					for (AudioBoxConfig aCollAdd : collAdd) {
+						cfg = aCollAdd;
+						cfg = cfg.changeID(createUniqueAudioBoxID());
+						switch (action) {
+							case 1:
+								addAudioBox(cfg);
+								break;
+							default:
+								assert false : action;
+								break;
 						}
 					}
 				}
 				action = ggComboActivate.getSelectedIndex();
 				if( action > 0 ) {
-					for( int i = 0; i < collActivate.size(); i++ ) {
-						cfg = (AudioBoxConfig) collActivate.get( i );
-						switch( action ) {
-						case 1:
-							changeAudioBoxActivity( cfg, true );
-							break;
-						default:
-							assert false : action;
-							break;
+					for (AudioBoxConfig aCollActivate : collActivate) {
+						cfg = aCollActivate;
+						switch (action) {
+							case 1:
+								changeAudioBoxActivity(cfg, true);
+								break;
+							default:
+								assert false : action;
+								break;
 						}
 					}
 				}
 				action = ggComboRemove.getSelectedIndex();
 				if( action > 0 ) {
-					for( int i = 0; i < collRemove.size(); i++ ) {
-						cfg = (AudioBoxConfig) collRemove.get( i );
-						switch( action ) {
-						case 1:
-							changeAudioBoxActivity( cfg, false );
-							break;
-						case 2:
-							removeAudioBox( cfg );
-							break;
-						default:
-							assert false : action;
-							break;
+					for (AudioBoxConfig aCollRemove : collRemove) {
+						cfg = aCollRemove;
+						switch (action) {
+							case 1:
+								changeAudioBoxActivity(cfg, false);
+								break;
+							case 2:
+								removeAudioBox(cfg);
+								break;
+							default:
+								assert false : action;
+								break;
 						}
 					}
 				}
@@ -1130,41 +1093,35 @@ iterRemove:		for( Iterator iter = collAudioBoxConfigs.iterator(); iter.hasNext()
 		b.add( Box.createVerticalStrut( 8 ));
 		return b;
 	}
-	
-	protected AudioBoxConfig boxForName( String name )
-	{
+
+	protected AudioBoxConfig boxForName(String name) {
 		AudioBoxConfig cfg;
-//System.err.println( "box for name '" + name + "'" );
-		for( Iterator iter = collAudioBoxConfigs.iterator(); iter.hasNext(); ) {
-			cfg = (AudioBoxConfig) iter.next();
-			if( cfg.name.equals( name )) return cfg;
+		for (AudioBoxConfig collAudioBoxConfig : collAudioBoxConfigs) {
+			cfg = collAudioBoxConfig;
+			if (cfg.name.equals(name)) return cfg;
 		}
-//System.err.println( " NO!" );
 		return null;
 	}
 
-	private String createUniqueAudioBoxID()
-	{
+	private String createUniqueAudioBoxID() {
 		String id = "user1";
-		for( int i = 2; setAudioBoxIDs.contains( id ); i++ ) {
+		for (int i = 2; setAudioBoxIDs.contains(id); i++) {
 			id = "user" + i;
 		}
 		return id;
 	}
-	
-	protected AudioBoxConfig createUniqueAudioBox()
-	{
-		final String test = getResourceString( "labelUntitled" );
+
+	protected AudioBoxConfig createUniqueAudioBox() {
+		final String test = getResourceString("labelUntitled");
 		String name = test;
-		for( int i = 1; setAudioBoxNames.contains( name ); i++ ) {
+		for (int i = 1; setAudioBoxNames.contains(name); i++) {
 			name = test + " " + i;
 		}
-		
-		return new AudioBoxConfig( createUniqueAudioBoxID(), name );
+
+		return new AudioBoxConfig(createUniqueAudioBoxID(), name);
 	}
 
-	private void audioBoxesFromPrefs()
-	{
+	private void audioBoxesFromPrefs() {
 		collAudioBoxConfigs.clear();
 		setAudioBoxIDs.clear();
 		setAudioBoxNames.clear();
@@ -1180,33 +1137,30 @@ iterRemove:		for( Iterator iter = collAudioBoxConfigs.iterator(); iter.hasNext()
 			BasicWindowHandler.showErrorDialog( getWindow(), e1, getResourceString( "errLoadPrefs" ));
 			return;
 		}
-			
-		for( int i = 0; i < arrayNames.length; i++ ) {
-			cfgPrefs	= abPrefs.node( arrayNames[ i ]);
+
+		for (String arrayName : arrayNames) {
+			cfgPrefs = abPrefs.node(arrayName);
 			try {
-				cfg		= new AudioBoxConfig( cfgPrefs );
-				collAudioBoxConfigs.add( cfg );
-				setAudioBoxIDs.add( arrayNames[ i ]);
-				setAudioBoxNames.add( cfg.name );
-			}
-			catch( NumberFormatException e1 ) {
-				System.err.println( e1 );
+				cfg = new AudioBoxConfig(cfgPrefs);
+				collAudioBoxConfigs.add(cfg);
+				setAudioBoxIDs.add(arrayName);
+				setAudioBoxNames.add(cfg.name);
+			} catch (NumberFormatException e1) {
+				System.err.println("audioBoxesFromPrefs:");
+				e1.printStackTrace();
 			}
 		}
 	}
 
-	private static class WarnPrefsChange
-	implements ActionListener
-	{
+	private static class WarnPrefsChange implements ActionListener {
 		private final PreferenceEntrySync	pes;
 		private final Component				c;
 		private final Flag					haveWarned;
 		private final String				text;
 		private final String				title;
 		private final String				initialValue;
-	
-		protected WarnPrefsChange( PreferenceEntrySync pes, Component c, Flag haveWarned, String text, String title )
-		{
+
+		protected WarnPrefsChange(PreferenceEntrySync pes, Component c, Flag haveWarned, String text, String title) {
 			this.pes		= pes;
 			this.c			= c;
 			this.haveWarned	= haveWarned;
@@ -1257,17 +1211,17 @@ iterRemove:		for( Iterator iter = collAudioBoxConfigs.iterator(); iter.hasNext()
 		{
 			if( row > collAudioBoxConfigs.size() ) return null;
 			
-			final AudioBoxConfig c = (AudioBoxConfig) collAudioBoxConfigs.get( row );
+			final AudioBoxConfig c = collAudioBoxConfigs.get( row );
 		
 			switch( col ) {
 			case 0:
 				return c.name;
 			case 1:
-				return new Integer( c.numInputChannels );
+				return c.numInputChannels;
 			case 2:
-				return new Integer( c.numOutputChannels );
+				return c.numOutputChannels;
 			case 3:
-				return new Boolean( c.active );
+				return c.active;
 			default:
 				return null;
 			}
@@ -1297,7 +1251,7 @@ iterRemove:		for( Iterator iter = collAudioBoxConfigs.iterator(); iter.hasNext()
 		{
 			if( (row > collAudioBoxConfigs.size()) || (value == null) ) return;
 
-			final AudioBoxConfig cfg			= (AudioBoxConfig) collAudioBoxConfigs.get( row );
+			final AudioBoxConfig cfg			= collAudioBoxConfigs.get( row );
 			String				name;
 			AudioBoxConfig		newCfg			= null;
 			int					newChannels;
@@ -1307,11 +1261,10 @@ iterRemove:		for( Iterator iter = collAudioBoxConfigs.iterator(); iter.hasNext()
 			switch( col ) {
 			case 0:
 				name = value.toString();
-//				if( (name.length() > 0) && (name.length() < Preferences.MAX_NAME_LENGTH) &&
-				if( (name.length() > 0) &&
-					!setAudioBoxNames.contains( name )) {
+				if ((name.length() > 0) &&
+						!setAudioBoxNames.contains(name)) {
 
-					newCfg = cfg.changeName( name );
+					newCfg = cfg.changeName(name);
 					trigger = true;
 				}
 				break;
@@ -1342,7 +1295,7 @@ iterRemove:		for( Iterator iter = collAudioBoxConfigs.iterator(); iter.hasNext()
 
 			case 3:
 				if( value instanceof Boolean ) {
-					newActive = ((Boolean) value).booleanValue();
+					newActive = (Boolean) value;
 				} else {
 					assert false : value;
 					break;

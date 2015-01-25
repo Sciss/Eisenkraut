@@ -18,6 +18,7 @@ import de.sciss.app.PerformableEdit;
 
 import de.sciss.io.AudioFileDescr;
 
+@SuppressWarnings("serial")
 public class EditChangeAudioFileDescr extends BasicUndoableEdit {
 
 	private Object					source;

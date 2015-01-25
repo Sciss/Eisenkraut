@@ -26,6 +26,7 @@ import de.sciss.gui.SpringPanel;
 import de.sciss.gui.StringItem;
 import de.sciss.util.ParamSpace;
 
+@SuppressWarnings("serial")
 public class ConstQPane
 		extends SpringPanel
 		implements PreferenceNodeSync, SwingConstants {

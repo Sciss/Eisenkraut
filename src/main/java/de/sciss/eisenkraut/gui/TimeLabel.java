@@ -33,14 +33,12 @@ import de.sciss.util.Disposable;
 
 /**
  *	A GUI component showing a time position.
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 28-Jun-08
  */
+@SuppressWarnings("serial")
 public class TimeLabel
-extends JPanel
-implements Disposable
-{
+		extends JPanel
+		implements Disposable {
+
 	private final TimeFormat	frmt;
 	protected String			text;
 
@@ -176,10 +174,11 @@ implements Disposable
 		lb.dispose();
 	}
 
+	@SuppressWarnings("serial")
 	private class Label
-	extends JComponent
-	implements Disposable
-	{
+			extends JComponent
+			implements Disposable {
+
 		private Image img;
 	
 		protected Label() { /* empty */ }

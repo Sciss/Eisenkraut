@@ -34,13 +34,10 @@ import javax.swing.border.AbstractBorder;
 
 /**
  *	A border looking like aqua's search-field border
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
  */
-public class RoundedBorder
-extends AbstractBorder
-{
+@SuppressWarnings("serial")
+public class RoundedBorder extends AbstractBorder {
+
 	private final int		radius		= 11;
 	private final int		diameter	= radius << 1;
 	private final Insets	insets		= new Insets( 3, radius, 1, radius );

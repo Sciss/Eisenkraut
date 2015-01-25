@@ -96,10 +96,7 @@ import de.sciss.eisenkraut.session.DocumentFrame;
 import de.sciss.eisenkraut.session.Session;
 import de.sciss.eisenkraut.util.PrefsUtil;
 
-/**
- *	@version	0.70, 04-Jul-08
- *	@author		Hanns Holger Rutz
- */
+@SuppressWarnings("serial")
 public class RecorderDialog
 extends JDialog
 implements Constants, ServerListener, NodeListener, OSCRouter,
@@ -251,7 +248,7 @@ implements Constants, ServerListener, NodeListener, OSCRouter,
 		cp.add( recPane, BorderLayout.NORTH );
 		cp.add( butPane, BorderLayout.SOUTH );
 
-		GUIUtil.setDeepFont( cp, app.getGraphicsHandler().getFont( GraphicsHandler.FONT_SYSTEM | GraphicsHandler.FONT_SMALL ));
+		GUIUtil.setDeepFont( cp, app.getGraphicsHandler().getFont(GraphicsHandler.FONT_SMALL));
 
 //		runPeakUpdate = new Runnable() {
 //			public void run()
@@ -266,7 +263,7 @@ implements Constants, ServerListener, NodeListener, OSCRouter,
 			{
 				final float		value		= docFrame.getMaxMeterHold();
 				final boolean	valueClip	= value > -0.2f;
-				peakArgs[0] = new Float( value );
+				peakArgs[0] = value;
 				lbPeak.setText( frmtPeak.format( peakArgs ));
 				if( valueClip && !clipped ) {
 					clipped = valueClip;
@@ -385,17 +382,14 @@ GUIUtil.setInitialDialogFocus( rp );	// necessary to get keyboard shortcuts work
 		final GraphElem		graph;
 		final SynthDef		def;
 		
-		if( numInputChannels > 0 ) {
-			final GraphElem	in		= UGen.ar( "In", numInputChannels, ctrlI.getChannel( "i_aInBs" ));
-			final GraphElem	out		= UGen.ar( "DiskOut", ctrlI.getChannel( "i_aOtBf" ), in );
-			graph = out;
-//System.out.println( "DiskOut has " + out.getNumOutputs() + " outputs!" );
+		if( numInputChannels > 0) {
+			final GraphElem in = UGen.ar("In", numInputChannels, ctrlI.getChannel("i_aInBs"));
+			graph = UGen.ar("DiskOut", ctrlI.getChannel("i_aOtBf"), in);
 		} else {
 			graph = ctrlI;
 		}
-		def	= new SynthDef( "eisk-rec" + numInputChannels, graph );
-		def.send( server );
-//		def.writeDefFile( new File( "/Users/rutz/Desktop/test.scsyndef" ));
+		def = new SynthDef("eisk-rec" + numInputChannels, graph);
+		def.send(server);
 		return true;
 	}
 
@@ -404,16 +398,6 @@ GUIUtil.setInitialDialogFocus( rp );	// necessary to get keyboard shortcuts work
 		return result;
 	}
 
-//	private void meterUpdate()
-//	{
-//		synchronized( collMeters ) {
-//			final int numMeters = Math.min( collMeters.size(), meterValues.length >> 1 );
-//			for( int i = 0, j = 0; i < numMeters; i++ ) {
-//				((LevelMeter) collMeters.get( i )).setPeakAndRMS( meterValues[ j++ ], meterValues[ j++ ]);
-//			}
-//		}
-//	}
-	
 	private void createRecordConfig()
 	{
 		final String cfgName	= classPrefs.get( KEY_CONFIG, null );
@@ -565,10 +549,10 @@ GUIUtil.setInitialDialogFocus( rp );	// necessary to get keyboard shortcuts work
 			childPrefs	= audioPrefs.node( NODE_CONF );
 			cfgIDs		= childPrefs.childrenNames();
 			ggRecordConfig.removeAllItems();
-			for( int i = 0; i < cfgIDs.length; i++ ) {
-				cfgPrefs	= childPrefs.node( cfgIDs[ i ]);
-				if( cfgPrefs.getInt( RoutingConfig.KEY_RC_NUMCHANNELS, -1 ) == numChannels ) {
-					ggRecordConfig.addItem( new StringItem( cfgIDs[ i ], cfgPrefs.get( RoutingConfig.KEY_NAME, cfgIDs[ i ])));
+			for (String cfgID : cfgIDs) {
+				cfgPrefs = childPrefs.node(cfgID);
+				if (cfgPrefs.getInt(RoutingConfig.KEY_RC_NUMCHANNELS, -1) == numChannels) {
+					ggRecordConfig.addItem(new StringItem(cfgID, cfgPrefs.get(RoutingConfig.KEY_NAME, cfgID)));
 				}
 			}
 		}
@@ -681,22 +665,22 @@ GUIUtil.setInitialDialogFocus( rp );	// necessary to get keyboard shortcuts work
 	
 	public Object oscQuery_recording()
 	{
-		return new Integer( isRecording ? 1 : 0 );
+		return isRecording ? 1 : 0;
 	}
 
 	public Object oscQuery_length()
 	{
-		return new Long( recFrames.value() );
+		return recFrames.value();
 	}
 
 	public Object oscQuery_monitoring()
 	{
-		return new Integer( ggMonitoring.isSelected() ? 1 : 0 );
+		return ggMonitoring.isSelected() ? 1 : 0;
 	}
 
 	public Object oscQuery_headroom()
 	{
-		return new Float( docFrame.getMaxMeterHold() );
+		return docFrame.getMaxMeterHold();
 	}
 
 	public void oscCmd_resetHeadroom( RoutedOSCMessage rom )
@@ -893,7 +877,8 @@ this.busInternal = busInternal;
 			if( e11 != null ) throw e11;
 		}
 	}
-	
+
+	@SuppressWarnings("serial")
 	private class ActionPeakReset
 	extends AbstractAction
 	{
@@ -917,6 +902,7 @@ this.busInternal = busInternal;
 		}
 	}
 
+	@SuppressWarnings("serial")
 	private class ActionMonitoring
 	extends AbstractAction
 	{
@@ -933,6 +919,7 @@ this.busInternal = busInternal;
 		}
 	}
 
+	@SuppressWarnings("serial")
 	private class ActionRecord
 	extends AbstractAction
 	{
@@ -991,6 +978,7 @@ this.busInternal = busInternal;
 		}
 	}
 
+	@SuppressWarnings("serial")
 	private class ActionStop
 	extends AbstractAction
 	{
@@ -1006,6 +994,7 @@ this.busInternal = busInternal;
 		}
 	}
 
+	@SuppressWarnings("serial")
 	private class ActionAbort
 	extends AbstractAction
 	{
@@ -1021,7 +1010,8 @@ this.busInternal = busInternal;
 			stopRecording( false );
 		}
 	}
-	
+
+	@SuppressWarnings("serial")
 	private class ActionClose
 	extends AbstractAction
 	{
@@ -1038,7 +1028,8 @@ this.busInternal = busInternal;
 			}
 		}
 	}
-	
+
+	@SuppressWarnings("serial")
 	private static class TimeoutTimer
 	extends javax.swing.Timer
 	implements ActionListener
@@ -1071,12 +1062,13 @@ this.busInternal = busInternal;
 		
 		protected void enable( boolean onOff )
 		{
-			for( int i = 0; i < actions.length; i++ ) {
-				actions[ i ].setEnabled( onOff );
+			for (Action action : actions) {
+				action.setEnabled(onOff);
 			}
 		}
 	}
 
+	@SuppressWarnings("serial")
 	private static class RecLenTimer
 	extends javax.swing.Timer
 	implements ActionListener
@@ -1105,7 +1097,7 @@ this.busInternal = busInternal;
 		{
 			final double secs = (double) (System.currentTimeMillis() - startTime) / 1000;
 			frames.set( (long) (secs * sampleRate + 0.5) );
-			lbTime.setTime( new Double( secs ));
+			lbTime.setTime(secs);
 		}
 	}
 }

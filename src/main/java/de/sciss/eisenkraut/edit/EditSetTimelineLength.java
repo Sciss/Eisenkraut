@@ -25,6 +25,7 @@ import de.sciss.eisenkraut.session.Session;
  *
  * @see        UndoManager
  */
+@SuppressWarnings("serial")
 public class EditSetTimelineLength extends BasicUndoableEdit {
 
 	private Object			source;
@@ -36,7 +37,7 @@ public class EditSetTimelineLength extends BasicUndoableEdit {
 	 * not invoked directly by the application but as
 	 * part of the compound edits <code>EditInsertTimeSpan</code>
 	 * and <code>EditRemoveTimeSpan</code>. This method
-	 * doesn't take care of the timeline's selection or
+	 * doesn't take care of the timeline selection or
 	 * visible span. It invokes the <code>Timeline.setLength</code> method,
 	 * thus dispatching a <code>TimelineEvent</code>.
 	 *

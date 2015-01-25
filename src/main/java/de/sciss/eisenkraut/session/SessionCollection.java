@@ -461,7 +461,7 @@ public class SessionCollection
 	/**
 	 *  This simply returns <code>null</code>!
 	 */
-	public Class getDefaultEditor()
+	public Class<?> getDefaultEditor()
 	{
 		return null;
 	}
@@ -470,10 +470,10 @@ public class SessionCollection
 
 	// XXX TO-DO : Event should have a getDocumentCollection method
 	// XXX TO-DO : Event should have indices of all elements
+	@SuppressWarnings("serial")
 	public class Event
-	extends BasicEvent
-	{
-	// --- ID values ---
+			extends BasicEvent {
+		// --- ID values ---
 
 		/**
 		 *  returned by getID() : the collection was changed by

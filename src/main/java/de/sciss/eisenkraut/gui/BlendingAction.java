@@ -81,22 +81,19 @@ import de.sciss.util.ParamSpace;
  *	this button reflects the blending preferences settings and
  *	when alt+pressed will prompt the user to alter the blending settings.
  *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 23-Mar-08
- *
- *	@todo		gui panels should be destroyed / disposed
+ *	TODO: gui panels should be destroyed / disposed
  *				because otherwise different BlendingAction instances
  *				for different docs all create their own panels
  *
- *	@todo		should not be a subclass of AbstractAction
+ *	TODO: should not be a subclass of AbstractAction
  *
- *	@todo		close action should be called whenenver popup disappears,
+ *	TODO: close action should be called whenever popup disappears,
  *				and duplicates should be filtered out!
  */
+@SuppressWarnings("serial")
 public class BlendingAction
-extends AbstractAction
-// implements LaterInvocationManager.Listener
-{
+		extends AbstractAction {
+
 	public static final int						MAX_RECENTNUM	= 5;
 	
 	public static final String					DEFAULT_NODE	= "blending";
@@ -106,37 +103,30 @@ extends AbstractAction
 	private static final String					NODE_RECENT		= "recent";
 
 	protected static final Param				DEFAULT_DUR		=
-		new Param( 100.0, ParamSpace.ABS | ParamSpace.TIME | ParamSpace.MILLI | ParamSpace.SECS );
+			new Param(100.0, ParamSpace.TIME | ParamSpace.MILLI | ParamSpace.SECS);
 
 
 	private static PrefComboBoxModel			pcbm			= null;
-//	private PrefComboBoxModel					pcbm			= null;
-	
-//	private final JToggleButton					b;
+
 	protected final MultiStateButton			b;
 	protected final Preferences					prefs;
 	protected PrefParamField					ggBlendTime;
 	protected CurvePanel						ggCurvePanel;
 	private SpringPanel							ggSettingsPane;
 	private JComponent							bottomPanel;
-//	private JDialog								dlg				= null;
+
 	private	static final DefaultUnitTranslator	ut				= new DefaultUnitTranslator();
 	protected static final DefaultUnitViewFactory uvf			= new DefaultUnitViewFactory();
 	
 	private final CurvePanel.Icon				curveIcon;
 
-//	private boolean								guiCreated		= false;
-	
 	private final PopupTriggerMonitor			popMon;
 	private JPopupMenu							popup			= null;
 	private AppWindow							palette			= null;
-//	private boolean								listening		= false;
-	
+
 	private boolean								active;
 	
 	private final Timeline						timeline;
-	
-//	private List								collListeners	= new ArrayList();
 	
 	protected final Settings					current;
 
@@ -146,29 +136,20 @@ extends AbstractAction
 	 *
 	 *	@param	prefs	node of preferences tree (usually DEFAULT_NODE)
 	 */
-	public BlendingAction( Timeline timeline, Preferences prefs )
-	{
+	public BlendingAction(Timeline timeline, Preferences prefs) {
 		super();
 		this.prefs		= prefs != null ? prefs : AbstractApplication.getApplication().getUserPrefs().node( DEFAULT_NODE );
 		this.timeline	= timeline;
 
-//		b				= new JToggleButton( this );
 		b				= new MultiStateButton();
 		b.setNumColumns( 8 );
 		b.setAutoStep( false );
 		b.addActionListener( this );
 		b.addItem( "", null, new Color( 0, 0, 0, 0 ));
 		b.addItem( "", null, new Color( 0xFF, 0xFA, 0x9D ));
-//		uvf				= new DefaultUnitViewFactory();
-//		GraphicsUtil.setToolIcons( b, GraphicsUtil.createToolIcons( GraphicsUtil.ICON_BLENDING ));
 		curveIcon		= new CurvePanel.Icon( createBasicCurves() );
-//		curveIcon.update( this.prefs );
-//		b.setIcon( curveIcon );
 		b.setItemIcon( 0, curveIcon );
 		b.setItemIcon( 1, curveIcon );
-		
-//		new DynamicAncestorAdapter( new DynamicPrefChangeManager( this.prefs,
-//			new String[] { KEY_ACTIVE, KEY_DURATION }, this )).addTo( b );
 
 		popMon = new PopupTriggerMonitor( b );
 		popMon.addListener( new PopupTriggerMonitor.Listener() {
@@ -183,33 +164,18 @@ extends AbstractAction
 		
 		active				= this.prefs.getBoolean( KEY_ACTIVE, false );
 		current				= Settings.fromPrefs( this.prefs );
-//		current.duration	= Param.fromPrefs( this.prefs, KEY_DURATION, null );
-//		current.ctrlPt		= CurvePanel.getControlPoints( this.prefs );
-//		curveIcon.update( current.ctrlPt[ 0 ], current.ctrlPt[ 1 ]);
 		updateButton();
 	}
 	
 	public Preferences getPreferences() { return prefs; }
 	private Preferences getRecentPreferences() { return prefs.node( NODE_RECENT ); }
-	
-//	public void addRecentListener( ListDataListener l )
-//	{
-//		collListeners.add( l );
-//	}
-//
-//	public void removeRecentListener( ListDataListener l )
-//	{
-//		collListeners.remove( l );
-//	}
 
-	private void createBlendPan( boolean popped )
-	{
+	private void createBlendPan(boolean popped) {
 		destroyBlendPan();
 
-//		if( guiCreated ) return;
 		createGadgets( 0 );
 		final Font fnt = AbstractApplication.getApplication().getGraphicsHandler()
-			.getFont( GraphicsHandler.FONT_SYSTEM | GraphicsHandler.FONT_SMALL );
+			.getFont(GraphicsHandler.FONT_SMALL);
 		GUIUtil.setDeepFont( ggSettingsPane, fnt );
 		GUIUtil.setDeepFont( bottomPanel, fnt );
 		ggBlendTime.setCycling( popped ); // cannot open popup menu in another popup menu!
@@ -222,37 +188,30 @@ extends AbstractAction
 			popup.add( bottomPanel, BorderLayout.SOUTH );
 			popup.revalidate();
 		}
-//		guiCreated	= true;
 	}
 
-	private void destroyBlendPan()
-	{
-		if( ggSettingsPane != null ) {
-			ggSettingsPane.getParent().remove( ggSettingsPane );
+	private void destroyBlendPan() {
+		if (ggSettingsPane != null) {
+			ggSettingsPane.getParent().remove(ggSettingsPane);
 			ggSettingsPane = null;
 		}
-		if( bottomPanel != null ) {
-			bottomPanel.getParent().remove( bottomPanel );
+		if (bottomPanel != null) {
+			bottomPanel.getParent().remove(bottomPanel);
 			bottomPanel = null;
 		}
 	}
 
-	private void createGadgets( int flags )
-	{
-		bottomPanel		= createBottomPanel( flags );
-//		ggSettingsPane	= new JScrollPane( JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-//										   JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
+	private void createGadgets(int flags) {
+		bottomPanel = createBottomPanel(flags);
 		ggSettingsPane	= new SpringPanel( 4, 2, 4, 2 );
-//		ggBlendTime		= new PrefNumberField( 0, NumberSpace.genericDoubleSpace, "sec." );
 		ut.setLengthAndRate( 0, timeline.getRate() );
 		ggBlendTime		= new PrefParamField( ut );
 		ggBlendTime.addSpace( ParamSpace.spcTimeMillis );
 		ggBlendTime.addSpace( ParamSpace.spcTimeSmps );
 		ggBlendTime.setPreferences( prefs, KEY_DURATION );
 		ggBlendTime.setReadPrefs( false );
-		if( current.duration != null ) {
-//System.err.println( "setDuration" );
-			ggBlendTime.setValueAndSpace( current.duration );
+		if (current.duration != null) {
+			ggBlendTime.setValueAndSpace(current.duration);
 		}
 		ggBlendTime.addListener( new ParamField.Listener() {
 			public void paramSpaceChanged( ParamField.Event e )
@@ -270,7 +229,6 @@ extends AbstractAction
 		});
 
 		ggCurvePanel	= new CurvePanel( createBasicCurves(), this.prefs );
-//System.err.println( "setControlPoints" );
 		ggCurvePanel.setControlPoints( current.ctrlPt[ 0 ], current.ctrlPt[ 1 ]);
 		ggCurvePanel.setPreferredSize( new Dimension( 162, 162 ));	
 		ggCurvePanel.addActionListener( new ActionListener() {
@@ -288,22 +246,18 @@ extends AbstractAction
 		ggSettingsPane.makeCompactGrid();
 	}
 
-	public void showPopup( Component invoker, int x, int y )
-	{
+	public void showPopup(Component invoker, int x, int y) {
 		createPopup();
-//		startListening();
-		popup.show( invoker, x, y );
+		popup.show(invoker, x, y);
 		// XXX this is necessary unfortunately
 		// coz the DynamicAncestorAdapter doesn't seem
 		// to work with the popup menu ...
 		ggBlendTime.startListening();
-//		if( beginDragging ) pan.beginDragging();
 	}
 
-	private void createPopup()
-	{
-		if( popup != null ) return;
-		if( palette != null ) destroyPalette();
+	private void createPopup() {
+		if (popup != null) return;
+		if (palette != null) destroyPalette();
 		
 		popup	= new JPopupMenu();
 		createBlendPan( true );
@@ -316,11 +270,9 @@ extends AbstractAction
 			public void popupMenuWillBecomeInvisible( PopupMenuEvent e ) { /* empty */ }
 			public void popupMenuWillBecomeVisible( PopupMenuEvent e ) { /* empty */ }
 		});
-//popup.setCursor( new java.awt.Cursor( java.awt.Cursor.CROSSHAIR_CURSOR ));
 	}
-	
-	protected void stopAndDispose()
-	{
+
+	protected void stopAndDispose() {
 		// XXX this is necessary unfortunately
 		// coz the DynamicAncestorAdapter doesn't seem
 		// to work with the popup menu ...
@@ -328,35 +280,30 @@ extends AbstractAction
 		dispose();
 	}
 
-	public void showPalette()
-	{
+	public void showPalette() {
 		createPalette();
-//		startListening();
-		palette.setVisible( true );
+		palette.setVisible(true);
 		palette.toFront();
 	}
 
-	private void destroyPalette()
-	{
-		if( palette == null ) return;
-		
+	private void destroyPalette() {
+		if (palette == null) return;
+
 		palette.dispose();
 		palette = null;
 	}
 
-	private void destroyPopup()
-	{
-		if( popup == null ) return;
-		
-		popup.setVisible( false );
+	private void destroyPopup() {
+		if (popup == null) return;
+
+		popup.setVisible(false);
 		popup = null;
 	}
 
-	protected static CubicCurve2D[] createBasicCurves()
-	{
-		return new CubicCurve2D[] {
-			new CubicCurve2D.Double( 0.0, 1.0, 0.5, 0.0, 0.5, 0.0, 1.0, 0.0 ),
-			new CubicCurve2D.Double( 0.0, 0.0, 0.5, 0.0, 0.5, 0.0, 1.0, 1.0 )
+	protected static CubicCurve2D[] createBasicCurves() {
+		return new CubicCurve2D[]{
+				new CubicCurve2D.Double(0.0, 1.0, 0.5, 0.0, 0.5, 0.0, 1.0, 0.0),
+				new CubicCurve2D.Double(0.0, 0.0, 0.5, 0.0, 0.5, 0.0, 1.0, 1.0)
 		};
 	}
 	
@@ -366,14 +313,12 @@ extends AbstractAction
 	 *
 	 *	@return	a toggle button which is suitable for tool bar display
 	 */
-//	public JToggleButton getButton()
 	public AbstractButton getButton()
 	{
 		return b;
 	}
-	
-	public JComboBox getComboBox()
-	{
+
+	public JComboBox getComboBox() {
 		final ComboBoxModel		model			= getComboBoxModel();
 		final ComboBoxModel		emptyCBM		= new DefaultComboBoxModel();
 		final MultiStateButton	button			= b;
@@ -384,12 +329,10 @@ extends AbstractAction
 		ggBlend.setEditor( new ComboBoxEditor() {
 			public Component getEditorComponent() { return button; }
 
-			public void setItem( Object o )
-			{
-//System.err.println( "setItem " + o );
-				if( o != null ) {
-					current.setFrom( (Settings) o );
-					current.toPrefs( prefs );
+			public void setItem(Object o) {
+				if (o != null) {
+					current.setFrom((Settings) o);
+					current.toPrefs(prefs);
 					updateButton();
 				}
 			}
@@ -423,35 +366,27 @@ extends AbstractAction
 		return ggBlend;
 	}
 
-	private void updateButtonState()
-	{
-//		b.setSelected( prefs.getBoolean( KEY_ACTIVE, false ));
-//		b.setSelectedIndex( prefs.getBoolean( KEY_ACTIVE, false ) ? 1 : 0 );
-		b.setSelectedIndex( active ? 1 : 0 );
+	private void updateButtonState() {
+		b.setSelectedIndex(active ? 1 : 0);
 	}
-	
-	protected void updateButton()
-	{
+
+	protected void updateButton() {
 		updateButtonState();
 		updateButtonText();
 		updateButtonIcon();
 	}
 
-	protected void updateButtonText()
-	{
-//		final Param		p;
-		final Param		p		= current.duration;
-		final Object	view;
-		final String	text;
-		
-//		p = Param.fromPrefs( prefs, KEY_DURATION, null );
-		if( p != null ) {
-			view = uvf.createView( p.unit );
-			
-			if( view instanceof Icon ) {
+	protected void updateButtonText() {
+		final Param p = current.duration;
+		final Object view;
+		final String text;
+
+		if (p != null) {
+			view = uvf.createView(p.unit);
+
+			if (view instanceof Icon) {
 				// XXX hmmm. should use composite icon
 			} else {
-//				b.setText( String.valueOf( (int) p.val ) + " " + view.toString() );
 				text = String.valueOf( (int) p.val ) + " " + view.toString();
 				b.setItemText( 0, text );
 				b.setItemText( 1, text );
@@ -460,15 +395,13 @@ extends AbstractAction
 		}
 	}
 
-	protected void updateButtonIcon()
-	{
-		curveIcon.update( current.ctrlPt[ 0 ], current.ctrlPt[ 1 ]);
-		if( ggCurvePanel != null ) ggCurvePanel.setControlPoints( current.ctrlPt[ 0 ], current.ctrlPt[ 1 ]);
+	protected void updateButtonIcon() {
+		curveIcon.update(current.ctrlPt[0], current.ctrlPt[1]);
+		if (ggCurvePanel != null) ggCurvePanel.setControlPoints(current.ctrlPt[0], current.ctrlPt[1]);
 		b.repaint();
 	}
 
-	private JComponent createBottomPanel( int flags )
-	{
+	private JComponent createBottomPanel(int flags) {
 		final JPanel	panel;
 		final JButton	ggClose;
 
@@ -476,34 +409,30 @@ extends AbstractAction
 		ggClose		= new JButton( new CloseAction( getResourceString( "buttonClose" )));
 		GUIUtil.createKeyAction( ggClose, KeyStroke.getKeyStroke( KeyEvent.VK_ESCAPE, 0 ));
 		ggClose.setFocusable( false );
-		panel.add( ggClose );
-		panel.add( new HelpButton( "Blending" ));
-		panel.add( CoverGrowBox.create() );
+		panel.add(ggClose);
+		panel.add(new HelpButton("Blending"));
+		panel.add(CoverGrowBox.create());
 
 		return panel;
 	}
 
-	private String getResourceString( String key )
-	{
+	private String getResourceString(String key) {
 		return AbstractApplication.getApplication().getResourceString( key );
 	}
-	
-	public void actionPerformed( ActionEvent e )
-	{
+
+	public void actionPerformed(ActionEvent e) {
 		if( (e.getModifiers() & ActionEvent.ALT_MASK) != 0 ) {
 			showPalette();
 		} else {
-//			prefs.putBoolean( KEY_ACTIVE, b.isSelected() );
 			active = b.getSelectedIndex() == 0;
 			prefs.putBoolean( KEY_ACTIVE, active );
 			updateButtonState();
 		}
 	}
-	
-	private void createPalette()
-	{
-		if( palette != null ) return;
-		if( popup != null ) destroyPopup();
+
+	private void createPalette() {
+		if (palette != null) return;
+		if (popup != null) destroyPopup();
 
 		final Application	app			= AbstractApplication.getApplication();
 	
@@ -521,26 +450,21 @@ extends AbstractAction
 		palette.init();
 	}
 
-	public void dispose()
-	{
-//		stopListening();
+	public void dispose() {
 		destroyPalette();
 		destroyPopup();
 		destroyBlendPan();
 	}
-	
-	private ComboBoxModel getComboBoxModel()
-	{
-		if( pcbm == null ) {
+
+	private ComboBoxModel getComboBoxModel() {
+		if (pcbm == null) {
 			pcbm = new PrefComboBoxModel() {
-				public Object dataFromNode( Preferences node )
-				{
-					return Settings.fromPrefs( node );
+				public Object dataFromNode(Preferences node) {
+					return Settings.fromPrefs(node);
 				}
 
-				public void dataToNode( Object data, Preferences node )
-				{
-					((Settings) data).toPrefs( node );
+				public void dataToNode(Object data, Preferences node) {
+					((Settings) data).toPrefs(node);
 				}
 			};
 			pcbm.setPreferences( getRecentPreferences() );
@@ -552,161 +476,29 @@ extends AbstractAction
 	{
 		return new BlendCBRenderer();
 	}
-	
-	protected void storeRecent()
-	{
-		if( pcbm == null ) return;
-		
-		pcbm.setSelectedItem( null );
-		
-		while( pcbm.getSize() >= MAX_RECENTNUM ) {
+
+	protected void storeRecent() {
+		if (pcbm == null) return;
+
+		pcbm.setSelectedItem(null);
+
+		while (pcbm.getSize() >= MAX_RECENTNUM) {
 			try {
-				pcbm.remove( pcbm.getSize() - 1 );
-			}
-			catch( BackingStoreException e1 ) {
+				pcbm.remove(pcbm.getSize() - 1);
+			} catch (BackingStoreException e1) {
 				e1.printStackTrace();
 				return;
 			}
 		}
-		pcbm.add( 0, current.duplicate() );
+		pcbm.add(0, current.duplicate());
 	}
-	
-//	private void storeRecentXXX()
-//	{
-//		final Preferences rPrefs = getRecentPreferences();
-//		Preferences node1, node2;
-//		String[] names;
-////		final ListDataEvent lde;
-//		int i;
-//		try {
-//			for( i = 0; i < MAX_RECENTNUM; i++ ) {
-//				if( !rPrefs.nodeExists( DEFAULT_NODE + (i+1) )) break;
-//			}
-//			if( i == MAX_RECENTNUM ) {
-//				node2 = rPrefs.node( DEFAULT_NODE + "1" );
-//				for( int j = 1; j < MAX_RECENTNUM; j++ ) {
-//					node1 = node2;
-//					node2 = rPrefs.node( DEFAULT_NODE + (j+1)  );
-//					names = node2.childrenNames();
-//					for( int k = 0; k < names.length; k++ ) {
-//						node1.put( names[ k ], node2.get( names[ k ], null ));
-//					}
-//				}
-//				i--;
-//System.err.println( "remove " + node2 );
-//				node2.removeNode();
-//			}
-//			node1 = rPrefs.node( DEFAULT_NODE + (i+1)  );
-//System.err.println( "added " + node1 );
-//			node1.put( KEY_DURATION, current.duration.toString() );
-//			ggCurvePanel.toPrefs( node1 );
-//			
-////			lde = new ListDataEvent( this, ListDataEvent.CONTENTS_CHANGED, 0, i );
-////			for( int j = 0; j < collListeners.size(); j++ ) {
-////				((ListDataListener) collListeners.get( j )).contentsChanged( lde );
-////			}
-//		}
-//		catch( BackingStoreException e1 ) {
-//			System.err.println( e1 );
-//		}
-//	}
-
-//	private void startListening()
-//	{
-//		if( !listening ) {
-////			tracks.addListener( scListener );
-////			audioPrefs.addPreferenceChangeListener( prefListener );
-//			ggBlendTime.fromPrefsString( prefs.get( KEY_DURATION, null ));
-//			listening = true;
-//		}
-//	}
-//	
-//	private void stopListening()
-//	{
-//		if( listening ) {
-////			tracks.removeListener( scListener );
-////			audioPrefs.removePreferenceChangeListener( prefListener );
-//			listening = false;
-//		}
-//	}
-
-//	private void openDialog()
-//	{
-////		new TestDialog();
-//		if( dlg == null ) {
-//			final Window w = SwingUtilities.windowForComponent( b );
-//			dlg = new JDialog( ((w == null) || !(w instanceof Frame)) ? null : (Frame) w,
-//				getResourceString( "inputDlgSetBlendSpan" ), true );
-//			final Container cp	= dlg.getContentPane();
-//			if( !guiCreated ) {
-//				createGUI();
-//			}
-//			cp.add( ggSettingsPane, BorderLayout.CENTER );
-//			cp.add( bottomPanel, BorderLayout.SOUTH );
-//			dlg.pack();
-//			dlg.setLocationRelativeTo( b );
-//		}
-//		dlg.setVisible( true );
-//		// XXX dispose gui
-//		prefs.putBoolean( KEY_ACTIVE, ggBlendTime.getValue().val > 0.0 );
-//		updateButtonState();	// prefsChangeEvent not guaranteed!!
-//	}
-	
-//	// o instanceof PreferenceChangeEvent
-//	public void laterInvocation( Object o )
-//	{
-//		final PreferenceChangeEvent	pce = (PreferenceChangeEvent) o;
-//		final String				key = pce.getKey();
-//			
-//		if( key.equals( KEY_ACTIVE )) {
-//			updateButtonState();
-//		} else if( key.equals( KEY_DURATION )) {
-//			updateButtonText();
-//		}
-//	}
-	
-//	/**
-//	 *	@param	maxLength	the maximum blend length or <code>-1</code> if there is no max
-//	 *
-//	 *	@todo	pre/post position not yet effective (using 0.5 right now)
-//	 */
-//	public static BlendContext createBlendContext( Preferences prefs, double rate, long maxPre, long maxPost )
-//	{
-//		long	blendLen	= 0;
-//		long	pre = 0, post = 0;
-//		Param	p;
-//
-//		if( prefs.getBoolean( KEY_ACTIVE, false )) {
-//			p = Param.fromPrefs( prefs, KEY_DURATION, null );
-//			if( p != null ) {
-//				synchronized( ut ) {
-//					ut.setLengthAndRate( 0, rate );
-//					blendLen = (long) (ut.translate( p, ParamSpace.spcTimeSmps ).val + 0.5);
-//					pre = blendLen >> 1;
-//					post = blendLen - pre;
-//					if( (maxPre >= 0) && (pre > maxPre) ) {
-//						pre		= maxPre;
-//						post	= pre;	// XXX cheesy
-//					}
-//					if( (maxPost >= 0) && (post > maxPost) ) {
-//						post	= maxPost;
-//						pre		= post;
-//					}
-//				}
-//			}
-//		}
-//		return new BlendContext( pre, post, CurvePanel.getControlPoints( prefs ) );
-//	}
 
 	/**
-	 *	@param	maxLength	the maximum blend length or <code>-1</code> if there is no max
-	 *
-	 *	@todo	pre/post position not yet effective (using 0.5 right now)
+	 *	TODO: pre/post position not yet effective (using 0.5 right now)
 	 */
-	public BlendContext createBlendContext( long maxLeft, long maxRight )
-	{
-		if( !java.awt.EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
-		if( !active ) return null;
+	public BlendContext createBlendContext(long maxLeft, long maxRight) {
+		if (!java.awt.EventQueue.isDispatchThread()) throw new IllegalMonitorStateException();
+		if (!active) return null;
 		
 		final long	blendLen;
 		final Param	p;
@@ -768,11 +560,12 @@ extends AbstractAction
 			return String.valueOf( duration.val );
 		}
 	}
-	
+
+	@SuppressWarnings("serial")
 	private static class BlendCBRenderer
-	extends JLabel
-	implements ListCellRenderer
-	{
+			extends JLabel
+			implements ListCellRenderer {
+
 		private final Color bgNorm, bgSel, fgNorm, fgSel;
 		final CurvePanel.Icon curveIcon;
 	

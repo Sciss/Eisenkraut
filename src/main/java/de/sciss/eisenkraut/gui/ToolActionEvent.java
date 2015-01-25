@@ -20,16 +20,14 @@ import de.sciss.app.BasicEvent;
  *  from a <code>ToolBar</code> when
  *  the user switched to a different tool.
  *
- *  @author		Hanns Holger Rutz
- *  @version	0.56, 05-May-06
- *
  *  @see		ToolBar#addToolActionListener( ToolActionListener )
  *  @see		ToolActionListener
  *  @see		ToolAction
  */
+@SuppressWarnings("serial")
 public class ToolActionEvent
-extends BasicEvent
-{
+		extends BasicEvent {
+
 	// --- ID values ---
 	/**
 	 *  returned by getID() : the tool was changed

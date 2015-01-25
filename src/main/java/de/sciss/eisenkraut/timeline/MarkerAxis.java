@@ -85,11 +85,12 @@ import de.sciss.util.ParamSpace;
  *
  *	TODO:		actionEditPrev/NextClass shortcuts funktionieren nicht
  */
+@SuppressWarnings("serial")
 public class MarkerAxis
-extends JComponent
-implements	TimelineListener, MouseListener, MouseMotionListener, KeyListener,
-			DynamicListening, Trail.Listener, Disposable
-{
+		extends JComponent
+		implements TimelineListener, MouseListener, MouseMotionListener, KeyListener,
+		DynamicListening, Trail.Listener, Disposable {
+
 	protected final Session		doc;
 
 	private final Font			fntLabel; //		= new Font( "Helvetica", Font.ITALIC, 10 );
@@ -765,9 +766,9 @@ implements	TimelineListener, MouseListener, MouseMotionListener, KeyListener,
 
 // ---------------- internal classes ----------------
 
+	@SuppressWarnings("serial")
 	private class ActionEditPrev
-	extends MenuAction
-	{
+			extends MenuAction {
 		protected ActionEditPrev()
 		{
 //			super( "\u21E0", KeyStroke.getKeyStroke( KeyEvent.VK_LEFT, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() ));
@@ -784,18 +785,17 @@ implements	TimelineListener, MouseListener, MouseMotionListener, KeyListener,
 		}
 	}
 
+	@SuppressWarnings("serial")
 	private class ActionEditNext
-	extends MenuAction
-	{
-		protected ActionEditNext()
-		{
-			super( "\u21E2", KeyStroke.getKeyStroke( KeyEvent.VK_RIGHT, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() ));
+			extends MenuAction {
+
+		protected ActionEditNext() {
+			super("\u21E2", KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 		}
-		
-		public void actionPerformed( ActionEvent e )
-		{
+
+		public void actionPerformed(ActionEvent e) {
 			commitEditMarker();
-			if( (editIdx + 1) < doc.markers.getNumStakes() ) {
+			if ((editIdx + 1) < doc.markers.getNumStakes()) {
 				editIdx++;
 				updateEditMarker();
 			}

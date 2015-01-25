@@ -23,10 +23,11 @@ import javax.swing.tree.TreeNode;
 import de.sciss.io.Marker;
 import de.sciss.io.Span;
 
+@SuppressWarnings("serial")
 public class MarkerStake
-extends Marker
-implements Stake
-{
+		extends Marker
+		implements Stake {
+
 	private final Span	span;
 	private Trail		t		= null;
 

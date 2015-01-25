@@ -22,14 +22,11 @@ import java.awt.event.ActionListener;
 import javax.swing.JComponent;
 import javax.swing.OverlayLayout;
 
-/**
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 05-Mar-06
- */
+@SuppressWarnings("serial")
 public class CrossfadePanel
-extends JComponent
-implements ActionListener
-{
+		extends JComponent
+		implements ActionListener {
+
 	private JComponent				a, b;
 	private float					fade			= 0f;
 	private float					sourceFade;

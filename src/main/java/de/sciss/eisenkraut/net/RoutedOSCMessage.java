@@ -19,6 +19,7 @@ import java.net.SocketAddress;
 import de.sciss.app.BasicEvent;
 import de.sciss.net.OSCMessage;
 
+@SuppressWarnings("serial")
 public class RoutedOSCMessage extends BasicEvent {
 	public final OSCMessage			msg;
 	public final SocketAddress		addr;
@@ -28,9 +29,8 @@ public class RoutedOSCMessage extends BasicEvent {
 	private final String[]			path;
 	private final int				pathIdx;
 
-	public RoutedOSCMessage( OSCMessage msg, SocketAddress addr, long when, OSCRoot server, String[] path, int pathIdx )
-	{
-		super( addr, 0, when );
+	public RoutedOSCMessage(OSCMessage msg, SocketAddress addr, long when, OSCRoot server, String[] path, int pathIdx) {
+		super(addr, 0, when);
 		this.msg		= msg;
 		this.addr		= addr;
 		this.when		= when;
@@ -39,136 +39,81 @@ public class RoutedOSCMessage extends BasicEvent {
 		this.pathIdx	= pathIdx;
 	}
 
-	public boolean incorporate( BasicEvent oldEvent )
-	{
+	public boolean incorporate(BasicEvent oldEvent) {
 		return false;
 	}
 
-	public int getPathIndex()
-	{
+	public int getPathIndex() {
 		return pathIdx;
 	}
 
-	public int getPathCount()
-	{
+	public int getPathCount() {
 		return path.length;
 	}
 
-	public String getPathComponent( int idx )
-	{
-		return path[ idx ];
+	public String getPathComponent(int idx) {
+		return path[idx];
 	}
 
-	public String getPathComponent()
-	{
-		return path[ pathIdx ];
+	public String getPathComponent() {
+		return path[pathIdx];
 	}
 
-	public String getNextPathComponent()
-	{
-		return getNextPathComponent( 1 );
+	public String getNextPathComponent() {
+		return getNextPathComponent(1);
 	}
-	
-	public String getNextPathComponent( int skip )
-	{
-		return path[ pathIdx + skip ];
-	}
-	
-	public boolean hasNext()
-	{
-		return( hasNext( 1 ));
-	}
-	
-	public boolean hasNext( int numComponents )
-	{
-		return( pathIdx + numComponents < path.length );
-	}
-	
-//	public RoutedOSCMessage next( List routers )
-//	{
-//		return next( 1, routers );
-//	}
 
-	public RoutedOSCMessage next()
-	{
-		return next( 1 );
+	public String getNextPathComponent(int skip) {
+		return path[pathIdx + skip];
 	}
-	
-//	public RoutedOSCMessage next( int skip, List routers )
-//	{
-//		return new RoutedOSCMessage( msg, addr, when, server, path, pathIdx + skip, routers );
-//	}
 
-	public RoutedOSCMessage next( int skip )
-	{
-		return new RoutedOSCMessage( msg, addr, when, server, path, pathIdx + skip );
+	public boolean hasNext() {
+		return (hasNext(1));
 	}
-	
-//	/**
-//	 *	Queries must have the form
-//	 *	[ <path>, <queryID>, <property1> [, <property2> ... ]]
-//	 *	; this method is called with an array of values for all the properties
-//	 *	such that values[0] is the value of property1, values[1] is the value of property2 etc.
-//	 *	; this method replies with
-//	 *	[ "/query.reply", <queryID>, <value1> [, <value2> ... ]
-//	 *	to the sender.
-//	 */
-//	public void replyQuery( Object[] values )
-//	throws IOException
-//	{
-//		final Object[] args = new Object[ values.length + 1 ];
-//		args[ 0 ] = msg.getArg( 0 );
-//		System.arraycopy( values, 0, args, 1, values.length );
-//
-//		server.send( new OSCMessage( OSC_QUERYREPLY, args ), addr );
-//	}
-	
-//	/**
-//	 */
-//	public void replyGet( Object[] values )
-//	throws IOException
-//	{
-//		final Object[] args = new Object[ values.length + 1 ];
-//		args[ 0 ] = msg.getArg( 0 );
-//		System.arraycopy( values, 0, args, 1, values.length );
-//		server.send( new OSCMessage( OSC_GETREPLY, args ), addr );
-//	}
 
-	public void reply( String cmd, Object[] args )
-	throws IOException
-	{
-		server.send( new OSCMessage( cmd, args ), addr );
+	public boolean hasNext(int numComponents) {
+		return (pathIdx + numComponents < path.length);
 	}
-	
+
+	public RoutedOSCMessage next() {
+		return next(1);
+	}
+
+	public RoutedOSCMessage next(int skip) {
+		return new RoutedOSCMessage(msg, addr, when, server, path, pathIdx + skip);
+	}
+
+	public void reply(String cmd, Object[] args)
+			throws IOException {
+		server.send(new OSCMessage(cmd, args), addr);
+	}
+
 	public void replyFailed()
-	throws IOException
-	{
-		replyFailed( 0 );
+			throws IOException {
+		replyFailed(0);
 	}
 
-	public void replyFailed( int argCount )
-	throws IOException
-	{
-		final Object[] args = new Object[ argCount + 1 ];
-		args[ 0 ] = msg.getName();
-		for( int i = 0; i < argCount; i++ ) {
-			args[ i + 1 ] = msg.getArg( i );
+	public void replyFailed(int argCount)
+			throws IOException {
+		final Object[] args = new Object[argCount + 1];
+		args[0] = msg.getName();
+		for (int i = 0; i < argCount; i++) {
+			args[i + 1] = msg.getArg(i);
 		}
-		server.send( new OSCMessage( OSCRoot.OSC_FAILEDREPLY, args ), addr );
+		server.send(new OSCMessage(OSCRoot.OSC_FAILEDREPLY, args), addr);
 	}
-	
-	public void replyDone( int copyArgCount, Object[] doneArgs )
-	throws IOException
-	{
-		final Object[]	args	= new Object[ copyArgCount + doneArgs.length + 1 ];
-		int				j		= 0;
-		args[ j++ ] = msg.getName();
-		for( int i = 0; i < copyArgCount; i++ ) {
-			args[ j++ ] = msg.getArg( i );
+
+	public void replyDone(int copyArgCount, Object[] doneArgs)
+			throws IOException {
+		final Object[] args = new Object[copyArgCount + doneArgs.length + 1];
+		int j = 0;
+		args[j++] = msg.getName();
+		for (int i = 0; i < copyArgCount; i++) {
+			args[j++] = msg.getArg(i);
 		}
-		for( int i = 0; i < doneArgs.length; i++ ) {
-			args[ j++ ] = doneArgs[ i ];
+		for (Object doneArg : doneArgs) {
+			args[j++] = doneArg;
 		}
-		server.send( new OSCMessage( OSCRoot.OSC_DONEREPLY, args ), addr );
+		server.send(new OSCMessage(OSCRoot.OSC_DONEREPLY, args), addr);
 	}
 }

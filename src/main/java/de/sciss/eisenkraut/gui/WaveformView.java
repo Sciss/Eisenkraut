@@ -35,16 +35,11 @@ import de.sciss.gui.ComponentHost;
 import de.sciss.io.Span;
 import de.sciss.util.Disposable;
 
-/**
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
- */
+@SuppressWarnings("serial")
 public class WaveformView
-extends JComponent
-implements Disposable
-{
-//	private boolean				doRecalc		= true;
-	
+		extends JComponent
+		implements Disposable {
+
 	private int					fullChannels;
 	private int[]				channelMap;
 	

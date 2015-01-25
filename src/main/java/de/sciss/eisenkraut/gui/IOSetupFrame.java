@@ -81,9 +81,6 @@ import de.sciss.gui.SortedTableModel;
  *  This is the frame that
  *  displays the user adjustable
  *  input/output configuration
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 29-Apr-08
  */
 public class IOSetupFrame
 extends AppWindow
@@ -283,17 +280,17 @@ extends AppWindow
 			{
 //				int row = table.getSelectedRow() + table.getSelectedRowCount();
 //				if( row <= 0 ) row = collConfigs[ ID ].size();
-				final int modelIndex = collConfigs[ id ].size();
+				final int modelIndex = collConfigs[id].size();
 				final int viewIndex;
-				final RoutingConfig cfg = createUniqueConfig( id );
+				final RoutingConfig cfg = createUniqueConfig(id);
 //				collConfigs[ ID ].add( row, cfg );
-				collConfigs[ id ].add( cfg );
-				setConfigIDs[ id ].add( cfg.id );
-				setConfigNames[ id ].add( cfg.name );
-				setDirtyConfigs[ id ].add( cfg.id );
-				tm.fireTableRowsInserted( modelIndex, modelIndex );
-				viewIndex = stm.getViewIndex( modelIndex );
-				table.setRowSelectionInterval( viewIndex, viewIndex );
+				collConfigs[id].add(cfg);
+				setConfigIDs[id].add(cfg.id);
+				setConfigNames[id].add(cfg.name);
+				setDirtyConfigs[id].add(cfg.id);
+				tm.fireTableRowsInserted(modelIndex, modelIndex);
+				viewIndex = stm.getViewIndex(modelIndex);
+				table.setRowSelectionInterval(viewIndex, viewIndex);
 			}
 		});
 		ggMinus.addActionListener( new ActionListener() {
@@ -310,15 +307,15 @@ extends AppWindow
 						modelIndices[ i ] = stm.getModelIndex( viewIndex );
 					}
 					Arrays.sort( modelIndices );
-				
-					for( int i = modelIndices.length - 1; i >= 0; i-- ) {
-						cfg = (RoutingConfig) collConfigs[ id ].remove( modelIndices[ i ]);
-						setConfigNames[ id ].remove( cfg.name );
+
+					for (int i = modelIndices.length - 1; i >= 0; i--) {
+						cfg = (RoutingConfig) collConfigs[id].remove(modelIndices[i]);
+						setConfigNames[id].remove(cfg.name);
 						// never remove the id during one editing session,
 						// because that will confuse the prefs listeners
 						// and the setDirtyConfigs approach
 //						setConfigIDs[ id ].remove( cfg.id );
-						setDirtyConfigs[ id ].add( cfg.id );
+						setDirtyConfigs[id].add(cfg.id);
 					}
 //					tm.fireTableRowsDeleted( firstRow, lastRow );
 					tm.fireTableDataChanged();
@@ -367,17 +364,17 @@ extends AppWindow
 			BasicWindowHandler.showErrorDialog( getWindow(), e1, getResourceString( "errLoadPrefs" ));
 			return;
 		}
-			
-		for( int i = 0; i < arrayNames.length; i++ ) {
-			cfgPrefs	= ocPrefs.node( arrayNames[ i ]);
+
+		for (String arrayName : arrayNames) {
+			cfgPrefs = ocPrefs.node(arrayName);
 			try {
-				cfg		= new RoutingConfig( cfgPrefs );
-				collConfigs[ id ].add( cfg );
-				setConfigIDs[ id ].add( arrayNames[ i ]);
-				setConfigNames[ id ].add( cfg.name );
-			}
-			catch( NumberFormatException e1 ) {
-				System.err.println( e1 );
+				cfg = new RoutingConfig(cfgPrefs);
+				collConfigs[id].add(cfg);
+				setConfigIDs[id].add(arrayName);
+				setConfigNames[id].add(cfg.name);
+			} catch (NumberFormatException e1) {
+				System.err.println("IOSetupFrame - fromPrefs:");
+				e1.printStackTrace();
 			}
 		}
 	}
@@ -459,16 +456,14 @@ extends AppWindow
 		}
 	}
 
-	protected static String getResourceString( String key )
-	{
-		return AbstractApplication.getApplication().getResourceString( key );
+	protected static String getResourceString(String key) {
+		return AbstractApplication.getApplication().getResourceString(key);
 	}
 
 // ----------- internal classes  -----------
 
-	private class MapTransferHandler
-	extends TransferHandler
-	{
+	@SuppressWarnings("serial")
+	private class MapTransferHandler extends TransferHandler {
 		private final int id;
 
 		protected MapTransferHandler( int id )
@@ -479,8 +474,7 @@ extends AppWindow
 		/**
 		 * Overridden to import a MapTransferable if it is available.
 		 */
-		public boolean importData( JComponent c, Transferable t )
-		{
+		public boolean importData(JComponent c, Transferable t) {
 			MapTransferable			mt;
 			final JTable			table	= (JTable) c;
 			final SortedTableModel	stm		= (SortedTableModel) table.getModel();
@@ -500,7 +494,7 @@ extends AppWindow
 //System.err.println( "original mapping : "+(mt.idx+1)+"->"+(mt.cfg.mapping[ mt.idx ]+1)+"; new target " +(mapCh+1));
 						for( int i = 0; i < cfg.numChannels; i++ ) {
 							// dragged onto already mapped spot
-							if( cfg.mapping[ i ] == mapCh ) {
+							if (cfg.mapping[i] == mapCh) {
 								if( i == mt.idx ) return false; // source == target, no action
 								temp					= cfg.mapping[ mt.idx ];
 								cfg.mapping[ mt.idx ]	= mapCh;
@@ -548,19 +542,15 @@ extends AppWindow
 			}
 			return null;
 		}
-		
-		protected void exportDone( JComponent source, Transferable data, int action )
-		{
-//			System.err.println( "exportDone. Action == "+action );
+
+		protected void exportDone(JComponent source, Transferable data, int action) {
+			//			System.err.println( "exportDone. Action == "+action );
 		}
 
-		public boolean canImport( JComponent c, DataFlavor[] flavors )
-		{
-// System.err.println( "canImport" );
-
-			for( int i = 0; i < flavors.length; i++ ) {
-				for( int j = 0; j < mapFlavors.length; j++ ) {
-					if( flavors[i].equals( mapFlavors[j] )) return true;
+		public boolean canImport(JComponent c, DataFlavor[] flavors) {
+			for (DataFlavor flavor : flavors) {
+				for (DataFlavor mapFlavor1 : mapFlavors) {
+					if (flavor.equals(mapFlavor1)) return true;
 				}
 			}
 			return false;
@@ -583,11 +573,10 @@ extends AppWindow
 		{
 			return mapFlavors;
 		}
-		
-		public boolean isDataFlavorSupported( DataFlavor flavor )
-		{
-			for( int i = 0; i < mapFlavors.length; i++ ) {
-				if( mapFlavors[ i ].equals( flavor )) return true;
+
+		public boolean isDataFlavorSupported(DataFlavor flavor) {
+			for (DataFlavor mapFlavor1 : mapFlavors) {
+				if (mapFlavor1.equals(flavor)) return true;
 			}
 			return false;
 		}
@@ -602,6 +591,7 @@ extends AppWindow
 		}
 	}
 
+	@SuppressWarnings("serial")
 	private static class MappingRenderer
 	extends JComponent
 	implements TableCellRenderer
@@ -613,7 +603,7 @@ extends AppWindow
 		{
 			super();
 			setOpaque( true );
-			setFont( AbstractApplication.getApplication().getGraphicsHandler().getFont( GraphicsHandler.FONT_SYSTEM | GraphicsHandler.FONT_SMALL ));
+			setFont( AbstractApplication.getApplication().getGraphicsHandler().getFont(GraphicsHandler.FONT_SMALL));
 		}
 	
 		public Component getTableCellRendererComponent( JTable table, Object v,
@@ -643,7 +633,8 @@ extends AppWindow
 			}
 		}
 	}
-											   	
+
+	@SuppressWarnings("serial")
 	private class TableModel
 	extends AbstractTableModel
 	{
@@ -683,13 +674,13 @@ extends AppWindow
 			case 0:
 				return c.name;
 			case 1:
-				return new Integer( c.numChannels );
+				return c.numChannels;
 			case 2:
-				return new Float( c.startAngle );
+				return c.startAngle;
 			default:
 				col -= staticColNames.length;
 				for( int i = 0; i < c.mapping.length; i++ ) {
-					if( c.mapping[ i ] == col ) return new Integer( i + 1 );
+					if( c.mapping[ i ] == col ) return i + 1;
 				}
 				return null;
 			}
@@ -764,7 +755,7 @@ chanLp:					for( int ch = minCh; true; ch++ ) {
 							}
 							newMapping[ i ] = ch;
 							minCh = ch + 1;
-							break chanLp;
+							break;
 						}
 					}
 				} else break;
@@ -798,14 +789,14 @@ chanLp:					for( int ch = minCh; true; ch++ ) {
 				// set by changing numChannels and drag+drop
 				break;
 			}
-			
-			if( newCfg != null ) {
-				collConfigs[ id ].set( row, newCfg );
-				setConfigNames[ id ].remove( cfg.name );
-				setConfigNames[ id ].add( newCfg.name );
-				setDirtyConfigs[ id ].add( newCfg.id );
+
+			if (newCfg != null) {
+				collConfigs    [id].set(row, newCfg);
+				setConfigNames [id].remove(cfg.name);
+				setConfigNames [id].add(newCfg.name);
+				setDirtyConfigs[id].add(newCfg.id);
 			}
-			if( col <= 2 ) fireTableRowsUpdated( row, row );	// updates sorting!
+			if (col <= 2) fireTableRowsUpdated(row, row);    // updates sorting!
 		}
 	}
 }

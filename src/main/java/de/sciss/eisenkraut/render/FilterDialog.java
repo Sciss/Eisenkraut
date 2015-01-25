@@ -915,6 +915,7 @@ prodLp:		while( !ProcessingThread.shouldCancel() ) {
 
 // ---------------- Action objects ---------------- 
 
+	@SuppressWarnings("serial")
 	private class ActionClose
 	extends AbstractAction
 	{
@@ -929,6 +930,7 @@ prodLp:		while( !ProcessingThread.shouldCancel() ) {
 		}
 	}
 
+	@SuppressWarnings("serial")
 	private class ActionRender extends AbstractAction
 	{
 		protected ActionRender( String text )

@@ -575,9 +575,9 @@ public class Timeline
 	 *				there were quantization errors. with double seems
 	 *				to be fine. haven't checked with really long files!!
 	 */
+	@SuppressWarnings("serial")
 	private class ActionSelToPos
-	extends AbstractAction
-	{
+			extends AbstractAction {
 		private final double	weight;
 		private final boolean	deselect;
 	

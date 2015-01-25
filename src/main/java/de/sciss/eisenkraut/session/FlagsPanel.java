@@ -17,6 +17,7 @@ import de.sciss.app.DynamicAncestorAdapter;
 import de.sciss.app.DynamicListening;
 import de.sciss.eisenkraut.util.MapManager;
 
+@SuppressWarnings("serial")
 public class FlagsPanel
 		extends AbstractFlagsPanel
 		implements DynamicListening, SessionCollection.Listener {

@@ -29,10 +29,7 @@ import de.sciss.app.AbstractApplication;
 import de.sciss.app.GraphicsHandler;
 import de.sciss.eisenkraut.math.MathUtil;
 
-/**
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 10-Apr-08
- */
+@SuppressWarnings("serial")
 public class VolumeFader
 extends JSlider
 {

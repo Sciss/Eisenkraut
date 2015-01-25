@@ -39,50 +39,41 @@ import de.sciss.timebased.BasicStake;
 public abstract class AudioStake
 extends BasicStake
 {
-	private static final boolean			DEBUG				= true;
+	private static final boolean			DEBUG				= false;
 
 	private boolean							disposed			= false;
 	
-	private static final List				allStakes			= new ArrayList();
+	private static final List<AudioStake> allStakes			= new ArrayList<AudioStake>();
 	
 	protected static final Normalizer		fileNameNormalizer	= new Normalizer( Normalizer.C, false );
 		
 	private StackTraceElement[]				debugTrace;
-		
-	/**
-	 */
-	protected AudioStake( Span span )
-	{
-		super( span );
-		if( DEBUG ) {
-			allStakes.add( this );
+
+	protected AudioStake(Span span) {
+		super(span);
+		if (DEBUG) {
+			allStakes.add(this);
 			debugTrace = new Throwable().getStackTrace();
 		}
 	}
 
-	public void dispose()
-	{
-		disposed	= true;
-		if( DEBUG ) allStakes.remove( this );
+	public void dispose() {
+		disposed = true;
+		if (DEBUG) allStakes.remove(this);
 		super.dispose();
 	}
-	
-	public static void debugCheckDisposal()
-	{
-		if( !DEBUG ) {
-			System.err.println( "AudioStake.debugCheckDisposal() : not possible (set DEBUG to true!)" );
-			return;
-		}
-		System.err.println( "======= There are " + allStakes.size() + " undisposed stakes. ======= dump:" );
-		for( int i = 0; i < allStakes.size(); i++ ) {
-			((AudioStake) allStakes.get( i )).debugDump();
+
+	public static void debugCheckDisposal() {
+		if (DEBUG) {
+			System.err.println("======= There are " + allStakes.size() + " un-disposed stakes. ======= dump:");
+			for (AudioStake allStake : allStakes) {
+				allStake.debugDump();
+			}
+		} else {
+			System.err.println("AudioStake.debugCheckDisposal() : not possible (set DEBUG to true!)");
 		}
 	}
 	
-//	public abstract Stake replaceStart( long newStart );
-//	public abstract Stake replaceStop( long newStop );
-//	public abstract Stake shiftVirtual( long delta );
-		
 	// in anlehnung an InterleavedStreamFile
 	public abstract int readFrames( float[][] data, int dataOffset, Span readSpan ) throws IOException;
 	// XXX writeSpan should be replaced by framesWritten internally for simplicity
@@ -114,10 +105,10 @@ extends BasicStake
 	{
 		return new ActionDebugDump();
 	}
-	
+
+	@SuppressWarnings("serial")
 	private static class ActionDebugDump
-	extends AbstractAction
-	{
+			extends AbstractAction {
 		protected ActionDebugDump()
 		{
 			super( "Dump Undisposed Audio Stakes" );

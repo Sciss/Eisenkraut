@@ -40,13 +40,11 @@ public class PlugInWindow extends AppWindow {
 	private final ShowWindowAction	actionShowWindow;
 	private final BasicMenuFactory	mf;
 	
-	private final Map				winL		= new HashMap();
-//	private final Map				winFocusL	= new HashMap();
+	private final Map<WindowListener, Listener> winL		= new HashMap<WindowListener, Listener>();
 
 	private final JComponent		topView;
 
-	public PlugInWindow( String title, Rectangle cocoaBounds, int flags )
-	{
+	public PlugInWindow(String title, Rectangle cocoaBounds, int flags) {
 		super( SUPPORT );
 		actionShowWindow	= new ShowWindowAction( this );
 		mf					= ((BasicApplication) AbstractApplication.getApplication()).getMenuFactory();
@@ -62,11 +60,11 @@ public class PlugInWindow extends AppWindow {
 		}
 		try {
 			final ClassLoader cl = OSCRoot.getInstance().getGUI().getSwingOSC().getClass().getClassLoader();
-			topView		= (JComponent) Class.forName( "de.sciss.swingosc.ContentPane", true, cl ).getConstructor( new Class[] { Boolean.TYPE }).newInstance( new Object[] { new Boolean( (flags & FLAG_SCROLLPANE) == 0) });
+			topView		= (JComponent) Class.forName( "de.sciss.swingosc.ContentPane", true, cl ).getConstructor( new Class[] { Boolean.TYPE }).newInstance((flags & FLAG_SCROLLPANE) == 0);
 			if( (flags & FLAG_SCROLLPANE) != 0 ) {
 //				topView		= new ContentPane( false );
 //				final JScrollPane scrollPane = new ScrollPane( topView ); // ...SCROLLBAR_AS_NEEDED
-				final JComponent scrollPane = (JComponent) Class.forName( "de.sciss.swingosc.ScrollPane", true, cl ).getConstructor( new Class[] { Component.class }).newInstance( new Object[] { topView });
+				final JComponent scrollPane = (JComponent) Class.forName( "de.sciss.swingosc.ScrollPane", true, cl ).getConstructor( new Class[] { Component.class }).newInstance(topView);
 //				scrollPane.setViewportBorder( null );
 //				scrollPane.setBorder( null );
 				setContentPane( scrollPane );
@@ -184,24 +182,21 @@ public class PlugInWindow extends AppWindow {
 				wl.windowIconified( windowEvent( e ));
 			}
 		};
-		
-		addListener( l );
-		winL.put( wl, l );
+
+		addListener(l);
+		winL.put(wl, l);
 	}
-	
-	public void removeWindowListener( WindowListener wl )
-	{
-		final Listener l = (Listener) winL.remove( wl );
-		removeListener( l );
+
+	public void removeWindowListener(WindowListener wl) {
+		final Listener l = winL.remove(wl);
+		removeListener(l);
 	}
-	
-	public void addWindowFocusListener( WindowFocusListener l )
-	{
+
+	public void addWindowFocusListener(WindowFocusListener l) {
 		// XXX nothing
 	}
 
-	public void removeWindowFocusListener( WindowFocusListener l )
-	{
+	public void removeWindowFocusListener(WindowFocusListener l) {
 		// XXX nothing
 	}
 }

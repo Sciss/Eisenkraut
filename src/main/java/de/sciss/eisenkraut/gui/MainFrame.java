@@ -381,6 +381,7 @@ ggDumpOSC.addItem( getResourceString( "labelDumpHex" ), null, new Color( 0xFF, 0
 
 // ------------- interne klassen -------------
 
+	@SuppressWarnings("serial")
 	private class ActionBoot
 	extends AbstractAction
 	{

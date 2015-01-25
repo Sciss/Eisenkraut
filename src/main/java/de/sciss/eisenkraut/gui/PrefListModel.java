@@ -12,7 +12,6 @@
 
  package de.sciss.eisenkraut.gui;
 
-//import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Arrays;
 //import java.util.Iterator;
@@ -31,66 +30,51 @@ import de.sciss.app.PreferenceNodeSync;
 import de.sciss.util.Disposable;
 
 /**
- *  @author		Hanns Holger Rutz
- *	@version	0.1, 20-Apr-07
- * 
- *	@warning	Because java.util.Preferences is broken (childAdded never called)
+ *	Warning: Because java.util.Preferences is broken (childAdded never called)
  *				it is forbidden to change the preferences concurrently, since it's
  *				not monitored. Only commit changes by calling any of the method
  *				of the list model
  */
 public abstract class PrefListModel
-extends AbstractListModel
-implements PreferenceNodeSync, Disposable
-//implements ListModel, PreferenceNodeSync, Disposable // , NodeChangeListener (BROKEN!!)
-{
+		extends AbstractListModel
+		implements PreferenceNodeSync, Disposable {
+
 	private Preferences prefs;
-	private final List collData			= new ArrayList();
-//	private final List collListeners	= new ArrayList();
-	
-	public PrefListModel()
-	{
-		 /* empty */ 
+	private final List<Object> collData = new ArrayList<Object>();
+
+	public PrefListModel() {
+		 /* empty */
 	}
-	
-	public void dispose()
-	{
-		if( prefs != null ) {
-//			prefs.removeNodeChangeListener( this );
+
+	public void dispose() {
+		if (prefs != null) {
 			prefs = null;
 		}
 		collData.clear();
-//		collListeners.clear();
 		final ListDataListener[] l = getListDataListeners();
-		for( int i = l.length - 1; i >= 0; i-- ) {
-			removeListDataListener( l[ i ]);
+		for (int i = l.length - 1; i >= 0; i--) {
+			removeListDataListener(l[i]);
 		}
 	}
-	
-	public void setPreferences( Preferences prefs )
-	{
-//		if( this.prefs != null ) {
-//System.err.println( "removeNodeChangeListener: " + this.prefs );
-//			this.prefs.removeNodeChangeListener( this );
-//		}
+
+	public void setPreferences(Preferences prefs) {
 		collData.clear();
-		if( prefs != null ) {
+		if (prefs != null) {
 			final String[] names;
 			try {
 				names = prefs.childrenNames();
-			}
-			catch( BackingStoreException e1 ) {
+			} catch (BackingStoreException e1) {
 				e1.printStackTrace();
 				return;
 			}
-			Arrays.sort( names );
-			for( int i = 0; i < names.length; i++ ) {
-				if( !names[ i ].equals( String.valueOf( i ))) {
+			Arrays.sort(names);
+			for (int i = 0; i < names.length; i++) {
+				if (!names[i].equals(String.valueOf(i))) {
 					collData.clear();
-					new IllegalStateException( "Illegal preferences node '" + names[ i ] + "'" ).printStackTrace();
+					new IllegalStateException("Illegal preferences node '" + names[i] + "'").printStackTrace();
 					return;
 				}
-				collData.add( dataFromNode( prefs.node( names[ i ])));
+				collData.add(dataFromNode(prefs.node(names[i])));
 			}
 //System.err.println( "addNodeChangeListener: " + prefs );
 //			prefs.addNodeChangeListener( this );
@@ -98,7 +82,7 @@ implements PreferenceNodeSync, Disposable
 		this.prefs = prefs;
 //System.err.println( "setPreferences. size = " + this.getSize() );
 //		dispatch( new ListDataEvent( this, ListDataEvent.CONTENTS_CHANGED, 0, collData.size() ));
-		fireContentsChanged( this, 0, collData.size() );
+		fireContentsChanged(this, 0, collData.size());
 	}
 	
 //	private void dispatch( final ListDataEvent e )
@@ -188,9 +172,10 @@ implements PreferenceNodeSync, Disposable
 		catch( BackingStoreException e1 ) { e1.printStackTrace(); }
 		dataToNode( data, prefs.node( name ));
 	}
-	
-	protected abstract Object dataFromNode( Preferences node );
-	protected abstract void dataToNode( Object data, Preferences node );
+
+	protected abstract Object dataFromNode(Preferences node);
+
+	protected abstract void dataToNode(Object data, Preferences node);
 		
 	public Object get( int index )
 	{

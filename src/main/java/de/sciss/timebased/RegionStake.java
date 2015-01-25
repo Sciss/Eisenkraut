@@ -23,6 +23,7 @@ import javax.swing.tree.TreeNode;
 import de.sciss.io.Region;
 import de.sciss.io.Span;
 
+@SuppressWarnings("serial")
 public class RegionStake
 extends Region
 implements Stake

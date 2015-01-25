@@ -30,14 +30,12 @@ import de.sciss.app.EventManager;
  *	or vertical row. Listeners can be added to
  *	be informed about tool changes. Icons can
  *	be mutually exclusive grouped.
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
  */
+@SuppressWarnings("serial")
 public class ToolBar
-extends JPanel // JToolBar
-implements EventManager.Processor
-{
+		extends JPanel // JToolBar
+		implements EventManager.Processor {
+
 	/**
 	 *	group mode : it is allowed that no
 	 *	button of a group is selected
@@ -57,7 +55,7 @@ implements EventManager.Processor
 	 */
 	public static final int DESELECTION_AUTO		= -1;
 
-	private final HashMap   groups  = new HashMap();  // maps group numbers (Integer) to ToggleGroups
+	private final HashMap<Integer, ToggleGroup>  groups  = new HashMap<Integer, ToggleGroup>();  // maps group numbers (Integer) to ToggleGroups
 
 	private final EventManager elm = new EventManager( this );
 
@@ -100,12 +98,11 @@ implements EventManager.Processor
 	 *	@see	#DESELECTION_ALLOWED
 	 *	@see	#DESELECTION_FORBIDDEN
 	 */
-	public void setGroupMode( int group, int mode )
-	{
-		Integer		key = new Integer( group );
-		ToggleGroup tg  = (ToggleGroup) groups.get( key );
-		
-		if( tg != null ) tg.setGroupMode( mode );
+	public void setGroupMode(int group, int mode) {
+		Integer key = group;
+		ToggleGroup tg = groups.get(key);
+
+		if (tg != null) tg.setGroupMode(mode);
 	}
 
 	/**
@@ -121,14 +118,13 @@ implements EventManager.Processor
 	 *
 	 *	@see	#setGroupMode( int, int )
 	 */
-	public void addToggleButton( JToggleButton button, int group )
-	{
-		Integer		key = new Integer( group );
-		ToggleGroup tg  = (ToggleGroup) groups.get( key );
-		
-		if( tg == null ) {
+	public void addToggleButton(JToggleButton button, int group) {
+		Integer key = group;
+		ToggleGroup tg  = groups.get( key );
+
+		if (tg == null) {
 			tg = new ToggleGroup();
-			groups.put( key, tg );
+			groups.put(key, tg);
 		}
 
 		button.setFocusable( false );
@@ -209,14 +205,13 @@ implements EventManager.Processor
 	implements ActionListener
 	{
 		private int				mode	= DESELECTION_AUTO;
-		private final ArrayList	buttons = new ArrayList();
+		private final ArrayList<AbstractButton>	buttons = new ArrayList<AbstractButton>();
 
 		protected ToggleGroup() { /* empty */ }
 
-		protected void addToggleButton( AbstractButton button )
-		{
-			button.addActionListener( this );
-			buttons.add( button );
+		protected void addToggleButton(AbstractButton button) {
+			button.addActionListener(this);
+			buttons.add(button);
 		}
 		
 //		private void removeToggleButton( AbstractButton button )
@@ -239,10 +234,10 @@ implements EventManager.Processor
 			boolean			promote = true;
 			
 			if( button.isSelected() ) {
-				for( i = 0; i < buttons.size(); i++ ) {
-					button2 = (AbstractButton) buttons.get( i );
-					if( button2 != button && button2.isSelected() ) {
-						button2.setSelected( false );
+				for (i = 0; i < buttons.size(); i++) {
+					button2 = buttons.get(i);
+					if (button2 != button && button2.isSelected()) {
+						button2.setSelected(false);
 					}
 				}
 			} else {

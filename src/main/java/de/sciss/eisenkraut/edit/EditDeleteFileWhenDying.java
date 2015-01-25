@@ -29,6 +29,7 @@ import de.sciss.io.InterleavedStreamFile;
  *	object will simply delete that file.
  *	Useful for undoing recordings for example.
  */
+@SuppressWarnings("serial")
 public class EditDeleteFileWhenDying extends BasicUndoableEdit {
 
 	private final InterleavedStreamFile isf;

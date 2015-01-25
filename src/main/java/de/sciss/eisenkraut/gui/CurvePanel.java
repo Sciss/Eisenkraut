@@ -40,14 +40,9 @@ import javax.swing.event.MouseInputAdapter;
  *  This class describes a generic GUI tool
  *  that can be aquired and dismissed by
  *  a <code>Component</code>.
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 31-May-08
  */
-public class CurvePanel
-extends JComponent
-// implements LaterInvocationManager.Listener
-{
+@SuppressWarnings("serial")
+public class CurvePanel extends JComponent {
 	private static final String		KEY_CTRLX1		= "ctrlx1";
 	private static final String		KEY_CTRLY1		= "ctrly1";
 	private static final String		KEY_CTRLX2		= "ctrlx2";

@@ -15,6 +15,7 @@ package de.sciss.eisenkraut.io;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -31,7 +32,7 @@ import de.sciss.io.Span;
 import de.sciss.jcollider.Buffer;
 import de.sciss.net.OSCBundle;
 import de.sciss.timebased.BasicTrail;
-import de.sciss.timebased.Trail;
+import de.sciss.timebased.Stake;
 
 /**
  *  This class provides means for automatic multirate handling
@@ -174,8 +175,8 @@ extends BasicTrail
 		singleFile			= channelMaps.length == 1;
 
 		int numCh			= 0;
-		for( int i = 0; i < channelMaps.length; i++ ) {
-			numCh		   += channelMaps[ i ].length;
+		for (int[] channelMap : channelMaps) {
+			numCh += channelMap.length;
 		}
 		this.numChannels	= numCh;
 		setRate( rate );
@@ -195,17 +196,16 @@ extends BasicTrail
 	{
 		return audioFiles;
 	}
-	
+
 	public void closeAll()
-	throws IOException
-	{
-		for( int i = 0; i < audioFiles.length; i++ ) {
-			if( audioFiles[ i ] != null ) audioFiles[ i ].close();
+			throws IOException {
+		for (AudioFile audioFile : audioFiles) {
+			if (audioFile != null) audioFile.close();
 		}
 	}
-	
-	public void exchange( AudioFile af )
-	throws IOException
+
+	public void exchange(AudioFile af)
+			throws IOException
 	{
 		if( audioFiles.length != 1 ) throw new IllegalStateException();
 	
@@ -261,8 +261,8 @@ extends BasicTrail
 	{
 		// call this first because dependants might rely on open audio files!
 		super.dispose();
-		for( int i = 0; i < audioFiles.length; i++ ) {
-			if( audioFiles[ i ] != null ) audioFiles[ i ].cleanUp();
+		for (AudioFile audioFile : audioFiles) {
+			if (audioFile != null) audioFile.cleanUp();
 		}
 		deleteTempFiles();
 	}
@@ -307,10 +307,9 @@ extends BasicTrail
 	{
 		return new SilentAudioStake( span, numChannels );
 	}
-	
-	public synchronized AudioStake alloc( Span span )
-	throws IOException
-	{
+
+	public synchronized AudioStake alloc(Span span)
+			throws IOException {
 		long fileStart;
 		long fileStop;
 		final Span[] fileSpans	= new Span[ channelMaps.length ];
@@ -322,14 +321,15 @@ extends BasicTrail
 				createTempFiles();
 			}
 //		}
-		synchronized( tempF ) {
+
+		// synchronized( tempF ) {
 			for( int i = 0; i < tempF.length; i++ ) {
 				fileStart		= tempF[ i ].getFrameNum();
 				fileStop		= fileStart + span.getLength();
 				tempF[ i ].setFrameNum( fileStop );
 				fileSpans[ i ]	= new Span( fileStart, fileStop );
 			}
-		}
+		// }
 		
 		if( singleFile ) {
 			return new InterleavedAudioStake( span, tempF[ 0 ], fileSpans[ 0 ]);
@@ -338,77 +338,38 @@ extends BasicTrail
 		}
 	}
 
-//	public void addBufferReadMessages( OSCBundle bndl, Span readSpan, Buffer[] bufs, int bufOff )
-//	{
-//		int idx = indexOf( readSpan.start, true );
-//		if( idx < 0 ) idx = -(idx + 2);
-//
-//		final List	coll	= editGetCollByStart( null );
-//		final int				num		= coll.size();
-//		AudioStake				stake;
-//		int						chunkLen;
-//		Span					subSpan;
-//		int						len	= (int) readSpan.getLength();
-//		
-//		while( (len > 0) && (idx < num) ) {
-//			stake		= (AudioStake) coll.get( idx );
-//			subSpan		= new Span( Math.max( stake.getSpan().start, readSpan.start ),
-//									Math.min( stake.getSpan().stop, readSpan.stop ));
-//			if( subSpan.getLength() > 0 ) {
-//				stake.addBufferReadMessages( bndl, subSpan, bufs, bufOff );
-//				chunkLen	= (int) subSpan.getLength();
-//				bufOff	   += chunkLen;
-//				len		   -= chunkLen;
-//			}
-//			idx++;
-//		}
-//		if( len > 0 ) {
-//			for( int i = 0; i < bufs.length; i++ ) {
-//				bndl.addPacket( bufs[ i ].fillMsg(
-//					bufOff * bufs[ i ].getNumChannels(), len * bufs[ i ].getNumChannels(), 0.0f ));
-//			}
-//		}
-//	}
-
-	public void addBufferReadMessages( OSCBundle bndl, Span[] readSpans, Buffer[] bufs, int bufOff )
-	{
-//		int idx = indexOf( readSpan.start, true );
-//		if( idx < 0 ) idx = -(idx + 2);
-
-		final List		coll	= editGetCollByStart( null );
+	public void addBufferReadMessages(OSCBundle bndl, Span[] readSpans, Buffer[] bufs, int bufOff) {
+		final List<Stake> coll	= editGetCollByStart(null);
 		final int		num		= coll.size();
 		AudioStake		stake;
 		int				chunkLen;
 		Span			subSpan, readSpan;
-//		int				len		= (int) readSpan.getLength();
 		int				len		= 0;
 		int				idx;
-		
-		for( int i = 0; i < readSpans.length; i++ ) {
-			readSpan	= readSpans[ i ];
-			idx			= indexOf( readSpan.start, true );
-//System.err.println( "idx = "+idx );
-			if( idx < 0 ) idx = Math.max( 0, -(idx + 2) );
-			len		   += (int) readSpan.getLength();
-			
-			while( (len > 0) && (idx < num) ) {
-//System.err.println( "len = "+len+"; idx = "+idx+"; num = "+num );
-				stake		= (AudioStake) coll.get( idx );
-				subSpan		= new Span( Math.max( stake.getSpan().start, readSpan.start ),
-										Math.min( stake.getSpan().stop, readSpan.stop ));
-				chunkLen	= (int) subSpan.getLength();
-				if( chunkLen > 0 ) {
-					stake.addBufferReadMessages( bndl, subSpan, bufs, bufOff );
-					bufOff	   += chunkLen;
-					len		   -= chunkLen;
+
+		for (Span readSpan1 : readSpans) {
+			readSpan = readSpan1;
+			idx = indexOf(readSpan.start, true);
+			if (idx < 0) idx = Math.max(0, -(idx + 2));
+			len += (int) readSpan.getLength();
+
+			while ((len > 0) && (idx < num)) {
+				stake = (AudioStake) coll.get(idx);
+				subSpan = new Span(Math.max(stake.getSpan().start, readSpan.start),
+						Math.min(stake.getSpan().stop, readSpan.stop));
+				chunkLen = (int) subSpan.getLength();
+				if (chunkLen > 0) {
+					stake.addBufferReadMessages(bndl, subSpan, bufs, bufOff);
+					bufOff += chunkLen;
+					len -= chunkLen;
 				}
 				idx++;
 			}
 		}
 		if( len > 0 ) {
-			for( int i = 0; i < bufs.length; i++ ) {
-				bndl.addPacket( bufs[ i ].fillMsg(
-					bufOff * bufs[ i ].getNumChannels(), len * bufs[ i ].getNumChannels(), 0.0f ));
+			for (Buffer buf : bufs) {
+				bndl.addPacket(buf.fillMsg(
+						bufOff * buf.getNumChannels(), len * buf.getNumChannels(), 0.0f));
 			}
 		}
 	}
@@ -416,13 +377,14 @@ extends BasicTrail
 	public static final int MODE_INSERT		= Session.EDIT_INSERT;
 	public static final int MODE_OVERWRITE	= Session.EDIT_OVERWRITE;
 	public static final int MODE_MIX		= Session.EDIT_MIX;
-//	private static final int MODE_MIN		= MODE_INSERT;
-//	private static final int MODE_MAX		= MODE_MIX;
 
 	/**
 	 *	Note: when mode == MODE_INSERT, the caller should have called editInsert on this
 	 *	trail before, this is NOT done by this method; this method simply calls editAdd
 	 *	with the newly synthesized stake!
+	 *
+	 *	TODO: this method should somehow be part of BasicTrail
+	 *	TODO: this method has become too complex and should be split up
 	 *
 	 *	@param	srcTrail	the trail to read from (null allowed, which means no source tracks)
 	 *	@param	copySpan	re source!
@@ -433,17 +395,12 @@ extends BasicTrail
 	 *						; so to copy channels 0 and 2 of a four channel source to a target stereo trail,
 	 *						trackMap would be [ 0, 2 ] for example. A mono to stereo would be [ 0, 0 ].
 	 *						index -1 indicates bypass (for MODE_INSERT or clearUnused filled with zeroes)
-	 *	@param	clearUnused	whether tracks in source are to be cleared (instead of bypassed) when
-	 *						no mapping from target exists. don't combine mode == MODE_MIX and clearUnused == true!
-	 *
-	 *	@todo	this method should somehow be part of BasicTrail
-	 *	@todo	this method has become too complex and should be split up
 	 */
 	public boolean copyRangeFrom( AudioTrail srcTrail, Span copySpan, long insertPos, int mode,
 								  Object source, AbstractCompoundEdit ce, int[] trackMap, BlendContext bcPre, BlendContext bcPost )
 	throws IOException
 	{
-		if( trackMap.length != this.getChannelNum() ) throw new IllegalArgumentException( "trackMap : " + trackMap );
+		if( trackMap.length != this.getChannelNum() ) throw new IllegalArgumentException( "trackMap : " + Arrays.toString(trackMap));
 		if( trackMap.length == 0 ) return true;
 
 		final boolean			hasBlend	= (bcPre != null) && (bcPre.getLen() > 0) || (bcPost != null) && (bcPost.getLen() > 0);
@@ -500,11 +457,10 @@ extends BasicTrail
 		}
 	}
 
-	private static void setProgression( long len, double progWeight )
-	throws ProcessingThread.CancelledException
-	{
-// System.err.println( "aud prog len " + len + ", p " + (float) (len * progWeight) );
-		ProcessingThread.update( (float) (len * progWeight) );
+	private static void setProgression(long len, double progWeight)
+			throws ProcessingThread.CancelledException {
+		// System.err.println( "aud prog len " + len + ", p " + (float) (len * progWeight) );
+		ProcessingThread.update((float) (len * progWeight));
 	}
 	
 	private static void flushProgression()
@@ -555,11 +511,10 @@ extends BasicTrail
 		}
 		writeStake.flush();
 	}
-		
-	private void mixRangeFrom( AudioTrail srcTrail, long srcStart, AudioStake writeStake, long insertPos, long len,
-							   int bufLen, int[] trackMap, double progWeight )
-	throws IOException, InterruptedException
-	{
+
+	private void mixRangeFrom(AudioTrail srcTrail, long srcStart, AudioStake writeStake, long insertPos, long len,
+							  int bufLen, int[] trackMap, double progWeight)
+			throws IOException, InterruptedException {
 		final float[][]			srcBuf			= new float[ srcTrail == null ? 0 : srcTrail.getChannelNum() ][];
 		final float[][]			outBuf			= new float[ this.getChannelNum() ][ bufLen ];
 		final float[][]			mappedSrcBuf	= new float[ this.getChannelNum() ][];
@@ -820,25 +775,25 @@ extends BasicTrail
 			}
 		}
 
-		for( long framesWritten = 0; framesWritten < len; ) {
+		for (long framesWritten = 0; framesWritten < len; ) {
 			chunkLen	= (int) Math.min( bufLen, len - framesWritten );
 			newInsPos	= insertPos + chunkLen;
 			chunkSpan	= new Span( insertPos, newInsPos );
-			this.readFrames( mixBuf, 0, chunkSpan );
-			if( srcUsed ) {
-				newSrcStart	= srcStart + chunkLen;
-				chunkSpan2	= new Span( srcStart, newSrcStart );
-				srcTrail.readFrames( srcBuf, 0, chunkSpan2 );	// null channel bufs allowed!
-				srcStart	= newSrcStart;
+			this.readFrames(mixBuf, 0, chunkSpan);
+			if (srcUsed) {
+				newSrcStart = srcStart + chunkLen;
+				chunkSpan2 = new Span(srcStart, newSrcStart);
+				srcTrail.readFrames(srcBuf, 0, chunkSpan2);    // null channel bufs allowed!
+				srcStart = newSrcStart;
 
-				if( framesWritten < preLen ) {	// fade source in
-					bcPre.fadeIn( framesWritten, srcFadeBuf, 0, srcFadeBuf, 0, (int) Math.min( chunkLen, preLen - framesWritten ));
+				if (framesWritten < preLen) {    // fade source in
+					bcPre.fadeIn(framesWritten, srcFadeBuf, 0, srcFadeBuf, 0, (int) Math.min(chunkLen, preLen - framesWritten));
 				}
-				if( len - (framesWritten + chunkLen) < postLen ) {	// fade source out
-					bcPost.fadeOut( framesWritten - (len - postLen), srcFadeBuf, 0, srcFadeBuf, 0, (int) Math.min( chunkLen, len - framesWritten ));
+				if (len - (framesWritten + chunkLen) < postLen) {    // fade source out
+					bcPost.fadeOut(framesWritten - (len - postLen), srcFadeBuf, 0, srcFadeBuf, 0, (int) Math.min(chunkLen, len - framesWritten));
 				}
-				for( int i = 0; i < mixBuf.length; i++ ) {
-					if( mappedSrcBuf[ i ] != null ) add( mixBuf[ i ], 0, mappedSrcBuf[ i ], 0, chunkLen );
+				for (int i = 0; i < mixBuf.length; i++) {
+					if (mappedSrcBuf[i] != null) add(mixBuf[i], 0, mappedSrcBuf[i], 0, chunkLen);
 				}
 			}
 			writeStake.writeFrames( mixBuf, 0, chunkSpan );
@@ -953,12 +908,11 @@ extends BasicTrail
 			if( xFade ) {
 				this.readFrames( mixBuf, 0, chunkSpan );
 				if( xFadeBegin ) {	// fade this out
-					chunkLen2		= (int) Math.min( chunkLen, preLen - framesWritten );
-					deltaChunk		= chunkLen - chunkLen2;
-//					chunkSpan2		= deltaChunk > 0 ? chunkSpan.replaceStop( chunkSpan.stop - deltaChunk ) : chunkSpan;
-					bcPre.fadeOut( framesWritten, thisFadeBuf, 0, thisFadeBuf, 0, chunkLen2 );
-					clrMixFadeStart	= chunkLen2;
-					clrMixFadeStop	= chunkLen;
+					chunkLen2		= (int) Math.min( chunkLen, preLen - framesWritten);
+					// deltaChunk = chunkLen - chunkLen2;
+					bcPre.fadeOut(framesWritten, thisFadeBuf, 0, thisFadeBuf, 0, chunkLen2);
+					clrMixFadeStart = chunkLen2;
+					clrMixFadeStop = chunkLen;
 				}
 				if( xFadeEnd ) {	// fade this in
 //					chunkLen2	= (int) Math.min( chunkLen, len - framesWritten );
@@ -976,8 +930,8 @@ extends BasicTrail
 				}
 				chunkLen2 = clrMixFadeStop - clrMixFadeStart;
 				if( chunkLen2 > 0 ) {
-					for( int i = 0; i < thisFadeBuf.length; i++ ) {
-						if( thisFadeBuf[ i ] != null ) clear( thisFadeBuf[ i ], clrMixFadeStart, chunkLen2 );
+					for (float[] aThisFadeBuf : thisFadeBuf) {
+						if (aThisFadeBuf != null) clear(aThisFadeBuf, clrMixFadeStart, chunkLen2);
 					}
 				}
 				clrMixFadeStart	= 0;
@@ -998,17 +952,15 @@ extends BasicTrail
 		writeStake.flush();
 	}
 
-	private static void add( float[] bufA, int offA, float[] bufB, int offB, int len )
-	{
-		for( int stop = offA + len; offA < stop; ) {
-			bufA[ offA++ ] += bufB[ offB++ ];
+	private static void add(float[] bufA, int offA, float[] bufB, int offB, int len) {
+		for (int stop = offA + len; offA < stop; ) {
+			bufA[offA++] += bufB[offB++];
 		}
 	}
 
-	private static void clear( float[] buf, int off, int len )
-	{
-		for( int stop = off + len; off < stop; ) {
-			buf[ off++ ] = 0f;
+	private static void clear(float[] buf, int off, int len) {
+		for (int stop = off + len; off < stop; ) {
+			buf[off++] = 0f;
 		}
 	}
 
@@ -1283,13 +1235,12 @@ extends BasicTrail
 		return AbstractApplication.getApplication().getResourceString( key );
 	}
 
-	public void clearRange( Span clearSpan, int mode, Object source, AbstractCompoundEdit ce, boolean[] trackMap, BlendContext bc )
-	throws IOException
-	{
-		if( trackMap.length != this.getChannelNum() ) throw new IllegalArgumentException( trackMap.toString() );
-		if( trackMap.length == 0 ) return;
+	public void clearRange(Span clearSpan, int mode, Object source, AbstractCompoundEdit ce, boolean[] trackMap, BlendContext bc)
+			throws IOException {
+		if (trackMap.length != this.getChannelNum()) throw new IllegalArgumentException(Arrays.toString(trackMap));
+		if (trackMap.length == 0) return;
 
-		switch( mode ) {
+		switch (mode) {
 		case MODE_INSERT:
 			clearRangeIns( clearSpan, mode, source, ce, trackMap, bc );
 			break;
@@ -1301,18 +1252,16 @@ extends BasicTrail
 		}
 	}
 
-	public void addDependant( Trail sub )
-	{
-		super.addDependant( sub );
-		if( sub instanceof DecimatedWaveTrail ) {
+	public void addDependant(BasicTrail sub) {
+		super.addDependant(sub);
+		if (sub instanceof DecimatedWaveTrail) {
 			numDepDec++;
 		}
 	}
 
-	public void removeDependant( Trail sub )
-	{
-		super.removeDependant( sub );
-		if( sub instanceof DecimatedWaveTrail ) {
+	public void removeDependant(BasicTrail sub) {
+		super.removeDependant(sub);
+		if (sub instanceof DecimatedWaveTrail) {
 			numDepDec--;
 		}
 	}
@@ -1341,7 +1290,6 @@ extends BasicTrail
 		final Span			fadeInSpan		= new Span( clearSpan.stop - left, clearSpan.stop + right );
 		final Span			fadeOutSpan		= new Span( clearSpan.start - left, clearSpan.start + right );
 		final int			bufLen			= (int) Math.min( blendLen, BUFSIZE );
-		final Span			writeSpan		= fadeOutSpan; // new Span( clearSpan.start, clearSpan.start + blendLen );
 		final int			numCh			= this.getChannelNum();
 		final float[][]		bufA			= new float[ numCh ][ bufLen ];
 		final float[][]		bufB			= new float[ numCh ][ bufLen ];
@@ -1359,7 +1307,7 @@ extends BasicTrail
 		
 		try {
 			flushProgression();
-			writeStake		= alloc( writeSpan );
+			writeStake		= alloc(fadeOutSpan);
 			
 			for( long framesWritten = 0; framesWritten < blendLen; ) {
 				chunkLen	= (int) Math.min( bufLen, blendLen - framesWritten );
@@ -1370,7 +1318,7 @@ extends BasicTrail
 				chunkSpan	= new Span( n, n + chunkLen );
 				this.readFrames( bufB, 0, chunkSpan );
 				bc.blend( framesWritten, bufA, 0, bufB, 0, bufA, 0, chunkLen );
-				n			= writeSpan.start + framesWritten;
+				n			= fadeOutSpan.start + framesWritten;
 				chunkSpan	= new Span( n, n + chunkLen );
 				writeStake.writeFrames( bufA, 0, chunkSpan );
 				framesWritten += chunkLen;
@@ -1415,7 +1363,7 @@ extends BasicTrail
 		}
 		// now sync is true if all tracks are selected or all are unselected
 
-		final List collStakes	= new ArrayList( 3 );
+		final List<Stake> collStakes	= new ArrayList<Stake>(3);
 		
 //final long time1 = System.currentTimeMillis();
 		try {
@@ -1489,20 +1437,20 @@ extends BasicTrail
 			}
 
 			// ---- define stakes ----
-			if( useSilentStake ) {		// ok, let's put a silent stake in dem middle
-				if( hasBlend ) {
-					writeStake1 = alloc( new Span( clearSpan.start, silentSpan.start ));
-					collStakes.add( writeStake1 );
+			if (useSilentStake) {        // ok, let's put a silent stake in dem middle
+				if (hasBlend) {
+					writeStake1 = alloc(new Span(clearSpan.start, silentSpan.start));
+					collStakes.add(writeStake1);
 				} else {
-					writeStake1	= null;
+					writeStake1 = null;
 				}
-				writeStake2	= allocSilent( silentSpan );
-				collStakes.add( writeStake2 );
-				if( hasBlend ) {
-					writeStake3	= alloc( new Span( silentSpan.stop, clearSpan.stop ));
-					collStakes.add( writeStake3 );
+				writeStake2 = allocSilent(silentSpan);
+				collStakes.add(writeStake2);
+				if (hasBlend) {
+					writeStake3 = alloc(new Span(silentSpan.stop, clearSpan.stop));
+					collStakes.add(writeStake3);
 				} else {
-					writeStake3	= null;
+					writeStake3 = null;
 				}
 				
 				final double progRatio2		= 1.0 / (1.0 + numDepDec);  // inf:1 for silentLen
@@ -1510,10 +1458,10 @@ extends BasicTrail
 				progWeight					= (progRatio*w + progRatio2*(1.0-w)) / blendLen2;
 			
 			} else {
-				writeStake2	= alloc( clearSpan );
+				writeStake2 = alloc(clearSpan);
 				writeStake1	= writeStake2;
 				writeStake3	= writeStake2;
-				collStakes.add( writeStake2 );
+				collStakes.add(writeStake2);
 				progWeight	= progRatio / (blendLen2 + silentLen);
 //				progWeight	= 9.0 / ((blendLen2 + silentLen) * (numDepDec + 9));
 			}
@@ -1583,25 +1531,24 @@ extends BasicTrail
 		}
 		finally {
 			if( !success ) {
-				for( int i = 0; i < collStakes.size(); i++ ) {
-					((AudioStake) collStakes.get( i )).dispose();
+				for (Stake collStake : collStakes) {
+					collStake.dispose();
 				}
 			}
 		}
 
 //final long time2 = System.currentTimeMillis();
 		// XXX mode
-		this.editAddAll( source, collStakes, ce );
+		this.editAddAll(source, collStakes, ce);
 //final long time3 = System.currentTimeMillis();
 //System.out.println( "ratio " + (double) (time2 - time1) / (time3 - time1) );
 	}
 
-	public static void readFrames( List stakesByStart, float[][] data, int dataOffset, Span readSpan )
-    throws IOException
-	{
+	public static void readFrames(List<Stake> stakesByStart, float[][] data, int dataOffset, Span readSpan)
+			throws IOException {
 		final int		num		= stakesByStart.size();
-		int				idx		= Collections.binarySearch( stakesByStart, new Long( readSpan.start ), startComparator );
-		if( idx < 0 )	idx		= Math.max( 0, -(idx + 2) );
+		int				idx		= Collections.binarySearch(stakesByStart, readSpan.start, startComparator);
+		if( idx < 0 )	idx		= Math.max(0, -(idx + 2));
 //		int				len		= (int) readSpan.getLength();
 		int				dataStop= (int) readSpan.getLength() + dataOffset;
 
@@ -1680,44 +1627,20 @@ System.err.println( "WARNING: trying to read beyond the trail's stop" );
 		}
 	}
 
-	private void deleteTempFiles()
-	{
-		if( tempF != null ) {
-			for( int i = 0; i < tempF.length; i++ ) {
-				if( tempF[ i ] != null ) {
-					tempF[ i ].cleanUp();
-					tempF[ i ].getFile().delete();
+	private void deleteTempFiles() {
+		if (tempF != null) {
+			for (AudioFile aTempF : tempF) {
+				if (aTempF != null) {
+					aTempF.cleanUp();
+					aTempF.getFile().delete();
 				}
 			}
 		}
 		tempF = null;
 	}
 
-//	/**
-//	 *  Wrapper method for calling the fullrate
-//	 *  editor's flatten method.
-//	 *
-//	 *  @param  f   the file into which the flattened data is written
-//	 *  @throws IOException if a read or write error occurs
-//	 *  @see	NondestructiveTrackEditor#flatten( InterleavedFloatFile )
-//	 *
-//	 *	@todo	subsampled files should be flatten as well?
-//	 */
-//	public void flatten( InterleavedStreamFile f, ProcessingThread pt, float progOff, float progWeight,
-//						 SyncCompoundEdit edit )
-//    throws IOException
-//	{
-//		Span	totalSpan	= new Span( 0, ste[0].getFrameNum() );
-//		long	offset		= f.getFramePosition();
-// 	
-//		ste[0].flatten( f, pt, progOff, progWeight );
-//		ste[0].clear();
-//		ste[0].insert( f, offset, totalSpan );
-//	}
-
-	public void flatten( InterleavedStreamFile f, Span span, int[] channelMap )
-    throws IOException
-	{
+	public void flatten(InterleavedStreamFile f, Span span, int[] channelMap)
+			throws IOException {
 		final Span			fileSpan	= new Span( f.getFramePosition(), span.getLength() );
 		final AudioStake	stake		= new InterleavedAudioStake( span, f, fileSpan );
 		
@@ -1770,8 +1693,8 @@ System.err.println( "WARNING: trying to read beyond the trail's stop" );
 			}
 		} else {
 			if( outChannels != channelMap.length ) throw new IllegalArgumentException();
-			for( int i = 0; i < channelMap.length; i++ ) {
-				if( (channelMap[ i ] < 0) || (channelMap[ i ] >= numChannels) ) throw new IllegalArgumentException();
+			for (int aChannelMap : channelMap) {
+				if ((aChannelMap < 0) || (aChannelMap >= numChannels)) throw new IllegalArgumentException();
 			}
 		}
 

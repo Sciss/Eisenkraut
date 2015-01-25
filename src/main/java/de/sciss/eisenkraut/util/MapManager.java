@@ -36,13 +36,8 @@ import de.sciss.eisenkraut.io.XMLRepresentation;
 
 import de.sciss.io.IOUtil;
 
-/**
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
- */
 public class MapManager
-implements EventManager.Processor, XMLRepresentation
-{
+		implements EventManager.Processor, XMLRepresentation {
 	/**
 	 *	Code for <code>Event.getOwnerModType()</code>:
 	 *	the object has been changed in a way that affects its graphical
@@ -55,91 +50,75 @@ implements EventManager.Processor, XMLRepresentation
 
 	// ------- private -------
 	
-	private final Map			backingMap;
+	private final Map<String, Object> backingMap;
 	protected final Object		owner;
-	private final Map			contextMap;
-	private final EventManager	elm				= new EventManager( this );
+	private final Map<String, Context> contextMap;
+	private final EventManager elm = new EventManager(this);
 
 	/**
 	 */
-	public MapManager( Object owner, Map backingMap )
-	{
+	public MapManager(Object owner, Map<String, Object> backingMap) {
 		this.owner			= owner;
 		this.backingMap		= backingMap;
-		contextMap			= new HashMap();
+		contextMap			= new HashMap<String, Context>();
 	}
 
-	public MapManager( Object owner )
-	{
-		this( owner, new HashMap() );
+	public MapManager(Object owner) {
+		this(owner, new HashMap<String, Object>());
 	}
 
-	public void addListener( MapManager.Listener listener )
-	{
-		elm.addListener( listener );
+	public void addListener(MapManager.Listener listener) {
+		elm.addListener(listener);
 	}
 
-	public void removeListener( MapManager.Listener listener )
-	{
-		elm.removeListener( listener );
+	public void removeListener(MapManager.Listener listener) {
+		elm.removeListener(listener);
 	}
-	
-	public void cloneMap( MapManager orig )
-	{
-		Iterator	iter;
-		Object		key;
-		
-		iter = orig.backingMap.keySet().iterator();
-		while( iter.hasNext() ) {
-			key = iter.next();
-			this.backingMap.put( key, orig.backingMap.get( key ));	// all supported types are immutable
+
+	public void cloneMap(MapManager orig) {
+		for (String key : orig.backingMap.keySet()) {
+			this.backingMap.put(key, orig.backingMap.get(key));    // all supported types are immutable
 		}
 
-		iter = orig.contextMap.keySet().iterator();
-		while( iter.hasNext() ) {
-			key = iter.next();
-			this.contextMap.put( key, new Context( (Context) orig.contextMap.get( key )));
+		for (String key : orig.contextMap.keySet()) {
+			this.contextMap.put(key, new Context(orig.contextMap.get(key)));
 		}
 	}
 	
 	// the returned set is allowed to be modified
-	public Set keySet( int inclusionFlags, int exclusionFlags )
-	{
-		Set		allKeys	= backingMap.keySet();
-		HashSet	fltKeys	= new HashSet( allKeys );
-		
-		if( (inclusionFlags == Context.ALL_INCLUSIVE) &&
-			(exclusionFlags == Context.NONE_EXCLUSIVE) ) return fltKeys;
+	public Set<String> keySet(int inclusionFlags, int exclusionFlags) {
+		Set<String> allKeys = backingMap.keySet();
+		HashSet<String> fltKeys = new HashSet<String>(allKeys);
+
+		if ((inclusionFlags == Context.ALL_INCLUSIVE) &&
+				(exclusionFlags == Context.NONE_EXCLUSIVE)) return fltKeys;
 	
-		Iterator iter = fltKeys.iterator();
+		Iterator<String> iter = fltKeys.iterator();
 		Context c;
 
-		while( iter.hasNext() ) {
-			c = (Context) contextMap.get( iter.next() );
-			if( (c == null) || ((c.flags & inclusionFlags) == 0) || ((c.flags & exclusionFlags) != 0) ) {
+		while (iter.hasNext()) {
+			c = contextMap.get(iter.next());
+			if ((c == null) || ((c.flags & inclusionFlags) == 0) || ((c.flags & exclusionFlags) != 0)) {
 				iter.remove();
 			}
 		}
 	
 		return fltKeys;
 	}
-	
-	public boolean containsKey( String key )
-	{
-		return backingMap.containsKey( key );
+
+	public boolean containsKey(String key) {
+		return backingMap.containsKey(key);
 	}
 
-	public void putContext( Object source, String key, MapManager.Context context )
-	{
-//System.err.println( "putContext key = "+key );
-		contextMap.put( key, context );
+	public void putContext(Object source, String key, MapManager.Context context) {
+		contextMap.put(key, context);
 		Object o = getValue( key );
 		if( (context.defaultValue != null) ) {
 			if( o == null ) {
 				putValue( source, key, context.defaultValue );
 			} else {
 				if( !o.getClass().equals( context.defaultValue.getClass() )) {
-					// Long and Integer should be exchangable due to NumberField ( XXX )
+					// Long and Integer should be exchangeable due to NumberField ( XXX )
 					if( !(o instanceof Number) || !(context.defaultValue instanceof Number) ) {
 						System.err.println( "Warning! Map context and value classes inconsistent - "+
 											"for key '"+key+"' context wants '"+context.defaultValue.getClass()+
@@ -150,22 +129,19 @@ implements EventManager.Processor, XMLRepresentation
 			}
 		}
 	}
-	
-	public MapManager.Context getContext( String key )
-	{
-		return (Context) contextMap.get( key );
+
+	public MapManager.Context getContext(String key) {
+		return contextMap.get(key);
 	}
-	
-	public Object putValue( Object source, String key, Object value )
-	{
-//System.err.println( "putValue source = "+source.getClass().getName()+" ; key = "+key+ "; value = "+value );
-		Object oldVal = backingMap.put( key, value );
+
+	public Object putValue(Object source, String key, Object value) {
+		Object oldVal = backingMap.put(key, value);
 		if( (source != null) &&
 			(((oldVal == null) && (value != null)) ||
 			 ((oldVal != null) && (value == null)) ||
 			 ((oldVal != null) && (value != null) && !(oldVal.equals( value ))))) {
 
-			Set keySet = new HashSet( 1 );
+			Set<String> keySet = new HashSet<String>( 1 );
 			keySet.add( key );
 
 			elm.dispatchEvent( new MapManager.Event( this, source, keySet ));
@@ -174,45 +150,39 @@ implements EventManager.Processor, XMLRepresentation
 		return( oldVal );
 	}
 
-	public Object removeValue( Object source, String key )
-	{
-//System.err.println( "removeValue source = "+source.getClass().getName()+" ; key = "+key );
-		final Object result = backingMap.remove( key );
-		if( (result != null) && (source != null) ) {
-			final Set keySet = new HashSet( 1 );
-			keySet.add( key );
+	public Object removeValue(Object source, String key) {
+		final Object result = backingMap.remove(key);
+		if ((result != null) && (source != null)) {
+			final Set<String> keySet = new HashSet<String>(1);
+			keySet.add(key);
 
-			elm.dispatchEvent( new MapManager.Event( this, source, keySet ));
-			checkOwnerModification( source, keySet );
+			elm.dispatchEvent(new MapManager.Event(this, source, keySet));
+			checkOwnerModification(source, keySet);
 		}
 		return result;
 	}
 
-	public void putAllValues( Object source, Map map )
-	{
-//System.err.println( "putAllValues source = "+source.getClass().getName() );
-		backingMap.putAll( map );
-		if( (source != null) ) {
-			Set keySet = new HashSet( map.keySet() );
-			elm.dispatchEvent( new MapManager.Event( this, source, keySet ));
-			checkOwnerModification( source, keySet );
+	public void putAllValues(Object source, Map<String, Object> map) {
+		backingMap.putAll(map);
+		if ((source != null)) {
+			Set<String> keySet = new HashSet<String>(map.keySet());
+			elm.dispatchEvent(new MapManager.Event(this, source, keySet));
+			checkOwnerModification(source, keySet);
 		}
 	}
 
-	public Object getValue( String key )
-	{
-		return backingMap.get( key );
+	public Object getValue(String key) {
+		return backingMap.get(key);
 	}
 
-	public void clearValues( Object source )
-	{
-		Set		keySet		= new HashSet( backingMap.keySet() );
-		boolean dispatch	= !keySet.isEmpty() && (source != null);
-		
+	public void clearValues(Object source) {
+		Set<String> keySet = new HashSet<String>(backingMap.keySet());
+		boolean dispatch = !keySet.isEmpty() && (source != null);
+
 		backingMap.clear();
-		if( dispatch ) {
-			elm.dispatchEvent( new MapManager.Event( this, source, keySet ));
-			checkOwnerModification( source, keySet );
+		if (dispatch) {
+			elm.dispatchEvent(new MapManager.Event(this, source, keySet));
+			checkOwnerModification(source, keySet);
 		}
 	}
 
@@ -226,49 +196,45 @@ implements EventManager.Processor, XMLRepresentation
 	 *							do not contain any of these flags
 	 *	@param	targetMap		to map to which the contexts should be copied
 	 */
-	public void copyContexts( Object source, int inclusionFlags, int exclusionFlags, MapManager targetMap )
-	{
-		Iterator	iter = this.keySet( inclusionFlags, exclusionFlags ).iterator();
+	public void copyContexts(Object source, int inclusionFlags, int exclusionFlags, MapManager targetMap) {
+		Iterator<String> iter = this.keySet( inclusionFlags, exclusionFlags ).iterator();
 		String		key;
 		Context		c;
-		
-		while( iter.hasNext() ) {
-			key	= iter.next().toString();
-			c	= (Context) this.contextMap.get( key );
-			targetMap.putContext( source, key, c );
+
+		while (iter.hasNext()) {
+			key = iter.next();
+			c = this.contextMap.get(key);
+			targetMap.putContext(source, key, c);
 		}
 	}
 
-	public void dispatchOwnerModification( Object source, int ownerModType, Object ownerModParam )
-	{
-		elm.dispatchEvent( new MapManager.Event( this, source, ownerModType, ownerModParam ));
+	public void dispatchOwnerModification(Object source, int ownerModType, Object ownerModParam) {
+		elm.dispatchEvent(new MapManager.Event(this, source, ownerModType, ownerModParam));
 	}
-	
-	private void checkOwnerModification( Object source, Set keySet )
-	{
-		Iterator	iter	= keySet.iterator();
+
+	private void checkOwnerModification(Object source, Set<String> keySet) {
+		Iterator<String> iter	= keySet.iterator();
 		String		key;
 		Context		c;
-	
-		while( iter.hasNext() ) {
-			key	= iter.next().toString();
-			c	= getContext( key );
-			if( (c != null) && ((c.flags & Context.FLAG_VISUAL) != 0) ) {
-				dispatchOwnerModification( source, OWNER_VISUAL, null );
+
+		while (iter.hasNext()) {
+			key = iter.next();
+			c = getContext(key);
+			if ((c != null) && ((c.flags & Context.FLAG_VISUAL) != 0)) {
+				dispatchOwnerModification(source, OWNER_VISUAL, null);
 				return;
 			}
 		}
 	}
-	
-	public void debugDump()
-	{
-		System.err.println( "..... map : hash = "+hashCode()+". owner = "+owner.getClass().getName()+" . contains : " );
-		Iterator iter = backingMap.keySet().iterator();
+
+	public void debugDump() {
+		System.err.println("..... map : hash = " + hashCode() + ". owner = " + owner.getClass().getName() + " . contains : ");
+		Iterator<String> iter = backingMap.keySet().iterator();
 		String key, val;
-		while( iter.hasNext() ) {
-			key = iter.next().toString();
-			val	= backingMap.get( key ).toString();
-			System.err.println( " key = "+key+" ; val = "+val );
+		while (iter.hasNext()) {
+			key = iter.next();
+			val = backingMap.get(key).toString();
+			System.err.println(" key = " + key + " ; val = " + val);
 		}
 	}
 
@@ -318,25 +284,18 @@ implements EventManager.Processor, XMLRepresentation
 		"int", "long", "float", "double", "boolean", "string", "file"
 	};
 
-	/**
-	 */
-	public void toXML( Document domDoc, Element node, Map options )
-	throws IOException
-	{
-		Iterator	keys = backingMap.keySet().iterator();
-		Object		key, value;
-		Context		c;
-		
-		Element		child;
+	public void toXML(Document domDoc, Element node, Map options)
+			throws IOException {
+		Iterator<String> keys = backingMap.keySet().iterator();
 
 		try {
 			while( keys.hasNext() ) {
-				key			= keys.next();
-				c			= (Context) contextMap.get( key );
+				String key = keys.next();
+				Context c = contextMap.get( key );
 				if( (c == null) || ((c.flags & Context.FLAG_NO_STORAGE) != 0) ) continue;
-				value		= backingMap.get( key );
-				child		= domDoc.createElement( XML_ELEM_ENTRY );
-				child.setAttribute( XML_ATTR_KEY, key.toString() );
+				Object value = backingMap.get( key );
+				Element child = domDoc.createElement( XML_ELEM_ENTRY );
+				child.setAttribute( XML_ATTR_KEY, key);
 				child.setAttribute( XML_ATTR_VALUE, value.toString() );
 				child.setAttribute( XML_ATTR_TYPE, XML_VALUE_TYPES[ c.type ]);
 //				if( (c.flags & Context.FLAG_CONTEXT_STORAGE) != 0 ) {
@@ -368,14 +327,11 @@ implements EventManager.Processor, XMLRepresentation
 //		node.appendChild( child );
 //	}
 
-	/**
-	 */
-	public void fromXML( Document domDoc, Element node, Map options )
-	throws IOException
-	{
-//		Attr		xmlAttr;
+	public void fromXML(Document domDoc, Element node, Map options)
+			throws IOException {
+
 		final NodeList	nl		= node.getChildNodes();
-		final Set		keySet	= new HashSet( backingMap.keySet() );
+		final Set<String> keySet	= new HashSet<String>( backingMap.keySet() );
 		int				type;
 		Element			xmlChild;
 		String			key, value, typeStr;
@@ -383,66 +339,65 @@ implements EventManager.Processor, XMLRepresentation
 		Object			o;
 		
 		backingMap.clear();
-		
-loop:	for( int i = 0; i < nl.getLength(); i++ ) {
-			if( !(nl.item( i ) instanceof Element )) continue;
-			xmlChild = (Element) nl.item( i );
-			if( xmlChild.getTagName().equals( XML_ELEM_ENTRY )) {
-				key		= xmlChild.getAttribute( XML_ATTR_KEY );
-				value	= xmlChild.getAttribute( XML_ATTR_VALUE );
-				typeStr	= xmlChild.getAttribute( XML_ATTR_TYPE );
-				if( typeStr == null ) {	// #IMPLIED = String
+
+		for (int i = 0; i < nl.getLength(); i++) {
+			if (!(nl.item(i) instanceof Element)) continue;
+			xmlChild = (Element) nl.item(i);
+			if (xmlChild.getTagName().equals(XML_ELEM_ENTRY)) {
+				key = xmlChild.getAttribute(XML_ATTR_KEY);
+				value = xmlChild.getAttribute(XML_ATTR_VALUE);
+				typeStr = xmlChild.getAttribute(XML_ATTR_TYPE);
+				if (typeStr == null) {    // #IMPLIED = String
 					type = Context.TYPE_STRING;
 				} else {
-					for( type = 0; type < XML_VALUE_TYPES.length; type++ ) {
-						if( XML_VALUE_TYPES[ type ].equals( typeStr )) break;
+					for (type = 0; type < XML_VALUE_TYPES.length; type++) {
+						if (XML_VALUE_TYPES[type].equals(typeStr)) break;
 					}
-					if( type == XML_VALUE_TYPES.length ) {
-						System.err.println( "skipping map entry of unknown type : key = "+key+"; type = "+typeStr );
-						continue loop;
+					if (type == XML_VALUE_TYPES.length) {
+						System.err.println("skipping map entry of unknown type : key = " + key + "; type = " + typeStr);
+						continue;
 					}
 				}
-				c		= (Context) contextMap.get( key );
-				if( c != null && c.type != type ) {
-					System.err.println( "skipping map entry of deviant type : key = "+key+"; type = "+typeStr+
-										"; expected = "+XML_VALUE_TYPES[ c.type ]);
-					continue loop;
-				} else if( c == null ) {
-					c = new Context( 0, type, null, null, null, null );	// LLL XXX should read flags, constraints and label
-					contextMap.put( key, c );
+				c = contextMap.get(key);
+				if (c != null && c.type != type) {
+					System.err.println("skipping map entry of deviant type : key = " + key + "; type = " + typeStr +
+							"; expected = " + XML_VALUE_TYPES[c.type]);
+					continue;
+				} else if (c == null) {
+					c = new Context(0, type, null, null, null, null);    // LLL XXX should read flags, constraints and label
+					contextMap.put(key, c);
 				}
 				try {
-					switch( type ) {
-					case Context.TYPE_INTEGER:
-						o = new Integer( value );
-						break;
-					case Context.TYPE_LONG:
-						o = new Long( value );
-						break;
-					case Context.TYPE_FLOAT:
-						o = new Float( value );
-						break;
-					case Context.TYPE_DOUBLE:
-						o = new Double( value );
-						break;
-					case Context.TYPE_BOOLEAN:
-						o = new Boolean( value );
-						break;
-					case Context.TYPE_STRING:
-						o = value;
-						break;
-					case Context.TYPE_FILE:
-						o = new File( value );
-						break;
-					default:
-						assert false : type;
-						o = null;
+					switch (type) {
+						case Context.TYPE_INTEGER:
+							o = new Integer(value);
+							break;
+						case Context.TYPE_LONG:
+							o = new Long(value);
+							break;
+						case Context.TYPE_FLOAT:
+							o = new Float(value);
+							break;
+						case Context.TYPE_DOUBLE:
+							o = new Double(value);
+							break;
+						case Context.TYPE_BOOLEAN:
+							o = Boolean.valueOf(value);
+							break;
+						case Context.TYPE_STRING:
+							o = value;
+							break;
+						case Context.TYPE_FILE:
+							o = new File(value);
+							break;
+						default:
+							assert false : type;
+							o = null;
 					}
-					backingMap.put( key, o );
-					keySet.add( key );
-				}
-				catch( NumberFormatException e1 ) {
-					System.err.println( "couldn't parse map entry : key "+key+"; type = "+typeStr+"; value = "+value );
+					backingMap.put(key, o);
+					keySet.add(key);
+				} catch (NumberFormatException e1) {
+					System.err.println("couldn't parse map entry : key " + key + "; type = " + typeStr + "; value = " + value);
 				}
 			}
 		}
@@ -511,71 +466,62 @@ loop:	for( int i = 0; i < nl.getLength(); i++ ) {
 	 *  the event dispatching thread when
 	 *  new objects have been queued.
 	 */
-	public interface Listener
-	{
-		public void mapChanged( MapManager.Event e );
-		
-		public void mapOwnerModified( MapManager.Event e );
+	public interface Listener {
+		public void mapChanged(MapManager.Event e);
+
+		public void mapOwnerModified(MapManager.Event e);
 	}
-	
+
+	@SuppressWarnings("serial")
 	public static class Event
-	extends BasicEvent
-	{
+			extends BasicEvent {
 		public static final int MAP_CHANGED		= 0;
 		public static final int OWNER_MODIFIED	= 1;
 		
 		private final MapManager map;
 		private final Object param;
 		private final int ownerModType;
-	
-		public Event( MapManager map, Object source, Set propertyNames )
-		{
-			super( source, MAP_CHANGED, System.currentTimeMillis() );
-			
-			this.map			= map;
-			this.param			= propertyNames;
-			this.ownerModType	= -1;
+
+		public Event(MapManager map, Object source, Set<String> propertyNames) {
+			super(source, MAP_CHANGED, System.currentTimeMillis());
+
+			this.map = map;
+			this.param = propertyNames;
+			this.ownerModType = -1;
 		}
-		
-		public Event( MapManager map, Object source, int ownerModType, Object ownerModParam )
-		{
-			super( source, OWNER_MODIFIED, System.currentTimeMillis() );
+
+		public Event(MapManager map, Object source, int ownerModType, Object ownerModParam) {
+			super(source, OWNER_MODIFIED, System.currentTimeMillis());
 			
 			this.map			= map;
 			this.param			= ownerModParam;
 			this.ownerModType	= ownerModType;
 		}
-		
-		public MapManager getManager()
-		{
+
+		public MapManager getManager() {
 			return map;
 		}
 
-		public Set getPropertyNames()
-		{
+		public Set<String> getPropertyNames() {
 			return (Set) param;
 		}
-		
-		public Object getOwner()
-		{
+
+		public Object getOwner() {
 			return map.owner;
 		}
 
-		public int getOwnerModType()
-		{
+		public int getOwnerModType() {
 			return ownerModType;
 		}
 
-		public Object getOwnerModParam()
-		{
+		public Object getOwnerModParam() {
 			return param;
 		}
 
 		/**
-		 *  Returns false always at the moment
+		 * Returns false always at the moment
 		 */
-		public boolean incorporate( BasicEvent oldEvent )
-		{
+		public boolean incorporate(BasicEvent oldEvent) {
 			return false;
 		}
 	}

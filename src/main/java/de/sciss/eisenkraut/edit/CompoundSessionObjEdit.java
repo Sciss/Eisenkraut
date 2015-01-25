@@ -29,6 +29,7 @@ import de.sciss.app.AbstractCompoundEdit;
  *
  *  @see            UndoManager
  */
+@SuppressWarnings("serial")
 public class CompoundSessionObjEdit extends AbstractCompoundEdit {
 
 	private Object					source;

@@ -188,15 +188,14 @@ implements MouseListener, MouseMotionListener, TopPainter // KeyListener
 //	public void keyReleased( KeyEvent e ) {}
 //	public void keyTyped( KeyEvent e ) {}
 
+	@SuppressWarnings("serial")
 	private class ActionCancel
-	extends MenuAction
-	{
-		protected ActionCancel()
-		{
-			super( "tool-cancel", KeyStroke.getKeyStroke( KeyEvent.VK_ESCAPE, 0 ));
+			extends MenuAction {
+		protected ActionCancel() {
+			super("tool-cancel", KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0));
 		}
-			
-		public void actionPerformed( ActionEvent e ) {
+
+		public void actionPerformed(ActionEvent e) {
 			cancelGesture();
 		}
 	}

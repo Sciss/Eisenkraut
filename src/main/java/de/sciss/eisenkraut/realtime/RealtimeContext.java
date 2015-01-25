@@ -31,8 +31,8 @@ public class RealtimeContext {
 	private final List				tracks;
 	private final Transport			transport;
 	
-	private final HashMap			options			= new HashMap();
-	private final HashSet			modifiedOptions = new HashSet();
+	private final HashMap<Object, Object> options			= new HashMap<Object, Object>();
+	private final HashSet<Object> modifiedOptions = new HashSet<Object>();
 
 	/**
 	 *  Constructs a new RealtimeContext.
@@ -73,24 +73,22 @@ public class RealtimeContext {
 	 *					should "know" what kind of key required what
 	 *					kind of value class
 	 */
-	public void setOption( Object key, Object value )
-	{
-		options.put( key, value );
-		modifiedOptions.add( key );
+	public void setOption(Object key, Object value) {
+		options.put(key, value);
+		modifiedOptions.add(key);
 	}
-	
+
 	/**
-	 *  Performs setOption() on a series
-	 *  of key/value pairs.
+	 * Performs setOption() on a series
+	 * of key/value pairs.
 	 *
-	 *	@param	map		a map whose key/value pairs
-	 *					are copied to the context options and
-	 *					appear in the modified options list
+	 * @param    map        a map whose key/value pairs
+	 * are copied to the context options and
+	 * appear in the modified options list
 	 */
-	public void setOptions( Map map )
-	{
-		options.putAll( map );
-		modifiedOptions.addAll( map.keySet() );
+	public void setOptions(Map<Object, Object> map) {
+		options.putAll(map);
+		modifiedOptions.addAll(map.keySet());
 	}
 	
 	/**
@@ -116,9 +114,9 @@ public class RealtimeContext {
 	 *	@return	a set of keys which were modified
 	 *			since the last invocation of this method
 	 */
-	public Set getModifiedOptions()
+	public Set<Object> getModifiedOptions()
 	{
-		Set result = new HashSet( modifiedOptions );
+		Set<Object> result = new HashSet<Object>( modifiedOptions );
 		modifiedOptions.clear();
 	
 		return result;

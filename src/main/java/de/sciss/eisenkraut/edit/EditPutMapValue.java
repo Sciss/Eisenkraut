@@ -22,15 +22,13 @@ import de.sciss.eisenkraut.util.MapManager;
  *  An <code>UndoableEdit</code> that
  *  describes the modification of a map.
  *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 01-May-06
- *
  *  @see		UndoManager
  *	@see		de.sciss.eisenkraut.util.MapManager
  */
+@SuppressWarnings("serial")
 public class EditPutMapValue
-extends BasicUndoableEdit
-{
+		extends BasicUndoableEdit {
+
 	private Object				source;
 	private final MapManager	map;
 	private final String		key;
@@ -43,17 +41,12 @@ extends BasicUndoableEdit
 	 *  thus dispatching a <code>MapManager.Event</code>.
 	 *
 	 *  @param  source			who initiated the action
-	 *  @param  lm				the <code>LockManager</code> to use for synchronization
-	 *							or <code>null</code>
-	 *	@param	doors			the doors to sync on using <code>waitExclusive</code>
 	 *  @param  map				the map to change (e.g. a session object's map)
 	 *	@param	key				the map entry to change
 	 *  @param  value			the new property value
 	 *
 	 *  @see	de.sciss.eisenkraut.util.MapManager#putValue( Object, String, Object )
 	 *  @see	de.sciss.eisenkraut.util.MapManager.Event
-	 *
-	 *  @synchronization		<code>lm.waitExclusive()</code> on <code>doors</code>
 	 */
 	public EditPutMapValue( Object source,
 							MapManager map, String key, Object value, String name )
@@ -84,8 +77,6 @@ extends BasicUndoableEdit
 	 *  Undo the edit.
 	 *  Invokes the <code>SessionObjectCollection.modified</code>,
 	 *  method, thus dispatching a <code>SessionCollection.Event</code>.
-	 *
-	 *  @synchronization	waitExlusive on doors.
 	 */
 	public void undo()
 	{
@@ -98,8 +89,6 @@ extends BasicUndoableEdit
 	 *  Invokes the <code>SessionObjectCollection.modified</code>,
 	 *  method, thus dispatching a <code>SessionCollection.Event</code>.
 	 *  The original event source is discarded.
-	 *
-	 *  @synchronization	waitExlusive on doors.
 	 */
 	public void redo()
 	{

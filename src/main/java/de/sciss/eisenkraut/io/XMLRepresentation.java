@@ -52,7 +52,7 @@ public interface XMLRepresentation
 	 *  @throws IOException when an error occurs. XML specific exceptions
 	 *			must be mapped to IOExceptions
 	 */
-	public void toXML( Document domDoc, Element node, Map options ) throws IOException;
+	public void toXML(Document domDoc, Element node, Map<Object, Object> options) throws IOException;
 
 	/**
 	 *  Requests the object to restore its serialized fields from
@@ -64,5 +64,5 @@ public interface XMLRepresentation
 	 *  @throws IOException when an error occurs. XML specific exceptions
 	 *			must be mapped to IOExceptions
 	 */
-	public void fromXML( Document domDoc, Element node, Map options ) throws IOException;
+	public void fromXML(Document domDoc, Element node, Map<Object, Object> options) throws IOException;
 }

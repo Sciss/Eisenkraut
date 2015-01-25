@@ -30,7 +30,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.Vector;
 
 import javax.swing.Box;
 import javax.swing.JComponent;
@@ -41,11 +40,9 @@ import de.sciss.eisenkraut.math.MathUtil;
 import de.sciss.gui.Axis;
 import de.sciss.gui.VectorSpace;
 
-public class DebugView
-{
-	public DebugView( float[] data, int off, int length, String descr )
-	{
-		final float[] dataCopy = new float[ length ];
+public class DebugView {
+	public DebugView(float[] data, int off, int length, String descr) {
+		final float[] dataCopy = new float[length];
 		
 		System.arraycopy( data, off, dataCopy, 0, length );
 		
@@ -140,24 +137,13 @@ vaxis.setSpace( spc );
 	 *  the <code>SigmaReceiverEditor</code> and the
 	 *  <code>SimpleTransmitterEditor</code>.
 	 *
-	 *  @author		Hanns Holger Rutz
-	 *  @version	0.65, 11-Aug-04
-	 *
-	 *  @see		de.sciss.meloncillo.math.VectorTransformer#createPopupMenu( VectorDisplay )
-	 *  @see		VectorDisplayListener
-	 *  @see		VectorDisplayEvent
-	 *  @see		de.sciss.meloncillo.receiver.SigmaReceiverEditor
-	 *  @see		de.sciss.meloncillo.transmitter.SimpleTransmitterEditor
-	 *
-	 *  @todo		a vertical (y) wrapping mode should be implemented
+	 *  TODO: a vertical (y) wrapping mode should be implemented
 	 *				similar to x-wrap, useful for circular value spaces like angles
-	 *  @todo		due to a bug in horizontal wrapping, the modified span
+	 *  TODO: due to a bug in horizontal wrapping, the modified span
 	 *				information is wrong?
 	 */
-	public static class VectorDisplay
-	extends JComponent  // extends JPanel
-	// implements  
-	{
+	@SuppressWarnings("serial")
+	public static class VectorDisplay extends JComponent {
 		private float[]		vector;
 
 		private final GeneralPath   path		= new GeneralPath();
@@ -182,7 +168,7 @@ vaxis.setSpace( spc );
 
 		// --- top painter ---
 
-		private final Vector collTopPainters = new Vector();
+		// private final Vector<TopPainter> collTopPainters = new Vector<TopPainter>();
 		
 		/**
 		 *  Creates a new VectorDisplay with an empty vector.
@@ -231,14 +217,13 @@ vaxis.setSpace( spc );
 		/**
 		 *  Gets the current data array.
 		 *
-		 *  @return		the current vector data of the editor. valid data
-		 *				is from index 0 to the end of the array.
-		 *
-		 *  @warning			the returned array is not a copy and therefore
+		 *  Warning: the returned array is not a copy and therefore
 		 *						any modifications are forbidden. this also implies
 		 *						that relevant data be copied by the listener
 		 *						immediately upon receiving the vector.
-		 *  @synchronization	should only be called in the event thread
+	 	 *
+		 *  @return		the current vector data of the editor. valid data
+		 *				is from index 0 to the end of the array.
 		 */
 		public float[] getVector()
 		{
@@ -253,12 +238,12 @@ vaxis.setSpace( spc );
 		 *  user drawings are limited to these values unless
 		 *  wrapY is set to true (not yet implemented).
 		 *
-		 *  @param  min		new minimum y value
-		 *  @param  max		new maximum y value
-		 *
-		 *  @warning	the current vector is left untouched,
+		 *  Warning: the current vector is left untouched,
 		 *				even if values lie outside the new
 		 *				allowed range.
+		 *
+		 *  @param  min		new minimum y value
+		 *  @param  max		new maximum y value
 		 */
 		public void setMinMax( float min, float max )
 		{
@@ -340,49 +325,13 @@ vaxis.setSpace( spc );
 				g.drawImage( image, 0, 0, this );
 			}
 
-			// --- invoke top painters ---
-			if( !collTopPainters.isEmpty() ) {
-				Graphics2D		g2			= (Graphics2D) g;
-//				AffineTransform	trnsOrig	= g2.getTransform();
-
-//				g2.transform( trnsVirtualToScreen );
-				g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
-//				for( int i = 0; i < collTopPainters.size(); i++ ) {
-//					((TopPainter) collTopPainters.get( i )).paintOnTop( g2 );
-//				}
-//				g2.setTransform( trnsOrig );
-			}
+			//			// --- invoke top painters ---
+			//			if( !collTopPainters.isEmpty() ) {
+			//				Graphics2D		g2			= (Graphics2D) g;
+			//				g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+			//			}
 		}
-		
-		/**
-		 *  Registers a new top painter.
-		 *  If the top painter wants to paint
-		 *  a specific portion of the surface,
-		 *  it must make an appropriate repaint call!
-		 *
-		 *  @param  p   the painter to be added to the paint queue
-		 *
-		 *  @synchronization	this method must be called in the event thread
-		 */
-//		public void addTopPainter( TopPainter p )
-//		{
-//			if( !collTopPainters.contains( p )) {
-//				collTopPainters.add( p );
-//			}
-//		}
 
-		/**
-		 *  Removes a registered top painter.
-		 *
-		 *  @param  p   the painter to be removed from the paint queue
-		 *
-		 *  @synchronization	this method must be called in the event thread
-		 */
-//		public void removeTopPainter( TopPainter p )
-//		{
-//			collTopPainters.remove( p );
-//		}
-		
 		private void recreateImage()
 		{
 			if( image != null ) image.flush();
@@ -394,10 +343,7 @@ vaxis.setSpace( spc );
 			if( image == null ) return;
 
 			Graphics2D g2 = (Graphics2D) image.getGraphics();
-//			g2.setColor( Color.white );
-//			g2.fillRect( 0, 0, recentSize.width, recentSize.height );
 			g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
-//			g2.setRenderingHint( RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY );
 			if( fillArea ) {
 				g2.setPaint( pntArea );
 				g2.fill( pathTrns );

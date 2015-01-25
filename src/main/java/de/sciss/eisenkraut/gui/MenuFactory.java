@@ -492,6 +492,7 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 // ---------------- Action objects for file (session) operations ---------------- 
 
 	// action for the New-Empty Document menu item
+	@SuppressWarnings("serial")
 	private class ActionNewEmpty
 	extends MenuAction
 	{
@@ -603,6 +604,7 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 	}
 	
 	// action for the Open-Session menu item
+	@SuppressWarnings("serial")
 	private class ActionOpen
 	extends MenuAction
 	{
@@ -689,6 +691,7 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 	}
 	
 	// action for the Open-Multiple-Mono menu item
+	@SuppressWarnings("serial")
 	private class ActionOpenMM
 	extends MenuAction
 	{
@@ -774,6 +777,7 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 	}
 
 	// action for the Open-Recent menu
+	@SuppressWarnings("serial")
 	private class ActionEisKOpenRecent
 	extends ActionOpenRecent
 	{
@@ -843,6 +847,7 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 // ---------------- Action objects for window operations ---------------- 
 
 	// action for the IOSetup menu item
+	@SuppressWarnings("serial")
 	private class ActionIOSetup
 	extends MenuAction
 	{
@@ -867,6 +872,7 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 	}
 
 	// action for the Control Room menu item
+	@SuppressWarnings("serial")
 	private class ActionCtrlRoom
 	extends MenuAction
 	{
@@ -891,6 +897,7 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 	}
 
 	// action for the Observer menu item
+	@SuppressWarnings("serial")
 	private class ActionObserver
 	extends MenuAction
 	{

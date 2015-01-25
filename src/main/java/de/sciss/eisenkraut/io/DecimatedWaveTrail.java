@@ -534,11 +534,11 @@ extends DecimatedTrail
 	 * 
 	 * @see NondestructiveDecimatedSampledTrack#read( Span, float[][], int )
 	 */
-	private void readFrames( int sub, float[][] data, int dataOffset, List busyList,
-							 Span readSpan, AbstractCompoundEdit ce )
-	throws IOException
-	{
-		int					idx			= editIndexOf( readSpan.start, true, ce );
+	private void readFrames(int sub, float[][] data, int dataOffset, List<Span> busyList,
+							Span readSpan, AbstractCompoundEdit ce)
+			throws IOException {
+
+		int					idx			= editIndexOf(readSpan.start, true, ce);
 		if( idx < 0 ) idx = -(idx + 2);
 		final long			startR		= decimHelps[sub].roundAdd - readSpan.start;
 		final List			coll		= editGetCollByStart( ce );
@@ -571,8 +571,8 @@ extends DecimatedTrail
 					}
 				}
 			} else {
-				busyList.add( new Span( subSpan.stop - (subSpan.getLength() * busyLen.value() / chunkLen),
-										subSpan.stop ));
+				busyList.add(new Span(subSpan.stop - (subSpan.getLength() * busyLen.value() / chunkLen),
+						subSpan.stop));
 				for( int i = Math.max( 0, readOffset ); i < nextOffset; i++ ) {
 					for( int j = 0; j < data.length; j++ ) {
 						data[ j ][ i ] = 0f;

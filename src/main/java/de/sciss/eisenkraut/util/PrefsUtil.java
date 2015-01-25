@@ -347,16 +347,15 @@ public class PrefsUtil
 	
 	public static final String KEY_SONAENABLED	= "sonaenabled";
 
-	public static List createDefaults( Preferences mainPrefs, double lastVersion )
-	{
+	public static List<String> createDefaults(Preferences mainPrefs, double lastVersion) {
 		File			f;
 		String			value;
 		Preferences		childPrefs, childPrefs2;
 		final String	fs			= File.separator;
-		final boolean	isMacOS		= System.getProperty("os.name").indexOf("Mac OS" ) >= 0;
-		final boolean	isWindows	= System.getProperty("os.name").indexOf("Windows") >= 0;
+		final boolean	isMacOS		= System.getProperty("os.name").contains("Mac OS");
+		final boolean	isWindows	= System.getProperty("os.name").contains("Windows");
 		final boolean	isLinux		= !(isMacOS || isWindows);	// Well...
-		final List		warnings	= new ArrayList();
+		final List<String> warnings	= new ArrayList<String>();
 
 		putDontOverwrite(IOUtil.getUserPrefs(), IOUtil.KEY_TEMPDIR, System.getProperty("java.io.tmpdir"));
 
@@ -416,9 +415,8 @@ public class PrefsUtil
 //				new RoutingConfig( value, 2, new int[] { 1, 0 }, -90f ).toPrefs(
 //					childPrefs2.node( "Reversed Stereo" ));
 			}
-		}
-		catch( BackingStoreException e1 ) {
-			warnings.add( e1.toString() );
+		} catch (BackingStoreException e1) {
+			warnings.add(e1.toString());
 		}
 
 		// input configs
@@ -452,7 +450,7 @@ public class PrefsUtil
 //		putDontOverwrite( childPrefs, KEY_SUPERCOLLIDEROSC, value );
 
 		putDontOverwrite(childPrefs, KEY_SCPROTOCOL, OSCChannel.TCP);
-		putDontOverwrite(childPrefs, KEY_SCPORT, new Param(0, ParamSpace.NONE | ParamSpace.ABS).toString());
+		putDontOverwrite(childPrefs, KEY_SCPORT, new Param(0, ParamSpace.ABS).toString());
 		
 		// sc app
 		if( childPrefs.get( KEY_SUPERCOLLIDERAPP, null ) == null ) {
@@ -521,13 +519,12 @@ public class PrefsUtil
 		return warnings;
 	}
 
-	private static File findFile( String fileName, String[] folders )
-	{
+	private static File findFile(String fileName, String[] folders) {
 		File f;
-	
-		for( int i = 0; i < folders.length; i++ ) {
-			f = new File( folders[ i ], fileName );
-			if( f.exists() ) return f;
+
+		for (String folder : folders) {
+			f = new File(folder, fileName);
+			if (f.exists()) return f;
 		}
 		return null;
 	}
@@ -662,17 +659,17 @@ public class PrefsUtil
 	 *	@return		the KeyStroke parsed from the prefsValue or null if the string was
 	 *				invalid or <code>null</code>
 	 */
-	public static final KeyStroke prefsToStroke( String prefsValue )
-	{
-		if( prefsValue == null ) return null;
-		int i = prefsValue.indexOf( ' ' );
+	public static KeyStroke prefsToStroke(String prefsValue) {
+		if (prefsValue == null) return null;
+		int i = prefsValue.indexOf(' ');
 		KeyStroke prefsStroke = null;
 		try {
-			if( i < 0 ) return null;
-			prefsStroke = KeyStroke.getKeyStroke( Integer.parseInt( prefsValue.substring( i+1 )),
-												  Integer.parseInt( prefsValue.substring( 0, i )));
+			if (i < 0) return null;
+			prefsStroke = KeyStroke.getKeyStroke(Integer.parseInt(prefsValue.substring(i + 1)),
+					Integer.parseInt(prefsValue.substring(0, i)));
+		} catch (NumberFormatException e1) {
+			e1.printStackTrace();
 		}
-		catch( NumberFormatException e1 ) { e1.printStackTrace(); }
 
 		return prefsStroke;
 	}
@@ -685,32 +682,30 @@ public class PrefsUtil
 	 *	@return		a string representation of the form &quot;modifiers keyCode&quot;
 	 *				or <code>null</code> if the prefsStroke is invalid or <code>null</code>
 	 */
-	public static final String strokeToPrefs( KeyStroke prefsStroke )
-	{
-		if( prefsStroke == null ) return null;
-		else return String.valueOf( prefsStroke.getModifiers() ) + ' ' +
-					String.valueOf( prefsStroke.getKeyCode() );
+	public static String strokeToPrefs(KeyStroke prefsStroke) {
+		if (prefsStroke == null) return null;
+		else return String.valueOf(prefsStroke.getModifiers()) + ' ' +
+				String.valueOf(prefsStroke.getKeyCode());
 	}
 
 	/**
 	 *  Traverse a preference node and optionally all
 	 *  children nodes and remove any keys found.
 	 */
-	public static void removeAll( Preferences prefs, boolean deep )
-	throws BackingStoreException
-	{
+	public static void removeAll(Preferences prefs, boolean deep)
+			throws BackingStoreException {
 		String[]	keys;
 		String[]	children;
 		int			i;
 
 		keys = prefs.keys();
-		for( i = 0; i < keys.length; i++ ) {
-			prefs.remove( keys[i] );
+		for (i = 0; i < keys.length; i++) {
+			prefs.remove(keys[i]);
 		}
-		if( deep ) {
-			children	= prefs.childrenNames();
-			for( i = 0; i < children.length; i++ ) {
-				removeAll( prefs.node( children[i] ), deep );
+		if (deep) {
+			children = prefs.childrenNames();
+			for (i = 0; i < children.length; i++) {
+				removeAll(prefs.node(children[i]), true);
 			}
 		}
 	}
@@ -720,22 +715,19 @@ public class PrefsUtil
 	 *  structure of the MultiTrackEditors of
 	 *  all selected transmitters
 	 */
-	public static Action getDebugDumpAction()
-	{
-		AbstractAction a = new AbstractAction( "Dump preferences tree" ) {
-			public void actionPerformed( ActionEvent e )
-			{
-				debugDump( AbstractApplication.getApplication().getUserPrefs() );
+	public static Action getDebugDumpAction() {
+		return new AbstractAction("Dump preferences tree") {
+			public void actionPerformed(ActionEvent e) {
+				debugDump(AbstractApplication.getApplication().getUserPrefs());
 			}
-			
-			private void debugDump( Preferences prefs )
-			{
+
+			private void debugDump(Preferences prefs) {
 				System.err.println( "------- debugDump prefs : "+prefs.name()+" -------" );
 				String[]	keys;
 				String[]	children;
 				String		value;
 				int			i;
-				
+
 				try {
 					keys		= prefs.keys();
 					for( i = 0; i < keys.length; i++ ) {
@@ -751,7 +743,6 @@ public class PrefsUtil
 				}
 			}
 		};
-		return a;
 	}
 
 	/**
@@ -775,24 +766,22 @@ public class PrefsUtil
 		String		value;
 		int			i;
 
-//System.err.println( "node = "+prefs.name() );
 		try {
-			keys			= prefs.keys();
-			childElement	= (Element) node.appendChild( domDoc.createElement( "map" ));
-			for( i = 0; i < keys.length; i++ ) {
-				value   = prefs.get( keys[i], null );
-//System.err.println( "  key = "+keys[i]+"; value = "+value );
-				if( value == null ) continue;
-				entry = (Element) childElement.appendChild( domDoc.createElement( "entry" ));
-				entry.setAttribute( "key", keys[i] );
-				entry.setAttribute( "value", value );
+			keys = prefs.keys();
+			childElement = (Element) node.appendChild(domDoc.createElement("map"));
+			for (i = 0; i < keys.length; i++) {
+				value = prefs.get(keys[i], null);
+				if (value == null) continue;
+				entry = (Element) childElement.appendChild(domDoc.createElement("entry"));
+				entry.setAttribute("key", keys[i]);
+				entry.setAttribute("value", value);
 			}
-			if( deep ) {
-				children	= prefs.childrenNames();
-				for( i = 0; i < children.length; i++ ) {
-					childElement = (Element) node.appendChild( domDoc.createElement( "node" ));
-					childElement.setAttribute( "name", children[i] );
-					toXML( prefs.node( children[i] ), deep, domDoc, childElement, options );
+			if (deep) {
+				children = prefs.childrenNames();
+				for (i = 0; i < children.length; i++) {
+					childElement = (Element) node.appendChild(domDoc.createElement("node"));
+					childElement.setAttribute("name", children[i]);
+					toXML(prefs.node(children[i]), true, domDoc, childElement, options);
 				}
 			}
 		} catch( DOMException e1 ) {

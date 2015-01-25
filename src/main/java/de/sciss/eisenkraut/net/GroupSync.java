@@ -14,31 +14,26 @@
 package de.sciss.eisenkraut.net;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import de.sciss.net.OSCBundle;
 import de.sciss.util.Disposable;
 
 public class GroupSync
-implements Disposable
-{
-	private final List	collSlaves	= new ArrayList();
-	protected boolean	active		= false;
+		implements Disposable {
+	private final List<Slave> collSlaves = new ArrayList<Slave>();
+	protected boolean active = false;
 
-	public GroupSync()
-	{
-		 /* empty */ 
+	public GroupSync() {
+		 /* empty */
 	}
 
-	public void addSlave( Slave s )
-	{
-		collSlaves.add( s );
+	public void addSlave(Slave s) {
+		collSlaves.add(s);
 	}
-	
-	public void removeSlave( Slave s )
-	{
-		collSlaves.remove( s );
+
+	public void removeSlave(Slave s) {
+		collSlaves.remove(s);
 	}
 	
 	public boolean isActive()
@@ -49,16 +44,16 @@ implements Disposable
 	public void activate( OSCBundle bndl )
 	{
 		active = true;
-		for( Iterator iter = collSlaves.iterator(); iter.hasNext(); ) {
-			((Slave) iter.next()).groupActivate( bndl );
+		for (Slave collSlave : collSlaves) {
+			collSlave.groupActivate(bndl);
 		}
 	}
 	
 	public void deactivate( OSCBundle bndl )
 	{
 		active = false;
-		for( Iterator iter = collSlaves.iterator(); iter.hasNext(); ) {
-			((Slave) iter.next()).groupDeactivate( bndl );
+		for (Slave collSlave : collSlaves) {
+			collSlave.groupDeactivate(bndl);
 		}
 	}
 	

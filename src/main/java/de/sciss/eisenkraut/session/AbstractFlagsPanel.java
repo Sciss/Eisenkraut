@@ -119,9 +119,8 @@ public abstract class AbstractFlagsPanel extends JPanel {
 //		}
 	}
 
-	private class FlagAction
-	extends TriStateAction
-	{
+	@SuppressWarnings("serial")
+	private class FlagAction extends TriStateAction {
 		private final int		normalMask;
 		private final int		thirdMask;
 		private int				flags;

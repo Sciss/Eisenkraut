@@ -84,5 +84,5 @@ public interface SessionObject extends Disposable {
 	 *
 	 *  @see	java.lang.Class#newInstance()
 	 */
-	public Class getDefaultEditor();
+	public Class<?> getDefaultEditor();
 }

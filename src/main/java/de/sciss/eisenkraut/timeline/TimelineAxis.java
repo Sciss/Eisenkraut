@@ -46,12 +46,13 @@ import de.sciss.io.Span;
  *  user to position and select the
  *  timeline.
  */
+@SuppressWarnings("serial")
 public class TimelineAxis
-extends Axis
-implements	TimelineListener, MouseListener, MouseMotionListener,
-			DynamicListening, PreferenceChangeListener
-{
-    private final Session   doc;
+		extends Axis
+		implements TimelineListener, MouseListener, MouseMotionListener,
+		DynamicListening, PreferenceChangeListener {
+
+	private final Session   doc;
 
 	// when the user begins a selection by shift+clicking, the
 	// initially fixed selection bound is saved to selectionStart.

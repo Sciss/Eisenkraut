@@ -20,10 +20,7 @@ import javax.swing.JToggleButton;
 
 import de.sciss.eisenkraut.session.Session;
 
-/**
- *  @author		Hanns Holger Rutz
- *  @version	0.65, 28-Jan-06
- */
+@SuppressWarnings("serial")
 public class EditModeAction
 extends AbstractAction
 {

@@ -20,6 +20,7 @@ import de.sciss.app.AbstractCompoundEdit;
  *  the most basic extension of the abstract class
  *  which simply puts empty bodies for the abstract methods.
  */
+@SuppressWarnings("serial")
 public class BasicCompoundEdit
 		extends AbstractCompoundEdit {
 	private boolean significant = true;
@@ -33,7 +34,7 @@ public class BasicCompoundEdit
 	}
 
 	/**
-	 * Creates a <code>CompountEdit</code> object with a given name, whose Undo/Redo
+	 * Creates a <code>CompoundEdit</code> object with a given name, whose Undo/Redo
 	 * actions are synchronized.
 	 *
 	 * @param    presentationName    text describing the compound edit

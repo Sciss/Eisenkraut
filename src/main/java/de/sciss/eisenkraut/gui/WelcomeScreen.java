@@ -40,10 +40,8 @@ import de.sciss.eisenkraut.Main;
  *  message to the new user
  *  (whenever preferences are absent
  *  upon application launch).
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 04-Jul-08
  */
+@SuppressWarnings("serial")
 public class WelcomeScreen
 extends JFrame
 implements HyperlinkListener

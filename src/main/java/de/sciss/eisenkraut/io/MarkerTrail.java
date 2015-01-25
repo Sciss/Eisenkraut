@@ -22,6 +22,7 @@ import de.sciss.io.Marker;
 import de.sciss.io.Span;
 import de.sciss.timebased.BasicTrail;
 import de.sciss.timebased.MarkerStake;
+import de.sciss.timebased.Stake;
 
 /**
  *	Note: all stop indices are considered <STRONG>inclusive</STRONG>
@@ -79,25 +80,25 @@ extends BasicTrail
 //	public void copyFromAudioFile( AudioFile af )
 	throws IOException
 	{
-		final List	markStakes;
+		final List<Stake>	markStakes;
 		final List	marks;
 		final int	removed;
 		Marker		mark;
 
 //		final AudioFileDescr afd = af.getDescr();
-		
-		marks = (java.util.List) afd.getProperty( AudioFileDescr.KEY_MARKERS );
-		
-		if( (marks != null) && !marks.isEmpty() ) {
-			markStakes = new ArrayList( marks.size() );
-			for( int i = 0; i < marks.size(); i++ ) {
-				mark = (Marker) marks.get( i );
-				if( mark.pos >= 0 && mark.pos <= afd.length ) {
-					markStakes.add( new MarkerStake( mark ));
+
+		marks = (java.util.List) afd.getProperty(AudioFileDescr.KEY_MARKERS);
+
+		if ((marks != null) && !marks.isEmpty()) {
+			markStakes = new ArrayList<Stake>(marks.size());
+			for (Object mark1 : marks) {
+				mark = (Marker) mark1;
+				if (mark.pos >= 0 && mark.pos <= afd.length) {
+					markStakes.add(new MarkerStake(mark));
 				}
 			}
-			
-			if( !markStakes.isEmpty() ) addAll( null, markStakes );
+
+			if (!markStakes.isEmpty()) addAll(null, markStakes);
 			
 			removed = marks.size() - markStakes.size();
 			

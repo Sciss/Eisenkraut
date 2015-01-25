@@ -31,6 +31,7 @@ import de.sciss.eisenkraut.session.SessionObject;
  *
  *  @see		UndoManager
  */
+@SuppressWarnings("serial")
 public class EditSetSessionObjects extends BasicUndoableEdit {
 
 	private Object								source;

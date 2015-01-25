@@ -42,9 +42,9 @@ public class MeterManager
 		implements OSCResponderNode.Action, Constants, ServerListener, ActionListener,
 		EventManager.Processor {
 
-	private List					collAllClients		= new ArrayList();
-	private List					collActiveClients	= new ArrayList();
-	private Map						mapClients			= new HashMap();	// key = MeterListener, value = MeterClient
+	private List<Client> collAllClients		= new ArrayList<Client>();
+	private List<Client> collActiveClients	= new ArrayList<Client>();
+	private Map<PeakMeterView, Client> mapClients = new HashMap<PeakMeterView, Client>();	// key = MeterListener, value = MeterClient
 
 	private Server					server				= null;
 	
@@ -127,37 +127,35 @@ public class MeterManager
 		final OSCMessage	msg			= e.msg;
 		final int			busIndex	= ((Number) msg.getArg( 0 )).intValue();
 		final int			numVals		= ((Number) msg.getArg( 1 )).intValue();
-// getWhen doesn't provide a valid value i think
-//		final long			time		= e.getWhen(); 
+		// getWhen doesn't provide a valid value i think
+		//		final long			time		= e.getWhen();
 		final long			time		= System.currentTimeMillis(); 
 		Client				mc;	
 	
 		if( (bus == null) || (busIndex != bus.getIndex()) ) return;
 
-		for( int i = 0; i < collActiveClients.size(); i++ ) {
-			mc	= (Client) collActiveClients.get( i );
-			if( !mc.task ) continue;
-			for( int j = 0, k = 0, m = numVals + 2, off = mc.cOffset + 2; (k < mc.cNum) && (off < m); j++ ) {
-				if( mc.channels[ j ] >= 0 ) {
-					mc.peakRMSPairs[ k++ ] = ((Number) msg.getArg( off++ )).floatValue();
-					mc.peakRMSPairs[ k++ ] = ((Number) msg.getArg( off++ )).floatValue();
+		for (Client collActiveClient : collActiveClients) {
+			mc = collActiveClient;
+			if (!mc.task) continue;
+			for (int j = 0, k = 0, m = numVals + 2, off = mc.cOffset + 2; (k < mc.cNum) && (off < m); j++) {
+				if (mc.channels[j] >= 0) {
+					mc.peakRMSPairs[k++] = ((Number) msg.getArg(off++)).floatValue();
+					mc.peakRMSPairs[k++] = ((Number) msg.getArg(off++)).floatValue();
 				} else {
-					mc.peakRMSPairs[ k++ ] = 0f;
-					mc.peakRMSPairs[ k++ ] = 0f;
+					mc.peakRMSPairs[k++] = 0f;
+					mc.peakRMSPairs[k++] = 0f;
 					off += 2;
 				}
 			}
-			mc.view.meterUpdate( mc.peakRMSPairs, 0, time );
+			mc.view.meterUpdate(mc.peakRMSPairs, 0, time);
 		}
 	}
 
-	private static void printError( String name, Throwable t )
-	{
-		System.err.println( name + " : " + t.getClass().getName() + " : " + t.getLocalizedMessage() );
+	private static void printError(String name, Throwable t) {
+		System.err.println(name + " : " + t.getClass().getName() + " : " + t.getLocalizedMessage());
 	}
 
-	private void disposeServer()
-	{
+	private void disposeServer() {
 		Client mc;
 
 		meterTimer.stop();
@@ -173,7 +171,7 @@ public class MeterManager
 		if( server == null ) return;
 		
 		for( int i = 0; i < collAllClients.size(); ) {
-			mc = (Client) collAllClients.get( i );
+			mc = collAllClients.get( i );
 			if( mc.server == server ) {
 				collAllClients.remove( i );
 			} else {
@@ -195,27 +193,26 @@ public class MeterManager
 		if( s == null ) return;
 
 		server		= s;
-				
-		for( int i = 0; i < collAllClients.size(); i++ ) {
-			mc = (Client) collAllClients.get( i );
-			if( mc.server == server ) {
-				collActiveClients.add( mc );
+
+		for (Client collAllClient : collAllClients) {
+			mc = collAllClient;
+			if (mc.server == server) {
+				collActiveClients.add(mc);
 			}
 		}
-				
-		resp	= new OSCResponderNode( server, "/c_setn", this );
+
+		resp = new OSCResponderNode(server, "/c_setn", this);
 		resortClients();
 	}
-	
-	public void setListenerTask( PeakMeterView view, boolean task, OSCBundle bndl )
-	{
-		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
 
-		final Client mc = (Client) mapClients.get( view );
-		if( mc == null ) return;
-		if( mc.task != task ) {
-			mc.task	= task;
-			if( mc.server == server ) {
+	public void setListenerTask(PeakMeterView view, boolean task, OSCBundle bndl) {
+		if (!EventQueue.isDispatchThread()) throw new IllegalMonitorStateException();
+
+		final Client mc = mapClients.get(view);
+		if (mc == null) return;
+		if (mc.task != task) {
+			mc.task = task;
+			if (mc.server == server) {
 				final boolean weCreated = bndl == null;
 				if( weCreated ) bndl = new OSCBundle();
 				for( int j = 0; j < mc.synths.length; j++ ) {
@@ -254,46 +251,43 @@ public class MeterManager
 		addListener( ml, b.getServer(), channels, g, task );
 	}
 
-	public void addListener( PeakMeterView ml, Server s, int[] channels, Group g, boolean task )
-	{
+	public void addListener(PeakMeterView ml, Server s, int[] channels, Group g, boolean task) {
 		final Client mc;
 
 		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
-	
-		mc = new Client( ml, s, channels, g, task );
-		if( mapClients.put( ml, mc ) != null ) throw new IllegalArgumentException( "MeterListener was already registered" );
-		collAllClients.add( mc );
-		if( mc.server == server ) {
-			collActiveClients.add( mc );
+
+		mc = new Client(ml, s, channels, g, task);
+		if (mapClients.put(ml, mc) != null) throw new IllegalArgumentException("MeterListener was already registered");
+		collAllClients.add(mc);
+		if (mc.server == server) {
+			collActiveClients.add(mc);
 			resortClients();
 		}
 	}
-	
-	public void removeListener( PeakMeterView view )
-	{
-		final Client	mc;
-		final OSCBundle		bndl;
-		
-		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
 
-		mc = (Client) mapClients.remove( view );
-		if( mc == null ) return;
-		collAllClients.remove( mc );
-		if( collActiveClients.remove( mc )) {
+	public void removeListener(PeakMeterView view) {
+		final Client mc;
+		final OSCBundle bndl;
+
+		if (!EventQueue.isDispatchThread()) throw new IllegalMonitorStateException();
+
+		mc = mapClients.remove(view);
+		if (mc == null) return;
+		collAllClients.remove(mc);
+		if (collActiveClients.remove(mc)) {
 			bndl = new OSCBundle();
-			for( int i = 0; i < mc.synths.length; i++ ) {
-				if( mc.synths[ i ] != null ) {
-					bndl.addPacket( mc.synths[ i ].freeMsg() );
-					mc.synths[ i ] = null;
+			for (int i = 0; i < mc.synths.length; i++) {
+				if (mc.synths[i] != null) {
+					bndl.addPacket(mc.synths[i].freeMsg());
+					mc.synths[i] = null;
 				}
 			}
-			if( bndl.getPacketCount() > 0 ) {
+			if (bndl.getPacketCount() > 0) {
 				try {
-					if( server.isRunning() ) server.sendBundle( bndl );
+					if (server.isRunning()) server.sendBundle(bndl);
 					resortClients();
-				}
-				catch( IOException e1 ) {
-					printError( "removeMeterListener", e1 );
+				} catch (IOException e1) {
+					printError("removeMeterListener", e1);
 				}
 			}
 		}
@@ -316,15 +310,15 @@ public class MeterManager
 		bndl			= new OSCBundle();
 		meterBangBndl	= null;
 
-		for( int i = 0; i < collActiveClients.size(); i++ ) {
-			mc = (Client) collActiveClients.get( i );
-			for( int j = 0; j < mc.synths.length; j++ ) {
-				if( mc.synths[ j ] != null ) {
-					bndl.addPacket( mc.synths[ j ].freeMsg() );
-					mc.synths[ j ] = null;
+		for (Client collActiveClient : collActiveClients) {
+			mc = collActiveClient;
+			for (int j = 0; j < mc.synths.length; j++) {
+				if (mc.synths[j] != null) {
+					bndl.addPacket(mc.synths[j].freeMsg());
+					mc.synths[j] = null;
 				}
 			}
-			mc.setOffset( off );
+			mc.setOffset(off);
 			off += mc.cNum;
 		}
 		
@@ -353,41 +347,41 @@ public class MeterManager
 				bus		= Bus.control( server, numCtrlChans );
 				if( bus != null ) {
 					meterBangBndl = new OSCBundle();
-					meterBangBndl.addPacket( new OSCMessage( "/c_getn", new Object[] {
-						new Integer( bus.getIndex() ), new Integer( bus.getNumChannels() )}));
+					meterBangBndl.addPacket(new OSCMessage("/c_getn", new Object[]{
+							bus.getIndex(), bus.getNumChannels()}));
 
-					for( int i = 0; i < collActiveClients.size(); i++ ) {
-						mc	= (Client) collActiveClients.get( i );
-						if( mc.task ) numTask++;
-						if( mc.g != null ) {
-							g	= mc.g;
-							meterBangBndl.addPacket( new OSCMessage( "/n_set", new Object[] {
-								new Integer( g.getNodeID() ), "t_trig", new Integer( 1 )}));
+					for (Client collActiveClient : collActiveClients) {
+						mc = collActiveClient;
+						if (mc.task) numTask++;
+						if (mc.g != null) {
+							g = mc.g;
+							meterBangBndl.addPacket(new OSCMessage("/n_set", new Object[]{
+									g.getNodeID(), "t_trig", 1}));
 						} else {
-							if( grp == null ) {
-								grp = Group.basicNew( server );
-								grp.setName( "MeterManager" );
-								bndl.addPacket( grp.newMsg( server.getDefaultGroup(), kAddToTail ));
-								nw.register( grp );
+							if (grp == null) {
+								grp = Group.basicNew(server);
+								grp.setName("MeterManager");
+								bndl.addPacket(grp.newMsg(server.getDefaultGroup(), kAddToTail));
+								nw.register(grp);
 							}
-							g	= grp;
-							if( !haveGrpTrig ) {
-								meterBangBndl.addPacket( new OSCMessage( "/n_set", new Object[] {
-									new Integer( g.getNodeID() ), "t_trig", new Integer( 1 )}));
+							g = grp;
+							if (!haveGrpTrig) {
+								meterBangBndl.addPacket(new OSCMessage("/n_set", new Object[]{
+										g.getNodeID(), "t_trig", 1}));
 								haveGrpTrig = true;
 							}
 						}
-						for( int j = 0, m = bus.getIndex() + mc.cOffset; j < mc.synths.length; j++, m += 2 ) {
-							srcChan			= mc.channels[ j ];
-							if( srcChan >= 0 ) {
-								mc.synths[ j ] = Synth.basicNew( "eisk-meter", server );
-								bndl.addPacket( mc.synths[ j ].newMsg( g, new String[] {
-									"i_aInBs",  "i_kOtBs" }, new float[] {
-									srcChan,    m }, kAddToTail ));
-								if( !mc.task ) {
-									bndl.addPacket( mc.synths[ j ].runMsg( false ));
+						for (int j = 0, m = bus.getIndex() + mc.cOffset; j < mc.synths.length; j++, m += 2) {
+							srcChan = mc.channels[j];
+							if (srcChan >= 0) {
+								mc.synths[j] = Synth.basicNew("eisk-meter", server);
+								bndl.addPacket(mc.synths[j].newMsg(g, new String[]{
+										"i_aInBs", "i_kOtBs"}, new float[]{
+										srcChan, m}, kAddToTail));
+								if (!mc.task) {
+									bndl.addPacket(mc.synths[j].runMsg(false));
 								}
-								nw.register( mc.synths[ j ]);
+								nw.register(mc.synths[j]);
 							}
 						}
 					}
@@ -412,45 +406,42 @@ public class MeterManager
 	}
 
 	// ------------- internal classes -------------
-	
+
+	@SuppressWarnings("serial")
 	private static class Event
-	extends BasicEvent
-	{
+			extends BasicEvent {
 		protected OSCMessage msg;
-		
-		protected Event( Object src, OSCMessage msg, long time )
-		{
-			super( src, 0, time );
+
+		protected Event(Object src, OSCMessage msg, long time) {
+			super(src, 0, time);
 			this.msg = msg;
 		}
 
-		public boolean incorporate( BasicEvent oldEvent )
-		{
-			if( (oldEvent instanceof Event) && (oldEvent.getSource() == getSource()) ) {
+		public boolean incorporate(BasicEvent oldEvent) {
+			if ((oldEvent instanceof Event) && (oldEvent.getSource() == getSource())) {
 				final OSCMessage omsg = ((Event) oldEvent).msg;
-				if( omsg.getName().equals( msg.getName() ) &&
-					(omsg.getArgCount() == msg.getArgCount()) &&
-					omsg.getArg( 0 ).equals( msg.getArg( 0 )) &&	// busIndex
-					omsg.getArg( 1 ).equals( msg.getArg( 1 ))) {	// numVals
-					
-					final Object[] fuseArgs = new Object[ msg.getArgCount() ];
-					fuseArgs[ 0 ] = msg.getArg( 0 );
-					fuseArgs[ 1 ] = msg.getArg( 1 );
-					for( int i = 2; i < fuseArgs.length; i++ ) {
-						fuseArgs[ i ] = new Float( Math.max(
-						    ((Number)  msg.getArg( i )).floatValue(),
-						    ((Number) omsg.getArg( i )).floatValue() ));
+				if (omsg.getName().equals(msg.getName()) &&
+						(omsg.getArgCount() == msg.getArgCount()) &&
+						omsg.getArg(0).equals(msg.getArg(0)) &&    // busIndex
+						omsg.getArg(1).equals(msg.getArg(1))) {    // numVals
+
+					final Object[] fuseArgs = new Object[msg.getArgCount()];
+					fuseArgs[0] = msg.getArg(0);
+					fuseArgs[1] = msg.getArg(1);
+					for (int i = 2; i < fuseArgs.length; i++) {
+						fuseArgs[i] = Math.max(
+								((Number) msg.getArg(i)).floatValue(),
+								((Number) omsg.getArg(i)).floatValue());
 					}
-					msg = new OSCMessage( msg.getName(), fuseArgs );
+					msg = new OSCMessage(msg.getName(), fuseArgs);
 					return true;
 				}
 			}
 			return false;
 		}
 	}
-	
-	private static class Client
-	{
+
+	private static class Client {
 		protected final float[]			peakRMSPairs;
 		protected final int				cNum;
 		protected int					cOffset;
@@ -460,9 +451,8 @@ public class MeterManager
 		protected final Synth[]			synths;
 		protected final Server			server;
 		protected boolean				task;
-		
-		protected Client( PeakMeterView view, Server server, int[] channels, Group g, boolean task )
-		{
+
+		protected Client(PeakMeterView view, Server server, int[] channels, Group g, boolean task) {
 			this.view		= view;
 			this.server		= server;
 			this.channels	= channels;
@@ -473,22 +463,20 @@ public class MeterManager
 			peakRMSPairs	= new float[ cNum ];
 			synths			= new Synth[ channels.length ];
 		}
-		
-		protected void setOffset( int cOffset )
-		{
-			this.cOffset	= cOffset;
+
+		protected void setOffset(int cOffset) {
+			this.cOffset = cOffset;
 		}
-		
-		public String toString()
-		{
-			final StringBuffer sb = new StringBuffer();
-			sb.append( "[ " );
-			for( int i = 0; i < channels.length; i++ ) {
-				if( i > 0 ) sb.append( ", " );
-				sb.append( channels[ i ]);
+
+		public String toString() {
+			final StringBuilder sb = new StringBuilder();
+			sb.append("[ ");
+			for (int i = 0; i < channels.length; i++) {
+				if (i > 0) sb.append(", ");
+				sb.append(channels[i]);
 			}
-			sb.append( " ]" );
-			return( "MeterClient( "+view+", "+server+", " + sb.toString() + ", " + g + ", " + task + " )" );
+			sb.append(" ]");
+			return ("MeterClient( " + view + ", " + server + ", " + sb.toString() + ", " + g + ", " + task + " )");
 		}
 	}
 }

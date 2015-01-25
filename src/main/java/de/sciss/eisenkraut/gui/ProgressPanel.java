@@ -27,14 +27,11 @@ import de.sciss.gui.ModificationButton;
 import de.sciss.gui.ProgressBar;
 import de.sciss.gui.ProgressComponent;
 
-/**
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
- */
+@SuppressWarnings("serial")
 public class ProgressPanel
-extends JPanel
-implements ProgressComponent
-{
+		extends JPanel
+		implements ProgressComponent {
+
 	private final ProgressBar			pb;
 	private final JLabel				lb;
 	private final ModificationButton	ggCancel;

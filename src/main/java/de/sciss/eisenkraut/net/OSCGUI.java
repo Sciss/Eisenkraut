@@ -22,7 +22,6 @@ import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.SocketAddress;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.regex.Pattern;
 import javax.swing.KeyStroke;
@@ -41,7 +40,6 @@ import de.sciss.gui.MenuRoot;
 import de.sciss.gui.MenuSeparator;
 import de.sciss.net.OSCChannel;
 import de.sciss.net.OSCMessage;
-//import de.sciss.swingosc.SwingOSC;
 import de.sciss.util.Disposable;
 import de.sciss.util.DynamicURLClassLoader;
 
@@ -59,25 +57,18 @@ public class OSCGUI
 	
 	private final OSCRouterWrapper	osc;
 	private final MenuBuilder		mb;
-//	private final WindowBuilder		wb;
-	
+
 	private Object					swingOSC		= null;
-//	private SwingOSC				swingOSC		= null;
-	
-	public OSCGUI()
-	{
-		osc			= new OSCRouterWrapper( OSCRoot.getInstance(), this );
-		mb			= new MenuBuilder( this );
-// SwingOSC should be used now for windows
-//		wb			= new WindowBuilder( this );
+
+	public OSCGUI() {
+		osc = new OSCRouterWrapper(OSCRoot.getInstance(), this);
+		mb = new MenuBuilder(this);
 	}
 
 	// ------------ Disposable interface ------------
-	
-	public void dispose()
-	{
+
+	public void dispose() {
 		mb.dispose();
-//		wb.dispose();
 		osc.remove();
 	}
 	
@@ -101,23 +92,20 @@ public class OSCGUI
 			osc.oscRoute( rom );
 //		}
 	}
-	
-	public void oscAddRouter( OSCRouter subRouter )
-	{
-		osc.oscAddRouter( subRouter );
-	}
-	
-	public void oscRemoveRouter( OSCRouter subRouter )
-	{
-		osc.oscRemoveRouter( subRouter );
+
+	public void oscAddRouter(OSCRouter subRouter) {
+		osc.oscAddRouter(subRouter);
 	}
 
-	public void oscCmd_initSwing( RoutedOSCMessage rom )
-	{
-		if( swingOSC != null ) return;
-	
-		final DynamicURLClassLoader	cl = new DynamicURLClassLoader( getClass().getClassLoader() );
-		final Class					clz;
+	public void oscRemoveRouter(OSCRouter subRouter) {
+		osc.oscRemoveRouter(subRouter);
+	}
+
+	public void oscCmd_initSwing(RoutedOSCMessage rom) {
+		if (swingOSC != null) return;
+
+		final DynamicURLClassLoader cl = new DynamicURLClassLoader(getClass().getClassLoader());
+		final Class<?> clz;
 		
 		try {
 			cl.addURL( new File( OSCRoot.getInstance().getPreferences().get( KEY_SWINGAPP, null )).toURI().toURL() );
@@ -126,11 +114,10 @@ public class OSCGUI
 			swingOSC = clz.newInstance();
 			// start( String protocol, int port, boolean loopBack, int bufSize, boolean initSwing, SocketAddress helloAddr)
 //			swingOSC.start( OSCChannel.TCP, 12345, true, 8192, false, null );
-			final Method m = clz.getMethod( "start", new Class[] {
-				String.class, Integer.TYPE, Boolean.TYPE, Integer.TYPE,
-				Boolean.TYPE, InetSocketAddress.class });
-			m.invoke( swingOSC, new Object[] { OSCChannel.TCP, new Integer( SWING_PORT ),
-				Boolean.TRUE, new Integer( 65536 ), Boolean.FALSE, null });
+			final Method m = clz.getMethod( "start", String.class, Integer.TYPE, Boolean.TYPE, Integer.TYPE,
+					Boolean.TYPE, InetSocketAddress.class);
+			m.invoke(swingOSC, OSCChannel.TCP, SWING_PORT,
+					Boolean.TRUE, 65536, Boolean.FALSE, null);
 		}
 		catch( MalformedURLException e1 ) {
 			OSCRoot.failed( rom, e1 );
@@ -150,58 +137,45 @@ public class OSCGUI
 		catch( InvocationTargetException e1 ) {
 			OSCRoot.failed( rom, e1 );
 		}
-//		catch( IOException e1 ) {
-//			OSCRoot.failed( rom, e1 );
-//		}
 	}
 
-	public Object oscQuery_swingPort()
-	{
-//		return new Integer( swingOSC == null ? 0 : swingOSC.getLocalAddress().getPort() );
-		return new Integer( swingOSC == null ? 0 : SWING_PORT );
+	public Object oscQuery_swingPort() {
+		return swingOSC == null ? 0 : SWING_PORT;
 	}
 
-	public Object oscQuery_swingProtocol()
-	{
-//		return( swingOSC == null ? (Object) new Integer( 0 ) : (Object) swingOSC.getProtocol() );
-		return( swingOSC == null ? (Object) new Integer( 0 ) : (Object) OSCChannel.TCP );
+	public Object oscQuery_swingProtocol() {
+		return (swingOSC == null ? new Integer(0) : (Object) OSCChannel.TCP);
 	}
 
 	public Object oscQuery_swingRunning()
 	{
-		return new Integer( swingOSC != null ? 1 : 0 );
+		return swingOSC != null ? 1 : 0;
 	}
 
 	// ===================================================================================================
 	// --------------- internal classes ---------------
-	
+
 	protected static class MenuBuilder
-	implements OSCRouter, Disposable
-	{
+			implements OSCRouter, Disposable {
+
 		private static final String		OSC_MENU		= "menu";
 
 		private static final Pattern	ptrnPeriod		= Pattern.compile( "\\." );
-		
-//		private int						uniqueID		= 0;
 
 		private final OSCRouterWrapper	osc;
-//		private final OSCGUI			gui;
 		private final MenuRoot			mr;
-		private final Map				mapNodes		= new HashMap();
+		private final Map<Object, OSCMenuNode> mapNodes		= new HashMap<Object, OSCMenuNode>();
 
-		protected MenuBuilder( OSCRouter superRouter )
-		{
-//			this.gui	= gui;
-			osc			= new OSCRouterWrapper( superRouter, this );
-			mr			= ((BasicApplication) AbstractApplication.getApplication()).getMenuBarRoot();
+		protected MenuBuilder(OSCRouter superRouter) {
+			osc = new OSCRouterWrapper(superRouter, this);
+			mr = ((BasicApplication) AbstractApplication.getApplication()).getMenuBarRoot();
 		}
 
 		// ------------ Disposable interface ------------
 
-		public void dispose()
-		{
-			for( Iterator iter = mapNodes.values().iterator(); iter.hasNext(); ) {
-				((OSCMenuNode) iter.next()).dispose();
+		public void dispose() {
+			for (OSCMenuNode oscMenuNode : mapNodes.values()) {
+				(oscMenuNode).dispose();
 			}
 			mapNodes.clear();
 			osc.remove();
@@ -246,7 +220,7 @@ public class OSCGUI
 			
 			try {
 				id			= ((Number) rom.msg.getArg( argIdx )).intValue();
-				idObj		= new Integer( id );
+				idObj		= id;
 				if( mapNodes.containsKey( idObj )) {
 					OSCRoot.failed( rom.msg, OSCRoot.getResourceString( "errOSCNodeExists" ));
 					return;
@@ -261,17 +235,17 @@ public class OSCGUI
 					return;
 				}
 				parent	= mr;
-				for( int i = 0; i < hierarchy.length; i++ ) {
-					mg	= (MenuGroup) parent.get( hierarchy[ i ]);
+				for (String aHierarchy : hierarchy) {
+					mg = (MenuGroup) parent.get(aHierarchy);
 //					if( mg == null ) {
 //						mg = new MenuGroup( "oscAuto_" + (uniqueID++), hierarchy[ i ]);
 //						parent.add( mg );
 //					}
-					if( mg == null ) {
-						OSCRoot.failed( rom.msg, OSCRoot.getResourceString( "errOSCParentNotFound" ) + " (" + idObj + ")" );
+					if (mg == null) {
+						OSCRoot.failed(rom.msg, OSCRoot.getResourceString("errOSCParentNotFound") + " (" + idObj + ")");
 						return;
 					}
-					parent	= mg;
+					parent = mg;
 				}
 				
 				if( rom.msg.getArgCount() > (argIdx + 1) ) {
@@ -312,15 +286,14 @@ public class OSCGUI
 		}
 		
 		// remove <(int) id>
-		public void oscCmd_remove( RoutedOSCMessage rom )
-		{
+		public void oscCmd_remove(RoutedOSCMessage rom) {
 			final Object		idObj;
 			final OSCMenuNode	n;
 			int					argIdx		= 1;
 			
 			try {
-				idObj		= new Integer( ((Number) rom.msg.getArg( argIdx )).intValue() );
-				n			= (OSCMenuNode) mapNodes.remove( idObj );
+				idObj		= ((Number) rom.msg.getArg(argIdx)).intValue();
+				n			= mapNodes.remove( idObj );
 				if( n == null ) {
 					OSCRoot.failed( rom.msg, OSCRoot.getResourceString( "errOSCNodeNotFound" ) + " (" + idObj + ")" );
 					return;
@@ -332,47 +305,40 @@ public class OSCGUI
 			}
 		}
 
-		protected void reply( OSCMenuNode n )
-		{
-			reply( n, null );
+		protected void reply(OSCMenuNode n) {
+			reply(n, null);
 		}
 
-		protected void reply( OSCMenuNode n, Object[] extraArgs )
-		{
-			final OSCRoot server	= OSCRoot.getInstance();
-			
-			if( !server.isRunning() ) return;
-			
-			final Object[]	args	= new Object[ extraArgs == null ? 2 : extraArgs.length + 2 ];
-		
-			args[ 0 ] = new Integer( n.getID() );
-			args[ 1 ] = "action";
-			for( int i = 0, j = 2; j < args.length; i++, j++ ) {
-				args[ j ] = extraArgs[ i ];
+		protected void reply(OSCMenuNode n, Object[] extraArgs) {
+			final OSCRoot server = OSCRoot.getInstance();
+
+			if (!server.isRunning()) return;
+
+			final Object[] args = new Object[extraArgs == null ? 2 : extraArgs.length + 2];
+
+			args[0] = n.getID();
+			args[1] = "action";
+			for (int i = 0, j = 2; j < args.length; i++, j++) {
+				args[j] = extraArgs[i];
 			}
-		
+
 			try {
-				server.send( new OSCMessage( "/gui/menu", args ), n.getAddress() );
-			}
-			catch( IOException e1 ) {
-				BasicWindowHandler.showErrorDialog( null, e1, n.getText() );
+				server.send(new OSCMessage("/gui/menu", args), n.getAddress());
+			} catch (IOException e1) {
+				BasicWindowHandler.showErrorDialog(null, e1, n.getText());
 			}
 		}
 	}
-	
-	private static interface OSCMenuNode
-	extends Disposable
-	{
+
+	private static interface OSCMenuNode extends Disposable {
 		public abstract void install();
 		public abstract int getID();
 		public abstract String getText();
 		public abstract SocketAddress getAddress();
 	}
-	
-	private static class OSCMenuItem
-	extends MenuAction
-	implements OSCMenuNode
-	{
+
+	@SuppressWarnings("serial")
+	private static class OSCMenuItem extends MenuAction implements OSCMenuNode {
 		private final MenuBuilder	mb;
 		private final int			id;
 		protected final MenuGroup	parent;
@@ -420,6 +386,7 @@ public class OSCGUI
 		}
 	}
 
+	@SuppressWarnings("serial")
 	private static class OSCMenuGroup
 	extends OSCMenuItem
 	{
@@ -480,6 +447,7 @@ public class OSCGUI
 		}
 	}
 
+	@SuppressWarnings("serial")
 	private static class OSCMenuCheck
 	extends BooleanPrefsMenuAction
 	implements OSCMenuNode
@@ -516,22 +484,19 @@ public class OSCGUI
 		{
 			return id;
 		}
-		
-		public String getText()
-		{
-			return getValue( NAME ).toString();
+
+		public String getText() {
+			return getValue(NAME).toString();
 		}
-		
-		public SocketAddress getAddress()
-		{
+
+		public SocketAddress getAddress() {
 			return addr;
 		}
-		
-		public void actionPerformed( ActionEvent e )
-		{
-			super.actionPerformed( e );
-			
-			mb.reply( this, new Object[] { "selected", new Integer( n.isSelected() ? 1 : 0 )});
+
+		public void actionPerformed(ActionEvent e) {
+			super.actionPerformed(e);
+
+			mb.reply(this, new Object[]{"selected", n.isSelected() ? 1 : 0});
 		}
 	}
 	

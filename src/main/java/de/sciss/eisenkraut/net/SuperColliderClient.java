@@ -46,20 +46,10 @@ import de.sciss.app.BasicEvent;
 import de.sciss.app.DocumentListener;
 import de.sciss.app.DynamicPrefChangeManager;
 import de.sciss.app.EventManager;
+import de.sciss.jcollider.*;
 import de.sciss.net.OSCBundle;
 import de.sciss.net.OSCChannel;
 import de.sciss.net.OSCMessage;
-import de.sciss.jcollider.Bus;
-import de.sciss.jcollider.Constants;
-import de.sciss.jcollider.ContiguousBlockAllocator;
-import de.sciss.jcollider.Group;
-import de.sciss.jcollider.NodeWatcher;
-import de.sciss.jcollider.Server;
-import de.sciss.jcollider.ServerEvent;
-import de.sciss.jcollider.ServerListener;
-import de.sciss.jcollider.ServerOptions;
-import de.sciss.jcollider.Synth;
-import de.sciss.jcollider.UGenInfo;
 import de.sciss.jcollider.gui.NodeTreePanel;
 import de.sciss.util.Param;
 
@@ -74,10 +64,10 @@ public class SuperColliderClient
 
 	private static final int		DEFAULT_PORT		= 57109;	// our default server udp port
 
-	private final List				collListeners		= new ArrayList();
+	private final List<ServerListener> collListeners		= new ArrayList<ServerListener>();
 	
-	protected final List			collPlayers			= new ArrayList();
-	private final Map				mapDocsToPlayers	= new HashMap();
+	protected final List<SuperColliderPlayer> collPlayers  = new ArrayList<SuperColliderPlayer>();
+	private final Map<Session, SuperColliderPlayer> mapDocsToPlayers	= new HashMap<Session, SuperColliderPlayer>();
 	
 	protected RoutingConfig			oCfg				= null;
 	private Preferences				oCfgNode			= null;
@@ -98,18 +88,17 @@ public class SuperColliderClient
 	
 	// Busses that have been allocated by OSC clients
 	// key = Integer( busindex ) ; value = Bus
-	private final Map				mapOSCBusses		= new HashMap();
+	private final Map<Integer, Bus> mapOSCBusses		= new HashMap<Integer, Bus>();
 	// Buffers that have been allocated by OSC clients
 	// key = Integer( bufnum ) ; value = Buffer
-	private final Map				mapOSCBuffers		= new HashMap();
+	private final Map<Integer, Buffer> mapOSCBuffers	= new HashMap<Integer, Buffer>();
 
 	private boolean					reboot				= false;
 	
 	private final MeterManager		meterManager;
 	
 	protected EventManager			elmClient					= null;
-//	private final EventManager		elmServer;
-	
+
 	protected static SuperColliderClient instance;
 
 	public SuperColliderClient()
@@ -183,30 +172,21 @@ public class SuperColliderClient
 	{
 		return so;
 	}
-	
-	public SuperColliderPlayer getPlayerForDocument( Session doc )
-	{
-		return (SuperColliderPlayer) mapDocsToPlayers.get( doc );
-	}
-	
-	public void addServerListener( ServerListener l )
-	{
-		synchronized( collListeners ) {
-			collListeners.add( l );
-		}
-//		if( server != null ) {
-//			server.addListener( l );
-//		}
+
+	public SuperColliderPlayer getPlayerForDocument(Session doc) {
+		return mapDocsToPlayers.get(doc);
 	}
 
-	public void removeServerListener( ServerListener l )
-	{
-		synchronized( collListeners ) {
-			collListeners.remove( l );
+	public void addServerListener(ServerListener l) {
+		synchronized (collListeners) {
+			collListeners.add(l);
 		}
-//		if( server != null ) {
-//			server.removeListener( l );
-//		}
+	}
+
+	public void removeServerListener(ServerListener l) {
+		synchronized (collListeners) {
+			collListeners.remove(l);
+		}
 	}
 	
 	public void addClientListener( Listener listener )
@@ -354,10 +334,10 @@ public class SuperColliderClient
 //System.out.println( newCfg );
 		oCfg = newCfg;
 		setOutputConfig();
-		for( int i = 0; i < collPlayers.size(); i++ ) {
-			p = (SuperColliderPlayer) collPlayers.get( i );
-	//		p.setOutputConfig( oCfg, volume );
-			p.setOutputConfig( oCfg );
+		for (Object collPlayer : collPlayers) {
+			p = (SuperColliderPlayer) collPlayer;
+			//		p.setOutputConfig( oCfg, volume );
+			p.setOutputConfig(oCfg);
 		}
 		if( elmClient != null ) {
 			elmClient.dispatchEvent( new Event( instance, Event.OUTPUTCONFIG, System.currentTimeMillis(), instance ));
@@ -377,8 +357,8 @@ public class SuperColliderClient
 //		}
 		final Object[] docs =  mapDocsToPlayers.keySet().toArray();
 
-		for( int i = 0; i < docs.length; i++ ) {
-			disposePlayer( (Session) docs[ i ]);
+		for (Object doc : docs) {
+			disposePlayer((Session) doc);
 		}
 		
 		grpLimiter = null;
@@ -476,16 +456,11 @@ public class SuperColliderClient
 		}
 	}
 
-	/**
-	 *	@synchronization	must be called in the event thread
-	 */
-	public boolean boot()
-	{
+	public boolean boot() {
 		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
 	
 		if( (server != null) && (server.isRunning() || server.isBooting()) ) return false;
 		
-//System.err.println( "//////////// boot /////////////" );
 		dispose();
 	
 		String					val;
@@ -608,18 +583,15 @@ public class SuperColliderClient
 	{
 		return new ActionKillAll();
 	}
-	
+
 	protected OSCMessage loadDefsMsg()
-	throws IOException
-	{
-//		return new OSCMessage( "/d_loadDir", new Object[] { new File( "synthdefs" ).getAbsolutePath() });
-//		return new OSCMessage( "/d_load", new Object[] { new File( "synthdefs", "eisk-all.scsyndef" ).getAbsolutePath() });
-		final InputStream	is		= getClass().getResourceAsStream( "eisk-all.scsyndef" );
-		final int			size	= is.available();
-		final byte[]		data	= new byte[ size ];
-		is.read( data );
+			throws IOException {
+		final InputStream is = getClass().getResourceAsStream("eisk-all.scsyndef");
+		final int size = is.available();
+		final byte[] data = new byte[size];
+		is.read(data);
 		is.close();
-		return new OSCMessage( "/d_recv", new Object[] { data });
+		return new OSCMessage("/d_recv", new Object[]{data});
 	}
 
 	private void createNewPlayer( Session doc )
@@ -648,17 +620,14 @@ public class SuperColliderClient
 		}
 	}
 
-	private void disposePlayer( Session doc )
-	{
-		final SuperColliderPlayer	p	= (SuperColliderPlayer) mapDocsToPlayers.remove( doc );
-		final DocumentFrame			f	= doc.getFrame();
+	private void disposePlayer(Session doc) {
+		final SuperColliderPlayer p = mapDocsToPlayers.remove(doc);
+		final DocumentFrame f = doc.getFrame();
 
-		if( f != null ) f.playerDestroyed( p );
-//		if( f != null ) meterManager.removeMeterListener( f );
-		if( p != null ) {
-			collPlayers.remove( p );
+		if (f != null) f.playerDestroyed(p);
+		if (p != null) {
+			collPlayers.remove(p);
 			p.dispose();
-//			if( chanMeter && collPlayers.isEmpty() ) meterTimer.stop();
 		}
 	}
 
@@ -687,23 +656,16 @@ public class SuperColliderClient
 		switch( e.getID() ) {
 		case ServerEvent.STOPPED:	// --------------------------------------- stopped
 			dispose();
-			
-			synchronized( collListeners ) {
-				for( int i = 0; i < collListeners.size(); i++ ) {
-					((ServerListener) collListeners.get( i )).serverAction( e );
+
+			synchronized (collListeners) {
+				for (ServerListener collListener : collListeners) {
+					collListener.serverAction(e);
 				}
 			}
-			
-			if( reboot ) {
+
+			if (reboot) {
 				reboot = false;
-//				final javax.swing.Timer timer = new javax.swing.Timer( 2000, new ActionListener() {
-//					public void actionPerformed( ActionEvent e )
-//					{
-						boot();
-//					}
-//				});
-//				timer.setRepeats( false );
-//				timer.start();
+				boot();
 			}
 			break;
 			
@@ -746,16 +708,16 @@ public class SuperColliderClient
 			}
 
 			synchronized( collListeners ) {
-				for( int i = 0; i < collListeners.size(); i++ ) {
-					((ServerListener) collListeners.get( i )).serverAction( e );
+				for (ServerListener collListener : collListeners) {
+					collListener.serverAction(e);
 				}
 			}
 			break;
 			
 		default:					// --------------------------------------- other
-			synchronized( collListeners ) {
-				for( int i = 0; i < collListeners.size(); i++ ) {
-					((ServerListener) collListeners.get( i )).serverAction( e );
+			synchronized (collListeners) {
+				for (ServerListener collListener : collListeners) {
+					collListener.serverAction(e);
 				}
 			}
 			break;
@@ -764,48 +726,36 @@ public class SuperColliderClient
 
 	// ------------ OSCRouter interface ------------
 
-	public String oscGetPathComponent()
-	{
+	public String oscGetPathComponent() {
 		return OSC_SUPERCOLLIDER;
 	}
-	
-	public void oscRoute( RoutedOSCMessage rom )
-	{
-		osc.oscRoute( rom );
-	}
-	
-	public void oscAddRouter( OSCRouter subRouter )
-	{
-		osc.oscAddRouter( subRouter );
+
+	public void oscRoute(RoutedOSCMessage rom) {
+		osc.oscRoute(rom);
 	}
 
-	public void oscRemoveRouter( OSCRouter subRouter )
-	{
-		osc.oscRemoveRouter( subRouter );
-	}
-	
-	public Object oscQuery_port()
-	{
-// schwachsinn, alles laeuft im event thread!
-//		final Server s = server;
-		return new Integer( server == null ? 0 : server.getAddr().getPort() );
+	public void oscAddRouter(OSCRouter subRouter) {
+		osc.oscAddRouter(subRouter);
 	}
 
-	public Object oscQuery_protocol()
-	{
-		return( server == null ? (Object) new Integer( 0 ) : (Object) server.getOptions().getProtocol() );
+	public void oscRemoveRouter(OSCRouter subRouter) {
+		osc.oscRemoveRouter(subRouter);
 	}
 
-	public Object oscQuery_running()
-	{
-//		final Server s = server;
-//		return new Integer( (s != null && s.isRunning()) ? 1 : 0 );
-		return new Integer( serverIsReady ? 1 : 0 );
+	public Object oscQuery_port() {
+		return server == null ? 0 : server.getAddr().getPort();
 	}
 
-	public Object oscQuery_volume()
-	{
-		return new Float( getVolume() );
+	public Object oscQuery_protocol() {
+		return (server == null ? (Object) 0 : (Object) server.getOptions().getProtocol());
+	}
+
+	public Object oscQuery_running() {
+		return serverIsReady ? 1 : 0;
+	}
+
+	public Object oscQuery_volume() {
+		return getVolume();
 	}
 
 	public void oscCmd_allocBus( RoutedOSCMessage rom )
@@ -823,17 +773,17 @@ public class SuperColliderClient
 			}
 			argIdx++;
 			final Bus		b;
-			final Server	s	= server;
-			if( s != null ) {
-				b = Bus.alloc( s, rate, rom.msg.getArgCount() > argIdx ?
-					((Integer) rom.msg.getArg( argIdx )).intValue() : 1 );
+			final Server s = server;
+			if (s != null) {
+				b = Bus.alloc(s, rate, rom.msg.getArgCount() > argIdx ?
+						(Integer) rom.msg.getArg(argIdx) : 1);
 			} else {
 				b = null;
 			}
-			if( b != null ) {
-				final Integer idx = new Integer( b.getIndex() );
-				mapOSCBusses.put( idx, b );
-				rom.replyDone( 1, new Object[] { idx });
+			if (b != null) {
+				final Integer idx = b.getIndex();
+				mapOSCBusses.put(idx, b);
+				rom.replyDone(1, new Object[]{idx});
 			} else {
 				rom.replyFailed();
 			}
@@ -852,11 +802,12 @@ public class SuperColliderClient
 	public void oscCmd_freeBus( RoutedOSCMessage rom )
 	{
 		try {
-			final Bus b = (Bus) mapOSCBusses.remove( rom.msg.getArg( 1 ));
+			int i = (Integer) rom.msg.getArg(1);
+			final Bus b = mapOSCBusses.remove(i);
 			if( b != null ) {
 				b.free();
 			} else {
-				OSCRoot.failed( rom.msg, OSCRoot.getResourceString( "errOSCBusNotFound" ));
+				OSCRoot.failed(rom.msg, OSCRoot.getResourceString("errOSCBusNotFound"));
 			}
 		}
 		catch( IndexOutOfBoundsException e1 ) {
@@ -868,18 +819,18 @@ public class SuperColliderClient
 	{
 		int argIdx = 1;
 		try {
-			final int numFrames	= ((Integer) rom.msg.getArg( argIdx )).intValue();
+			final int numFrames	= (Integer) rom.msg.getArg(argIdx);
 			final int numChannels;
 			argIdx++;
 			if( rom.msg.getArgCount() > argIdx ) {
-				numChannels	= ((Integer) rom.msg.getArg( argIdx )).intValue();
+				numChannels	= (Integer) rom.msg.getArg(argIdx);
 			} else {
 				numChannels	= 1;
 			}
 			final de.sciss.jcollider.Buffer b = de.sciss.jcollider.Buffer.alloc( server, numFrames, numChannels );
-			if( b != null ) {
-				final Integer num = new Integer( b.getBufNum() );
-				mapOSCBuffers.put( num, b );
+			if (b != null) {
+				final Integer num = b.getBufNum();
+				mapOSCBuffers.put(num, b);
 				rom.replyDone( 1, new Object[] { num });
 			} else {
 				rom.replyFailed();
@@ -896,21 +847,19 @@ public class SuperColliderClient
 		}
 	}
 
-	public void oscCmd_freeBuf( RoutedOSCMessage rom )
-	{
+	public void oscCmd_freeBuf(RoutedOSCMessage rom) {
 		try {
-			final de.sciss.jcollider.Buffer b = (de.sciss.jcollider.Buffer) mapOSCBuffers.remove( rom.msg.getArg( 1 ));
-			if( b != null ) {
+			int i = (Integer) rom.msg.getArg(1);
+			final de.sciss.jcollider.Buffer b = mapOSCBuffers.remove(i);
+			if (b != null) {
 				b.free();
 			} else {
-				OSCRoot.failed( rom.msg, OSCRoot.getResourceString( "errOSCBufNotFound" ));
+				OSCRoot.failed(rom.msg, OSCRoot.getResourceString("errOSCBufNotFound"));
 			}
-		}
-		catch( IndexOutOfBoundsException e1 ) {
-			OSCRoot.failedArgCount( rom );
-		}
-		catch( IOException e1 ) {
-			OSCRoot.failed( rom, e1 );
+		} catch (IndexOutOfBoundsException e1) {
+			OSCRoot.failedArgCount(rom);
+		} catch (IOException e1) {
+			OSCRoot.failed(rom, e1);
 		}
 	}
 
@@ -963,9 +912,9 @@ public class SuperColliderClient
 
 // -------------- internal classes --------------
 
+	@SuppressWarnings("serial")
 	public static class Event
-	extends BasicEvent
-	{
+			extends BasicEvent {
 		// --- ID values ---
 
 		public static final int OUTPUTCONFIG	= 0;
@@ -985,21 +934,16 @@ public class SuperColliderClient
 			return client;
 		}
 
-		public boolean incorporate( BasicEvent oldEvent )
-		{
-			if( oldEvent instanceof Event &&
-				this.getSource() == oldEvent.getSource() &&
-				this.getID() == oldEvent.getID() ) {
-				
-				// XXX beware, when the actionID and actionObj
-				// are used, we have to deal with them here
-				
-				return true;
-
-			} else return false;
+		public boolean incorporate(BasicEvent oldEvent) {
+			// XXX beware, when the actionID and actionObj
+			// are used, we have to deal with them here
+			return oldEvent instanceof Event &&
+					this.getSource() == oldEvent.getSource() &&
+					this.getID() == oldEvent.getID();
 		}
 	}
 
+	@SuppressWarnings("serial")
 	private class ActionLoadDefs
 	extends AbstractAction
 	{
@@ -1022,6 +966,7 @@ public class SuperColliderClient
 		}
 	}
 
+	@SuppressWarnings("serial")
 	private class ActionKillAll
 	extends AbstractAction
 	{
@@ -1041,6 +986,7 @@ public class SuperColliderClient
 		}
 	}
 
+	@SuppressWarnings("serial")
 	private class ActionNodeTree
 	extends AbstractAction
 	{

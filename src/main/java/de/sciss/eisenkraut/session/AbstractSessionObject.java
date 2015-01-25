@@ -30,7 +30,7 @@ public abstract class AbstractSessionObject
 		implements SessionObject, XMLRepresentation, MapManager.Listener {
 
 	private	String		name;
-	private MapManager map = new MapManager(this, new HashMap());
+	private MapManager map = new MapManager(this, new HashMap<String, Object>());
 
 	protected static final String XML_ATTR_NAME			= "name";
 	protected static final String XML_ATTR_CLASS		= "class";
@@ -100,46 +100,29 @@ public abstract class AbstractSessionObject
 
 // ---------------- XMLRepresentation interface ---------------- 
 
-	/**
-	 */
-	public void toXML( Document domDoc, Element node, Map options )
-	throws IOException
-	{
+	public void toXML(Document domDoc, Element node, Map<Object, Object> options)
+			throws IOException {
 		try {
-			node.setAttribute( XML_ATTR_CLASS, getClass().getName() );
-			node.setAttribute( XML_ATTR_NAME, getName() );
-			getMap().toXML( domDoc, (Element) node.appendChild( domDoc.createElement( XML_ELEM_MAP )), options );
-		}
-		catch( DOMException e1 ) {
-			throw IOUtil.map( e1 );  // rethrow exception
+			node.setAttribute(XML_ATTR_CLASS, getClass().getName());
+			node.setAttribute(XML_ATTR_NAME, getName());
+			getMap().toXML(domDoc, (Element) node.appendChild(domDoc.createElement(XML_ELEM_MAP)), options);
+		} catch (DOMException e1) {
+			throw IOUtil.map(e1);  // rethrow exception
 		}
 	}
 
-	/**
-	 */
-	public void fromXML( Document domDoc, Element node, Map options )
-	throws IOException
-	{
-		NodeList	nl	= node.getChildNodes();
-		int			i;
-		Element		xmlChild;
-		
-		setName( node.getAttribute( XML_ATTR_NAME ));
-		for( i = 0; i < nl.getLength(); i++ ) {
-			if( !(nl.item( i ) instanceof Element )) continue;
-			xmlChild = (Element) nl.item( i );
-			if( xmlChild.getTagName().equals( XML_ELEM_MAP )) {
-				getMap().fromXML( domDoc, xmlChild, options );
-//System.err.println( "found map" );
-//Set keySet = getMap().keySet( MapManager.Context.ALL_INCLUSIVE, MapManager.Context.NONE_EXCLUSIVE );
-//Iterator iter = keySet.iterator();
-//MapManager.Context c;
-//String key;
-//while( iter.hasNext() ) {
-//	key = iter.next().toString();
-//	c = getMap().getContext( key );
-//	System.err.println( "    key = "+key+ " flags = "+c.flags );
-//}
+	public void fromXML(Document domDoc, Element node, Map<Object, Object> options)
+			throws IOException {
+		NodeList nl = node.getChildNodes();
+		int i;
+		Element xmlChild;
+
+		setName(node.getAttribute(XML_ATTR_NAME));
+		for (i = 0; i < nl.getLength(); i++) {
+			if (!(nl.item(i) instanceof Element)) continue;
+			xmlChild = (Element) nl.item(i);
+			if (xmlChild.getTagName().equals(XML_ELEM_MAP)) {
+				getMap().fromXML(domDoc, xmlChild, options);
 				break;	// only one 'map' allowed
 			}
 		}

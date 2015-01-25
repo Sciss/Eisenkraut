@@ -33,6 +33,7 @@ import de.sciss.io.Span;
  *
  * @see        UndoManager
  */
+@SuppressWarnings("serial")
 public class TimelineVisualEdit extends BasicUndoableEdit {
 
 	private final Session   doc;

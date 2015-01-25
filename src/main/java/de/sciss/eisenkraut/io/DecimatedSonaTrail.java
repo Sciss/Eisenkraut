@@ -437,7 +437,7 @@ long screenOffX = 0;
 					// g2.setColor( Color.red );
 					g2.setPaint( pntBusy );
 					for( int i = 0; i < drawBusyList.size(); i++ ) {
-						chunkSpan = (Span) drawBusyList.get( i );
+						chunkSpan = drawBusyList.get( i );
 						scaleX = (float) r.width / info.getTotalLength();
 						g2.fillRect( (int) ((chunkSpan.start - info.span.start) * scaleX) + r.x, r.y,
 						             (int) (chunkSpan.getLength() * scaleX), r.height );
@@ -558,10 +558,10 @@ inlineDecim=1;
 	 * 
 	 * @synchronization	caller must have bufSync !
 	 */
-	private boolean readFrames( int sub, float[][] data, int dataOffset, List busyList,
-							 Span readSpan, AbstractCompoundEdit ce )
-	throws IOException
-	{
+	private boolean readFrames(int sub, float[][] data, int dataOffset, List<Span> busyList,
+							   Span readSpan, AbstractCompoundEdit ce)
+			throws IOException {
+
 		int					idx			= editIndexOf( readSpan.start, true, ce );
 		if( idx < 0 ) idx = -(idx + 2);
 		final long			startR		= decimHelps[ sub ].roundAdd - readSpan.start;
@@ -587,35 +587,35 @@ inlineDecim=1;
 			readOffset	= nextOffset + readyLen.value(); // chunkLen;
 			nextOffset	= (int) ((subSpan.stop + startR) >> decimHelps[ sub ].shift) + dataOffset;
 			discrepancy	= nextOffset - readOffset;
-			len 	   -= readyLen.value() + discrepancy;
-			if( readyLen.value() > 0 ) someReady = true;
-			if( busyLen.value() == 0 ) {
-				if( discrepancy > 0 ) {
-					if( readOffset > 0 ) {
-						for( int i = readOffset, k = readOffset - 1; i < nextOffset; i++ ) {
-							for( int j = 0; j < data.length; j++ ) {
-								data[ j ][ i ] = data[ j ][ k ];
+			len -= readyLen.value() + discrepancy;
+			if (readyLen.value() > 0) someReady = true;
+			if (busyLen.value() == 0) {
+				if (discrepancy > 0) {
+					if (readOffset > 0) {
+						for (int i = readOffset, k = readOffset - 1; i < nextOffset; i++) {
+							for (int j = 0; j < data.length; j++) {
+								data[j][i] = data[j][k];
 							}
 						}
 					}
 				}
 			} else {
-				final Span busySpan = new Span( subSpan.stop - (subSpan.getLength() * busyLen.value() / chunkLen),
-				                                subSpan.stop );
+				final Span busySpan = new Span(subSpan.stop - (subSpan.getLength() * busyLen.value() / chunkLen),
+						subSpan.stop);
 				final int busyLastIdx = busyList.size() - 1;
-				if( busyLastIdx >= 0 ) {
-					final Span busySpan2 = (Span) busyList.get( busyLastIdx );
-					if( busySpan.touches( busySpan2 )) {
-						busyList.set( busyLastIdx, busySpan.union( busySpan2 ));
+				if (busyLastIdx >= 0) {
+					final Span busySpan2 = busyList.get(busyLastIdx);
+					if (busySpan.touches(busySpan2)) {
+						busyList.set(busyLastIdx, busySpan.union(busySpan2));
 					} else {
-						busyList.add( busySpan );
+						busyList.add(busySpan);
 					}
 				} else {
-					busyList.add( busySpan );
+					busyList.add(busySpan);
 				}
-				for( int i = Math.max( 0, readOffset ); i < nextOffset; i++ ) {
-					for( int j = 0; j < data.length; j++ ) {
-						data[ j ][ i ] = 0f;
+				for (int i = Math.max(0, readOffset); i < nextOffset; i++) {
+					for (int j = 0; j < data.length; j++) {
+						data[j][i] = 0f;
 					}
 				}
 			}

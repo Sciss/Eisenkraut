@@ -36,7 +36,7 @@ implements ActionListener, MouseListener, Disposable
 
 	private JPopupMenu			pop				= null;
 	private float				relx, rely;
-	private List				collListeners	= null;		// lazy creation
+	private List<Listener> collListeners	= null;		// lazy creation
 	
 	private final Component		c;
 	private final Timer			timer;
@@ -44,26 +44,23 @@ implements ActionListener, MouseListener, Disposable
 
 	private boolean				validPress		= false;
 
-	public PopupTriggerMonitor( Component c )
-	{
-		this.c	= c;
-		c.addMouseListener( this );
-		timer	= new Timer( DEFAULT_DELAY, this );
-		timer.setRepeats( false );
+	public PopupTriggerMonitor(Component c) {
+		this.c = c;
+		c.addMouseListener(this);
+		timer = new Timer(DEFAULT_DELAY, this);
+		timer.setRepeats(false);
 	}
-	
-	public void addListener( Listener l )
-	{
-		synchronized( sync ) {
-			if( collListeners == null ) collListeners = new ArrayList();
-			collListeners.add( l );
+
+	public void addListener(Listener l) {
+		synchronized (sync) {
+			if (collListeners == null) collListeners = new ArrayList<Listener>();
+			collListeners.add(l);
 		}
 	}
 
-	public void removeListener( Listener l )
-	{
-		synchronized( sync ) {
-			collListeners.remove( l );
+	public void removeListener(Listener l) {
+		synchronized (sync) {
+			collListeners.remove(l);
 		}
 	}
 	
@@ -142,30 +139,29 @@ implements ActionListener, MouseListener, Disposable
 		validPress = false;
 
 		if( pop != null ) pop.show( c, (int) (c.getWidth() * relx), (int) (c.getHeight() * rely) );
-	
-		synchronized( sync ) {
-			if( collListeners != null ) {
-				for( int i = 0; i < collListeners.size(); i++ ) {
-					((Listener) collListeners.get( i )).popupTriggered( this );
+
+		synchronized (sync) {
+			if (collListeners != null) {
+				for (Listener collListener : collListeners) {
+					collListener.popupTriggered(this);
 				}
 			}
 		}
 	}
 
-	private void dispatchClick()
-	{
-		synchronized( sync ) {
-			if( collListeners != null ) {
-				for( int i = 0; i < collListeners.size(); i++ ) {
-					((Listener) collListeners.get( i )).componentClicked( this );
+	private void dispatchClick() {
+		synchronized (sync) {
+			if (collListeners != null) {
+				for (Listener collListener : collListeners) {
+					collListener.componentClicked(this);
 				}
 			}
 		}
 	}
-	
-	public static interface Listener
-	{
-		public void popupTriggered( PopupTriggerMonitor m );
-		public void componentClicked( PopupTriggerMonitor m );
+
+	public static interface Listener {
+		public void popupTriggered(PopupTriggerMonitor m);
+
+		public void componentClicked(PopupTriggerMonitor m);
 	}
 }

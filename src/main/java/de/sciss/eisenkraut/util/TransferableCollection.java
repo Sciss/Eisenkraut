@@ -53,7 +53,7 @@ implements Transferable
 	 */
 	public static final DataFlavor collectionFlavor = new DataFlavor( List.class, null );
 
-	private final Vector		collTransferables;
+	private final Vector<Transferable> collTransferables;
 	private final DataFlavor[]	collFlavors;
 
 	/**
@@ -71,34 +71,35 @@ implements Transferable
 	 *										which does not implement the Transferable
 	 *										interface
 	 */
-	public TransferableCollection( List coll )
-	{
-		collTransferables = new Vector();
-		
+	public TransferableCollection(List<Transferable> coll) {
+		collTransferables = new Vector<Transferable>();
+
 		int i, j, k;
 		Object o;
 		DataFlavor[] flavorArray;
 		DataFlavor flavor;
-		Vector v = new Vector();
-		
-		for( i = 0; i < coll.size(); i++ ) {
-			o = coll.get( i );
-			if( !(o instanceof Transferable) ) throw new IllegalArgumentException();
+		Vector<DataFlavor> v = new Vector<DataFlavor>();
+
+		for (i = 0; i < coll.size(); i++) {
+			o = coll.get(i);
+			if (!(o instanceof Transferable)) throw new IllegalArgumentException();
+			Transferable t = (Transferable) o;
 			flavorArray = ((Transferable) o).getTransferDataFlavors();
-collFlavLp:	for( j = 0; j < flavorArray.length; j++ ) {
+		collFlavLp:
+			for (j = 0; j < flavorArray.length; j++) {
 				flavor = flavorArray[j];
-				for( k = 0; k < v.size(); k++ ) {
-					if( ((DataFlavor) v.get( k )).equals( flavor )) continue collFlavLp;
+				for (k = 0; k < v.size(); k++) {
+					if (v.get(k).equals(flavor)) continue collFlavLp;
 				}
-				v.add( flavor );
+				v.add(flavor);
 			}
-			collTransferables.add( o );
+			collTransferables.add(t);
 		}
 		v.add( collectionFlavor );
-		
-		collFlavors = new DataFlavor[ v.size() ];
-		for( i = 0; i < v.size(); i++ ) {
-			collFlavors[i] = (DataFlavor) v.get(i);
+
+		collFlavors = new DataFlavor[v.size()];
+		for (i = 0; i < v.size(); i++) {
+			collFlavors[i] = v.get(i);
 		}
 	}
 
@@ -123,10 +124,9 @@ collFlavLp:	for( j = 0; j < flavorArray.length; j++ ) {
 	 *			elements supports the given flavor, or if <code>flavor</code>
 	 *			equals <code>collectionFlavor</code>.
 	 */
-	public boolean isDataFlavorSupported( DataFlavor flavor )
-	{
-		for( int i = 0; i < collFlavors.length; i++ ) {
-			if( collFlavors[i].equals( flavor )) return true;
+	public boolean isDataFlavorSupported(DataFlavor flavor) {
+		for (DataFlavor collFlavor : collFlavors) {
+			if (collFlavor.equals(flavor)) return true;
 		}
 		return false;
 	}
@@ -145,18 +145,17 @@ collFlavLp:	for( j = 0; j < flavorArray.length; j++ ) {
 	 *  @throws UnsupportedFlavorException  if none of the items supports the given flavor
 	 *  @throws IOException					if the data is no longer available in the requested flavor
 	 */
-	public Object getTransferData( DataFlavor flavor )
-	throws UnsupportedFlavorException, IOException
-	{
-		if( flavor.equals( collectionFlavor )) return new Vector( collTransferables );
-	
+	public Object getTransferData(DataFlavor flavor)
+			throws UnsupportedFlavorException, IOException {
+		if (flavor.equals(collectionFlavor)) return new Vector<Transferable>(collTransferables);
+
 		Object o;
-	
-		for( int i = 0; i < collTransferables.size(); i++ ) {
-			o = collTransferables.get( i );
-			if( o instanceof Transferable ) {
-				if( ((Transferable) o).isDataFlavorSupported( flavor )) {
-					return( ((Transferable) o).getTransferData( flavor ));
+
+		for (Transferable collTransferable : collTransferables) {
+			o = collTransferable;
+			if (o instanceof Transferable) {
+				if (((Transferable) o).isDataFlavorSupported(flavor)) {
+					return (((Transferable) o).getTransferData(flavor));
 				}
 			}
 		}

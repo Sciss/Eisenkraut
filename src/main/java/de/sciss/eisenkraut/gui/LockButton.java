@@ -26,10 +26,7 @@ import javax.swing.JComponent;
 
 import de.sciss.gui.TiledImage;
 
-/**
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
- */
+@SuppressWarnings("serial")
 public class LockButton
 extends JComponent
 {

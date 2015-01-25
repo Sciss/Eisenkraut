@@ -23,9 +23,9 @@ import de.sciss.app.BasicEvent;
  *  @see		Timeline#addTimelineListener( TimelineListener )
  *  @see		TimelineListener
  */
+@SuppressWarnings("serial")
 public class TimelineEvent
-extends BasicEvent
-{
+		extends BasicEvent {
 // --- ID values ---
 	/**
 	 *  returned by getID() : a portion of the timeline

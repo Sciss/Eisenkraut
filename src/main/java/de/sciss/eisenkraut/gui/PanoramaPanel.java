@@ -37,9 +37,9 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.event.MouseInputAdapter;
 
-public class PanoramaPanel
-extends JComponent
-{
+@SuppressWarnings("serial")
+public class PanoramaPanel extends JComponent {
+
 	private final AffineTransform	at				= new AffineTransform();
 	protected static final Insets	insets			= new Insets( 1, 1, 1, 1 );
 	private static final Shape		shpCtrlIn		= new Ellipse2D.Double( -2, -2, 5, 5 );
@@ -48,13 +48,13 @@ extends JComponent
 	private static final Paint		pntCtrlOut		= new Color( 0x00, 0x00, 0x00, 0x3F );
 	private static final Paint		pntCtrlOutS		= new Color( 0x00, 0x00, 0xFF, 0x7F );
 
-	private final List				outlines		= new ArrayList();
-	private final List				tOutlines		= new ArrayList();
-	private final List				outlinePaints	= new ArrayList();
+	private final List<Shape> outlines		= new ArrayList<Shape>();
+	private final List<Shape> tOutlines		= new ArrayList<Shape>();
+	private final List<Paint> outlinePaints	= new ArrayList<Paint>();
 
-	private final List				areas			= new ArrayList();
-	private final List				tAreas			= new ArrayList();
-	private final List				areaPaints		= new ArrayList();
+	private final List<Shape> areas			= new ArrayList<Shape>();
+	private final List<Shape> tAreas		= new ArrayList<Shape>();
+	private final List<Paint> areaPaints	= new ArrayList<Paint>();
 
 	private final Point2D			ctrlPt			= new Point2D.Double( 0.0, 0.75 );
 
@@ -66,7 +66,7 @@ extends JComponent
 	private final int				numSpots;
 	protected double				azi, spread;
 	
-	private static final List		collListeners	= new ArrayList();
+	private static final List<ActionListener> collListeners	= new ArrayList<ActionListener>();
 	
 	static {
 		shpCtrlOut		   = new Area( new Ellipse2D.Double( -7, -7, 15, 15 ));
@@ -83,11 +83,11 @@ extends JComponent
 		startAngle		 = startAng % 360;
 		deltaAngle		= 360.0 / numSpots;
 		this.numSpots	= numSpots;
-			
-		outlines.add( new Ellipse2D.Double( -1.0, -1.0, 2.0, 2.0 ));
-		outlinePaints.add( Color.black );
-		outlines.add( new Ellipse2D.Double( -0.75, -0.75, 1.5, 1.5 ));
-		outlinePaints.add( pntCtrlOut );
+
+		outlines.add(new Ellipse2D.Double(-1.0, -1.0, 2.0, 2.0));
+		outlinePaints.add(Color.black);
+		outlines.add(new Ellipse2D.Double(-0.75, -0.75, 1.5, 1.5));
+		outlinePaints.add(pntCtrlOut);
 		
 		double			angDeg, angRad, dx, dy;
 		double			speakerWidth	= Math.max( 4, Math.min( 10, deltaAngle / 2 ));
@@ -110,18 +110,17 @@ extends JComponent
 			areas.add( area );
 			areaPaints.add( pntCtrlIn );
 		}
-		
-		setMinimumSize( new Dimension( 64, 64 ));
-		setPreferredSize( new Dimension( 128, 128 ));
-		setBorder( BorderFactory.createEmptyBorder( insets.left, insets.top, insets.bottom, insets.right ));
+
+		setMinimumSize(new Dimension(64, 64));
+		setPreferredSize(new Dimension(128, 128));
+		setBorder(BorderFactory.createEmptyBorder(insets.top, insets.left, insets.bottom, insets.right));
 //		setBorder( BorderFactory.createMatteBorder( insets.left, insets.top, insets.bottom, insets.right, Color.green ));
 
-		MouseInputAdapter	mia	= new MouseInputAdapter() {
-			public void mousePressed( MouseEvent e )
-			{
-				final Point2D mousePt	= getVirtualMousePos( e );
-				isDragging				= true;
-				processDrag( mousePt, !e.isControlDown() );
+		MouseInputAdapter mia = new MouseInputAdapter() {
+			public void mousePressed(MouseEvent e) {
+				final Point2D mousePt = getVirtualMousePos(e);
+				isDragging = true;
+				processDrag(mousePt, !e.isControlDown());
 			}
 
 			public void mouseReleased( MouseEvent e )
@@ -201,21 +200,19 @@ extends JComponent
 		isDragging = true;
 	}
 	
-	protected void dispatchAction()
-	{
-		final ActionEvent e = new ActionEvent( this, ActionEvent.ACTION_PERFORMED, null );
-	
-		synchronized( collListeners ) {
-			for( int i = 0; i < collListeners.size(); i++ ) {
-				((ActionListener) collListeners.get( i )).actionPerformed( e );
+	protected void dispatchAction() {
+		final ActionEvent e = new ActionEvent(this, ActionEvent.ACTION_PERFORMED, null);
+
+		synchronized (collListeners) {
+			for (ActionListener collListener : collListeners) {
+				collListener.actionPerformed(e);
 			}
 		}
 	}
-	
-	public void addActionListener( ActionListener l )
-	{
-		synchronized( collListeners ) {
-			collListeners.add( l );
+
+	public void addActionListener(ActionListener l) {
+		synchronized (collListeners) {
+			collListeners.add(l);
 		}
 	}
 
@@ -297,12 +294,12 @@ extends JComponent
 		g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
 		g2.translate( insets.left, insets.top );
 		for( int i = 0; i < tOutlines.size(); i++ ) {
-			g2.setPaint( (Paint) outlinePaints.get( i ));
-			g2.draw( (Shape) tOutlines.get( i ));
+			g2.setPaint(outlinePaints.get( i ));
+			g2.draw(tOutlines.get( i ));
 		}
 		for( int i = 0; i < tAreas.size(); i++ ) {
-			g2.setPaint( (Paint) areaPaints.get( i ));
-			g2.fill( (Shape) tAreas.get( i ));
+			g2.setPaint(areaPaints.get( i ));
+			g2.fill(tAreas.get( i ));
 		}
 				
 		trnsX	= (ctrlPt.getX() + 1.15) * radius;
@@ -321,16 +318,15 @@ extends JComponent
 		g2.setTransform( oldAT );
 	}
 
-	private void recalcTransforms()
-	{
+	private void recalcTransforms() {
 		tOutlines.clear();
-		for( int i = 0; i < outlines.size(); i++ ) {
-			tOutlines.add( at.createTransformedShape( (Shape) outlines.get( i )));
+		for (Shape outline : outlines) {
+			tOutlines.add(at.createTransformedShape(outline));
 		}
 		tAreas.clear();
-		for( int i = 0; i < areas.size(); i++ ) {
-			tAreas.add( at.createTransformedShape( (Shape) areas.get( i )));
+		for (Shape area : areas) {
+			tAreas.add(at.createTransformedShape(area));
 		}
-		recalc	= false;
+		recalc = false;
 	}
 }

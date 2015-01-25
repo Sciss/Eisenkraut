@@ -34,9 +34,10 @@ import de.sciss.eisenkraut.session.SessionCollection;
  *	and soloing/muting. In the future it could
  *	carry insert effects and the like.
  */
+@SuppressWarnings("serial")
 public class AudioTrackRowHeader
-extends TrackRowHeader
-{
+		extends TrackRowHeader {
+
 	private final PanoramaButton	pan;
 	public static final int			ROW_WIDTH	= 64;
 	

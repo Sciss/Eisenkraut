@@ -55,10 +55,11 @@ import de.sciss.util.Disposable;
  *	and soloing/muting. In the future it could
  *	carry insert effects and the like.
  */
+@SuppressWarnings("serial")
 public class TrackRowHeader
-extends JPanel
-implements MouseListener, DynamicListening, Disposable
-{
+		extends JPanel
+		implements MouseListener, DynamicListening, Disposable {
+
 	private final JLabel			lbTrackName;
 	private final Track				t;
 	private final SessionCollection	tracks;
@@ -264,7 +265,7 @@ implements MouseListener, DynamicListening, Disposable
 	 */
 	public void mousePressed(MouseEvent e) {
 		UndoableEdit 	edit;
-		List			collTracks;
+		List<SessionObject> collTracks;
 	
 		if( e.isAltDown() ) {
 			selected = !selected;   // toggle item
@@ -272,12 +273,12 @@ implements MouseListener, DynamicListening, Disposable
 //					collTracks = doc.activeTransmitters.getAll();
 				collTracks = tracks.getAll();
 			} else {				// deselect all
-				collTracks = new ArrayList( 1 );
+				collTracks = new ArrayList<SessionObject>( 1 );
 			}
 		} else if( e.isMetaDown() ) {
 			selected = !selected;   // toggle item
 			if( selected ) {		// deselect all except uns
-				collTracks = Collections.singletonList( t );
+				collTracks = Collections.singletonList((SessionObject) t);
 			} else {				// select all except us
 //					collTracks = doc.activeTransmitters.getAll();
 				collTracks = tracks.getAll();
@@ -295,11 +296,11 @@ implements MouseListener, DynamicListening, Disposable
 			} else {
 				if( selected ) return;						// no action
 				selected	= true;
-				collTracks	= Collections.singletonList( t );	// deselect all except uns
+				collTracks	= Collections.singletonList((SessionObject) t);	// deselect all except uns
 			}
 		}
 		// XXX should use a lazy edit here
-		edit = new EditSetSessionObjects( this, selectedTracks, collTracks ).perform();
+		edit = new EditSetSessionObjects(this, selectedTracks, collTracks).perform();
 		undo.addEdit( edit );
 		repaint();
     }

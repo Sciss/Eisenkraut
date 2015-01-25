@@ -1279,17 +1279,16 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 		d = op.createDialog( getWindow(), actionName );
 		rp = d.getRootPane();
 		if( rp != null ) {
-			rp.getInputMap( JComponent.WHEN_IN_FOCUSED_WINDOW ).put(
-			  KeyStroke.getKeyStroke( KeyEvent.VK_D, BasicMenuFactory.MENU_SHORTCUT ), "dont" );
-			rp.getActionMap().put( "dont", new AbstractAction() {
-				public void actionPerformed( ActionEvent e )
-				{
-					dont.set(  true );
+			rp.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+					KeyStroke.getKeyStroke(KeyEvent.VK_D, BasicMenuFactory.MENU_SHORTCUT), "dont");
+			rp.getActionMap().put("dont", new AbstractAction() {
+				public void actionPerformed(ActionEvent e) {
+					dont.set(true);
 					d.dispose();
 				}
 			});
 		}
-		BasicWindowHandler.showDialog( d );
+		BasicWindowHandler.showDialog(d);
 //		d.setVisible( true );
 		if (dont.isSet()) {
 			choice = 2;
@@ -1788,9 +1787,9 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 	
 // ---------------- internal action classes ---------------- 
 
+	@SuppressWarnings("serial")
 	private class ActionDebugDump
-	extends MenuAction
-	{
+			extends MenuAction {
 		protected ActionDebugDump() { /* empty */ }
 
 		public void actionPerformed( ActionEvent e )
@@ -1802,9 +1801,9 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 		}
 	}
 
+	@SuppressWarnings("serial")
 	private class ActionDebugVerify
-	extends MenuAction
-	{
+			extends MenuAction {
 		protected ActionDebugVerify() { /* empty */ }
 
 		public void actionPerformed( ActionEvent e )
@@ -1816,9 +1815,9 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 		}
 	}
 
+	@SuppressWarnings("serial")
 	private class ActionNewFromSel
-	extends MenuAction
-	{
+			extends MenuAction {
 		protected ActionNewFromSel() { /* empty */ }
 
 		public void actionPerformed( ActionEvent e )
@@ -1864,9 +1863,9 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 	} // actionNewFromSelClass
 
 	// action for the Save-Session menu item
+	@SuppressWarnings("serial")
 	private class ActionClose
-	extends MenuAction
-	{
+			extends MenuAction {
 		protected ActionClose() { /* empty */ }
 
 		public void actionPerformed( ActionEvent e )
@@ -1882,9 +1881,9 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 	}
 
 	// action for the Save-Session menu item
+	@SuppressWarnings("serial")
 	private class ActionSave
-	extends MenuAction
-	{
+			extends MenuAction {
 		protected ActionSave() { /* empty */ }
 
 		/**
@@ -1957,9 +1956,9 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 	}
 	
 	// action for the Save-Session-As menu item
+	@SuppressWarnings("serial")
 	private class ActionSaveAs
-	extends MenuAction
-	{
+			extends MenuAction {
 		private final boolean	asCopy;
 		private final boolean	selection;
 		private final Flag		openAfterSave;
@@ -2169,9 +2168,9 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 //		}
 //	}
 
+	@SuppressWarnings("serial")
 	private class ActionSelectAll
-	extends MenuAction
-	{
+			extends MenuAction {
 		protected ActionSelectAll() { /* empty */ }
 
 		public void actionPerformed( ActionEvent e )
@@ -2180,9 +2179,9 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 		}
 	}
 
+	@SuppressWarnings("serial")
 	private class ActionInsertRec
-	extends MenuAction
-	{
+			extends MenuAction {
 		protected ActionInsertRec() { /* empty */ }
 
 		public void actionPerformed( ActionEvent e )
@@ -2277,18 +2276,18 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 			}
 		}
 	} // class actionInsertRecClass
-	
+
+	@SuppressWarnings("serial")
 	private class ActionProcess
-	extends MenuAction
-	{
+			extends MenuAction {
 		protected ActionProcess() { /* empty */ }
 
 		public void actionPerformed( ActionEvent e ) { /* empty */ }
 	}
 
+	@SuppressWarnings("serial")
 	private class ActionPlugIn
-	extends MenuAction
-	{
+			extends MenuAction {
 		private final String plugInClassName;
 		
 		protected ActionPlugIn( String plugInClassName )
@@ -2308,9 +2307,9 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 		}
 	}
 
+	@SuppressWarnings("serial")
 	private class ActionProcessAgain
-	extends MenuAction
-	{
+			extends MenuAction {
 		private String plugInClassName = null;
 	
 		protected ActionProcessAgain()
@@ -2349,9 +2348,9 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 		}
 	}
 
+	@SuppressWarnings("serial")
 	private class ActionAudioInfo
-	extends MenuAction
-	{
+			extends MenuAction {
 		protected ActionAudioInfo() { /* empty */ }
 		
 		/**
@@ -2369,9 +2368,9 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 		}
 	}
 
+	@SuppressWarnings("serial")
 	private class ActionRevealFile
-	extends MenuAction
-	{
+			extends MenuAction {
 		private File f;
 	
 		protected ActionRevealFile()
@@ -2459,9 +2458,9 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 	 *  Increase or decrease the vertical
 	 *  range of the waveform display
 	 */
+	@SuppressWarnings("serial")
 	private class ActionVerticalMax
-	extends AbstractAction
-	{
+			extends AbstractAction {
 		private final float linFactor;
 		private final float logOffset;
 		
@@ -2517,9 +2516,9 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 	 *  Increase or decrease the vertical
 	 *  noisefloor of the waveform display (in log mode)
 	 */
+	@SuppressWarnings("serial")
 	private class ActionVerticalMin
-	extends AbstractAction
-	{
+			extends AbstractAction {
 		private final float logOffset;
 		
 		/**
@@ -2556,9 +2555,9 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 	 *  Increase or decrease the width
 	 *  of the visible time span
 	 */
+	@SuppressWarnings("serial")
 	private class ActionSpanWidth
-	extends AbstractAction
-	{
+			extends AbstractAction {
 		private final float factor;
 		
 		/**
@@ -2620,9 +2619,9 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 	private static final int SCROLL_FIT_TO_SELECTION= 3;
 	private static final int SCROLL_ENTIRE_SESSION	= 4;
 
+	@SuppressWarnings("serial")
 	private class ActionScroll
-	extends AbstractAction
-	{
+			extends AbstractAction {
 		private final int mode;
 	
 		protected ActionScroll( int mode )
@@ -2716,9 +2715,9 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 	private static final int SELECT_TO_SESSION_START	= 0;
 	private static final int SELECT_TO_SESSION_END		= 1;
 
+	@SuppressWarnings("serial")
 	private class ActionSelect
-	extends AbstractAction
-	{
+			extends AbstractAction {
 		private final int mode;
 	
 		protected ActionSelect( int mode )
@@ -2766,9 +2765,9 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 	private static final int EXTEND_NEXT_REGION	= 2;
 	private static final int EXTEND_PREV_REGION	= 3;
 
+	@SuppressWarnings("serial")
 	private class ActionSelectRegion
-	extends AbstractAction
-	{
+			extends AbstractAction {
 		private final int mode;
 	
 		protected ActionSelectRegion( int mode )
@@ -2857,10 +2856,10 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 			doc.getUndoManager().addEdit( edit );
 		}
 	} // class actionSelectRegionClass
-		
+
+	@SuppressWarnings("serial")
 	private class ActionDropMarker
-	extends AbstractAction
-	{
+			extends AbstractAction {
 		protected ActionDropMarker() { /* empty */ }
 
 		public void actionPerformed( ActionEvent e )
@@ -2873,9 +2872,9 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 
 // -------------- AFR Transfer Handler --------------
 
+	@SuppressWarnings("serial")
 	private class AFRTransferHandler
-	extends TransferHandler
-	{
+			extends TransferHandler {
 		protected AFRTransferHandler() { /* empty */ }
 
 		public int getSourceActions( JComponent c )
@@ -3303,19 +3302,19 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 			if( c instanceof JComponent ) {
 				final JComponent jc = (JComponent) c;
 				if( actionZoomOut == null ) actionZoomOut = new MenuAction( "zoomOut",
-				  KeyStroke.getKeyStroke( KeyEvent.VK_ALT, InputEvent.ALT_DOWN_MASK, false )) {
-					public void actionPerformed( ActionEvent e ) {
-						c.setCursor( zoomCsr[ 1 ]);
+						KeyStroke.getKeyStroke(KeyEvent.VK_ALT, InputEvent.ALT_DOWN_MASK, false)) {
+					public void actionPerformed(ActionEvent e) {
+						c.setCursor(zoomCsr[1]);
 					}
 				};
-				if( actionZoomIn == null ) actionZoomIn = new MenuAction( "zoomIn",
-				 	KeyStroke.getKeyStroke( KeyEvent.VK_ALT, 0, true )) {
-					public void actionPerformed( ActionEvent e ) {
-						c.setCursor( zoomCsr[ 0 ]);
+				if (actionZoomIn == null) actionZoomIn = new MenuAction("zoomIn",
+						KeyStroke.getKeyStroke(KeyEvent.VK_ALT, 0, true)) {
+					public void actionPerformed(ActionEvent e) {
+						c.setCursor(zoomCsr[0]);
 					}
 				};
-				actionZoomOut.installOn( jc, JComponent.WHEN_IN_FOCUSED_WINDOW );
-				actionZoomIn.installOn( jc, JComponent.WHEN_IN_FOCUSED_WINDOW );
+				actionZoomOut.installOn(jc, JComponent.WHEN_IN_FOCUSED_WINDOW);
+				actionZoomIn .installOn(jc, JComponent.WHEN_IN_FOCUSED_WINDOW);
 			}
 		}
 

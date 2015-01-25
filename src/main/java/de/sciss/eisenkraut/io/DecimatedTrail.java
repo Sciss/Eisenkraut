@@ -33,6 +33,7 @@ import de.sciss.io.AudioFileDescr;
 import de.sciss.io.IOUtil;
 import de.sciss.io.Span;
 import de.sciss.timebased.BasicTrail;
+import de.sciss.timebased.Stake;
 
 /**
  *	@version	0.70, 15-Apr-08
@@ -84,7 +85,7 @@ extends BasicTrail
 	protected final Object			bufSync					= new Object();
 	protected final Object			fileSync				= new Object();
 
-	protected final List			drawBusyList			= new ArrayList();
+	protected final List<Span> drawBusyList			= new ArrayList<Span>();
 
 	protected Thread				threadAsync				= null;
 	protected AudioFile[]			tempFAsync				= null; // lazy
@@ -139,27 +140,17 @@ extends BasicTrail
 					try {
 						threadAsync.wait();
 					} catch( InterruptedException e1 ) {
-						System.err.println( e1 );
+						System.err.println("DecimatedTrail - killAsyncThread:");
+						e1.printStackTrace();
 					}
 				}
 			}
 		}
 	}
 
-	protected void removeAllDep( Object source, List stakes, CompoundEdit ce, Span union )
-	{
-		if( DEBUG ) System.err.println( "removeAllDep " + union.toString() );
-		if( 1 == 1 ) throw new IllegalArgumentException( "n.y.i." );
-
-		// // ____ dep ____
-		// if( dependants != null ) {
-		// 	synchronized( dependants ) {
-		// 		for( int i = 0; i < dependants.size(); i++ ) {
-		// 			((Trail) dependants.get( i )).removeAllDep( source, stakes, ce, union
-		// 			);
-		// 		}
-		// 	}
-		// }
+	protected void removeAllDep(Object source, List<Stake> stakes, CompoundEdit ce, Span union) {
+		if (DEBUG) System.err.println("removeAllDep " + union.toString());
+		throw new IllegalArgumentException("n.y.i.");
 	}
 
 	protected abstract File[] createCacheFileNames();
@@ -277,12 +268,11 @@ extends BasicTrail
 		}
 	}
 
-	protected void deleteTempFiles( AudioFile[] tempFiles )
-	{
-		for( int i = 0; i < tempFiles.length; i++ ) {
-			if( tempFiles[ i ] != null ) {
-				tempFiles[ i ].cleanUp();
-				tempFiles[ i ].getFile().delete();
+	protected void deleteTempFiles(AudioFile[] tempFiles) {
+		for (AudioFile tempFile : tempFiles) {
+			if (tempFile != null) {
+				tempFile.cleanUp();
+				tempFile.getFile().delete();
 			}
 		}
 	}
@@ -386,9 +376,9 @@ extends BasicTrail
 		public void asyncUpdate( AsyncEvent e );
 	}
 
+	@SuppressWarnings("serial")
 	public static class AsyncEvent
-	extends BasicEvent
-	{
+			extends BasicEvent {
 		protected static final int UPDATE = 0;
 		protected static final int FINISHED = 1;
 		
@@ -402,16 +392,11 @@ extends BasicTrail
 		
 		public DecimatedTrail getDecimatedTrail() { return t; }
 
-		public boolean incorporate( BasicEvent oldEvent )
-		{
-			if( (oldEvent instanceof AsyncEvent) &&
-				(this.getSource() == oldEvent.getSource()) &&
-				(this.getID() == oldEvent.getID()) &&
-				(t == ((AsyncEvent) oldEvent).t)) {
-
-				return true;
-			} else
-				return false;
+		public boolean incorporate(BasicEvent oldEvent) {
+			return (oldEvent instanceof AsyncEvent) &&
+					(this.getSource() == oldEvent.getSource()) &&
+					(this.getID() == oldEvent.getID()) &&
+					(t == ((AsyncEvent) oldEvent).t);
 		}
 	}
 }

@@ -28,13 +28,10 @@ import javax.swing.Icon;
  *  <p>
  *  The <code>actionPerformed</code> method
  *  doesn't do anything at the moment.
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 30-Jun-08
  */
-public class ToolAction
-extends AbstractAction
-{
+@SuppressWarnings("serial")
+public class ToolAction extends AbstractAction {
+
 	/**
 	 *  tool ID : pointer tool
 	 */

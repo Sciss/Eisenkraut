@@ -30,10 +30,8 @@ import de.sciss.app.DynamicPrefChangeManager;
  *	which deals with the catch (timeline position) setting. Each instance
  *	generates a toggle button suitable for attaching to a tool bar;
  *	this button reflects the catch preferences settings.
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 20-Mar-08
  */
+@SuppressWarnings("serial")
 public class CatchAction
 extends AbstractAction
 implements PreferenceChangeListener

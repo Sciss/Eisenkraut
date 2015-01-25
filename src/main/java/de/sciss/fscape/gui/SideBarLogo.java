@@ -20,9 +20,7 @@ import java.awt.Graphics;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 
-/**
- *	@version	0.1, 07-Dec-07
- */
+@SuppressWarnings("serial")
 public class SideBarLogo
 extends JComponent
 {

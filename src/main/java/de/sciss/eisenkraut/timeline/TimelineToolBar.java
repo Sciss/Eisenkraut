@@ -43,10 +43,11 @@ import de.sciss.util.Disposable;
  *	for the tools and caps lock for toggling
  *	the blending option.
  */
+@SuppressWarnings("serial")
 public class TimelineToolBar
-extends ToolBar
-implements Disposable
-{
+		extends ToolBar
+		implements Disposable {
+
 	private final Map<Integer, JToggleButton> mapToolButtons	= new HashMap<Integer, JToggleButton>();
 	
 	/**

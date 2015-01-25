@@ -284,7 +284,7 @@ public class MarkerTrack
 		if( num == 0 ) return;
 //		final long					timelineLen	= doc.timeline.getLength();	// XXX sync
 		final BasicCompoundEdit		ce;
-		final List<MarkerStake> coll		= new ArrayList<MarkerStake>( num );
+		final List<Stake> coll = new ArrayList<Stake>(num);
 		int							argIdx		= 1;
 		long						pos;
 		String						name;
@@ -298,13 +298,12 @@ public class MarkerTrack
 				argIdx++;
 				coll.add( new MarkerStake( pos, name ));
 			}
-			ce = new BasicCompoundEdit( getResourceString( num > 1 ? "editAddMarkers" : "editAddMarker" ));
-			trail.editBegin( ce );
+			ce = new BasicCompoundEdit(getResourceString(num > 1 ? "editAddMarkers" : "editAddMarker"));
+			trail.editBegin(ce);
 			try {
-				trail.editAddAll( this, coll, ce );
-			}
-			finally {
-				trail.editEnd( ce );
+				trail.editAddAll(this, coll, ce);
+			} finally {
+				trail.editEnd(ce);
 			}
 			ce.perform();
 			ce.end();
@@ -329,7 +328,7 @@ public class MarkerTrack
 	public void oscCmd_remove( RoutedOSCMessage rom )
 	{
 		final BasicCompoundEdit	ce;
-		final List  				coll;
+		final List<Stake> coll;
 		final long					n1, n2;
 		int							i1, i2;
 		int							argIdx		= 1;
@@ -347,14 +346,14 @@ public class MarkerTrack
 				i1		= Math.max( 0, ((Number) rom.msg.getArg( argIdx )).intValue() );
 				argIdx++;
 				i2 = Math.min(trail.getNumStakes(), ((Number) rom.msg.getArg(argIdx)).intValue());
-				coll = new ArrayList(Math.max(1, i2 - i1));
+				coll = new ArrayList<Stake>(Math.max(1, i2 - i1));
 				while (i1 < i2) {
 					coll.add(trail.get(i1++));
 				}
 
 			} else if( rom.msg.getArg( argIdx ).equals( "at" )) {
 				argIdx++;
-				coll = new ArrayList( rom.msg.getArgCount() - argIdx );
+				coll = new ArrayList<Stake>( rom.msg.getArgCount() - argIdx );
 				for( ; argIdx < rom.msg.getArgCount(); argIdx++ ) {
 					i1	= ((Number) rom.msg.getArg( argIdx )).intValue();
 					if( (i1 >= 0) && (i1 < trail.getNumStakes()) ) {
@@ -369,13 +368,12 @@ public class MarkerTrack
 
 			if( coll.isEmpty() ) return;
 
-			ce = new BasicCompoundEdit( getResourceString( coll.size() > 1 ? "editDeleteMarkers" : "editDeleteMarker" ));
-			trail.editBegin( ce );
+			ce = new BasicCompoundEdit(getResourceString(coll.size() > 1 ? "editDeleteMarkers" : "editDeleteMarker"));
+			trail.editBegin(ce);
 			try {
-				trail.editRemoveAll( this, coll, ce );
-			}
-			finally {
-				trail.editEnd( ce );
+				trail.editRemoveAll(this, coll, ce);
+			} finally {
+				trail.editEnd(ce);
 			}
 			ce.perform();
 			ce.end();

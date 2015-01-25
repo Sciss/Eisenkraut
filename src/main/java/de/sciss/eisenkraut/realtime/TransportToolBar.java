@@ -70,17 +70,18 @@ import de.sciss.util.ParamSpace;
  *						numpad 1 / 2 : rewind / fast forward
  *	</pre>
  *
- *	@todo		(FIXED?) cueing sometimes uses an obsolete start position.
+ *	TODO: (FIXED?) cueing sometimes uses an obsolete start position.
  *				idea: cue speed changes with zoom level
  *
- *	@todo		(FIXED?) when palette is opened when transport is running(?)
+ *	TODO: (FIXED?) when palette is opened when transport is running(?)
  *				realtime listener is not registered (only after timeline change)
  */
+@SuppressWarnings("serial")
 public class TransportToolBar
-extends Box
-implements  TimelineListener, TransportListener,	// RealtimeConsumer,
-			DynamicListening, Disposable
-{
+		extends Box
+		implements TimelineListener, TransportListener,    // RealtimeConsumer,
+		DynamicListening, Disposable {
+
 	protected final Session			doc;
 	protected final Transport		transport;
     
@@ -371,10 +372,10 @@ this.add( Box.createHorizontalStrut( 4 ));
 
 // ---------------- actions ---------------- 
 
+	@SuppressWarnings("serial")
 	private class ActionGoToTime
-//	extends KeyedAction
-	extends AbstractAction
-	{
+			extends AbstractAction {
+
 		private Param		value	= null;
 		private ParamSpace	space	= null;
 	
@@ -455,22 +456,15 @@ msgPane.add( ggCurrent );
 			}
         }
 	} // class actionGoToTimeClass
-	
+
+	@SuppressWarnings("serial")
 	private class ActionTogglePlayStop
-//	extends KeyedAction
-	extends AbstractAction
-	{
+			extends AbstractAction {
+
 		protected ActionTogglePlayStop() { /* empty */ }
 
-//		private actionTogglePlayStopClass( KeyStroke stroke )
-//		{
-//			super( stroke );
-//		}
-
-//		protected void validActionPerformed( ActionEvent e )
-		public void actionPerformed( ActionEvent e )
-		{
-			if( transport.isRunning() ) {
+		public void actionPerformed(ActionEvent e) {
+			if (transport.isRunning()) {
 				ggStop.doClick();
 			} else {
 				ggPlay.doClick();
@@ -479,9 +473,10 @@ msgPane.add( ggCurrent );
 	} // class actionTogglePlayStopClass
 
 
+	@SuppressWarnings("serial")
 	private class ActionPlaySelection
-	extends AbstractAction
-	{
+			extends AbstractAction {
+
 		protected ActionPlaySelection() { /* empty */ }
 
 		public void actionPerformed( ActionEvent e )
@@ -500,9 +495,10 @@ msgPane.add( ggCurrent );
 		}
 	} // class actionPlaySelectionClass
 
+	@SuppressWarnings("serial")
 	private static class ActionCue
-	extends AbstractAction
-	{
+			extends AbstractAction {
+
 		private final boolean			onOff;
 		private final AbstractButton	b;
         private final Timer             t;
@@ -547,10 +543,11 @@ msgPane.add( ggCurrent );
             }
 		}
 	} // class actionCueClass
-		
+
+	@SuppressWarnings("serial")
 	private class ActionLoop
-	extends AbstractAction
-	{	
+			extends AbstractAction {
+
 		protected ActionLoop()
 		{
 			super();
@@ -628,9 +625,10 @@ msgPane.add( ggCurrent );
 
 	// --------------- internal actions ---------------
 
+	@SuppressWarnings("serial")
 	private class ActionPlay
-	extends AbstractAction
-	{
+			extends AbstractAction {
+
 		protected ActionPlay()
 		{
 			super();
@@ -653,9 +651,10 @@ msgPane.add( ggCurrent );
 	    }
 	} // class actionPlayClass
 
+	@SuppressWarnings("serial")
 	private class ActionStop
-	extends AbstractAction
-	{
+			extends AbstractAction {
+
 		protected ActionStop()
 		{
 			super();

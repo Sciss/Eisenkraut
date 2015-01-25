@@ -35,14 +35,11 @@ import de.sciss.eisenkraut.util.MapManager;
 import de.sciss.gui.ModificationButton;
 import de.sciss.util.Disposable;
 
-/**
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
- */
+@SuppressWarnings("serial")
 public class PanoramaButton
-extends ModificationButton
-implements Disposable
-{
+		extends ModificationButton
+		implements Disposable {
+
 	private static final Color			colrNormal		= new Color( 0x3C, 0x3C, 0x3C, 0xFF );
 	private static final Color			colrPressed		= new Color( 0x06, 0x06, 0x06, 0xFF );
 	private static final Color			colrDisabled	= new Color( 0x6C, 0x6C, 0x6C, 0x7F );

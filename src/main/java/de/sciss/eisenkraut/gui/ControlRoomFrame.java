@@ -22,7 +22,6 @@ import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -70,11 +69,8 @@ import de.sciss.jcollider.ServerOptions;
 import de.sciss.net.OSCBundle;
 
 /**
- *  @author		Hanns Holger Rutz
- *  @version	0.71, 27-Jan-09
- *
- *	@todo		could use an explicit GroupAnySync for lmm, which would go into SuperColliderClient
- *				so sc-client whould be able to pause master synths according to the sync
+ *	TODO: could use an explicit GroupAnySync for lmm, which would go into SuperColliderClient
+ *				so sc-client would be able to pause master synths according to the sync
  */
 public class ControlRoomFrame
 extends AppWindow
@@ -94,7 +90,7 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
 	private final SpringPanel			b1;
 	protected final VolumeFader			ggVolume;
 	
-	private final Map					mapPlayers			= new HashMap();	// key = Session, value = SuperColliderPlayer
+	private final Map<Session, SuperColliderPlayer> mapPlayers = new HashMap<Session, SuperColliderPlayer>();	// key = Session, value = SuperColliderPlayer
 	private final PeakMeterManager		lmm;
 	
 	private final ActionListener		audioBoxListener;
@@ -319,14 +315,15 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 		SuperColliderPlayer		p;
 		
 		lmm.clearTaskSyncs();
-		
-		for( int i = 0; i < dh.getDocumentCount(); i++ ) {
-			doc = dh.getDocument( i );
-			if( doc instanceof Session ) {
-				p	= superCollider.getPlayerForDocument( (Session) doc );
-				if( p != null ) {
-					lmm.addTaskSync( p.getOutputSync() );
-					mapPlayers.put( doc, p );
+
+		for (int i = 0; i < dh.getDocumentCount(); i++) {
+			doc = dh.getDocument(i);
+			if (doc instanceof Session) {
+				Session docS = (Session) doc;
+				p = superCollider.getPlayerForDocument(docS);
+				if (p != null) {
+					lmm.addTaskSync(p.getOutputSync());
+					mapPlayers.put(docS, p);
 				}
 			}
 		}
@@ -399,11 +396,14 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 		}
 	}
 
-	public void documentRemoved( de.sciss.app.DocumentEvent e )
-	{
-		final SuperColliderPlayer p	= (SuperColliderPlayer) mapPlayers.remove( e.getDocument() );
-		if( p != null ) {
-			lmm.removeTaskSync( p.getOutputSync() );
+	public void documentRemoved(de.sciss.app.DocumentEvent e) {
+		Document doc = e.getDocument();
+		if (doc instanceof Session) {
+			Session docS = (Session) doc;
+			final SuperColliderPlayer p = mapPlayers.remove(doc);
+			if (p != null) {
+				lmm.removeTaskSync(p.getOutputSync());
+			}
 		}
 	}
 
@@ -443,7 +443,7 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 	{
 		final Preferences	childPrefs;
 		final String[]		cfgIDs;
-		final Set			cfgItems;
+		final Set<StringItem> cfgItems;
 		
 		try {
 			if( isListening ) {
@@ -451,13 +451,13 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 			}
 			childPrefs	= audioPrefs.node( PrefsUtil.NODE_OUTPUTCONFIGS );
 			cfgIDs		= childPrefs.childrenNames();
-			cfgItems	= new TreeSet( StringItem.valueComparator );
-			for( int i = 0; i < cfgIDs.length; i++ ) {
-				cfgItems.add( new StringItem( cfgIDs[ i ], childPrefs.node( cfgIDs[ i ]).get( RoutingConfig.KEY_NAME, cfgIDs[ i ])));
+			cfgItems	= new TreeSet<StringItem>( StringItem.valueComparator );
+			for (String cfgID : cfgIDs) {
+				cfgItems.add(new StringItem(cfgID, childPrefs.node(cfgID).get(RoutingConfig.KEY_NAME, cfgID)));
 			}
 			ggOutputConfig.removeAllItems();
-			for( Iterator iter = cfgItems.iterator(); iter.hasNext(); ) {
-				ggOutputConfig.addItem( iter.next() );
+			for (StringItem cfgItem : cfgItems) {
+				ggOutputConfig.addItem(cfgItem);
 			}
 		}
 		catch( BackingStoreException e1 ) {
@@ -474,7 +474,7 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 	{
 		final Preferences	childPrefs;
 		final String[]		cfgIDs;
-		final Set			cfgItems;
+		final Set<StringItem> cfgItems;
 		Preferences			childPrefs2;
 		
 		try {
@@ -484,17 +484,17 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 			}
 			childPrefs	= audioPrefs.node( PrefsUtil.NODE_AUDIOBOXES );
 			cfgIDs		= childPrefs.childrenNames();
-			cfgItems	= new TreeSet( StringItem.valueComparator );
-			for( int i = 0; i < cfgIDs.length; i++ ) {
-				childPrefs2 = childPrefs.node( cfgIDs[ i ]);
-				if( childPrefs2.getBoolean( AudioBoxConfig.KEY_ACTIVE, false )) {
-					cfgItems.add( new StringItem( cfgIDs[ i ],
-						childPrefs2.get( AudioBoxConfig.KEY_NAME, cfgIDs[ i ])));
+			cfgItems	= new TreeSet<StringItem>( StringItem.valueComparator );
+			for (String cfgID : cfgIDs) {
+				childPrefs2 = childPrefs.node(cfgID);
+				if (childPrefs2.getBoolean(AudioBoxConfig.KEY_ACTIVE, false)) {
+					cfgItems.add(new StringItem(cfgID,
+							childPrefs2.get(AudioBoxConfig.KEY_NAME, cfgID)));
 				}
 			}
 			ggAudioBox.removeAllItems();
-			for( Iterator iter = cfgItems.iterator(); iter.hasNext(); ) {
-				ggAudioBox.addItem( iter.next() );
+			for (Object cfgItem : cfgItems) {
+				ggAudioBox.addItem(cfgItem);
 			}
 		}
 		catch( BackingStoreException e1 ) {

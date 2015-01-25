@@ -19,6 +19,7 @@ import java.awt.Graphics;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 
+@SuppressWarnings("serial")
 public class SideBarLogo extends JComponent {
 	private static int			width;
 	private static int			height;
