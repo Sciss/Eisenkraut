@@ -72,19 +72,15 @@ public class AudioTrack
 		osc			= new OSCRouterWrapper( coll, this );
 	}
 
-	public Trail getTrail()
-	{
-//		return trail;
+	public Trail getTrail() {
 		return coll.getTrail();
 	}
 
-	public int getChannelIndex()
-	{
-//		return coll.indexOf( this );
+	public int getChannelIndex() {
 		return chan;
 	}
 
-	public Class getDefaultEditor()
+	public Class<?> getDefaultEditor()
 	{
 		return null;	// XXX
 	}

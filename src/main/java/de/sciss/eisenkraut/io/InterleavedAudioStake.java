@@ -22,13 +22,9 @@ import de.sciss.jcollider.Buffer;
 import de.sciss.net.OSCBundle;
 import de.sciss.timebased.Stake;
 
-/**
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
- */
 public class InterleavedAudioStake
-extends AudioStake
-{
+		extends AudioStake {
+
 	private final InterleavedStreamFile f;
 	private final Span					fileSpan;
 	private final Span					maxFileSpan;

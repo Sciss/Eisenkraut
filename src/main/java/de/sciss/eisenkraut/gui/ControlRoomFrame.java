@@ -22,6 +22,7 @@ import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -70,7 +71,7 @@ import de.sciss.net.OSCBundle;
 
 /**
  *	TODO: could use an explicit GroupAnySync for lmm, which would go into SuperColliderClient
- *				so sc-client would be able to pause master synths according to the sync
+ *				so sc-client whould be able to pause master synths according to the sync
  */
 public class ControlRoomFrame
 extends AppWindow

@@ -35,13 +35,8 @@ import de.sciss.io.Span;
 import de.sciss.timebased.BasicTrail;
 import de.sciss.timebased.Stake;
 
-/**
- *	@version	0.70, 15-Apr-08
- *	@author		Hanns Holger Rutz
- */
-public abstract class DecimatedTrail
-extends BasicTrail
-{
+public abstract class DecimatedTrail extends BasicTrail {
+
 	protected static final boolean	DEBUG					= false;
 
 	protected int					SUBNUM;

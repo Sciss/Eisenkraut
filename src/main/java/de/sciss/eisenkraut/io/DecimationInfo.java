@@ -28,10 +28,7 @@ import de.sciss.io.Span;
  *  and then pass this object to the <code>read</code> methods
  *  in <code>MultirateTrackEditor</code>.
  *
- *  @author		Hanns Holger Rutz
- *  @version	0.65, 14-Jan-06
- *
- *  @todo		this class could be internal to mte
+ *  TODO: this class could be internal to mte
  */
 public class DecimationInfo
 {
@@ -42,11 +39,11 @@ public class DecimationInfo
 	protected final int	shift;
 	protected final int	inlineDecim;
 	/**
-	 *  Time span (in fullrate frames) covered by this subsample
+	 *  Time span (in full-rate frames) covered by this subsample
 	 */
 	public final Span	span;
 	/**
-	 *  Length (rounded) of the time span decimated through subsampling
+	 *  Length (rounded) of the time span decimated through sub-sampling
 	 */
 	public final long	sublength;
 	public final int	model;

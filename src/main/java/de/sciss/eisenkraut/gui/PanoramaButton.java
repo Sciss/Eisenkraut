@@ -63,46 +63,20 @@ public class PanoramaButton
 		
 		this.t	= t;
 
-		((PantaRei) icnNormal).setCtrlPoint( ctrlPt );
-		((PantaRei) icnPressed).setCtrlPoint( ctrlPt );
+		((PantaRei) icnNormal  ).setCtrlPoint( ctrlPt );
+		((PantaRei) icnPressed ).setCtrlPoint( ctrlPt );
 		((PantaRei) icnDisabled).setCtrlPoint( ctrlPt );
-		
-//		final WindowListener atPanListener	= new WindowAdapter() {
-//			public void windowClosed( WindowEvent e )
-//			{
-//				if( atPan != null ) {
-//					atPanBounds	= atPan.getBounds();
-//					atPan		= null;
-//				}
-//			}
-//		};
 
-//		addActionListener( new ActionListener() {
-//			public void actionPerformed( ActionEvent e )
-//			{
-//				if( atPan == null ) {
-////					atPan = new PanoramaPalette( root, t, tracks, lm, doors );
-//					atPan = new AudioTrackPanorama( root, t, tracks, lm, doors );
-////					atPan.addWindowListener( atPanListener );
-////					if( atPanBounds != null ) atPan.setBounds( atPanBounds );
-//				}
-////				atPan.setVisible( true );
-////				atPan.toFront();
-//				atPan.showPalette();
-//			}
-//		});
-		
-		t.getMap().addListener( new MapManager.Listener() {
-			public void mapChanged( MapManager.Event e )
-			{
-				if( e.getPropertyNames().contains( AudioTrack.MAP_KEY_PANAZIMUTH ) ||
-					e.getPropertyNames().contains( AudioTrack.MAP_KEY_PANSPREAD )) {
-				
-					updateButtonState();	
-				};
+		t.getMap().addListener(new MapManager.Listener() {
+			public void mapChanged(MapManager.Event e) {
+				if (e.getPropertyNames().contains(AudioTrack.MAP_KEY_PANAZIMUTH) ||
+						e.getPropertyNames().contains(AudioTrack.MAP_KEY_PANSPREAD)) {
+
+					updateButtonState();
+				}
 			}
-		
-			public void mapOwnerModified( MapManager.Event e ) { /* ignore */ }
+
+			public void mapOwnerModified(MapManager.Event e) { /* ignore */ }
 		});
 
 		popMon = new PopupTriggerMonitor( this );

@@ -40,7 +40,7 @@ extends JSlider
 		super( SwingConstants.VERTICAL, -72, 18, 0 );
 
 		final GraphicsHandler	gh; 
-		final Dictionary		dictVolume;
+		final Dictionary<?, ?> dictVolume;
 		final Font				fnt;
 //		final Font				fntBold;
 		final JLabel			lbZero;
@@ -53,7 +53,7 @@ extends JSlider
 		gh	= AbstractApplication.getApplication().getGraphicsHandler();
 		fnt = gh.getFont( GraphicsHandler.FONT_LABEL | GraphicsHandler.FONT_MINI );
 //		fntBold = gh.getFont( GraphicsHandler.FONT_BOLDSYSTEM | GraphicsHandler.FONT_MINI );
-		for( Enumeration en = dictVolume.elements(); en.hasMoreElements(); ) {
+		for( Enumeration<?> en = dictVolume.elements(); en.hasMoreElements(); ) {
 			lb = (JLabel) en.nextElement();
 			if( lb.getText().equals( "-72" )) lb.setText( "-\u221E" );
 			if( lb.getText().equals( "0" )) {

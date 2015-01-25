@@ -31,10 +31,7 @@ package de.sciss.eisenkraut.realtime;
  *  is only performed after returning
  *  from all transport listeners.
  *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 26-Feb-07
- *
- *	@synchronization	all methods are invoked from
+ *	Synchronization:	all methods are invoked from
  *						the transport thread so beware!
  */
 public interface TransportListener

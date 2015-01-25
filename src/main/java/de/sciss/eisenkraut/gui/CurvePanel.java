@@ -67,37 +67,30 @@ public class CurvePanel extends JComponent {
 	protected int					recentHeight	= -1;
 	protected boolean				recalc			= true;
 	protected Point2D				dragPt			= null;
-//	private final Preferences		prefs;
-	
+
 	private ActionListener			actionListener	= null;
 	
 	static {
 		shpCtrlOut		   = new Area( new Ellipse2D.Double( -7, -7, 15, 15 ));
 		shpCtrlOut.subtract( new Area( new Ellipse2D.Double( -4, -4, 9, 9 )));
 	}
-				
-	public CurvePanel( CubicCurve2D[] basicCurves, final Preferences prefs )
-	{
+
+	public CurvePanel(CubicCurve2D[] basicCurves, final Preferences prefs) {
 		super();
-	
-		final Dimension d = new Dimension( 64, 64 );
-		
-		shpFades	= basicCurves;
-//		prefs		= prefs;
-		tShpFades		= new Shape[ shpFades.length ];
-		
-		if( prefs != null ) {
-			ctrlPt[0].setLocation( prefs.getDouble( KEY_CTRLX1, 0.5 ), prefs.getDouble( KEY_CTRLY1, 0.5 ));
-			ctrlPt[1].setLocation( prefs.getDouble( KEY_CTRLX2, 0.5 ), prefs.getDouble( KEY_CTRLY2, 0.5 ));
+
+		final Dimension d = new Dimension(64, 64);
+
+		shpFades = basicCurves;
+		tShpFades = new Shape[shpFades.length];
+
+		if (prefs != null) {
+			ctrlPt[0].setLocation(prefs.getDouble(KEY_CTRLX1, 0.5), prefs.getDouble(KEY_CTRLY1, 0.5));
+			ctrlPt[1].setLocation(prefs.getDouble(KEY_CTRLX2, 0.5), prefs.getDouble(KEY_CTRLY2, 0.5));
 		}
 
-		setMinimumSize( d );
-		setPreferredSize( d );
-		setBorder( BorderFactory.createEmptyBorder( insets.left, insets.top, insets.bottom, insets.right ));
-
-//		if( prefs != null ) {
-//			new DynamicAncestorAdapter( new DynamicPrefChangeManager( prefs, KEYS, this )).addTo( this );
-//		}
+		setMinimumSize(d);
+		setPreferredSize(d);
+		setBorder(BorderFactory.createEmptyBorder(insets.top, insets.left, insets.bottom, insets.right));
 
 		MouseInputAdapter	mia	= new MouseInputAdapter() {
 			private boolean didThemDragga = false;
@@ -248,23 +241,23 @@ public class CurvePanel extends JComponent {
 		
 		g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
 		g2.translate( insets.left, insets.top );
-		for( int i = 0; i < tShpFades.length; i++ ) {
-			g2.draw( tShpFades[ i ]);
+		for (Shape tShpFade : tShpFades) {
+			g2.draw(tShpFade);
 		}
-		
-		for( int i = 0; i < ctrlPt.length; i++ ) {
-			trnsX	= ctrlPt[i].getX() * currentWidth;
-			trnsY	= (1.0 - ctrlPt[i].getY()) * currentHeight;
-			g2.translate( trnsX, trnsY );
-			g2.setPaint( pntCtrlIn );
-			g2.fill( shpCtrlIn );
-			if( ctrlPt[i] == dragPt ) {
-				g2.setPaint( pntCtrlOutS );
+
+		for (Point2D aCtrlPt : ctrlPt) {
+			trnsX = aCtrlPt.getX() * currentWidth;
+			trnsY = (1.0 - aCtrlPt.getY()) * currentHeight;
+			g2.translate(trnsX, trnsY);
+			g2.setPaint(pntCtrlIn);
+			g2.fill(shpCtrlIn);
+			if (aCtrlPt == dragPt) {
+				g2.setPaint(pntCtrlOutS);
 			} else {
-				g2.setPaint( pntCtrlOut );
+				g2.setPaint(pntCtrlOut);
 			}
-			g2.fill( shpCtrlOut );
-			g2.translate( -trnsX, -trnsY );
+			g2.fill(shpCtrlOut);
+			g2.translate(-trnsX, -trnsY);
 		}
 
 		g2.setTransform( atOrig );
@@ -363,8 +356,8 @@ public class CurvePanel extends JComponent {
 			g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
 			g2.translate( x, y );
 			g2.setColor( Color.black );
-			for( int i = 0; i < tShpFades.length; i++ ) {
-				g2.draw( tShpFades[ i ]);
+			for (Shape tShpFade : tShpFades) {
+				g2.draw(tShpFade);
 			}
 			g2.setTransform( atOrig );
 		}		

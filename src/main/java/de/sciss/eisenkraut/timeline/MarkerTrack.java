@@ -63,7 +63,7 @@ public class MarkerTrack
 		return trail;
 	}
 
-	public Class getDefaultEditor()
+	public Class<?> getDefaultEditor()
 	{
 		return null;	// XXX
 	}
@@ -109,7 +109,7 @@ public class MarkerTrack
 		return false;
 	}
 	
-	public Enumeration children()
+	public Enumeration<?> children()
 	{
 		return trail.children();
 	}
@@ -236,19 +236,18 @@ public class MarkerTrack
 	 *
 	 *	[ "/get.reply", &lt;getID&gt;, [ &lt;(int) pos&gt;, &lt;(String) markName&gt; ] * N ]]
 	 *
-	 *	NOTE: as soon as SuperCollder supports 64bit OSC tags,
+	 *	NOTE: as soon as SuperCollider supports 64bit OSC tags,
 	 *	the reply will send &lt;pos&gt; as a 64bit long!!
 	 *
 	 *	Quick calculation : (1 &lt;&lt; 31 - 1) / 96000 / 60 / 60 --&gt; with 32bit signed ints, audio at 96 kHz can be represented if length doesn't exceed about 6 hours
 	 */
-	private Object[] oscGetMarkers( List coll )
-	{
-		final Object[]	args = new Object[ coll.size() << 1 ];
-		Marker			m;
-		for( int i = 0, j = 0; i < args.length; j++ ) {
-			m = (Marker) coll.get( j );
-			args[ i++ ] = m.pos;
-			args[ i++ ] = m.name;
+	private Object[] oscGetMarkers(List<?> coll) {
+		final Object[] args = new Object[coll.size() << 1];
+		Marker m;
+		for (int i = 0, j = 0; i < args.length; j++) {
+			m = (Marker) coll.get(j);
+			args[i++] = m.pos;
+			args[i++] = m.name;
 		}
 		return args;
 	}

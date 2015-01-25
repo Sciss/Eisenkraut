@@ -30,10 +30,7 @@ import de.sciss.gui.TiledImage;
  *  This is a helper class containing utility static functions
  *  and public objects for common graphics operations
  *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 06-May-06
- *
- *	@todo	the tool buttons on non-macos look-and-feel are far to wide
+ *	TODO: the tool buttons on non-macos look-and-feel are far to wide
  */
 public class GraphicsUtil
 {
@@ -143,17 +140,17 @@ public class GraphicsUtil
 	/**
 	 *  Default font for GUI elements.
 	 *
-	 *  @see	de.sciss.gui.GUIUtil#setDeepFont( Container, Font )
-	 *  @todo   this is rather small and could be
+	 *  TODO: this is rather small and could be
 	 *			user adjustable in a future version.
 	 */
 	public static final Font		smallGUIFont	= new Font( "Helvetica", Font.PLAIN, 10 );
 	/**
 	 *  MacOS X Aqua style bar gradient with a size of 15 pixels
 	 *
-	 *  @see	de.sciss.eisenkraut.timeline.TimelineAxis
-	 *  @todo   this should look different on Windows and Linux
+	 *  TODO:   this should look different on Windows and Linux
 	 *			depending on their VM's chrome.
+	 *
+	 *  @see	de.sciss.eisenkraut.timeline.TimelineAxis
 	 */
 	public static final Paint		pntBarGradient;
 	/**
@@ -236,13 +233,10 @@ public class GraphicsUtil
 	 *  @param  ln  the <code>Line2D</code> shape whose
 	 *				length is to be calculated
 	 *  @return		the length as given by the distance
-	 *				of the start point to the end point
-	 *
-	 *  @see	java.awt.geom.Paint2D#distance( double, double, double, double )
+	 *				of the start point to the end point*
 	 */
-	public static double getLineLength( Line2D ln )
-	{
-		return( Point2D.distance( ln.getX1(), ln.getY1(), ln.getX2(), ln.getY2() ));
+	public static double getLineLength(Line2D ln) {
+		return (Point2D.distance(ln.getX1(), ln.getY1(), ln.getX2(), ln.getY2()));
 	}
 	
 	/**

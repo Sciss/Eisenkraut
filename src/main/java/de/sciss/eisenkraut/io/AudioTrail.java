@@ -52,36 +52,9 @@ import de.sciss.timebased.Stake;
  *  a buffer of 21094 frames; in the more usual case of a sense
  *  rate of say 4800 Hz (or less), one hour could still be represented
  *  by 4219 frames, thus maintaining low RAM and CPU consumption.
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 12-Nov-07
  */
 public class AudioTrail
-extends BasicTrail
-{
-//protected static final boolean DEBUG = false;
-//
-//
-//	private final int channels, modelChannels;
-//	private final float rate;
-//	private final int model;
-//	private final int[] decimations;
-//
-//	// this array of size 'SUBNUM' contains STEs
-//	// that keep track of the subsampled versions of
-//	// this STE's track data. ste[0] is full rate,
-//	// ste[1] is 4x subsampled, ste[2] is 16x subsampled etc.
-//	private final DecimatedSampledTrack[] ste;
-//	private final int SUBNUM;
-//	private final int MAXSHIFT;
-//	private final int MAXCOARSE;
-//	private final long MAXMASK;
-//	private final int MAXCEILADD;
-//
-//	private final float[][] tmpBuf;
-//	private final int tmpBufSize;
-//	private final float[][] tmpBuf2;
-//	private final int tmpBufSize2;
+		extends BasicTrail {
 
 	// default buffer size (frames per channel)
 	private static final int		BUFSIZE				= 8192;

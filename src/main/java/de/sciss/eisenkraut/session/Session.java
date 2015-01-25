@@ -1265,7 +1265,7 @@ tryRename:					  {
 			final Span					oldSelSpan, insertSpan, copySpan, cutTimelineSpan;
 			final AbstractCompoundEdit	edit;
 			final Flag					hasSelectedAudio;
-			final List					tis;
+			final List<Track.Info> tis;
 			final boolean				expTimeline, cutTimeline;
 			final long					docLength, pasteLength, preMaxLen, postMaxLen;
 			final BlendContext			bcPre, bcPost;
@@ -1426,7 +1426,7 @@ tryRename:					  {
 								return CANCELLED;
 
 						} else if ((ti.numTracks == 1) && (tl.getTrackNum(ti.trail.getClass()) == 1)) {
-							ti.trail.editAddAll(this, srcTrail.getCuttedRange(
+							ti.trail.editAddAll(this, srcTrail.getCutRange(
 									copySpan, true, srcTrail.getDefaultTouchMode(), delta), edit);
 						}
 					} finally {
@@ -1504,7 +1504,7 @@ tryRename:					  {
 			final BlendContext			bc;
 			final long					cutLength, docLength, newDocLength, maxLen;
 			final Flag					hasSelectedAudio;
-			final List					tis;
+			final List<Track.Info> tis;
 			final AbstractCompoundEdit	edit;
 			final boolean 				cutTimeline;
 			final Span					cutTimelineSpan, selSpan;
@@ -1612,7 +1612,7 @@ tryRename:					  {
 		{
 			final Span						span				= (Span) context.getClientArg( "span" );
 			final int						mode				= (Integer) context.getClientArg("mode");
-			final List						tis					= (List) context.getClientArg( "tis" );
+			final List<?> tis					= (List<?>) context.getClientArg( "tis" );
 			final AbstractCompoundEdit		edit				= (AbstractCompoundEdit) context.getClientArg( "edit" );
 			final BlendContext				bc					= (BlendContext) context.getClientArg( "bc" );
 			final long						left				= bc == null ? 0L : bc.getLeftLen();

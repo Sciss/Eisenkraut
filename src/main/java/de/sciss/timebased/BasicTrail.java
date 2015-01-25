@@ -147,33 +147,30 @@ public abstract class BasicTrail
 	public Span editGetSpan(AbstractCompoundEdit ce) {
 		return new Span(editGetStart(ce), editGetStop(ce));
 	}
-	
-	private long editGetStart( AbstractCompoundEdit ce )
-	{
-		final List coll = editGetCollByStart( ce );
-	
-		return( coll.isEmpty() ? 0 : ((Stake) coll.get( 0 )).getSpan().start );
-	}
-	
-	private long editGetStop( AbstractCompoundEdit ce )
-	{
-		final List coll = editGetCollByStop( ce );
 
-		return( coll.isEmpty() ? 0 : ((Stake) coll.get( coll.size() - 1 )).getSpan().stop );
+	private long editGetStart(AbstractCompoundEdit ce) {
+		final List<Stake> coll = editGetCollByStart(ce);
+
+		return (coll.isEmpty() ? 0 : coll.get(0).getSpan().start);
 	}
 
-	public void editBegin( AbstractCompoundEdit ce )
-	{
-		if( currentEdit != null ) {
-			throw new ConcurrentModificationException( "Concurrent editing" );
+	private long editGetStop(AbstractCompoundEdit ce) {
+		final List<Stake> coll = editGetCollByStop(ce);
+
+		return (coll.isEmpty() ? 0 : coll.get(coll.size() - 1).getSpan().stop);
+	}
+
+	public void editBegin(AbstractCompoundEdit ce) {
+		if (currentEdit != null) {
+			throw new ConcurrentModificationException("Concurrent editing");
 		}
-		currentEdit		= ce;
-		collEditByStart	= null;		// dispose ? XXXX
-		collEditByStop	= null;		// dispose ? XXXX
+		currentEdit = ce;
+		collEditByStart = null;        // dispose ? XXXX
+		collEditByStop = null;        // dispose ? XXXX
 
 		// ____ dep ____
-		if( dependants != null ) {
-			synchronized(sync) {
+		if (dependants != null) {
+			synchronized (sync) {
 				for (BasicTrail dependant : dependants) dependant.editBegin(ce);
 			}
 		}
@@ -566,20 +563,18 @@ if( DEBUG ) {
 	{
 		final long	start			= span.start;
 		final long	stop			= span.stop;
-		final List	collRange		= editGetRange( span, true, ce );
+		final List<Stake>	collRange		= editGetRange( span, true, ce );
 		
 		if( collRange.isEmpty() ) return;
 		
 		final List<Stake> collToAdd		= new ArrayList<Stake>();
 		final List<Stake> collToRemove	= new ArrayList<Stake>();
 		final Span	modSpan;
-		Stake		stake;
 		Span		stakeSpan;
 		
 		switch( touchMode ) {
 		case TOUCH_NONE:
-			for (Object aCollRange1 : collRange) {
-				stake = (Stake) aCollRange1;
+			for (Stake stake : collRange) {
 				stakeSpan = stake.getSpan();
 				if (stakeSpan.start >= start) {
 					collToRemove.add(stake);
@@ -588,8 +583,7 @@ if( DEBUG ) {
 			break;
 			
 		case TOUCH_SPLIT:
-			for (Object aCollRange1 : collRange) {
-				stake = (Stake) aCollRange1;
+			for (Stake stake : collRange) {
 				stakeSpan = stake.getSpan();
 				if (stakeSpan.stop > start) {
 
@@ -610,9 +604,8 @@ if( DEBUG ) {
 			break;
 			
 		case TOUCH_RESIZE:
-System.err.println( "BasicTrail.clear, touchmode resize : not tested" );
-			for (Object aCollRange : collRange) {
-				stake = (Stake) aCollRange;
+			System.err.println( "BasicTrail.clear, touchmode resize : not tested" );
+			for (Stake stake : collRange) {
 				stakeSpan = stake.getSpan();
 				if (stakeSpan.stop > start) {
 
@@ -667,10 +660,10 @@ if( DEBUG ) {
 		}
 	}
 
-	public Trail getCuttedTrail( Span span, int touchMode, long shiftVirtual )
+	public Trail getCutTrail(Span span, int touchMode, long shiftVirtual)
 	{
 		final BasicTrail		trail	= createEmptyCopy();
-		final List<Stake>		stakes	= getCuttedRange( span, true, touchMode, shiftVirtual );
+		final List<Stake>		stakes	= getCutRange(span, true, touchMode, shiftVirtual);
 		
 //		trail.setRate( this.getRate() );
 
@@ -759,15 +752,13 @@ if( DEBUG ) {
 		return collResult;
 	}
 
-	public List<Stake> getCuttedRange( Span span, boolean byStart, int touchMode, long shiftVirtual )
-	{
-		return BasicTrail.getCuttedRange( getRange( span, byStart ), span, byStart, touchMode, shiftVirtual );
+	public List<Stake> getCutRange(Span span, boolean byStart, int touchMode, long shiftVirtual) {
+		return BasicTrail.getCuttedRange(getRange(span, byStart), span, byStart, touchMode, shiftVirtual);
 	}
 
-	public Stake get( int idx, boolean byStart )
-	{
-		final List coll = byStart ? collStakesByStart : collStakesByStop;
-		return (Stake) coll.get( idx );
+	public Stake get(int idx, boolean byStart) {
+		final List<Stake> coll = byStart ? collStakesByStart : collStakesByStop;
+		return coll.get(idx);
 	}
 	
 	public int getNumStakes()
@@ -835,20 +826,19 @@ if( DEBUG ) {
 		}
 	}
 
-	public Stake editGetLeftMost( int idx, boolean byStart, AbstractCompoundEdit ce )
-	{
-		if( idx < 0 ) {
+	public Stake editGetLeftMost(int idx, boolean byStart, AbstractCompoundEdit ce) {
+		if (idx < 0) {
 			idx = -(idx + 2);
-			if( idx < 0 ) return null;
+			if (idx < 0) return null;
 		}
 
-		final List coll = byStart ? editGetCollByStart(ce) : editGetCollByStop(ce);
-		Stake lastStake = (Stake) coll.get(idx);
+		final List<Stake> coll = byStart ? editGetCollByStart(ce) : editGetCollByStop(ce);
+		Stake lastStake = coll.get(idx);
 		final long pos = byStart ? lastStake.getSpan().start : lastStake.getSpan().stop;
 		Stake nextStake;
 
 		while (idx > 0) {
-			nextStake = (Stake) coll.get(--idx);
+			nextStake = coll.get(--idx);
 			if ((byStart ? nextStake.getSpan().start : nextStake.getSpan().stop) != pos) break;
 			lastStake = nextStake;
 		}
@@ -883,17 +873,17 @@ if( DEBUG ) {
 		return getLeftMostIndex(coll, idx, byStart);
 	}
 
-	private int getLeftMostIndex(List coll, int idx, boolean byStart) {
+	private int getLeftMostIndex(List<Stake> coll, int idx, boolean byStart) {
 		if (idx < 0) {
 			idx = -(idx + 2);
 			if (idx < 0) return -1;
 		}
 
-		Stake stake = (Stake) coll.get(idx);
+		Stake stake = coll.get(idx);
 		final long pos = byStart ? stake.getSpan().start : stake.getSpan().stop;
 
 		while (idx > 0) {
-			stake = (Stake) coll.get(idx - 1);
+			stake = coll.get(idx - 1);
 			if ((byStart ? stake.getSpan().start : stake.getSpan().stop) != pos) break;
 			idx--;
 		}
@@ -1135,7 +1125,7 @@ if( DEBUG ) {
 	}
 
 	protected void sortRemoveStake(Stake stake, AbstractCompoundEdit ce) {
-		final List collByStart, collByStop;
+		final List<Stake> collByStart, collByStop;
 		int idx;
 
 		if (ce == null) {
@@ -1240,41 +1230,39 @@ if( DEBUG ) {
 	{
 		return false;
 	}
-	
-	public Enumeration children()
-	{
-		return new ListEnum( getAll( true ));
+
+	public Enumeration<?> children() {
+		return new ListEnum(getAll(true));
 	}
 
 // --------------------- EventManager.Processor interface ---------------------
-	
+
 	/**
-	 *  This is called by the EventManager
-	 *  if new events are to be processed. This
-	 *  will invoke the listener's <code>propertyChanged</code> method.
+	 * This is called by the EventManager
+	 * if new events are to be processed. This
+	 * will invoke the listener's <code>propertyChanged</code> method.
 	 */
-	public void processEvent( BasicEvent e )
-	{
+	public void processEvent(BasicEvent e) {
 		Trail.Listener listener;
 		int i;
 		Trail.Event te = (Trail.Event) e;
-		
-		for( i = 0; i < elm.countListeners(); i++ ) {
-			listener = (Trail.Listener) elm.getListener( i );
-			switch( e.getID() ) {
-			case Trail.Event.MODIFIED:
-				listener.trailModified( te );
-				break;
-			default:
-				assert false : e.getID();
-				break;
+
+		for (i = 0; i < elm.countListeners(); i++) {
+			listener = (Trail.Listener) elm.getListener(i);
+			switch (e.getID()) {
+				case Trail.Event.MODIFIED:
+					listener.trailModified(te);
+					break;
+				default:
+					assert false : e.getID();
+					break;
 			}
 		} // for( i = 0; i < this.countListeners(); i++ )
 	}
 
 // --------------------- internal classes ---------------------
 	
-	// undable edits
+	// undoable edits
 		
 	private static final int EDIT_ADD		= 0;
 	private static final int EDIT_REMOVE	= 1;
@@ -1294,15 +1282,13 @@ if( DEBUG ) {
 //		private boolean					removed;
 		private boolean					disposeWhenDying;
 		private Span					span;
-		
-		protected Edit( BasicTrail t, Span span )
-		{
-			this( t, null, span, EDIT_DISPATCH, "editChangeTrail" );
+
+		protected Edit(BasicTrail t, Span span) {
+			this(t, null, span, EDIT_DISPATCH, "editChangeTrail");
 		}
-	
-		protected Edit( BasicTrail t, List<Stake> stakes, Span span, int cmd )
-		{
-			this( t, stakes, span, cmd, "editChangeTrail" );
+
+		protected Edit(BasicTrail t, List<Stake> stakes, Span span, int cmd) {
+			this(t, stakes, span, cmd, "editChangeTrail");
 		}
 
 		private Edit(BasicTrail t, List<Stake> stakes, Span span, int cmd, String key) {

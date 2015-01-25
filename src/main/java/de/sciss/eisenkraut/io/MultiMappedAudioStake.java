@@ -22,13 +22,8 @@ import de.sciss.jcollider.Buffer;
 import de.sciss.net.OSCBundle;
 import de.sciss.timebased.Stake;
 
-/**
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
- */
-public class MultiMappedAudioStake
-extends AudioStake
-{
+public class MultiMappedAudioStake extends AudioStake {
+
 	private final InterleavedStreamFile[]	fs;
 	private final Span[]					fileSpans;
 	private final Span[]					maxFileSpans;
@@ -72,100 +67,93 @@ extends AudioStake
 	}
 
 	public void close()
-	throws IOException
-	{
-		for( int i = 0; i < fs.length; i++ ) fs[ i ].close();
+			throws IOException {
+		for (InterleavedStreamFile f : fs) f.close();
 	}
 
-	public void cleanUp()
-	{
-		for( int i = 0; i < fs.length; i++ ) {
-			try { fs[ i ].close(); } catch( IOException e1 ) { /* ignore */ }
+	public void cleanUp() {
+		for (InterleavedStreamFile f : fs) {
+			try {
+				f.close();
+			} catch (IOException e1) { /* ignore */ }
 		}
 	}
 
-	private static String[] getFileNames( InterleavedStreamFile[] fs )
-	{
-		final String[]		fileNames	= new String[ fs.length ];
-		final StringBuffer	sb			= new StringBuffer();
-		for( int i = 0; i < fs.length; i++ ) {
-			fileNames[ i ] = fileNameNormalizer.normalize( fs[ i ].getFile().getAbsolutePath(), sb ).toString();
-			sb.setLength( 0 );
+	private static String[] getFileNames(InterleavedStreamFile[] fs) {
+		final String[] fileNames = new String[fs.length];
+		final StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < fs.length; i++) {
+			fileNames[i] = fileNameNormalizer.normalize(fs[i].getFile().getAbsolutePath(), sb).toString();
+			sb.setLength(0);
 		}
 		return fileNames;
 	}
 
 	// consider result read-only!!!
-	public int[][] getChannelMaps()
-	{
+	public int[][] getChannelMaps() {
 		return channelMaps;
 	}
 
-	private static int[][] createChannelMaps( InterleavedStreamFile[] fs )
-	{
-		final int[][] channelMaps = new int[ fs.length ][];
+	private static int[][] createChannelMaps(InterleavedStreamFile[] fs) {
+		final int[][] channelMaps = new int[fs.length][];
 		int[] channelMap;
-		
-		for( int i = 0; i < fs.length; i++ ) {
-			channelMap			= new int[ fs[ i ].getChannelNum() ];
-			for( int j = 0; j < channelMap.length; j++ ) {
-				channelMap[ j ]	= j;
+
+		for (int i = 0; i < fs.length; i++) {
+			channelMap = new int[fs[i].getChannelNum()];
+			for (int j = 0; j < channelMap.length; j++) {
+				channelMap[j] = j;
 			}
-			channelMaps[ i ]	= channelMap;
+			channelMaps[i] = channelMap;
 		}
-		
+
 		return channelMaps;
 	}
 
-	public Stake duplicate()
-	{
-		return new MultiMappedAudioStake( span, fs, fileSpans, maxFileSpans, channelMaps, fileNames );
+	public Stake duplicate() {
+		return new MultiMappedAudioStake(span, fs, fileSpans, maxFileSpans, channelMaps, fileNames);
 	}
 
-	public Stake replaceStart( long newStart )
-	{
-		final long delta			= newStart - span.start;
-		final Span[] newFileSpans	= new Span[ fileSpans.length ];
-		final Span newSpan			= span.replaceStart( newStart );
+	public Stake replaceStart(long newStart) {
+		final long delta = newStart - span.start;
+		final Span[] newFileSpans = new Span[fileSpans.length];
+		final Span newSpan = span.replaceStart(newStart);
 
-		if( newSpan.getLength() < 0 ) throw new IllegalArgumentException( String.valueOf( newStart ));
-		
-		for( int i = 0; i < fileSpans.length; i++ ) {
-			newFileSpans[ i ]	= fileSpans[ i ].replaceStart( fileSpans[ i ].start + delta );
-			if( (newFileSpans[ i ].getLength() < 0) || !maxFileSpans[ i ].contains( newFileSpans[ i ] )) {
-				throw new IllegalArgumentException( String.valueOf( newStart ));
+		if (newSpan.getLength() < 0) throw new IllegalArgumentException(String.valueOf(newStart));
+
+		for (int i = 0; i < fileSpans.length; i++) {
+			newFileSpans[i] = fileSpans[i].replaceStart(fileSpans[i].start + delta);
+			if ((newFileSpans[i].getLength() < 0) || !maxFileSpans[i].contains(newFileSpans[i])) {
+				throw new IllegalArgumentException(String.valueOf(newStart));
 			}
 		}
-		return new MultiMappedAudioStake( newSpan, fs, newFileSpans, maxFileSpans, channelMaps, fileNames );
+		return new MultiMappedAudioStake(newSpan, fs, newFileSpans, maxFileSpans, channelMaps, fileNames);
 	}
-	
-	public Stake replaceStop( long newStop )
-	{
-		final long delta			= newStop - span.stop;
-		final Span newSpan			= span.replaceStop( newStop );
-		final Span[] newFileSpans	= new Span[ fileSpans.length ];
 
-		if( newSpan.getLength() < 0 ) throw new IllegalArgumentException( String.valueOf( newStop ));
+	public Stake replaceStop(long newStop) {
+		final long delta = newStop - span.stop;
+		final Span newSpan = span.replaceStop(newStop);
+		final Span[] newFileSpans = new Span[fileSpans.length];
 
-		for( int i = 0; i < fileSpans.length; i++ ) {
-			newFileSpans[ i ]	= fileSpans[ i ].replaceStop( fileSpans[ i ].stop + delta );
-			if( (newFileSpans[ i ].getLength() < 0) || !maxFileSpans[ i ].contains( newFileSpans[ i ])) {
-				throw new IllegalArgumentException( String.valueOf( newStop ));
+		if (newSpan.getLength() < 0) throw new IllegalArgumentException(String.valueOf(newStop));
+
+		for (int i = 0; i < fileSpans.length; i++) {
+			newFileSpans[i] = fileSpans[i].replaceStop(fileSpans[i].stop + delta);
+			if ((newFileSpans[i].getLength() < 0) || !maxFileSpans[i].contains(newFileSpans[i])) {
+				throw new IllegalArgumentException(String.valueOf(newStop));
 			}
 		}
-		return new MultiMappedAudioStake( newSpan, fs, newFileSpans, maxFileSpans, channelMaps, fileNames );
+		return new MultiMappedAudioStake(newSpan, fs, newFileSpans, maxFileSpans, channelMaps, fileNames);
 	}
-	
-	public Stake shiftVirtual( long delta )
-	{
-		return new MultiMappedAudioStake( span.shift( delta ), fs, fileSpans, maxFileSpans, channelMaps, fileNames );
+
+	public Stake shiftVirtual(long delta) {
+		return new MultiMappedAudioStake(span.shift(delta), fs, fileSpans, maxFileSpans, channelMaps, fileNames);
 	}
-	
-	public int readFrames( float[][] data, int offset, Span readSpan )
-	throws IOException
-	{
-		final int				len		= (int) readSpan.getLength();
-		if( len == 0 ) return 0;
+
+	public int readFrames(float[][] data, int offset, Span readSpan)
+			throws IOException {
+
+		final int len = (int) readSpan.getLength();
+		if (len == 0) return 0;
 
 		InterleavedStreamFile	f;
 		long					fOffset;
@@ -198,11 +186,11 @@ extends AudioStake
 		return len;
 	}
 
-	public int writeFrames( float[][] data, int offset, Span writeSpan )
-	throws IOException
-	{
-		final int				len			= (int) writeSpan.getLength();
-		if( len == 0 ) return 0;
+	public int writeFrames(float[][] data, int offset, Span writeSpan)
+			throws IOException {
+
+		final int len = (int) writeSpan.getLength();
+		if (len == 0) return 0;
 
 		InterleavedStreamFile	f;
 		long					fOffset;
@@ -307,47 +295,39 @@ extends AudioStake
 	}
 
 	// synchronization : caller must have sync on fs
-	private void clearMappedData()
-	{
-		for( int i = 0; i < mappedDatas.length; i++ ) {
-			for( int j = 0; j < mappedDatas[ i ].length; j++ ) {
-				mappedDatas[ i ][ j ] = null;
+	private void clearMappedData() {
+		for (int i = 0; i < mappedDatas.length; i++) {
+			for (int j = 0; j < mappedDatas[i].length; j++) {
+				mappedDatas[i][j] = null;
 			}
 		}
 	}
 
 	public void flush()
-	throws IOException
-	{
-		InterleavedStreamFile	f;
-
-		for( int i = 0; i < fs.length; i++ ) {
-			f = fs[ i ];
-			synchronized( f ) {
+			throws IOException {
+		for (InterleavedStreamFile f : fs) {
+			synchronized (f) {
 				f.flush();
 			}
 		}
 	}
-	
-	public void addToCache( CacheManager cm )
-	{
-		for( int i = 0; i < fs.length; i++ ) {
-			cm.addFile( fs[ i ].getFile() );
+
+	public void addToCache(CacheManager cm) {
+		for (InterleavedStreamFile f : fs) {
+			cm.addFile(f.getFile());
 		}
 	}
 
-	public int getChannelNum()
-	{
+	public int getChannelNum() {
 		return numChannels;
 	}
 
-	public void debugDump()
-	{
+	public void debugDump() {
 		debugDumpBasics();
-		System.err.print( " ; fs = [ " );
-		for( int i = 0; i < fs.length; i++ ) {
-			System.err.print( (i > 0 ? ", " : "" ) + fs[i].getFile().getName() + " (file span " + fileSpans[i].toString() + " )" );
+		System.err.print(" ; fs = [ ");
+		for (int i = 0; i < fs.length; i++) {
+			System.err.print((i > 0 ? ", " : "") + fs[i].getFile().getName() + " (file span " + fileSpans[i].toString() + " )");
 		}
-		System.err.println( " ]" );
+		System.err.println(" ]");
 	}
 }

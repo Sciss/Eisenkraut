@@ -23,20 +23,20 @@ import javax.swing.tree.TreeNode;
 import de.sciss.io.Span;
 import de.sciss.util.Disposable;
 
-/**
- *	@author		Hanns Holger Rutz
- *	@version	0.12, 24-Jan-06
- */
 public interface Stake
-extends Disposable, TreeNode
-{
-	public Span	getSpan();
+		extends Disposable, TreeNode {
+	public Span getSpan();
+
 	public Stake duplicate();
+
 	public void dispose();
-	public Stake replaceStart( long newStart );
-	public Stake replaceStop( long newStop );
-	public Stake shiftVirtual( long delta );
-	
+
+	public Stake replaceStart(long newStart);
+
+	public Stake replaceStop(long newStop);
+
+	public Stake shiftVirtual(long delta);
+
 	// like MutableTreeNode
-	public void setTrail( Trail t );
+	public void setTrail(Trail t);
 }

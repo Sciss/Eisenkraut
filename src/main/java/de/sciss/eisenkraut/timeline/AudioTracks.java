@@ -60,13 +60,10 @@ public class AudioTracks
 		return doc.selectedTracks.contains(t);
 	}
 
-	public static boolean checkSyncedAudio(List tis, boolean changesTimeline, ProcessingThread context, Flag hasSelectedAudio) {
-		Track.Info ti;
+	public static boolean checkSyncedAudio(List<Track.Info> tis, boolean changesTimeline, ProcessingThread context, Flag hasSelectedAudio) {
+		hasSelectedAudio.set(false);
 
-		hasSelectedAudio.set( false );
-
-		for (Object ti1 : tis) {
-			ti = (Track.Info) ti1;
+		for (Track.Info ti : tis) {
 			if (changesTimeline && !ti.getChannelSync()) {
 				if (context != null)
 					context.setException(new IllegalStateException(AbstractApplication.getApplication().getResourceString("errAudioWillLooseSync")));

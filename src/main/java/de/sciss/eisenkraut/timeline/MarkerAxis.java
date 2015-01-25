@@ -65,6 +65,7 @@ import de.sciss.gui.ParamField;
 import de.sciss.gui.SpringPanel;
 import de.sciss.io.Span;
 import de.sciss.timebased.MarkerStake;
+import de.sciss.timebased.Stake;
 import de.sciss.timebased.Trail;
 import de.sciss.util.DefaultUnitTranslator;
 import de.sciss.util.Disposable;
@@ -218,7 +219,7 @@ public class MarkerAxis
 	// sync: attempts shared on timeline
 	private void recalcDisplay( FontMetrics fm )
 	{
-		List			markers;
+		List<Stake> markers;
 		long			start, stop;
 		MarkerStake		mark;
 

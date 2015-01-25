@@ -692,7 +692,7 @@ public class IOSetupFrame extends AppWindow {
 			}
 		}
 
-	    public Class getColumnClass( int col )
+	    public Class<?> getColumnClass( int col )
 		{
 			switch( col ) {
 			case 0:

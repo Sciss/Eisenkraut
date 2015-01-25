@@ -23,14 +23,10 @@ import de.sciss.io.CacheManager;
 import de.sciss.util.Param;
 import de.sciss.util.ParamSpace;
 
-/**
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 28-Jul-07
- */
 public class PrefCacheManager
-extends CacheManager
-implements PreferenceChangeListener
-{
+		extends CacheManager
+		implements PreferenceChangeListener {
+
 	/**
 	 *	Convenient name for preferences node
 	 */
@@ -42,8 +38,7 @@ implements PreferenceChangeListener
 
 	private final Preferences prefs;
 	
-//	private static final int DEFAULT_CAPACITY	= 100;		// 100 MB
-	private static final Param DEFAULT_CAPACITY = new Param( 100, ParamSpace.NONE | ParamSpace.ABS );
+	private static final Param DEFAULT_CAPACITY = new Param( 100, ParamSpace.ABS);
 
 	private static PrefCacheManager instance;
 
@@ -84,18 +79,16 @@ implements PreferenceChangeListener
 	{
 		return prefs;
 	}
-	
-	public void setActive( boolean onOff )
-	{
-		super.setActive( onOff );
-		prefs.putBoolean( KEY_ACTIVE, onOff );
+
+	public void setActive(boolean onOff) {
+		super.setActive(onOff);
+		prefs.putBoolean(KEY_ACTIVE, onOff);
 	}
-		
-	public void setFolderAndCapacity( File folder, int capacity )
-	{
-		super.setFolderAndCapacity( folder, capacity );
-		prefs.put( KEY_FOLDER, folder.getPath() );
-		prefs.put( KEY_CAPACITY, new Param( capacity, ParamSpace.NONE | ParamSpace.ABS ).toString() );
+
+	public void setFolderAndCapacity(File folder, int capacity) {
+		super.setFolderAndCapacity(folder, capacity);
+		prefs.put(KEY_FOLDER, folder.getPath());
+		prefs.put(KEY_CAPACITY, new Param(capacity, ParamSpace.ABS).toString());
 	}
 
 // ------- PreferenceChangeListener interface -------
@@ -115,7 +108,7 @@ implements PreferenceChangeListener
 				setCapacity( c );
 			}
 		} else if( key.equals( KEY_ACTIVE )) {
-			final boolean b = Boolean.valueOf( e.getNewValue() ).booleanValue();
+			final boolean b = Boolean.valueOf(e.getNewValue());
 			if( isActive() != b ) {
 				setActive( b );
 			}

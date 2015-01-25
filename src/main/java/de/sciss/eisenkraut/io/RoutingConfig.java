@@ -16,12 +16,7 @@ package de.sciss.eisenkraut.io;
 import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
 
-/**
- *	@version	0.70, 29-Apr-08
- *	@author		Hanns Holger Rutz
- */
-public class RoutingConfig
-{
+public class RoutingConfig {
 	/*
 	 *  Preferences key. Value: Integer representing the number
 	 *  of channels for this configuration
@@ -104,41 +99,38 @@ public class RoutingConfig
 		}
 		return false;
 	}
-	
-	public int hashCode()
-	{
-		int hash = id.hashCode() ^ name.hashCode() ^ numChannels ^ Float.floatToRawIntBits( startAngle );
-		for( int i = 0; i < mapping.length; i++ ) {
-			hash ^= mapping[ i ] << i;
+
+	public int hashCode() {
+		int hash = id.hashCode() ^ name.hashCode() ^ numChannels ^ Float.floatToRawIntBits(startAngle);
+		for (int i = 0; i < mapping.length; i++) {
+			hash ^= mapping[i] << i;
 		}
 		return hash;
 	}
-	
-	public void toPrefs( Preferences cfgPrefs )
-	{
-		final StringBuffer sb = new StringBuffer();
 
-		cfgPrefs.put( KEY_NAME, name );
-		cfgPrefs.putInt( KEY_RC_NUMCHANNELS, numChannels );
-		cfgPrefs.putFloat( KEY_RC_STARTANGLE, startAngle );
-		if( numChannels > 0 ) {
-			sb.append( mapping[ 0 ]);
+	public void toPrefs(Preferences cfgPrefs) {
+		final StringBuilder sb = new StringBuilder();
+
+		cfgPrefs.put(KEY_NAME, name);
+		cfgPrefs.putInt(KEY_RC_NUMCHANNELS, numChannels);
+		cfgPrefs.putFloat(KEY_RC_STARTANGLE, startAngle);
+		if (numChannels > 0) {
+			sb.append(mapping[0]);
 		}
-		for( int j = 1; j < numChannels; j++ ) {
-			sb.append( ' ' );
-			sb.append( mapping[ j ]);
+		for (int j = 1; j < numChannels; j++) {
+			sb.append(' ');
+			sb.append(mapping[j]);
 		}
-		cfgPrefs.put( KEY_RC_MAPPING, sb.toString() );
+		cfgPrefs.put(KEY_RC_MAPPING, sb.toString());
 	}
-	
-	public String toString()
-	{
-		final StringBuffer bMap = new StringBuffer( "[ ");
-		for( int i = 0; i < mapping.length; i++ ) {
-			if( i > 0 ) bMap.append( ", " );
-			bMap.append( String.valueOf( mapping[ i ]));
+
+	public String toString() {
+		final StringBuilder bMap = new StringBuilder("[ ");
+		for (int i = 0; i < mapping.length; i++) {
+			if (i > 0) bMap.append(", ");
+			bMap.append(String.valueOf(mapping[i]));
 		}
-		bMap.append( " ]" );
+		bMap.append(" ]");
 		return "RoutingConfig( \"" + id + "\", \"" + name + "\", " + bMap.toString() + ", " + startAngle + " )";
 	}
 }

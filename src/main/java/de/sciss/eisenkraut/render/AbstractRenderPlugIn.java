@@ -24,7 +24,6 @@ import de.sciss.app.AbstractApplication;
 import de.sciss.io.AudioFile;
 import de.sciss.io.AudioFileDescr;
 import de.sciss.io.IOUtil;
-import de.sciss.io.InterleavedStreamFile;
 
 public abstract class AbstractRenderPlugIn implements RenderPlugIn {
 	private List<AudioFile> collTempFiles	= null;	// lazy creation
@@ -157,7 +156,7 @@ public abstract class AbstractRenderPlugIn implements RenderPlugIn {
 		}
 	}
 
-	protected void deleteTempFile(InterleavedStreamFile f) {
+	protected void deleteTempFile(AudioFile /* InterleavedStreamFile */ f) {
 		if (this.collTempFiles != null) this.collTempFiles.remove(f);
 		try {
 			f.close();
@@ -165,7 +164,7 @@ public abstract class AbstractRenderPlugIn implements RenderPlugIn {
 		f.getFile().delete();
 	}
 
-	protected InterleavedStreamFile createTempFile(int numChannels, double rate)
+	protected AudioFile createTempFile(int numChannels, double rate)
 			throws IOException {
 		final AudioFileDescr afd = new AudioFileDescr();
 		AudioFile af;

@@ -55,9 +55,9 @@ import de.sciss.io.Span;
 import de.sciss.util.Flag;
 
 /**
- *	@todo		an option to render the transformed data
+ *	TODO:	an option to render the transformed data
  *				into the clipboard.
- *	@todo		support of variable output time span
+ *	TODO: support of variable output time span
  */
 public class FilterDialog
 		extends AppWindow
@@ -243,30 +243,6 @@ public class FilterDialog
 //			doc.bird.releaseShared( Session.DOOR_TIME );
 //		}
 	}
-
-	/**
-	 *	Checks if the render context is still valid.
-	 *
-	 *	@return	<code>false</code> if the context became invalid
-	 *			e.g. after a change in the selected time span
-	 *
-	 *	@synchronization	attemptShared on DOOR_TIMETRNS
-	 */
-//	protected boolean isRenderContextValid( RenderContext context )
-//	{
-//return true;
-/*
-		if( !doc.bird.attemptShared( Session.DOOR_TIMETRNS, 250 )) return false;
-		try {
-			return( doc.selectedTransmitters.getAll().equals( context.getTransmitters() ) &&
-					doc.timeline.getSelectionSpan().equals( context.getTimeSpan() ) &&
-					doc.timeline.getRate() == context.getSourceRate() );
-		}
-		finally {
-			doc.bird.releaseShared( Session.DOOR_TIMETRNS );
-		}
-*/
-//	}
 
 // ---------------- concrete methods ---------------- 
 
@@ -545,16 +521,15 @@ public class FilterDialog
 		final ConsumerContext	consc;
 		final Flag				hasSelectedAudio	= new Flag( false );
 		final RenderSource		source;
-		final List				tis					= context.getTrackInfo();
+		final List<Track.Info> tis					= context.getTrackInfo();
 		final int				inTrnsLen, outTrnsLen;
 		final int				minBlockSize, maxBlockSize, prefBlockSize;
-		final Set				newOptions;
+		final Set<Object>		newOptions;
 		final RandomAccessRequester rar;
 		final long				pasteLength, preMaxLen, postMaxLen;
 		final Span				span;
 //		final int				numClipChannels		= 0;
 		boolean					hasSelectedMarkers	= false;
-		Track.Info				ti;
 		Object					val;
 
 		consc			= new ConsumerContext();
@@ -568,15 +543,14 @@ public class FilterDialog
 			return; // FAILED;
 		}
 		source.validAudio = (consc.plugIn.getAudioPolicy() == RenderPlugIn.POLICY_MODIFY) && hasSelectedAudio.isSet();
-		for( int i = 0; i < tis.size(); i++ ) {
-			ti = (Track.Info) tis.get( i );
-			if( (ti.trail instanceof MarkerTrail) && ti.selected ) {
+		for (Track.Info ti : tis) {
+			if ((ti.trail instanceof MarkerTrail) && ti.selected) {
 				hasSelectedMarkers = true;
 				break;
 			}
 		}
 		source.validMarkers	= (consc.plugIn.getMarkerPolicy() == RenderPlugIn.POLICY_MODIFY) && hasSelectedMarkers;
-		if( source.validMarkers ) source.markers = doc.markers.getCuttedTrail( context.getTimeSpan(), doc.markers.getDefaultTouchMode(), 0 );
+		if( source.validMarkers ) source.markers = doc.markers.getCutTrail(context.getTimeSpan(), doc.markers.getDefaultTouchMode(), 0);
 		
 		consc.restoreUnused = plugIn.getUnselectedAudioPolicy() == RenderPlugIn.POLICY_MODIFY;
 		
@@ -590,19 +564,19 @@ public class FilterDialog
 			newOptions			= context.getModifiedOptions();
 			if( newOptions.contains( RenderContext.KEY_MINBLOCKSIZE )) {
 				val				= context.getOption( RenderContext.KEY_MINBLOCKSIZE );
-				minBlockSize	= ((Integer) val).intValue();
+				minBlockSize	= (Integer) val;
 			} else {
 				minBlockSize	= 1;
 			}
 			if( newOptions.contains( RenderContext.KEY_MAXBLOCKSIZE )) {
 				val				= context.getOption( RenderContext.KEY_MAXBLOCKSIZE );
-				maxBlockSize	= ((Integer) val).intValue();
+				maxBlockSize	= (Integer) val;
 			} else {
 				maxBlockSize	= 0x7FFFFF;
 			}
 			if( newOptions.contains( RenderContext.KEY_PREFBLOCKSIZE )) {
 				val				= context.getOption( RenderContext.KEY_PREFBLOCKSIZE );
-				prefBlockSize	= ((Integer) val).intValue();
+				prefBlockSize	= (Integer) val;
 			} else {
 				prefBlockSize   = Math.max( minBlockSize, Math.min( maxBlockSize, 1024 ));
 			}
@@ -650,75 +624,37 @@ public class FilterDialog
 		pt.putClientArg( "context", context );
 		pt.putClientArg( "source", source );
 		pt.putClientArg( "rar", rar );
-		pt.putClientArg( "inTrnsLen", new Integer( inTrnsLen ));
-//		pt.putClientArg( "tis", Track.getInfos( doc.selectedTracks.getAll(), doc.tracks.getAll() ));
+		pt.putClientArg( "inTrnsLen", inTrnsLen);
 		doc.start( pt );
-
-//		ggClose.setEnabled( false );
-//		ggRender.setAction( actionCancel );
-//		ggRender.requestFocus();
-//		hibernation( true );
 	}
 
-	/**
-	 *	Default implementation calls <code>isRenderContextValid</code>.
-	 *	If that returns <code>false</code>, a new context is
-	 *	created and GUI is updated.
-	 */
-//	protected void checkReContext()
-//	{
-//		if( context != null && !isRenderContextValid( context )) {
-//			boolean success = false;
-//			try {
-//				success = reContext();
-//			}
-//			finally {
-//				ggRender.setEnabled( success );
-//			}
-//		}
-//	}
-	
-	private String getResourceString( String key )
-	{
-		return AbstractApplication.getApplication().getResourceString( key );
+	private String getResourceString(String key) {
+		return AbstractApplication.getApplication().getResourceString(key);
 	}
 
 // ---------------- RenderHost interface ---------------- 
 
-	public void	showMessage( int type, String text )
-	{
-		doc.getFrame().showMessage( type, text );
-	}
-	
-	public void setProgression( float p )
-	{
-		try {
-			ProcessingThread.update( p );
-		} catch( ProcessingThread.CancelledException e1 ) { /* ignore */ }
-//		doc.getFrame().setProgression( p ); // p * 0.9f;
-		this.progress	= p;
+	public void showMessage(int type, String text) {
+		doc.getFrame().showMessage(type, text);
 	}
 
-//	private void setTrueProgression( float p )
-//	{
-//		doc.getFrame().setProgression( p );
-//		this.progress	= p;
-//	}
-	
-	private float getProgression()
-	{
+	public void setProgression(float p) {
+		try {
+			ProcessingThread.update(p);
+		} catch (ProcessingThread.CancelledException e1) { /* ignore */ }
+		this.progress = p;
+	}
+
+	private float getProgression() {
 		return progress;
 	}
-	
-	public void setException( Exception e )
-	{
-		pt.setException( e );
+
+	public void setException(Exception e) {
+		pt.setException(e);
 	}
 
-	public boolean isRunning()
-	{
-//		return( (pt != null) && pt.isAlive() );
-		return( (pt != null) && pt.isRunning() );
+	public boolean isRunning() {
+		return ((pt != null) && pt.isRunning());
 	}
 
 // ---------------- RunnableProcessing interface ---------------- 
@@ -780,11 +716,6 @@ public class FilterDialog
  *
  *		// end loop //
  *  </PRE>
- *
- *	@see	#invokeProducerBegin( ProcessingThread, RenderContext, RenderSource, RenderPlugIn )
- *	@see	#invokeProducerCancel( ProcessingThread, RenderContext, RenderSource, RenderPlugIn )
- *	@see	#invokeProducerRender( ProcessingThread, RenderContext, RenderSource, RenderPlugIn )
- *	@see	#invokeProducerFinish( ProcessingThread, RenderContext, RenderSource, RenderPlugIn )
  */
 	public int processRun( ProcessingThread proc )
 	throws IOException
@@ -795,7 +726,7 @@ public class FilterDialog
 		final RenderSource				source				= (RenderSource) proc.getClientArg( "source" );
 		final AudioTrail				at					= consc.doc.getAudioTrail();
 
-		final int						inTrnsLen			= ((Integer) proc.getClientArg( "inTrnsLen" )).intValue();
+		final int						inTrnsLen			= (Integer) proc.getClientArg("inTrnsLen");
 		final RandomAccessRequester		rar					= (RandomAccessRequester) proc.getClientArg( "rar" );
 		final boolean					randomAccess		= rar != null;
 		int								readLen, writeLen;
@@ -822,39 +753,39 @@ public class FilterDialog
 
 		try {
 			// --- rendering loop ---
-			
-prodLp:		while( !ProcessingThread.shouldCancel() ) {
-				if( randomAccess ) {
+
+			while (!ProcessingThread.shouldCancel()) {
+				if (randomAccess) {
 					source.blockSpan = rar.getNextSpan();
-					readLen			 = (int) source.blockSpan.getLength();
+					readLen = (int) source.blockSpan.getLength();
 				} else {
-					readLen			 = (int) Math.min( inTrnsLen - inOff, remainingRead );
-					source.blockSpan = new Span( readOffset, readOffset + readLen );
+					readLen = (int) Math.min(inTrnsLen - inOff, remainingRead);
+					source.blockSpan = new Span(readOffset, readOffset + readLen);
 					// preparation for next loop iteration
-					remainingRead   -= readLen;
-					readOffset      += readLen;
+					remainingRead -= readLen;
+					readOffset += readLen;
 				}
-				if( readLen == 0 ) break prodLp;
-				writeLen			= readLen;
-				source.audioBlockBufLen  = writeLen;
+				if (readLen == 0) break;
+				writeLen = readLen;
+				source.audioBlockBufLen = writeLen;
 
 				// XXX optimization possibilities here:
 				// leave some channels null (both in readFrames
 				// as well as in arraycopy) depending on some
 				// kind of policy (maybe a new value of audioPolicy: POLICY_READONLY
 				// and POLICY_BYPASS would become POLICY_IGNORE
-				at.readFrames( consc.inBuf, inOff, source.blockSpan );
+				at.readFrames(consc.inBuf, inOff, source.blockSpan);
 				// looks like a bit of overload but in future
 				// versions, channel arrangement might be different than 1:1 from mte
-				for( int ch = 0; ch < source.numAudioChannels; ch++ ) {
-					System.arraycopy( consc.inBuf[ ch ], inOff, source.audioBlockBuf[ ch ], 0, writeLen );
+				for (int ch = 0; ch < source.numAudioChannels; ch++) {
+					System.arraycopy(consc.inBuf[ch], inOff, source.audioBlockBuf[ch], 0, writeLen);
 				}
-				
+
 				// --- handle thread ---
-				if( ProcessingThread.shouldCancel() ) break prodLp;
+				if (ProcessingThread.shouldCancel()) break;
 
 				// --- producer rendering ---
-				if( !invokeProducerRender( proc, source, plugIn )) return FAILED;
+				if (!invokeProducerRender(proc, source, plugIn)) return FAILED;
 			} // while( isRunning() )
 
 			// --- finishing ---

@@ -1983,7 +1983,7 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 		 */
 		public void actionPerformed( ActionEvent e )
 		{
-			final List	infos		= Track.getInfos( doc.selectedTracks.getAll(), doc.tracks.getAll() );
+			final List<Track.Info>	infos = Track.getInfos( doc.selectedTracks.getAll(), doc.tracks.getAll() );
 			boolean		saveMarkers	= true;
 			int[] 		channelMap	= null;
 			if( selection ) {

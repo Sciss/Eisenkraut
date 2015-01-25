@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import de.sciss.eisenkraut.session.SessionObject;
 import de.sciss.io.Span;
 
 /**
@@ -28,7 +29,7 @@ import de.sciss.io.Span;
 public class RealtimeContext {
 	private final Span				time;
 	private final double			sourceRate;
-	private final List				tracks;
+	private final List<SessionObject> tracks;
 	private final Transport			transport;
 	
 	private final HashMap<Object, Object> options			= new HashMap<Object, Object>();
@@ -39,7 +40,7 @@ public class RealtimeContext {
 	 *
 	 *  @param  sourceRate			the source sense data rate
 	 */
-	public RealtimeContext( Transport transport, List tracks, Span time, double sourceRate )
+	public RealtimeContext( Transport transport, List<SessionObject> tracks, Span time, double sourceRate )
 	{
 		this.transport		= transport;
 		this.time			= time;
@@ -47,17 +48,11 @@ public class RealtimeContext {
 		this.tracks			= tracks;
 	}
 
-	/**
-	 */
-	public Transport getTransport()
-	{
+	public Transport getTransport() {
 		return transport;
 	}
 
-	/**
-	 */
-	public List getTracks()
-	{
+	public List<SessionObject> getTracks() {
 		return tracks;
 	}
 

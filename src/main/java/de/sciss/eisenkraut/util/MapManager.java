@@ -284,7 +284,7 @@ public class MapManager
 		"int", "long", "float", "double", "boolean", "string", "file"
 	};
 
-	public void toXML(Document domDoc, Element node, Map options)
+	public void toXML(Document domDoc, Element node, Map<Object, Object> options)
 			throws IOException {
 		Iterator<String> keys = backingMap.keySet().iterator();
 
@@ -327,7 +327,7 @@ public class MapManager
 //		node.appendChild( child );
 //	}
 
-	public void fromXML(Document domDoc, Element node, Map options)
+	public void fromXML(Document domDoc, Element node, Map<Object, Object> options)
 			throws IOException {
 
 		final NodeList	nl		= node.getChildNodes();

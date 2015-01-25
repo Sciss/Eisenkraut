@@ -47,7 +47,7 @@ import de.sciss.util.MutableInt;
 public class DecimatedWaveTrail
 extends DecimatedTrail
 {
-	private static final int		UPDATE_PERIOD			= 2000; // millisecs in async overview calculation
+	private static final int		UPDATE_PERIOD			= 2000; // milliseconds in async overview calculation
 
 	private final Decimator			decimator;
 
@@ -526,7 +526,7 @@ extends DecimatedTrail
 		int					idx			= editIndexOf(readSpan.start, true, ce);
 		if( idx < 0 ) idx = -(idx + 2);
 		final long			startR		= decimHelps[sub].roundAdd - readSpan.start;
-		final List			coll		= editGetCollByStart( ce );
+		final List<Stake> coll		= editGetCollByStart( ce );
 		final MutableInt	readyLen	= new MutableInt( 0 );
 		final MutableInt	busyLen		= new MutableInt( 0 );
 		DecimatedStake	stake;
@@ -589,7 +589,7 @@ extends DecimatedTrail
 	{
 		if( threadAsync != null ) throw new IllegalStateException();
 
-		final List					stakes		= fullScale.getAll(true);
+		final List<Stake> stakes		= fullScale.getAll(true);
 		if( stakes.isEmpty() ) return;
 
 		final DecimatedStake		das;

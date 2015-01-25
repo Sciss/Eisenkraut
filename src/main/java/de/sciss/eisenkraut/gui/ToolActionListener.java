@@ -17,9 +17,6 @@ package de.sciss.eisenkraut.gui;
  *  Interface for listening
  *  to switches of the GUI tools
  *
- *  @author		Hanns Holger Rutz
- *  @version	0.6, 31-Jul-04
- *
  *  @see		ToolBar#addToolActionListener( ToolActionListener )
  *  @see		ToolActionEvent
  */

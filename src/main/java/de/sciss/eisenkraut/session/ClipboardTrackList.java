@@ -62,20 +62,18 @@ public class ClipboardTrackList
 		this( doc, doc.timeline.getSelectionSpan(), doc.selectedTracks.getAll() );
 	}
 	
-	public ClipboardTrackList( Session doc, Span span, List tracks )
+	public ClipboardTrackList( Session doc, Span span, List<SessionObject> tracks )
 	{
 		if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
 	
 		this.span	= span;
 		
-		final List				infos = Track.getInfos( tracks, doc.tracks.getAll() );
-		Track.Info				ti;
+		final List<Track.Info> infos = Track.getInfos( tracks, doc.tracks.getAll() );
 		Trail					subTrail;
 		Set<ClipboardTrackList> setTrackLists;
 
-		for (Object info : infos) {
-			ti = (Track.Info) info;
-			subTrail = ti.trail.getCuttedTrail(span, Trail.TOUCH_SPLIT, 0);
+		for (Track.Info ti : infos) {
+			subTrail = ti.trail.getCutTrail(span, Trail.TOUCH_SPLIT, 0);
 			mapTrails.put(ti.trail.getClass(), subTrail);
 			mapInfos .put(ti.trail.getClass(), ti);
 		}
@@ -100,13 +98,13 @@ public class ClipboardTrackList
 		return ti.numTracks;
 	}
 
-	public boolean[] getTrackMap(Class trailClass) {
+	public boolean[] getTrackMap(Class<?> trailClass) {
 		final Track.Info ti = mapInfos.get(trailClass);
 		if (ti == null) return new boolean[0];
 		return ti.trackMap;
 	}
 
-	public Trail getSubTrail(Class trailClass) {
+	public Trail getSubTrail(Class<?> trailClass) {
 		return (mapTrails.get(trailClass));
 	}
 

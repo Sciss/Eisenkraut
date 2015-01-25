@@ -747,7 +747,7 @@ public class SuperColliderClient
 	}
 
 	public Object oscQuery_protocol() {
-		return (server == null ? (Object) 0 : (Object) server.getOptions().getProtocol());
+		return (server == null ? (Object) 0 : server.getOptions().getProtocol());
 	}
 
 	public Object oscQuery_running() {
@@ -758,8 +758,7 @@ public class SuperColliderClient
 		return getVolume();
 	}
 
-	public void oscCmd_allocBus( RoutedOSCMessage rom )
-	{
+	public void oscCmd_allocBus(RoutedOSCMessage rom) {
 		int argIdx = 1;
 		try {
 			final Object rate;

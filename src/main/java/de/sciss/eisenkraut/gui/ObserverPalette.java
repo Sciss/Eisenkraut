@@ -58,12 +58,9 @@ import de.sciss.util.ParamSpace;
  *  presented in editable text or number fields.
  *  <p>
  *  The cursor info pane is 'passive' because in this way
- *  it is easily expandible to display data of new
+ *  it is easily expandable to display data of new
  *  components. The interested components are hence
- *  resonsible for calling <code>showCursorInfo</code>.
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
+ *  responsible for calling <code>showCursorInfo</code>.
  */
 public class ObserverPalette
 extends AppWindow

@@ -26,32 +26,23 @@ import de.sciss.timebased.Stake;
  *	A fake silent audio stake that occupies no disk space.
  *	Thanks to scsynth's /b_fill command, this works harmonically
  *	with the supercollider player.
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
  */
-public class SilentAudioStake
-extends AudioStake
-{
+public class SilentAudioStake extends AudioStake {
+
 	private final int numChannels;
 
-	/**
-	 */
-	protected SilentAudioStake( Span span, int numChannels )
-	{
-		super( span );
-		
+	protected SilentAudioStake(Span span, int numChannels) {
+		super(span);
+
 		this.numChannels = numChannels;
 	}
 
 	public void close()
-	throws IOException
-	{
+			throws IOException {
 		// well ...
 	}
 
-	public void cleanUp()
-	{
+	public void cleanUp() {
 		// well ...
 	}
 
@@ -124,32 +115,28 @@ extends AudioStake
 	{
 		return numChannels;
 	}
-	
-	public void flush()
-	throws IOException
-	{
-		 /* empty */ 
-	}
-	
-	public void addToCache( CacheManager cm )
-	{
-		 /* empty */ 
-	}
-	
-	public void addBufferReadMessages( OSCBundle bndl, Span s, Buffer[] bufs, int bufOff )
-	{
-		final int	len			= (int) s.getLength();
-		if( len == 0 ) return;
 
-		for( int i = 0; i < bufs.length; i++ ) {
-			bndl.addPacket( bufs[ i ].fillMsg(
-				bufOff * bufs[ i ].getNumChannels(), len * bufs[ i ].getNumChannels(), 0.0f ));
+	public void flush()
+			throws IOException {
+		 /* empty */
+	}
+
+	public void addToCache(CacheManager cm) {
+		 /* empty */
+	}
+
+	public void addBufferReadMessages(OSCBundle bndl, Span s, Buffer[] bufs, int bufOff) {
+		final int len = (int) s.getLength();
+		if (len == 0) return;
+
+		for (Buffer buf : bufs) {
+			bndl.addPacket(buf.fillMsg(
+					bufOff * buf.getNumChannels(), len * buf.getNumChannels(), 0.0f));
 		}
 	}
 
-	public void debugDump()
-	{
+	public void debugDump() {
 		super.debugDumpBasics();
-		System.err.println( "  (silent)" );
+		System.err.println("  (silent)");
 	}
-} // class SilentAudioStake
+}

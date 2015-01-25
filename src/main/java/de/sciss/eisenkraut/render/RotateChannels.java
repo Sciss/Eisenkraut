@@ -31,7 +31,7 @@ public class RotateChannels
 		extends AbstractRenderPlugIn {
 	private static final String KEY_NUMROT = "numRotation";
 
-	private static final Param DEFAULT_NUMROT = new Param( 1, ParamSpace.NONE | ParamSpace.ABS );
+	private static final Param DEFAULT_NUMROT = new Param( 1, ParamSpace.ABS);
 
 	private RenderConsumer	prConsumer;
 	private int[]			prMap;

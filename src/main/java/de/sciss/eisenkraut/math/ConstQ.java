@@ -343,10 +343,6 @@ public class ConstQ
 	 * 	getFFTBuffer()). From this FFT, the method calculates the
 	 * 	convolutions with the filter kernels, returning the magnitudes
 	 * 	of the filter outputs.
-	 * 
-	 *	@param	output
-	 *	@param	outOff
-	 *	@return
 	 */
 	public float[] convolve( float[] output, int outOff )
 	{

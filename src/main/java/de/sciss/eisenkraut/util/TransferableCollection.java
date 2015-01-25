@@ -40,13 +40,10 @@ import java.util.Vector;
  *  checking maintains cleaner code). It can then check
  *  if the individual <code>Transferable</code> can
  *  provide a requested data format.
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
  */
 public class TransferableCollection
-implements Transferable
-{
+		implements Transferable {
+
 	/**
 	 *  The flavor used to
 	 *  identify a <code>TransferableCollection</code>

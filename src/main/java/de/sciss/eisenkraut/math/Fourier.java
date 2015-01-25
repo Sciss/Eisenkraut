@@ -123,14 +123,14 @@ public class Fourier
 	 *  <p>
 	 *	The routine was adapted from 'Numerical Recipes in C', optimized,
 	 *  removed from spaghetti and given readable variable names.
-	 *  
+	 *
+	 *  Warning:	a actually has len + 2 elements! in FORWARD operation these
+	 *				last two elements must be zero.
+	 *
 	 *	@param	a		real array; output is complex with real part in a[ 0, 2, 4, ... len ],
 	 *					imaginary part in a[ 1, 3, ... len + 1 ].
 	 *  @param  len		MUST be an integer power of 2
 	 *  @param  dir		use <code>INVERSE</code> or <code>FORWARD</code>
-	 *
-	 *  @warning	a actually has len + 2 elements! in FORWARD operation these 
-	 *				last two elements must be zero.
 	 */
 	public static void realTransform( float a[], int len, int dir )
 	{

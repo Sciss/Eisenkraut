@@ -40,19 +40,11 @@ import de.sciss.gui.CoverGrowBox;
 import de.sciss.common.AppWindow;
 import de.sciss.util.Disposable;
 
-/**
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 28-Jun-08
- */
-public class AudioTrackPanorama
-implements Disposable
-{
+public class AudioTrackPanorama implements Disposable {
 	private final AudioTrack					t;
 	private final ActionListener				actionListener;
 	private final SessionCollection.Listener	scListener;
 	private final PreferenceChangeListener		prefListener;
-//	private final LockManager					lm;
-//	private final int							doors;
 	private final Preferences					audioPrefs;
 	private final SessionCollection				tracks;
 
@@ -69,16 +61,14 @@ implements Disposable
 		audioPrefs	= app.getUserPrefs().node( PrefsUtil.NODE_AUDIO );
 
 		this.t		= t;
-//		this.lm		= lm;
-//		this.doors	= doors;
 		this.tracks	= tracks;
 
 		actionListener = new ActionListener() {
 			public void actionPerformed( ActionEvent e )
 			{
 				if( pan != null ) {
-					t.getMap().putValue( AudioTrackPanorama.this, AudioTrack.MAP_KEY_PANAZIMUTH, new Double( pan.getAzimuth() ));
-					t.getMap().putValue( AudioTrackPanorama.this, AudioTrack.MAP_KEY_PANSPREAD,  new Double( pan.getSpread() ));
+					t.getMap().putValue( AudioTrackPanorama.this, AudioTrack.MAP_KEY_PANAZIMUTH, pan.getAzimuth());
+					t.getMap().putValue( AudioTrackPanorama.this, AudioTrack.MAP_KEY_PANSPREAD, pan.getSpread());
 				}
 			}
 		};
@@ -160,80 +150,70 @@ implements Disposable
 			public void popupMenuWillBecomeInvisible( PopupMenuEvent e ) { /* empty */ }
 			public void popupMenuWillBecomeVisible( PopupMenuEvent e ) { /* empty */ }
 		});
-//popup.setCursor( new java.awt.Cursor( java.awt.Cursor.CROSSHAIR_CURSOR ));
 	}
-	
-	public void showPalette()
-	{
+
+	public void showPalette() {
 		createPalette();
 		startListening();
-		palette.setVisible( true );
+		palette.setVisible(true);
 		palette.toFront();
 	}
-	
-	public void showPopup( Component invoker, int x, int y, boolean beginDragging )
-	{
-		createPopup( beginDragging );
+
+	public void showPopup(Component invoker, int x, int y, boolean beginDragging) {
+		createPopup(beginDragging);
 		startListening();
-		popup.show( invoker, x, y );
-		if( beginDragging ) pan.beginDragging();
+		popup.show(invoker, x, y);
+		if (beginDragging) pan.beginDragging();
 	}
-	
-	private void startListening()
-	{
-		if( !listening ) {
-			tracks.addListener( scListener );
-			audioPrefs.addPreferenceChangeListener( prefListener );
+
+	private void startListening() {
+		if (!listening) {
+			tracks.addListener(scListener);
+			audioPrefs.addPreferenceChangeListener(prefListener);
 			listening = true;
 		}
 	}
-	
-	private void stopListening()
-	{
-		if( listening ) {
-			tracks.removeListener( scListener );
-			audioPrefs.removePreferenceChangeListener( prefListener );
+
+	private void stopListening() {
+		if (listening) {
+			tracks.removeListener(scListener);
+			audioPrefs.removePreferenceChangeListener(prefListener);
 			listening = false;
 		}
 	}
-	
-	public void dispose()
-	{
+
+	public void dispose() {
 		stopListening();
 		destroyPalette();
 		destroyPopup();
 		destroyPanPan();
 	}
-	
-	private void destroyPalette()
-	{
-		if( palette == null ) return;
-		
+
+	private void destroyPalette() {
+		if (palette == null) return;
+
 		palette.dispose();
 		palette = null;
 	}
 
-	private void destroyPopup()
-	{
-		if( popup == null ) return;
-		
-		popup.setVisible( false );
+	private void destroyPopup() {
+		if (popup == null) return;
+
+		popup.setVisible(false);
 		popup = null;
 	}
 
-	protected void destroyPanPan()
-	{
-		if( pan == null ) return;
+	protected void destroyPanPan() {
+		if (pan == null) return;
 
-		pan.getParent().remove( pan );
-		pan.removeActionListener( actionListener );
+		pan.getParent().remove(pan);
+		pan.removeActionListener(actionListener);
 		pan = null;
 	}
 
-	protected void createPanPan()
-	{
+	protected void createPanPan() {
 		final String		cfgName		= audioPrefs.get( PrefsUtil.KEY_OUTPUTCONFIG, null );
-		RoutingConfig		oCfg		= null;
+		RoutingConfig		oCfg;
 
 		destroyPanPan();
 
@@ -251,35 +231,28 @@ implements Disposable
 					popup.revalidate();
 				}
 			}
-		}
-		catch( BackingStoreException e1 ) {
-			System.err.println( e1 );
+		} catch (BackingStoreException e1) {
+			System.err.println("Create pan:");
+			e1.printStackTrace();
 		}
 	}
 
-	protected void setAzimuthAndSpread()
-	{
-		final double	azi, spread;
-		Object			o;
+	protected void setAzimuthAndSpread() {
+		final double azi, spread;
+		Object o;
 
-//		if( !lm.attemptShared( doors, 250 )) return;
-//		try {
-			o = t.getMap().getValue( AudioTrack.MAP_KEY_PANAZIMUTH );
-			if( (o != null) && (o instanceof Number) ) {
-				azi	= ((Number) o).doubleValue();
-			} else {
-				azi	= pan.getAzimuth();
-			}
-			o = t.getMap().getValue( AudioTrack.MAP_KEY_PANSPREAD );
-			if( (o != null) && (o instanceof Number) ) {
-				spread	= ((Number) o).doubleValue();
-			} else {
-				spread	= pan.getSpread();
-			}
-			pan.setAzimuthAndSpread( azi, spread );
-//		}
-//		finally {
-//			lm.releaseShared( doors );
-//		}
+		o = t.getMap().getValue(AudioTrack.MAP_KEY_PANAZIMUTH);
+		if ((o != null) && (o instanceof Number)) {
+			azi = ((Number) o).doubleValue();
+		} else {
+			azi = pan.getAzimuth();
+		}
+		o = t.getMap().getValue(AudioTrack.MAP_KEY_PANSPREAD);
+		if ((o != null) && (o instanceof Number)) {
+			spread = ((Number) o).doubleValue();
+		} else {
+			spread = pan.getSpread();
+		}
+		pan.setAzimuthAndSpread(azi, spread);
 	}
 }

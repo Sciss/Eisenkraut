@@ -43,20 +43,10 @@ import de.sciss.jcollider.Server;
 import de.sciss.jcollider.ServerEvent;
 import de.sciss.jcollider.ServerListener;
 
-/**
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
- */
 public class MainFrame
-extends AppWindow
-implements de.sciss.jcollider.Constants, ServerListener
-//implements	RunnableProcessing, ProgressComponent, TransportListener,
-//			RealtimeConsumer, OSCListener, de.sciss.app.DocumentListener
-{
-//	private final PrintStream			logStream;
-	
-//	private boolean						keepScRunning;
-//	private ProcessingThread			pt				= null;
+		extends AppWindow
+		implements de.sciss.jcollider.Constants, ServerListener {
+
 	protected boolean					booted			= false;
 	
 	private final ActionBoot			actionBoot;
@@ -96,7 +86,7 @@ implements de.sciss.jcollider.Constants, ServerListener
 		public boolean importData(TransferSupport support) {
 			if (support.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
 				try {
-					java.util.List fs = (java.util.List)
+					java.util.List<?> fs = (java.util.List<?>)
 							support.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
 					for (Object f1 : fs) {
 						File f = (File) f1;

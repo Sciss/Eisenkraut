@@ -20,6 +20,7 @@ import java.util.Map;
 
 import de.sciss.eisenkraut.io.AudioTrail;
 import de.sciss.eisenkraut.session.AbstractSessionObject;
+import de.sciss.eisenkraut.session.SessionObject;
 import de.sciss.timebased.Trail;
 
 /**
@@ -45,26 +46,21 @@ public abstract class Track
 	}
 	
 	public abstract Trail getTrail();
-	
-	public void clear( Object source )
-	{
-		getTrail().clear( source );
+
+	public void clear(Object source) {
+		getTrail().clear(source);
 	}
 
-	public static List<Info> getInfos(List selectedTracks, List allTracks)
-	{
-		Track					track;
+	public static List<Info> getInfos(List<SessionObject> selectedTracks, List<SessionObject> allTracks) {
 		Trail					trail;
 		Track.Info				ti;
 		int						chan;
 		final Map<Class<?>, Info> mapInfos	= new HashMap<Class<?>, Info>();
 		final List<Info> collInfos	= new ArrayList<Info>();
 
-		for (Object allTrack : allTracks) {
-			track = (Track) allTrack;
-//System.err.println( "for track "+track.getClass().getName()+" ..." );
+		for (SessionObject so: allTracks) {
+			Track track = (Track) so;
 			trail = track.getTrail();
-//System.err.println( "... trail = "+trail.getClass().getName() );
 			ti = mapInfos.get(trail.getClass());
 			if (ti == null) {
 				ti = new Info(trail);

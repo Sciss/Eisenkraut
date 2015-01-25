@@ -66,7 +66,7 @@ public class TimelineToolBar
 		ToolAction				toolAction;
 		JToggleButton			toggle;
 		ButtonGroup				bg;
-		Enumeration				en;
+		Enumeration<AbstractButton> en;
 
 		actionCatch		= new CatchAction( prefs ); // .node( PrefsUtil.NODE_SHARED ));
 		toggle			= actionCatch.getButton();

@@ -27,36 +27,15 @@ import de.sciss.timebased.Stake;
 /**
  *	Note: all stop indices are considered <STRONG>inclusive</STRONG>
  *	unlike in practically all other classes.
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
  */
 public class MarkerTrail
-extends BasicTrail
-//implements OSCRouter
-{
-//	public MarkerTrail( Session doc )
-	public MarkerTrail()
-	{
-		super();
-//		this.doc	= doc;
-//		osc			= new OSCRouterWrapper( doc, this );
-	}
-	
-//	private MarkerTrail( Session doc, boolean createOSC )
-//	{
-//		super();
-//		this.doc	= doc;
-//		if( createOSC ) {
-//			osc		= new OSCRouterWrapper( doc, this );
-//		} else {
-//			osc		= null;
-//		}
-//	}
+		extends BasicTrail {
 
-	protected BasicTrail createEmptyCopy()
-	{
-//		return new MarkerTrail( doc, false );	// don't re-create osc listener!!
+	public MarkerTrail() {
+		super();
+	}
+
+	protected BasicTrail createEmptyCopy() {
 		return new MarkerTrail();
 	}
 
@@ -76,18 +55,15 @@ extends BasicTrail
 	}
 
 	// clears list and copies all markers from afd
-	public void copyFromAudioFile( AudioFileDescr afd )
-//	public void copyFromAudioFile( AudioFile af )
-	throws IOException
-	{
-		final List<Stake>	markStakes;
-		final List	marks;
-		final int	removed;
-		Marker		mark;
+	public void copyFromAudioFile(AudioFileDescr afd)
+			throws IOException {
 
-//		final AudioFileDescr afd = af.getDescr();
+		final List<Stake> markStakes;
+		final List<?> marks;
+		final int removed;
+		Marker mark;
 
-		marks = (java.util.List) afd.getProperty(AudioFileDescr.KEY_MARKERS);
+		marks = (List<?>) afd.getProperty(AudioFileDescr.KEY_MARKERS);
 
 		if ((marks != null) && !marks.isEmpty()) {
 			markStakes = new ArrayList<Stake>(marks.size());
@@ -122,7 +98,7 @@ extends BasicTrail
 		if( (span.start == 0) && (span.stop > this.getSpan().stop) ) {
 			copyToAudioFile( afd );	// more efficient
 		} else {
-			afd.setProperty( AudioFileDescr.KEY_MARKERS, getCuttedRange( span, true, TOUCH_NONE, -span.start ));
+			afd.setProperty( AudioFileDescr.KEY_MARKERS, getCutRange(span, true, TOUCH_NONE, -span.start));
 		}
 	}
 }

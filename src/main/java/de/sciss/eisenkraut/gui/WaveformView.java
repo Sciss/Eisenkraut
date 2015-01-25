@@ -169,12 +169,12 @@ public class WaveformView
 	 *  user drawings are limited to these values unless
 	 *  wrapY is set to true (not yet implemented).
 	 *
-	 *  @param  min		new minimum y value
-	 *  @param  max		new maximum y value
-	 *
-	 *  @warning	the current vector is left untouched,
+	 *  Warning: the current vector is left untouched,
 	 *				even if values lie outside the new
 	 *				allowed range.
+	 *
+	 *  @param  min		new minimum y value
+	 *  @param  max		new maximum y value
 	 */
 	public void setAmpLinMinMax( float min, float max )
 	{
@@ -226,12 +226,8 @@ public class WaveformView
 //		return buffer;
 //	}
 
-	/**
-	 *	@synchronization	use in swing thread only
-	 */
-	public void update( Span s )
-	{
-		viewSpan	= s;
+	public void update(Span s) {
+		viewSpan = s;
 		triggerRedisplay();
 	}
 
@@ -241,7 +237,7 @@ public class WaveformView
 	}
 	
 	/**
-	 *	@synchronization	this uses and alters one internal rectangle object,
+	 *	Synchronization:	this uses and alters one internal rectangle object,
 	 *						be sure to not use this rectangle outside the swing thread,
 	 *						otherwise make a copy. do not modify the returned rectangle
 	 */

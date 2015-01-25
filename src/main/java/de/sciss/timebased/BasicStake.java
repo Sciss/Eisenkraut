@@ -80,7 +80,7 @@ implements Stake
 		return true;
 	}
 	
-	public Enumeration children()
+	public Enumeration<?> children()
 	{
 		return null;
 	}

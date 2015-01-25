@@ -98,36 +98,32 @@ public class Filter
 	 *	@param	kaiserBeta			Parameter fuer Kaiser-Fenster
 	 *	@param	fltSmpPerCrossing	Zahl der Koeffizienten pro Periode
 	 */
-	public static void createLPF( float impResp[], float freq,
-								  int halfWinSize, float kaiserBeta, int fltSmpPerCrossing )
-	{
-		double	dNum		= fltSmpPerCrossing;
-		double	dBeta		= kaiserBeta;
-		double	d;
-		double	smpRate		= freq * 2.0;
-		double	iBeta;
-		double	normFactor	= 1.0 / (halfWinSize - 1);
-	
+	public static void createLPF(float impResp[], float freq,
+								 int halfWinSize, float kaiserBeta, int fltSmpPerCrossing) {
+		final double smpRate = freq * 2.0;
+		final double normFactor = 1.0 / (halfWinSize - 1);
+		double iBeta;
+		double d;
+
 		// ideal lpf = infinite sinc-function; create truncated version	
-		impResp[ 0 ] = (float) smpRate;
-		for( int i = 1; i < halfWinSize; i++ ) {
-			d				= Math.PI * i / dNum;
-			impResp[ i ]	= (float) (Math.sin( smpRate * d ) / d);
+		impResp[0] = (float) smpRate;
+		for (int i = 1; i < halfWinSize; i++) {
+			d = Math.PI * i / fltSmpPerCrossing;
+			impResp[i] = (float) (Math.sin(smpRate * d) / d);
 		}
-		
+
 		// apply Kaiser window
-		iBeta = 1.0 / calcBesselZero( dBeta );
-		for( int i = 1; i < halfWinSize; i++ ) {
-			d				= i * normFactor;
-			impResp[ i ]   *= calcBesselZero( dBeta * Math.sqrt( 1.0 - d*d )) * iBeta;
+		iBeta = 1.0 / calcBesselZero(kaiserBeta);
+		for (int i = 1; i < halfWinSize; i++) {
+			d = i * normFactor;
+			impResp[i] *= calcBesselZero(kaiserBeta * Math.sqrt(1.0 - d * d)) * iBeta;
 		}
 	}
-	
-	public static float createAntiAliasFilter( float impResp[], float impRespD[], int Nwing,
-											   float rollOff, float kaiserBeta )
-	{
-		return Filter.createAntiAliasFilter( impResp, impRespD, Nwing, FLTSMPPERCROSSING,
-											 rollOff, kaiserBeta );
+
+	public static float createAntiAliasFilter(float impResp[], float impRespD[], int Nwing,
+											  float rollOff, float kaiserBeta) {
+		return Filter.createAntiAliasFilter(impResp, impRespD, Nwing, FLTSMPPERCROSSING,
+				rollOff, kaiserBeta);
 	}
 
 	/**
@@ -184,21 +180,19 @@ public class Filter
 	/**
 	 *	@param Nwing	Number of Points (the window is only a half wing!)
 	 */
-	public static float[] createKaiserWindow( int Nwing, float kaiserBeta )
-	{
-		float	win[]		= new float[ Nwing ];
-		double	dBeta		= kaiserBeta;
-		double	d;
-		double	iBeta;
-		double	normFactor	= 1.0 / (Nwing - 1);
-		
-		iBeta		= 1.0 / calcBesselZero( dBeta );
-		win[ 0 ]	= 1.0f;
-		for( int i = 1; i < Nwing; i++ ) {
-			d			= i * normFactor;
-			win[ i ]	= (float) (calcBesselZero( dBeta * Math.sqrt( 1.0 - d*d )) * iBeta);
+	public static float[] createKaiserWindow(int Nwing, float kaiserBeta) {
+		final float win[] = new float[Nwing];
+		final double normFactor = 1.0 / (Nwing - 1);
+		double d;
+		double iBeta;
+
+		iBeta = 1.0 / calcBesselZero(kaiserBeta);
+		win[0] = 1.0f;
+		for (int i = 1; i < Nwing; i++) {
+			d = i * normFactor;
+			win[i] = (float) (calcBesselZero(kaiserBeta * Math.sqrt(1.0 - d * d)) * iBeta);
 		}
-		
+
 		return win;
 	}
 
@@ -210,21 +204,19 @@ public class Filter
 	 *	@param length	Number of Points (should be even)
 	 *	@return			Maximum liegt bei sample length/2!
 	 */
-	public static float[] createFullKaiserWindow( int length, float kaiserBeta )
-	{
-		float	win[]		= new float[ length ];
-		int		Nwing		= length >> 1;
-		double	dBeta		= kaiserBeta;
-		double	d;
-		double	iBeta;
-		double	normFactor	= 1.0 / Nwing;
-		
-		iBeta		= 1.0 / calcBesselZero( dBeta );
-		for( int i = 0, j = -Nwing; i < length; i++, j++ ) {
-			d			= j * normFactor;
-			win[ i ]	= (float) (calcBesselZero( dBeta * Math.sqrt( 1.0 - d*d )) * iBeta);
+	public static float[] createFullKaiserWindow(int length, float kaiserBeta) {
+		final float win[] = new float[length];
+		final int Nwing = length >> 1;
+		final double normFactor = 1.0 / Nwing;
+		double d;
+		double iBeta;
+
+		iBeta = 1.0 / calcBesselZero(kaiserBeta);
+		for (int i = 0, j = -Nwing; i < length; i++, j++) {
+			d = j * normFactor;
+			win[i] = (float) (calcBesselZero(kaiserBeta * Math.sqrt(1.0 - d * d)) * iBeta);
 		}
-		
+
 		return win;
 	}
 

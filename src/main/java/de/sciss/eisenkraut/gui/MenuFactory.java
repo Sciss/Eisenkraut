@@ -79,11 +79,6 @@ import de.sciss.jcollider.Server;
  *  There can be only one instance of <code>MenuFactory</code>
  *  for the application, and that will be created by the
  *  <code>Main</code> class.
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 31-May-08
- *
- *  @see	de.sciss.eisenkraut.Main#menuFactory
  */
 public class MenuFactory
 extends BasicMenuFactory
@@ -93,17 +88,11 @@ extends BasicMenuFactory
 	private ActionOpenMM			actionOpenMM;
 	private ActionNewEmpty			actionNewEmpty;
 
-//	private final List					collGlobalKeyCmd	= new ArrayList();
-	
-//	private static final String			CLIENT_BG	= "de.sciss.gui.BG";	// radio button group
-
 	/**
 	 *  The constructor is called only once by
 	 *  the <code>Main</code> class and will create a prototype
 	 *  main menu from which all copies are
 	 *  derived.
-	 *
-	 *  @param  root	application root
 	 */
 	public MenuFactory( BasicApplication app )
 	{
@@ -120,7 +109,7 @@ extends BasicMenuFactory
 		while( dh.getDocumentCount() > 0 ) {
 			doc	= (Session) dh.getDocument( 0 );
 if( doc.getFrame() == null ) {
-	System.err.println( "Yukk, no doc frame for "+doc.getDisplayDescr().file );
+	System.err.println( "Warning, no doc frame for "+doc.getDisplayDescr().file );
 	try {
 		Thread.sleep( 4000 );
 	} catch( InterruptedException e1 ) { /* ignore */ }
@@ -137,83 +126,6 @@ if( doc.getFrame() == null ) {
 		confirmed.set( true );
 		return null;
 	}
-
-	/**
-	 *  Sets all JMenuBars enabled or disabled.
-	 *  When time taking asynchronous processing
-	 *  is done, like loading a session or bouncing
-	 *  it to disk, the menus need to be disabled
-	 *  to prevent the user from accidentally invoking
-	 *  menu actions that can cause deadlocks if they
-	 *  try to gain access to blocked doors. This
-	 *  method traverses the list of known frames and
-	 *  sets each frame's menu bar enabled or disabled.
-	 *
-	 *  @param  enabled		<code>true</code> to enable
-	 *						all menu bars, <code>false</code>
-	 *						to disable them.
-	 *  @synchronization	must be called in the event thread
-	 */
-//	public void setMenuBarsEnabled( boolean enabled )
-//	{
-//		MenuHost	host;
-//		JMenuBar	mb;
-//	
-//		for( int i = 0; i < collMenuHosts.size(); i++ ) {
-//			host	= (MenuHost) collMenuHosts.get( i );
-//			mb		= host.who.getJMenuBar();
-//			if( mb != null ) mb.setEnabled( enabled );
-//		}
-//	}
-
-//	private static int uniqueNumber = 0;	// increased by addGlobalKeyCommand()
-	/**
-	 *  Adds an action object invisibly to all
-	 *  menu bars, enabling its keyboard shortcut
-	 *  to be accessed no matter what window
-	 *  has the focus.
-	 *
-	 *  @param  a   the <code>Action</code> whose
-	 *				accelerator key should be globally
-	 *				accessible. The action
-	 *				is stored in the input and action map of each
-	 *				registered frame's root pane, thus being
-	 *				independant of calls to <code>setMenuBarsEnabled/code>.
-	 *
-	 *  @throws java.lang.IllegalArgumentException  if the action does
-	 *												not have an associated
-	 *												accelerator key
-	 *
-	 *  @see  javax.swing.Action#ACCELERATOR_KEY
-	 *  @synchronization	must be called in the event thread
-	 */
-//	public void addGlobalKeyCommand( Action a )
-//	{
-//System.err.println( "addGlobalKeyCommand : NOT YET FULLY WORKING" );
-//		final KeyStroke		acc		= (KeyStroke) a.getValue( Action.ACCELERATOR_KEY );
-//		final String		entry;
-//		MenuHost			host;
-////		JRootPane			rp;
-//		InputMap			imap;
-//		ActionMap			amap;
-//		
-//		if( acc == null ) throw new IllegalArgumentException();
-//		
-//		entry = "key" + String.valueOf( uniqueNumber++ );
-//		a.putValue( Action.NAME, entry );
-//
-//		for( int i = 0; i < collMenuHosts.size(); i++ ) {
-//			host	= (MenuHost) collMenuHosts.get( i );
-//			imap	= host.who.getInputMap( JComponent.WHEN_IN_FOCUSED_WINDOW );
-////			rp		= host.who.getRootPane();
-////			imap	= rp.getInputMap( JComponent.WHEN_IN_FOCUSED_WINDOW );
-////			amap	= rp.getActionMap();
-//			amap	= host.who.getActionMap();
-//			imap.put( acc, entry );
-//			amap.put( entry, a );
-//		}
-//		collGlobalKeyCmd.add( a );
-//	}
 
 	private void createActions()
 	{
@@ -480,8 +392,8 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 		for( int i = 0; i < dh.getDocumentCount(); i++ ) {
 			doc		= (Session) dh.getDocument( i );
 			afds	= doc.getDescr();
-			for( int j = 0; j < afds.length; j++ ) {
-				if( (afds[ j ].file != null) && afds[ j ].file.equals( f )) {
+			for (AudioFileDescr afd : afds) {
+				if ((afd.file != null) && afd.file.equals(f)) {
 					return doc;
 				}
 			}
@@ -661,8 +573,6 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 		 *  started which loads the new session.
 		 *
 		 *  @param  path	the file of the document to be loaded
-		 *  
-		 *  @synchronization	this method must be called in event thread
 		 */
 		protected boolean perform( File path )
 		{
@@ -742,23 +652,17 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 		 *  Loads a new document file.
 		 *  a <code>ProcessingThread</code>
 		 *  started which loads the new session.
-		 *
-		 *  @param  path	the file of the document to be loaded
-		 *  
-		 *  @synchronization	this method must be called in event thread
 		 */
-		protected void perform( File[] paths )
-		{
-			if( paths.length == 0 ) return;
-		
-			Session		doc;
-//			File		f;
-			
+		protected void perform(File[] paths) {
+			if (paths.length == 0) return;
+
+			Session doc;
+
 			// check if the document is already open
-			for( int j = 0; j < paths.length; j++ ) {
-				doc = findDocumentForPath( paths[ j ]);
-				if( doc != null ) {
-					doc.getFrame().setVisible( true );
+			for (File path : paths) {
+				doc = findDocumentForPath(path);
+				if (doc != null) {
+					doc.getFrame().setVisible(true);
 					doc.getFrame().toFront();
 					return;
 				}

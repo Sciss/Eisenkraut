@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import de.sciss.eisenkraut.timeline.Track;
 import de.sciss.io.Span;
 
 /**
@@ -37,7 +38,7 @@ public class RenderContext {
 	 *  It can be used to store variables
 	 *  so they needn't be global.
 	 */
-	public final HashMap  moduleMap  = new HashMap();
+	public final HashMap<Object, Object>  moduleMap  = new HashMap<Object, Object>();
 
 	/**
 	 *  Key: Minimum required Blocksize<br>
@@ -86,7 +87,7 @@ public class RenderContext {
 
 	private final RenderHost		host;
 	private final RenderConsumer	consumer;
-	private final List trackInfo;
+	private final List<Track.Info> trackInfo;
 	private final Span				time;
 	private final double			sourceRate;
 	private int						sourceBlockSize;
@@ -105,7 +106,7 @@ public class RenderContext {
 	 *								the rendering process
 	 *  @param  sourceRate			the source sense data rate
 	 */
-	public RenderContext(RenderHost host, RenderConsumer consumer, List trackInfo,
+	public RenderContext(RenderHost host, RenderConsumer consumer, List<Track.Info> trackInfo,
 						 Span time, double sourceRate) {
 		this.host = host;
 		this.consumer		= consumer;
@@ -135,7 +136,7 @@ public class RenderContext {
 
 	/**
 	 */
-	public List getTrackInfo()
+	public List<Track.Info> getTrackInfo()
 	{
 		return trackInfo;
 	}

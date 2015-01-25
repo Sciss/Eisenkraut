@@ -36,7 +36,7 @@ import de.sciss.eisenkraut.render.RenderHost;
 import de.sciss.eisenkraut.render.RenderSource;
 import de.sciss.fscape.util.Filter;
 import de.sciss.gui.GUIUtil;
-import de.sciss.io.InterleavedStreamFile;
+import de.sciss.io.AudioFile;
 import de.sciss.io.Span;
 import de.sciss.util.DefaultUnitTranslator;
 import de.sciss.util.Param;
@@ -45,14 +45,11 @@ import de.sciss.util.ParamSpace;
 /**
  *	Processing module for moving window
  *	based filtering of a sound.
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.71, 03-Sep-08
  */
 public class Needlehole
-extends AbstractRenderPlugIn
-implements RandomAccessRequester
-{
+		extends AbstractRenderPlugIn
+		implements RandomAccessRequester {
+
 	private static final String KEY_GAINTYPE		= "gaintype";
 	private static final String KEY_GAIN			= "gain";
 
@@ -137,7 +134,7 @@ implements RandomAccessRequester
 	private long					prRenderLength;
 	private int						prWinSize;
 //	private int						prWinSizeH;
-	private InterleavedStreamFile	prTempFile;
+	private AudioFile prTempFile;
 	private Span					prNextSpan;
 	private float					prProgWeight;
 	private RenderConsumer			prConsumer;
@@ -165,7 +162,7 @@ implements RandomAccessRequester
 
 		prWinSize		= Math.max( 2, (int) ut.translate( Param.fromPrefs( prefs, KEY_LENGTH, paraDefLength ), spcSmps ).val );
 		prOutBufSize	= Math.max( 8192, prWinSize );
-		outBufSizeI		= new Integer( prOutBufSize );
+		outBufSizeI		= prOutBufSize;
 		prInBufSize		= prOutBufSize + prWinSize;
 //		prWinSizeH		= prWinSize >> 1;
 
@@ -264,24 +261,22 @@ implements RandomAccessRequester
 		}
 	}
 
-	public boolean producerFinish( RenderSource source )
-	throws IOException
-	{
+	public boolean producerFinish(RenderSource source)
+			throws IOException {
 		try {
-			if( prNormalize ) {
-				if( !normalize( source )) return false;
+			if (prNormalize) {
+				if (!normalize(source)) return false;
 			}
-			return prConsumer.consumerFinish( source );
-		}
-		finally {
-			if( prTempFile != null ) {
-				deleteTempFile( prTempFile );
+			return prConsumer.consumerFinish(source);
+		} finally {
+			if (prTempFile != null) {
+				deleteTempFile(prTempFile);
 				prTempFile = null;
 			}
 		}
 	}
-	
-	private boolean normalize( RenderSource source )
+
+	private boolean normalize(RenderSource source )
 	throws IOException
 	{
 		long writeOffset = source.context.getTimeSpan().start;

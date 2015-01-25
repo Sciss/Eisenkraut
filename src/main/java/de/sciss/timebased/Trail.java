@@ -28,13 +28,9 @@ import de.sciss.app.AbstractCompoundEdit;
 import de.sciss.io.Span;
 import de.sciss.util.Disposable;
 
-/**
- *	@author		Hanns Holger Rutz
- *	@version	0.12, 01-May-06
- */
 public interface Trail
-extends Disposable, TreeNode
-{
+		extends Disposable, TreeNode {
+
 	public static final int TOUCH_NONE		= 0;
 	public static final int TOUCH_SPLIT		= 1;
 	public static final int TOUCH_RESIZE	= 2;
@@ -88,9 +84,9 @@ extends Disposable, TreeNode
 	//	public void replace( Object source, Stake oldStake, Stake newStake, CompoundEdit ce );
 	public List<Stake> getRange(Span span, boolean byStart);
 
-	public List<Stake> getCuttedRange(Span span, boolean byStart, int touchMode, long shiftVirtual);
+	public List<Stake> getCutRange(Span span, boolean byStart, int touchMode, long shiftVirtual);
 
-	public Trail getCuttedTrail(Span span, int touchMode, long shiftVirtual);
+	public Trail getCutTrail(Span span, int touchMode, long shiftVirtual);
 
 	//	public List getRange( int startIdx, int stopIdx, boolean byStart );
 	public List<Stake> getAll(boolean byStart);

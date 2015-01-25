@@ -40,6 +40,7 @@ import de.sciss.io.AudioFile;
 import de.sciss.io.CacheManager;
 import de.sciss.io.IOUtil;
 import de.sciss.io.Span;
+import de.sciss.timebased.Stake;
 import de.sciss.util.MutableInt;
 
 /**
@@ -53,29 +54,25 @@ import de.sciss.util.MutableInt;
  * 	the plain FFT approach is still 7.5 times faster than the
  * 	sliding DFT variant... 
  * 
- *	@version	0.70, 28-Jun-08
- *	@author		Hanns Holger Rutz
- *
- *	@todo		editing (addAllDep)
- *	@todo		delay compensation (fftSize data seems to be missing,
+ *	TODO: editing (addAllDep)
+ *	TODO: delay compensation (fftSize data seems to be missing,
  *				the necessary pre-delay seems to be fftSize / 2)
- *	@todo		cache management
- *	@todo		cost-calculation of potential sliding DFT
- *	@todo		there's an efficient multi-channel FFT?
- *	@todo		the AsyncEvent should have Span info so DocumentFrame
+ *	TODO: cache management
+ *	TODO: cost-calculation of potential sliding DFT
+ *	TODO: there's an efficient multi-channel FFT?
+ *	TODO: the AsyncEvent should have Span info so DocumentFrame
  *				doesn't always need to repaint
  */
 public class DecimatedSonaTrail
 extends DecimatedTrail
 {
-	private static final int		UPDATE_PERIOD			= 4000; // millisecs in async overview calculation
+	private static final int		UPDATE_PERIOD			= 4000; // milliseconds in async overview calculation
 
 	protected final Decimator		decimator;
 	
 	protected int					fftSize; //				= 1024;
 	protected final int				stepSize;
-//	protected final float[] 		inpWin;
-	
+
 	protected final ConstQ			constQ;
 	protected final int				numKernels;
 	protected final float[]			filterBuf;
@@ -308,36 +305,19 @@ final int decimations[] = { decimKorr }; // , decimKorr + 8 };
 		// XXX TEST
 		// addAllDep( null, stakes, null, fullScale.getSpan() );
 		addAllDepAsync();
-		// addAllDepAsync( null, stakes, null, fullScale.getSpan() );
-		// }
-		
-//System.out.println( "tmpBufSize " + tmpBufSize + "; tmpBufSize2 " + tmpBufSize2 + "; decimKorr " + decimKorr + "; decimations[0] " + decimations[0] );
 	}
 
-	/**
-	 * @synchronization must be called in the event thread
-	 */
-	public void drawWaveform( DecimationInfo info, WaveformView view, Graphics2D g2 )
-	{
-//if( true ) return;
-
-//		final boolean			fromPCM 		= false; // info.idx == -1;
-//		final int				imgW			= fromPCM ?
-//		  Math.min( tmpBufSize, tmpBufSize2 * info.getDecimationFactor() )
-//		: tmpBufSize2; //  << info.shift;
+	public void drawWaveform(DecimationInfo info, WaveformView view, Graphics2D g2) {
 		final int				imgW			= tmpBufSize2; //  << info.shift;
 		final int				maxLen			= imgW << info.shift; // * stepSize;
 
-//		final int				imgW			= view.getWidth(); // (int) info.sublength;
 		final BufferedImage		bufImg			= new BufferedImage( imgW, modelChannels, BufferedImage.TYPE_INT_RGB );
 		final WritableRaster	raster			= bufImg.getRaster();
 		final int[]				data			= new int[ imgW * modelChannels ];
 		final int				dataStartOff	= imgW * (modelChannels - 1);
 
-//		final AffineTransform	atOrig			= g2.getTransform();
 		final Shape				clipOrig		= g2.getClip();
 		
-//		float[]					chanBuf;
 		long					start			= info.span.start;
 		long					totalLength		= info.getTotalLength();
 		Span					chunkSpan;
@@ -436,26 +416,26 @@ long screenOffX = 0;
 				if( !drawBusyList.isEmpty() ) {
 					// g2.setColor( Color.red );
 					g2.setPaint( pntBusy );
-					for( int i = 0; i < drawBusyList.size(); i++ ) {
-						chunkSpan = drawBusyList.get( i );
+					for (Span aDrawBusyList : drawBusyList) {
+						chunkSpan = aDrawBusyList;
 						scaleX = (float) r.width / info.getTotalLength();
-						g2.fillRect( (int) ((chunkSpan.start - info.span.start) * scaleX) + r.x, r.y,
-						             (int) (chunkSpan.getLength() * scaleX), r.height );
+						g2.fillRect((int) ((chunkSpan.start - info.span.start) * scaleX) + r.x, r.y,
+								(int) (chunkSpan.getLength() * scaleX), r.height);
 					}
 				}
 				// g2.setTransform(atOrig);
 				g2.setClip( clipOrig );
 			}
 		} catch( IOException e1 ) {
-			System.err.println( e1 );
+			System.err.println("Draw waveform:");
+			e1.printStackTrace();
 		}
-//		if( bufImg != null )
 		bufImg.flush();
 	}
 
 	/**
-	 * Determines which subsampled version is suitable for a given display range
-	 * (the most RAM and CPU economic while maining optimal display resolution).
+	 * Determines which sub-sampled version is suitable for a given display range
+	 * (the most RAM and CPU economic while maintaining optimal display resolution).
 	 * For a given time span, the lowest resolution is chosen which will produce
 	 * at least <code>minLen</code> frames.
 	 * 
@@ -464,7 +444,7 @@ long screenOffX = 0;
 	 * @return an information object describing the best subsample of the track
 	 *         editor. note that info.sublength will be smaller than minLen if
 	 *         tag.getLength() was smaller than minLen (in this case the
-	 *         fullrate version is used).
+	 *         full-rate version is used).
 	 */
 	public DecimationInfo getBestSubsample( Span tag, int minLen )
 	{
@@ -507,52 +487,11 @@ inlineDecim=1;
 		return info;
 	}
 
-	/**
-	 * Reads a block of subsampled frames.
-	 * 
-	 * @param info
-	 *            the <code>DecimationInfo</code> as returned by
-	 *            <code>getBestSubsample</code>, describing the span to read
-	 *            and which resolution to choose.
-	 * @param frames
-	 *            to buffer to fill, where frames[0][] corresponds to the first
-	 *            channel etc. and the buffer length must be at least off +
-	 *            info.sublength!
-	 * @param off
-	 *            offset in frames, such that the first frame will be placed in
-	 *            frames[ch][off]
-	 * @throws IOException
-	 *             if a read error occurs
-	 * @see #getBestSubsample( Span, int )
-	 * @see DecimationInfo#sublength
-	 */
-/*
-	public boolean readFrame( int sub, long pos, int ch, float[] data )
-	throws IOException
-	{
-		synchronized( bufSync ) {
-			createBuffers();
-
-			final int				idx	= indexOf( pos, true );
-			final DecimatedWaveStake	ds	= (DecimatedWaveStake) editGetLeftMost( idx, true, null );
-			if( ds == null ) return false;
-
-			if( !ds.readFrame( sub, tmpBuf2, 0, pos )) return false;
-
-			for( int i = ch * modelChannels, k = 0; k < modelChannels; i++, k++ ) {
-				data[ k ] = tmpBuf2[ i ][ 0 ];
-			}
-
-			return true;
-		}
-	}
-*/
-
 	/*
 	 * Same as in <code>NondestructiveDecimatedSampledTrack</code> but with
-	 * automaic bias adjust.
+	 * automatic bias adjust.
 	 * 
-	 * @param tag unbiased fullrate span @param frames buffer to fill. note that
+	 * @param tag unbiased full-rate span @param frames buffer to fill. note that
 	 * this will not do any interpolation but fill at the decimated rate! @param
 	 * framesOff offset in frames for the first frame which is read
 	 * 
@@ -565,7 +504,7 @@ inlineDecim=1;
 		int					idx			= editIndexOf( readSpan.start, true, ce );
 		if( idx < 0 ) idx = -(idx + 2);
 		final long			startR		= decimHelps[ sub ].roundAdd - readSpan.start;
-		final List			coll		= editGetCollByStart( ce );
+		final List<Stake> coll		= editGetCollByStart( ce );
 		final MutableInt	readyLen	= new MutableInt( 0 );
 		final MutableInt	busyLen		= new MutableInt( 0 );
 		// someReady is a transient trick to keep a newly opened documented
@@ -716,7 +655,7 @@ inlineDecim=1;
 	{
 		if( threadAsync != null ) throw new IllegalStateException();
 
-		final List					stakes		= fullScale.getAll( true );
+		final List<Stake> stakes		= fullScale.getAll( true );
 		if( stakes.isEmpty() ) return;
 
 		final DecimatedStake		das;
@@ -864,25 +803,6 @@ Thread.currentThread().setPriority( pri - 2 );
 				} catch( IOException e1 ) {
 					e1.printStackTrace();
 				} finally {
-//					System.out.println( "finally" );
-//					if( cacheReadAS != null ) {
-//						cacheReadAS.cleanUp();
-//						cacheReadAS.dispose(); // !!!
-//					}
-//					if( cacheWriteAS != null ) {
-//						cacheWriteAS.cleanUp();
-//						cacheWriteAS.dispose(); // !!!
-//						if( !cacheWriteComplete ) { // indicates process was aborted ...
-//							final File[] f = createCacheFileNames();
-//							if( f != null ) { // ... therefore delete incomplete cache files!
-//								for( int i = 0; i < f.length; i++ ) {
-//									if( !f[ i ].delete() ) f[ i ].deleteOnExit();
-//									// cm.removeFile( f[ i ]);
-//								}
-//							}
-//						}
-//					}
-
 					if( asyncManager != null ) {
 						asyncManager.dispatchEvent( new AsyncEvent( DecimatedSonaTrail.this,
 							AsyncEvent.FINISHED, System.currentTimeMillis(), DecimatedSonaTrail.this ));
@@ -899,10 +819,9 @@ Thread.currentThread().setPriority( pri - 2 );
 		threadAsync.start();
 	}
 
-	protected void addAllDep( Object source, List stakes, AbstractCompoundEdit ce, Span union )
-	throws IOException
-	{
-		if( DEBUG ) System.err.println( "addAllDep " + union.toString() );
+	protected void addAllDep(Object source, List<Stake> stakes, AbstractCompoundEdit ce, Span union)
+			throws IOException {
+		if (DEBUG) System.err.println("addAllDep " + union.toString());
 
 		final DecimatedStake	das;
 		final Span				extSpan;
@@ -986,7 +905,7 @@ Thread.currentThread().setPriority( pri - 2 );
 		// System.err.println( "editAdd ..." );
 	}
 
-	// ----------- private schnucki -----------
+	// ----------- private -----------
 
 	protected DecimatedStake allocAsync( Span span )
 	throws IOException
@@ -1021,17 +940,16 @@ Thread.currentThread().setPriority( pri - 2 );
 		return new DecimatedStake( extSpan, tempFAsync, fileSpans, biasedSpans, decimHelps );
 	}
 
-	protected File[] createCacheFileNames()
-	{
+	protected File[] createCacheFileNames() {
 		final AudioFile[] audioFiles = fullScale.getAudioFiles();
-		if( (audioFiles.length == 0) || (audioFiles[0] == null) ) return null;
+		if ((audioFiles.length == 0) || (audioFiles[0] == null)) return null;
 
 		final CacheManager cm = PrefCacheManager.getInstance();
-		if( !cm.isActive() ) return null;
+		if (!cm.isActive()) return null;
 
-		final File[] f = new File[ audioFiles.length ];
-		for( int i = 0; i < f.length; i++ ) {
-			f[i] = cm.createCacheFileName( IOUtil.setFileSuffix( audioFiles[i].getFile(), "fft" ));
+		final File[] f = new File[audioFiles.length];
+		for (int i = 0; i < f.length; i++) {
+			f[i] = cm.createCacheFileName(IOUtil.setFileSuffix(audioFiles[i].getFile(), "fft"));
 		}
 		return f;
 	}

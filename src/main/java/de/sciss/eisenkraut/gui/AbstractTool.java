@@ -30,19 +30,15 @@ import de.sciss.gui.TopPainter;
  *  This class describes a generic GUI tool
  *  that can be aquired and dismissed by
  *  a <code>Component</code>.
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 28-Sep-07
  */
 public abstract class AbstractTool
-implements MouseListener, MouseMotionListener, TopPainter // KeyListener
-{
+		implements MouseListener, MouseMotionListener, TopPainter {
+
 	private Component comp;
 	private MenuAction actionCancel	= null;
 
-	protected AbstractTool()
-	{
-		/* empty */ 
+	protected AbstractTool() {
+		/* empty */
 	}
 
 	/**
@@ -59,10 +55,8 @@ implements MouseListener, MouseMotionListener, TopPainter // KeyListener
 	 *  @throws IllegalArgumentException	if the passed <code>Component</code>
 	 *										is <code>null</code>
 	 *  @throws IllegalStateException		if the tool was aquired before.
-	 *  @synchronization	the method must be called in the event thread
 	 */
-	public void toolAcquired( Component c )
-	{
+	public void toolAcquired(Component c) {
 		if( comp != null ) throw new IllegalStateException();
 		if( c == null ) throw new IllegalArgumentException();
 
@@ -98,7 +92,6 @@ implements MouseListener, MouseMotionListener, TopPainter // KeyListener
 	 *										tool was attached to a different
 	 *										component.
 	 *  @throws IllegalStateException		if the tool was not aquired before.
-	 *  @synchronization	the method must be called in the event thread
 	 */
 	public void toolDismissed( Component c )
 	{
@@ -131,12 +124,11 @@ implements MouseListener, MouseMotionListener, TopPainter // KeyListener
 	 *
 	 *  @param  g   a <code>Graphics2D</code> object to paint on.
 	 *				Initial <code>Stroke</code> and <code>Paint</code>
-	 *				are undefinied. Initial transform should
+	 *				are undefined. Initial transform should
 	 *				be negotiated between the component
 	 *				and the tool, e.g. the <code>Surface</code> object
-	 *				may garantee to scale the graphics
+	 *				may guarantee to scale the graphics
 	 *				to the virtual space (0, 0 ... 1, 1)
-	 *  @see		javax.swing.JComponent#paintComponent( Graphics )
 	 */
 	public abstract void paintOnTop( Graphics2D g );
 

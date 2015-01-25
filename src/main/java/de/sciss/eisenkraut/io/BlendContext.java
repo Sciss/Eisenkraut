@@ -18,18 +18,15 @@ import java.awt.geom.Point2D;
 
 /**
  *  Object describing the
- *  type of crossfading used
+ *  type of cross-fading used
  *  in vector operations. Methods
  *	for calculating the fades are provided.
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 07-Dec-07
  */
 public class BlendContext
 {
 	/*
 	 *  The length of the
-	 *  blending crossfade in
+	 *  blending cross-fade in
 	 *  sense rate frames
 	 */
 	private final long		left, right;
@@ -42,11 +39,8 @@ public class BlendContext
 	/**
 	 *  Create a new BlendContext with
 	 *  the given length
-	 *
-	 *  @param  blendLen	length of the blending in sense frames
 	 */
-	public BlendContext( long left, long right, Point2D[] ctrlPt )
-	{
+	public BlendContext(long left, long right, Point2D[] ctrlPt) {
 		this.left		= left;
 		this.right		= right;
 
@@ -135,13 +129,8 @@ public class BlendContext
 		return right;
 	}
 
-//	public boolean hasBlend()
-//	{
-//		return
-//	}
-	
 	/**
-	 *	@targetBuf	single channels can be <code>null</code>
+	 *	@param targetBuf	single channels can be <code>null</code>
 	 */
 	public void fadeIn( long blendOff, float[][] sourceBuf, int sourceOff, float[][] targetBuf, int targetOff, int length )
 	{
@@ -152,14 +141,6 @@ public class BlendContext
 	{
 		fade( blendOff, sourceBuf, sourceOff, targetBuf, targetOff, length, yOutD, yOutB, yOutA, yOut0 );
 	}
-
-//	/**
-//	 *	@targetBuf	single channels can be <code>null</code>
-//	 */
-//	public void fadeOut( long blendOff, float[][] sourceBuf, int sourceOff, float[][] targetBuf, int targetOff, int length )
-//	{
-//		fade( blendOff, wFact, sourceBuf, sourceOff, targetBuf, targetOff, length, yOutD, yOutB, yOutA, yOut0 );
-//	}
 
 	private void fade( long blendOff, float[][] sourceBuf, int sourceOff,
 					   float[][] targetBuf, int targetOff, int length, double yD, double yB, double yA, double y0 )

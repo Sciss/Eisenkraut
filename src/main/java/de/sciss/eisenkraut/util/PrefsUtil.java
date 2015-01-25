@@ -66,12 +66,9 @@ import de.sciss.util.ParamSpace;
  *	and some geometric object (de)serialization.
  *	Has utility methods for clearing preferences trees
  *	and importing and exporting from/to XML.
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 04-Jul-08
  */
-public class PrefsUtil
-{
+public class PrefsUtil {
+
 	// ------------ root node level ------------
 
 	/**
@@ -764,7 +761,7 @@ public class PrefsUtil
 	 *  @param  node	the node to which a child is applied.
 	 */
 	public static void toXML( Preferences prefs, boolean deep, org.w3c.dom.Document domDoc,
-							  Element node, Map options )
+							  Element node, Map<Object, Object> options )
 	throws IOException
 	{
 		String[]	keys;
@@ -808,7 +805,7 @@ public class PrefsUtil
 	 *  @param  rootElement	the node whose children to parse.
 	 */
 	public static void fromXML( Preferences prefs, org.w3c.dom.Document domDoc,
-								Element rootElement, Map options )
+								Element rootElement, Map<Object, Object> options )
 	throws IOException
 	{
 		NodeList	nl, nl2;

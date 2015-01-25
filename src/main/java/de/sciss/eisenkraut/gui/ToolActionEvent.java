@@ -58,19 +58,13 @@ public class ToolActionEvent
 	 *  @return the new tool action of the <code>ToolBar</code>
 	 *			or <code>ToolPalette</code>.
 	 */
-	public ToolAction getToolAction()
-	{
+	public ToolAction getToolAction() {
 		return toolAction;
 	}
 
-	public boolean incorporate( BasicEvent oldEvent )
-	{
-		if( oldEvent instanceof ToolActionEvent &&
-			getSource() == oldEvent.getSource() &&
-			getID() == oldEvent.getID() ) {
-			
-			return true;
-
-		} else return false;
+	public boolean incorporate(BasicEvent oldEvent) {
+		return oldEvent instanceof ToolActionEvent &&
+				getSource() == oldEvent.getSource() &&
+				getID() == oldEvent.getID();
 	}
 }

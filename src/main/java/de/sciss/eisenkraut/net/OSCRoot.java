@@ -90,7 +90,7 @@ public class OSCRoot
 		instance		= this;
 		this.prefs		= prefs;
 
-		defaultPortParam = new Param(DEFAULT_PORT, ParamSpace.NONE | ParamSpace.ABS);
+		defaultPortParam = new Param(DEFAULT_PORT, ParamSpace.ABS);
 
 		if (prefs.get(KEY_PORT, null) == null) {    // create defaults
 			prefs.putBoolean(KEY_ACTIVE, false);
@@ -194,8 +194,8 @@ public class OSCRoot
 				try {
 					t.setTarget(new InetSocketAddress("127.0.0.1", port));
 					t.connect();
-					if (paths != null) for (int i = 0; i < paths.size(); i++ ) {
-						t.send(new OSCMessage("/doc", new Object[] {"open", paths.get(i) }));
+					if (paths != null) for (String path : paths) {
+						t.send(new OSCMessage("/doc", new Object[]{"open", path}));
 					}
 					System.exit(0);
 
@@ -504,21 +504,20 @@ public class OSCRoot
 	}
 	
 // ------- PreferenceChangeListener interface -------
-		
-	public void preferenceChange( PreferenceChangeEvent e )
-	{
-		final String	key = e.getKey();
 
-		if( key.equals( KEY_ACTIVE )) {
-			if (Boolean.valueOf(e.getNewValue()).booleanValue()) {
-				if( !isRunning() ) {
+	public void preferenceChange(PreferenceChangeEvent e) {
+		final String key = e.getKey();
+
+		if (key.equals(KEY_ACTIVE)) {
+			if (Boolean.valueOf(e.getNewValue())) {
+				if (!isRunning()) {
 					boot();
 				}
 			} else {
-				if( isRunning() ) {
+				if (isRunning()) {
 					quit();
 				}
 			}
 		}
- 	}
+	}
 }

@@ -103,14 +103,11 @@ import de.sciss.util.ParamSpace;
  *  This is the frame that
  *  displays the user adjustable
  *  application and session preferences
- *
- *  @author		Hanns Holger Rutz
- *  @version	0.70, 28-Jun-08
  */
 public class PrefsFrame
-extends AppWindow
-implements SwingConstants
-{
+		extends AppWindow
+		implements SwingConstants {
+
 	private static final ParamSpace	spcIntegerFromZero = new ParamSpace( 0, Double.POSITIVE_INFINITY, 1, 0, 0, 0 );
 	private static final ParamSpace	spcIntegerFromOne  = new ParamSpace( 1, Double.POSITIVE_INFINITY, 1, 0, 0, 1 );
 
@@ -924,7 +921,7 @@ for (AudioBoxConfig collAudioBoxConfig : collAudioBoxConfigs) {
 				final ByteArrayOutputStream	baos		= new ByteArrayOutputStream();
 				final Pattern				ptrn1		= Pattern.compile( "Number of Devices: \\d+\\n(   \\d+ : \".+\" \\(\\d+ ins, \\d+ outs\\)\\n)+\\n" );
 //				final Pattern				ptrn2		= Pattern.compile( "\".+\"" );
-				final Pattern				ptrn2		= Pattern.compile( "\"(.+)\" \\((\\d+) ins, (\\d+) outs()" ); // the trailing () makes the numOuts not disappear (why?!)
+				final Pattern				ptrn2		= Pattern.compile( "\"(.+)\" \\((\\d+) ins, (\\d+) outs" ); // the trailing () makes the numOuts not disappear (why?!)
 				final Matcher				m1			= ptrn1.matcher( "" );
 				Matcher						m2;
 				String						name;
@@ -946,10 +943,10 @@ for (AudioBoxConfig collAudioBoxConfig : collAudioBoxConfigs) {
 	
 						if( inStream.available() > 0 ) {
 							try {
-								while( inStream.available() > 0 ) {
-									len = Math.min( inBuf.length, inStream.available() );
+								while (inStream.available() > 0) {
+									len = Math.min(inBuf.length, inStream.available());
 									inStream.read(inBuf, 0, len);
-									baos.write( inBuf, 0, len );
+									baos.write(inBuf, 0, len);
 								}
 							}
 							catch( IOException e1 ) { /* ignore for now XXX */ }
@@ -1197,49 +1194,45 @@ for (AudioBoxConfig collAudioBoxConfig : collAudioBoxConfigs) {
 				return null;
 			}
 		}
-		
-		public int getRowCount()
-		{
+
+		public int getRowCount() {
 			return collAudioBoxConfigs.size();
 		}
-		
-		public int getColumnCount()
-		{
+
+		public int getColumnCount() {
 			return 4;
 		}
-		
-		public Object getValueAt( int row, int col )
-		{
-			if( row > collAudioBoxConfigs.size() ) return null;
-			
-			final AudioBoxConfig c = collAudioBoxConfigs.get( row );
-		
-			switch( col ) {
-			case 0:
-				return c.name;
-			case 1:
-				return c.numInputChannels;
-			case 2:
-				return c.numOutputChannels;
-			case 3:
-				return c.active;
-			default:
-				return null;
+
+		public Object getValueAt(int row, int col) {
+			if (row > collAudioBoxConfigs.size()) return null;
+
+			final AudioBoxConfig c = collAudioBoxConfigs.get(row);
+
+			switch (col) {
+				case 0:
+					return c.name;
+				case 1:
+					return c.numInputChannels;
+				case 2:
+					return c.numOutputChannels;
+				case 3:
+					return c.active;
+				default:
+					return null;
 			}
 		}
 
-	    public Class getColumnClass( int col )
-		{
-			switch( col ) {
-			case 0:
-				return String.class;
-			case 1:
-			case 2:
-				return Integer.class;
-			case 3:
-				return Boolean.class;
-			default:
-				return null;
+		public Class<?> getColumnClass(int col) {
+			switch (col) {
+				case 0:
+					return String.class;
+				case 1:
+				case 2:
+					return Integer.class;
+				case 3:
+					return Boolean.class;
+				default:
+					return null;
 			}
 		}
 	

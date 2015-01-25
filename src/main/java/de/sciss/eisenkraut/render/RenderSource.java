@@ -78,13 +78,11 @@ public class RenderSource {
 	public RenderSource(RenderContext context) {
 		this.context = context;
 		
-		final List		trackInfo	= context.getTrackInfo();
+		final List<Track.Info> trackInfo	= context.getTrackInfo();
 		int				ch			= 0;
-		Track.Info		ti;
 		boolean[]		tm			= null;
 
-		for (Object ti0 : trackInfo) {
-			ti = (Track.Info) ti0;
+		for (Track.Info ti : trackInfo) {
 			if (ti.trail instanceof AudioTrail) {
 				ch = ti.numChannels;
 				tm = ti.trackMap;

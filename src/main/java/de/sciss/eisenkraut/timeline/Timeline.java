@@ -415,7 +415,7 @@ public class Timeline
 		elm.dispatchEvent( e2 );
 	}
 
-	public Class getDefaultEditor() { return null; }
+	public Class<?> getDefaultEditor() { return null; }
 
 // ---------------- MapManager.Listener interface ---------------- 
 
@@ -427,7 +427,7 @@ public class Timeline
 		
 		if( source == this ) return;
 		
-		final Set	keySet		= e.getPropertyNames();
+		final Set<String>	keySet		= e.getPropertyNames();
 		Object		val;
 		boolean		dChange		= false;
 		boolean		dPosition	= false;
