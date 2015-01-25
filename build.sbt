@@ -1,6 +1,6 @@
 name             := "Eisenkraut"
 
-version          := "1.1.0-SNAPSHOT"
+version          := "1.1.0"
 
 organization     := "de.sciss"
 
@@ -16,11 +16,15 @@ autoScalaLibrary := false
 
 crossPaths       := false
 
-javacOptions    ++= Seq("-source", "1.6", "-target", "1.6", "-Xlint")
+javacOptions    ++= Seq("-source", "1.6", "-target", "1.6", "-encoding", "utf8", "-Xlint")
 
 mainClass        := Some("de.sciss.eisenkraut.Main")
 
-libraryDependencies += "de.sciss" % "weblaf" % "1.28"
+libraryDependencies ++= Seq(
+  "de.sciss" % "jcollider" % "1.0.0",
+  "de.sciss" % "scisslib"  % "1.0.0",
+  "de.sciss" % "weblaf"    % "1.28"
+)
 
 // ---- publishing ----
 

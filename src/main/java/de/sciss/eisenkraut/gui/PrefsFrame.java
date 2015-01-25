@@ -413,7 +413,7 @@ public class PrefsFrame
 
 		row++;
 		key		= PrefsUtil.KEY_AUDIOBUSSES;
-		key2	= "prefsAudioBusses";
+		key2	= "prefsAudioBuses";
 		lb		= new JLabel( getResourceString( key2 ), TRAILING );
 		lb.setVisible( false );
 		collAudioAdvanced.add( lb );
@@ -555,7 +555,7 @@ final SpringPanel tabAudio = tab;
 
 		row++;
 		key		= PrefsUtil.NODE_SONAGRAM;
-		key2	= "prefsSonaSettings";
+		key2	= "prefsSonoSettings";
 		lb		= new JLabel( getResourceString( key2 ), CENTER );
 		tab.gridAdd( lb, 0, row, 2, 1 );
 		row++;
@@ -702,7 +702,7 @@ final SpringPanel tabAudio = tab;
 				}
 			}
 		});
-		ggAssistent = new JButton( getResourceString( "labelAssistent" ));
+		ggAssistent = new JButton( getResourceString("labelAssistant"));
 		ggAssistent.addActionListener( new ActionListener() {
 			public void actionPerformed( ActionEvent e )
 			{
@@ -1012,7 +1012,7 @@ for (AudioBoxConfig collAudioBoxConfig : collAudioBoxConfigs) {
 		final JOptionPane op = new JOptionPane( pane,
 		                                        JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION,
 		                                        new ImageIcon( GUIUtil.class.getResource( "assistent_64x64.png" )));
-		result = BasicWindowHandler.showDialog( op, getWindow(), getResourceString( "prefsAudioDevicesAssistent" ));
+		result = BasicWindowHandler.showDialog( op, getWindow(), getResourceString("prefsAudioDevicesAssistant"));
 
 		synchronized( threadRunning ) {
 			if( threadRunning.isSet() ) {  // i.e. premature dialog cancel

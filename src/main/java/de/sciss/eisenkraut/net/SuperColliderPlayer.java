@@ -1188,7 +1188,7 @@ if( DEBUG_FOLD ) {
 			if( (busInternal == null) || (busPan == null) ) {
 				if( busInternal != null ) busInternal.free();
 				if( busPan != null ) busPan.free();
-				throw new IOException( getResourceString( "scErrNoBusses" ));
+				throw new IOException( getResourceString("scErrNoBuses"));
 			}
 
 			bufsDisk				= new Buffer[ numFiles ];
