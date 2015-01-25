@@ -876,10 +876,10 @@ for (AudioBoxConfig collAudioBoxConfig : collAudioBoxConfigs) {
 	}
 	collRemove.add(cfg3);
 }
-				
-				Collections.sort( collAdd );
-				Collections.sort( collActivate );
-				Collections.sort( collRemove );
+
+				Collections.sort(collAdd);
+				Collections.sort(collActivate);
+				Collections.sort(collRemove);
 				
 				ggListAdd.setListData( collAdd.toArray() );
 				ggListAdd.setVisibleRowCount( Math.max( 1, Math.min( collAdd.size(), 6 )));
@@ -1183,6 +1183,7 @@ for (AudioBoxConfig collAudioBoxConfig : collAudioBoxConfigs) {
 		}
 	}
 
+	@SuppressWarnings("serial")
 	private class AudioBoxTableModel
 	extends AbstractTableModel
 	{

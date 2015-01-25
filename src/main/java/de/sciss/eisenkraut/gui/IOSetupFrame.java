@@ -34,7 +34,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.prefs.BackingStoreException;
@@ -82,14 +81,20 @@ import de.sciss.gui.SortedTableModel;
  *  displays the user adjustable
  *  input/output configuration
  */
-public class IOSetupFrame
-extends AppWindow
-{
-	private static final int		NUM_TABS		= 2;
-	protected final List[]			collConfigs		= new List[] { new ArrayList(), new ArrayList() };
-	protected final Set[]			setConfigIDs	= new Set[] { new HashSet(), new HashSet() };
-	protected final Set[]			setConfigNames	= new Set[] { new HashSet(), new HashSet() };
-	protected final Set[]			setDirtyConfigs	= new Set[] { new HashSet(), new HashSet() };
+public class IOSetupFrame extends AppWindow {
+
+	private static class Tab {
+		public Tab() {}
+
+		public final List<RoutingConfig>	collConfig		= new ArrayList<RoutingConfig>();
+		public final Set<String> 			setConfigID		= new HashSet<String>();
+		public final Set<String> 			setConfigName	= new HashSet<String>();
+		public final Set<String> 			setDirtyConfig	= new HashSet<String>();
+	}
+
+	private static final int NUM_TABS = 2;
+	protected final Tab[] tabs = new Tab[] { new Tab(), new Tab() };
+
 	private final Preferences		audioPrefs;
 	protected final int[]			audioHwChannels	= new int[ NUM_TABS ];
 	
@@ -270,7 +275,9 @@ extends AppWindow
 											  ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS );
 		
 		tab.add( scroll, BorderLayout.CENTER );
-		
+
+		final Tab t = tabs[id];
+
 		b			= Box.createHorizontalBox();
 		ggPlus		= new ModificationButton( ModificationButton.SHAPE_PLUS );
 		ggMinus		= new ModificationButton( ModificationButton.SHAPE_MINUS );
@@ -280,14 +287,14 @@ extends AppWindow
 			{
 //				int row = table.getSelectedRow() + table.getSelectedRowCount();
 //				if( row <= 0 ) row = collConfigs[ ID ].size();
-				final int modelIndex = collConfigs[id].size();
+				final int modelIndex = t.collConfig.size();
 				final int viewIndex;
 				final RoutingConfig cfg = createUniqueConfig(id);
 //				collConfigs[ ID ].add( row, cfg );
-				collConfigs[id].add(cfg);
-				setConfigIDs[id].add(cfg.id);
-				setConfigNames[id].add(cfg.name);
-				setDirtyConfigs[id].add(cfg.id);
+				t.collConfig.add(cfg);
+				t.setConfigID.add(cfg.id);
+				t.setConfigName.add(cfg.name);
+				t.setDirtyConfig.add(cfg.id);
 				tm.fireTableRowsInserted(modelIndex, modelIndex);
 				viewIndex = stm.getViewIndex(modelIndex);
 				table.setRowSelectionInterval(viewIndex, viewIndex);
@@ -309,13 +316,13 @@ extends AppWindow
 					Arrays.sort( modelIndices );
 
 					for (int i = modelIndices.length - 1; i >= 0; i--) {
-						cfg = (RoutingConfig) collConfigs[id].remove(modelIndices[i]);
-						setConfigNames[id].remove(cfg.name);
+						cfg = t.collConfig.remove(modelIndices[i]);
+						t.setConfigName.remove(cfg.name);
 						// never remove the id during one editing session,
 						// because that will confuse the prefs listeners
 						// and the setDirtyConfigs approach
 //						setConfigIDs[ id ].remove( cfg.id );
-						setDirtyConfigs[id].add(cfg.id);
+						t.setDirtyConfig.add(cfg.id);
 					}
 //					tm.fireTableRowsDeleted( firstRow, lastRow );
 					tm.fireTableDataChanged();
@@ -344,12 +351,13 @@ extends AppWindow
 		setVisible( false );
 		dispose();
 	}
-	
-	private void fromPrefs( int id )
-	{
-		collConfigs[ id ].clear();
-		setConfigNames[ id ].clear();
-		setConfigIDs[ id ].clear();
+
+	private void fromPrefs(int id) {
+		final Tab t = tabs[id];
+
+		t.collConfig.clear();
+		t.setConfigName.clear();
+		t.setConfigID.clear();
 		
 		final Preferences	ocPrefs		= audioPrefs.node( KEY_PREFSNODE[ id ]);
 		final String[]		arrayNames;
@@ -369,46 +377,37 @@ extends AppWindow
 			cfgPrefs = ocPrefs.node(arrayName);
 			try {
 				cfg = new RoutingConfig(cfgPrefs);
-				collConfigs[id].add(cfg);
-				setConfigIDs[id].add(arrayName);
-				setConfigNames[id].add(cfg.name);
+				t.collConfig   .add(cfg);
+				t.setConfigID  .add(arrayName);
+				t.setConfigName.add(cfg.name);
 			} catch (NumberFormatException e1) {
 				System.err.println("IOSetupFrame - fromPrefs:");
 				e1.printStackTrace();
 			}
 		}
 	}
-	
-	protected boolean toPrefs( int id )
-	{
+
+	protected boolean toPrefs(int id) {
 		final Preferences	ocPrefs		= audioPrefs.node( KEY_PREFSNODE[ id ]);
-//		final String[]		arrayNames;
 		RoutingConfig		cfg;
 		Preferences			cfgPrefs;
 		String				cfgID;
 
+		final Tab t = tabs[id];
+
 		try {
-//			arrayNames = ocPrefs.childrenNames();
-//			for( int i = 0; i < arrayNames.length; i++ ) {
-//				cfgPrefs = ocPrefs.node( arrayNames[ i ]);
-//				cfgPrefs.removeNode();
-////System.err.println( "removing "+arrayNames[ i ]);
-//			}
-		
-			for( int i = 0; i < collConfigs[ id ].size(); i++ ) {
-				cfg = (RoutingConfig) collConfigs[ id ].get( i );
-				if( setDirtyConfigs[ id ].remove( cfg.id )) {
+			for( int i = 0; i < t.collConfig.size(); i++ ) {
+				cfg = t.collConfig.get(i);
+				if( t.setDirtyConfig.remove(cfg.id)) {
 					cfgPrefs	= ocPrefs.node( cfg.id );
 					cfg.toPrefs( cfgPrefs );
-//System.err.println( "adding / updating "+cfg.id + " (" + cfg.name + ")" );
 				}
 			}
-			
-			for( Iterator iter = setDirtyConfigs[ id ].iterator(); iter.hasNext(); ) {
-				cfgID = (String) iter.next();
-				cfgPrefs = ocPrefs.node(cfgID );
+
+			for (String aSetDirtyConfig : t.setDirtyConfig) {
+				cfgID = aSetDirtyConfig;
+				cfgPrefs = ocPrefs.node(cfgID);
 				cfgPrefs.removeNode();
-//System.err.println( "removing "+cfgID );
 			}
 			
 			ocPrefs.flush();
@@ -423,13 +422,15 @@ extends AppWindow
 
 	protected RoutingConfig createUniqueConfig( int id )
 	{
+		final Tab t = tabs[id];
+
 		final String test = getResourceString( KEY_DEFAULTNAME[ id ]);
 		String name = test;
-		for( int i = 1; setConfigNames[ id ].contains( name ); i++ ) {
+		for( int i = 1; t.setConfigName.contains(name); i++ ) {
 			name = test + " " + i;
 		}
 		String cfgID = "user1";
-		for( int i = 2; setConfigIDs[ id ].contains( cfgID ); i++ ) {
+		for( int i = 2; t.setConfigID.contains(cfgID); i++ ) {
 			cfgID = "user" + i;
 		}
 		
@@ -474,7 +475,7 @@ extends AppWindow
 		/**
 		 * Overridden to import a MapTransferable if it is available.
 		 */
-		public boolean importData(JComponent c, Transferable t) {
+		public boolean importData(JComponent c, Transferable trans) {
 			MapTransferable			mt;
 			final JTable			table	= (JTable) c;
 			final SortedTableModel	stm		= (SortedTableModel) table.getModel();
@@ -483,12 +484,14 @@ extends AppWindow
 			final int				modelIndex;
 			RoutingConfig			cfg;
 			int						temp;
-		
+
+			final Tab t = tabs[id];
+
 			try {
-				if( mapCh >= 0 && (row < table.getRowCount()) && t.isDataFlavorSupported( mapFlavor )) {
+				if( mapCh >= 0 && (row < table.getRowCount()) && trans.isDataFlavorSupported( mapFlavor )) {
 					modelIndex	= stm.getModelIndex( row );
-					cfg			= (RoutingConfig) collConfigs[ id ].get( modelIndex );
-					mt			= (MapTransferable) t.getTransferData( mapFlavor );
+					cfg			= t.collConfig.get(modelIndex);
+					mt			= (MapTransferable) trans.getTransferData( mapFlavor );
 					// only allowed within same config
 					if( mt.cfg == cfg ) {
 //System.err.println( "original mapping : "+(mt.idx+1)+"->"+(mt.cfg.mapping[ mt.idx ]+1)+"; new target " +(mapCh+1));
@@ -505,7 +508,7 @@ extends AppWindow
 						}
 						// dragged onto empty spot
 						cfg.mapping[ mt.idx ] = mapCh;
-						setDirtyConfigs[ id ].add( cfg.id );
+						t.setDirtyConfig.add(cfg.id);
 						((AbstractTableModel) stm.getTableModel()).fireTableRowsUpdated( modelIndex, modelIndex );
 						return true;
 					}
@@ -530,10 +533,12 @@ extends AppWindow
 			final int				mapCh	= table.getSelectedColumn() - staticColNames.length;
 			final int				modelIndex;
 			RoutingConfig			cfg;
+
+			final Tab t = tabs[id];
 			
 			if( mapCh >= 0 && (row < table.getRowCount()) ) {
 				modelIndex	= stm.getModelIndex( row );
-				cfg			= (RoutingConfig) collConfigs[ id ].get( modelIndex );
+				cfg			= t.collConfig.get(modelIndex);
 				for( int i = 0; i < cfg.numChannels; i++ ) {
 					if( cfg.mapping[ i ] == mapCh ) {
 						return new MapTransferable( cfg, i );
@@ -636,13 +641,12 @@ extends AppWindow
 
 	@SuppressWarnings("serial")
 	private class TableModel
-	extends AbstractTableModel
-	{
+			extends AbstractTableModel {
+
 		private final int id;
 
-		protected TableModel( int id )
-		{
-			this.id	= id;
+		protected TableModel(int id) {
+			this.id = id;
 		}
 
 		public String getColumnName( int col )
@@ -656,7 +660,7 @@ extends AppWindow
 		
 		public int getRowCount()
 		{
-			return collConfigs[ id ].size();
+			return tabs[id].collConfig.size();
 		}
 		
 		public int getColumnCount()
@@ -666,9 +670,11 @@ extends AppWindow
 		
 		public Object getValueAt( int row, int col )
 		{
-			if( row > collConfigs[ id ].size() ) return null;
+			final Tab t = tabs[id];
+
+			if( row > t.collConfig.size() ) return null;
 			
-			final RoutingConfig c = (RoutingConfig) collConfigs[ id ].get( row );
+			final RoutingConfig c = t.collConfig.get(row);
 		
 			switch( col ) {
 			case 0:
@@ -704,12 +710,13 @@ extends AppWindow
 		{
 			return col < staticColNames.length;
 		}
-		
-		public void setValueAt( Object value, int row, int col )
-		{
-			if( (row > collConfigs[ id ].size()) || (value == null) ) return;
 
-			final RoutingConfig cfg				= (RoutingConfig) collConfigs[ id ].get( row );
+		public void setValueAt(Object value, int row, int col) {
+			final Tab t = tabs[id];
+
+			if( (row > t.collConfig.size()) || (value == null) ) return;
+
+			final RoutingConfig cfg				= t.collConfig.get(row);
 			final int			oldChannels		= cfg.numChannels;
 			int[]				newMapping;
 			String				name;
@@ -720,9 +727,8 @@ extends AppWindow
 			switch( col ) {
 			case 0:
 				name = value.toString();
-//				if( (name.length() > 0) && (name.length() < Preferences.MAX_NAME_LENGTH) &&
 				if( (name.length() > 0) &&
-					!setConfigNames[ id ].contains( name )) {
+					!t.setConfigName.contains(name)) {
 
 					newCfg = new RoutingConfig( cfg.id, name, cfg.mapping, cfg.startAngle );
 				}
@@ -749,7 +755,8 @@ extends AppWindow
 					newMapping = new int[ newChannels ];
 					System.arraycopy( cfg.mapping, 0, newMapping, 0, oldChannels );
 					for( int i = oldChannels, minCh = 0; i < newChannels; i++ ) {
-chanLp:					for( int ch = minCh; true; ch++ ) {
+						chanLp:
+						for( int ch = minCh; true; ch++ ) {
 							for( int j = 0; j < i; j++ ) {
 								if( newMapping[ j ] == ch ) continue chanLp;
 							}
@@ -761,9 +768,6 @@ chanLp:					for( int ch = minCh; true; ch++ ) {
 				} else break;
 
 				newCfg = new RoutingConfig( cfg.id, cfg.name, newMapping, cfg.startAngle );
-//System.err.print( "now mapping is " );
-//for( int i = 0; i < cfg.mapping.length; i++ ) System.err.print( cfg.mapping[ i ] + "  " );
-//System.err.println();
 				break;
 				
 			case 2:
@@ -791,10 +795,10 @@ chanLp:					for( int ch = minCh; true; ch++ ) {
 			}
 
 			if (newCfg != null) {
-				collConfigs    [id].set(row, newCfg);
-				setConfigNames [id].remove(cfg.name);
-				setConfigNames [id].add(newCfg.name);
-				setDirtyConfigs[id].add(newCfg.id);
+				t.collConfig.set(row, newCfg);
+				t.setConfigName .remove(cfg.name);
+				t.setConfigName .add(newCfg.name);
+				t.setDirtyConfig.add(newCfg.id);
 			}
 			if (col <= 2) fireTableRowsUpdated(row, row);    // updates sorting!
 		}

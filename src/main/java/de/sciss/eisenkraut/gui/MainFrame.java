@@ -25,7 +25,6 @@ import java.text.MessageFormat;
 import java.util.Locale;
 import javax.swing.*;
 import javax.swing.border.AbstractBorder;
-import javax.swing.border.Border;
 
 import de.sciss.eisenkraut.Main;
 import de.sciss.eisenkraut.net.SuperColliderClient;
@@ -82,14 +81,71 @@ implements de.sciss.jcollider.Constants, ServerListener
 	
 	protected final SuperColliderClient	superCollider;
 
-	public MainFrame()
-	{
+	@SuppressWarnings("serial")
+	private class TH extends TransferHandler {
+		public TH() {
+			super();
+		}
+
+		@Override
+		public boolean canImport(TransferSupport support) {
+			return support.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
+		}
+
+		@Override
+		public boolean importData(TransferSupport support) {
+			if (support.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+				try {
+					java.util.List fs = (java.util.List)
+							support.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
+					for (Object f1 : fs) {
+						File f = (File) f1;
+						// System.out.println(f);
+						final Application	app	= AbstractApplication.getApplication();
+						((BasicApplication) app).getMenuFactory().openDocument(f);
+					}
+					return true;
+				} catch (IOException e) {
+					return false;
+				} catch (UnsupportedFlavorException e) {
+					return false;
+				}
+			} else {
+				return false;
+			}
+		}
+	}
+
+	@SuppressWarnings("serial")
+	private static class DropBorder extends AbstractBorder {
+		public DropBorder() {
+			super();
+		}
+
+		@Override public Insets getBorderInsets(Component c, Insets insets) {
+			insets.top  = insets.bottom = 5;
+			insets.left = insets.right  = 8;
+			return insets;
+		}
+
+		private final Stroke strk = new BasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER,
+				10.0f, new float[] { 3f, 3f }, 0.0f);
+
+		@Override
+		public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+			Graphics2D g2 = (Graphics2D) g;
+			g2.setColor(Color.darkGray);
+			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			// g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+			g2.setStroke(strk);
+			g2.drawRoundRect(x + 1, y + 1, width - 3, height - 3, 8, 8);
+		}
+	}
+
+	public MainFrame() {
 		super( REGULAR );
 		
 		final Application	app	= AbstractApplication.getApplication();
-//		final WindowHandler wh	= app.getWindowHandler();
-//		
-//		win	= wh.createWindow( 0 );
 
 		superCollider	= SuperColliderClient.getInstance();
 		
@@ -140,55 +196,9 @@ implements de.sciss.jcollider.Constants, ServerListener
 
         JLabel ggImport = new JLabel("<html><body><i>Drop</i></body>", null, SwingConstants.CENTER);
         ggImport.setForeground(Color.darkGray);
-        ggImport.setTransferHandler(new TransferHandler() {
-            @Override
-            public boolean canImport(TransferSupport support) {
-                return support.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
-            }
-
-            @Override
-            public boolean importData(TransferSupport support) {
-                if (support.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
-                    try {
-                        java.util.List fs = (java.util.List)
-                                support.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
-                        for (int i = 0; i < fs.size(); i++) {
-                            File f = (File) fs.get(i);
-                            // System.out.println(f);
-                            ((BasicApplication) app).getMenuFactory().openDocument(f);
-                        }
-                        return true;
-                    } catch (IOException e) {
-                        return false;
-                    } catch (UnsupportedFlavorException e) {
-                        return false;
-                    }
-                } else {
-                    return false;
-                }
-            }
-        });
+        ggImport.setTransferHandler(new TH());
         ggImport.setToolTipText("Drop audio files here to open them");
-        ggImport.setBorder(new AbstractBorder() {
-            @Override public Insets getBorderInsets(Component c, Insets insets) {
-                insets.top  = insets.bottom = 5;
-                insets.left = insets.right  = 8;
-                return insets;
-            }
-
-            private final Stroke strk = new BasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER,
-                    10.0f, new float[] { 3f, 3f }, 0.0f);
-
-            @Override
-            public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
-                Graphics2D g2 = (Graphics2D) g;
-                g2.setColor(Color.darkGray);
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                // g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
-                g2.setStroke(strk);
-                g2.drawRoundRect(x + 1, y + 1, width - 3, height - 3, 8, 8);
-            }
-        });
+        ggImport.setBorder(new DropBorder());
         Dimension importPref = ggImport.getPreferredSize();
         // importPref.width = 100;
         ggImport.setPreferredSize(importPref);
@@ -318,37 +328,34 @@ ggDumpOSC.addItem( getResourceString( "labelDumpHex" ), null, new Color( 0xFF, 0
 		return new Point2D.Float( 0f, 0f );
 	}
 
-	public void dispose()
-	{
-		AbstractApplication.getApplication().removeComponent( Main.COMP_MAIN );
+	public void dispose() {
+		AbstractApplication.getApplication().removeComponent(Main.COMP_MAIN);
 		super.dispose();
 	}
-	
-	private static boolean contains( String[] array, String name )
-	{
-		for( int i = 0; i < array.length; i++ ) {
-			if( array[ i ].equals( name )) return true;
+
+	private static boolean contains(String[] array, String name) {
+		for (String anArray : array) {
+			if (anArray.equals(name)) return true;
 		}
 		return false;
 	}
 
-	private String getResourceString( String key )
-	{
-		return AbstractApplication.getApplication().getResourceString( key );
+	private String getResourceString(String key) {
+		return AbstractApplication.getApplication().getResourceString(key);
 	}
 	
 	private void updateStatus()
 	{
 		final Server.Status s = superCollider.getStatus();
 		if( s != null ) {
-			argsStatus[ 0 ]	= new Float( s.sampleRate );
-			argsStatus[ 1 ]	= new Float( s.avgCPU );
+			argsStatus[0] = (float) s.sampleRate;
+			argsStatus[1] = s.avgCPU;
 			lbStatus1.setText( msgStatus1.format( argsStatus ));
 			if( boxStatus2.isVisible() ) {
-				argsStatus[ 0 ]	= new Integer( s.numUGens );
-				argsStatus[ 1 ]	= new Integer( s.numSynths );
-				argsStatus[ 2 ]	= new Integer( s.numGroups );
-				argsStatus[ 3 ]	= new Integer( s.numSynthDefs );
+				argsStatus[ 0 ]	= s.numUGens;
+				argsStatus[ 1 ]	= s.numSynths;
+				argsStatus[ 2 ]	= s.numGroups;
+				argsStatus[ 3 ]	= s.numSynthDefs;
 				lbStatus2.setText( msgStatus2.format( argsStatus ));
 			}
 		} else {

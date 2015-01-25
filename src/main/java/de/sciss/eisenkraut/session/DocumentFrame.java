@@ -1211,10 +1211,22 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 		actionSaveSelectionAs.setEnabled( enabled );
 	}
 
-//	public ProcessingThread insertSilence( long pos, long numFrames )
-//	{
-//		return actionInsertSilence.initiate( pos, numFrames );
-//	}
+	@SuppressWarnings("serial")
+	private static class SetFlagAndDisposeAction extends AbstractAction {
+		private final Flag 		flag;
+		private final JDialog	d;
+
+		public SetFlagAndDisposeAction(Flag flag, JDialog d) {
+			super();
+			this.flag	= flag;
+			this.d		= d;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			flag.set(true);
+			d.dispose();
+		}
+	}
 
 	/*
 	 *  Checks if there are unsaved changes to
@@ -1281,15 +1293,9 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 		if( rp != null ) {
 			rp.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
 					KeyStroke.getKeyStroke(KeyEvent.VK_D, BasicMenuFactory.MENU_SHORTCUT), "dont");
-			rp.getActionMap().put("dont", new AbstractAction() {
-				public void actionPerformed(ActionEvent e) {
-					dont.set(true);
-					d.dispose();
-				}
-			});
+			rp.getActionMap().put("dont", new SetFlagAndDisposeAction(dont, d));
 		}
 		BasicWindowHandler.showDialog(d);
-//		d.setVisible( true );
 		if (dont.isSet()) {
 			choice = 2;
 		} else {
@@ -3273,6 +3279,22 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 		}
 	}
 
+	@SuppressWarnings("serial")
+	private static class SetCursorAction extends MenuAction {
+		private final Component c;
+		private final Cursor	csr;
+
+		public SetCursorAction(String name, KeyStroke stroke, Component c, Cursor csr) {
+			super(name, stroke);
+			this.c 		= c;
+			this.csr	= csr;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			c.setCursor(zoomCsr[1]);
+		}
+	}
+
 	private class TimelineZoomTool
 	extends TimelineTool
 	{
@@ -3295,24 +3317,15 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 			});
 		}
 
-		public void toolAcquired( final Component c )
-		{
-			super.toolAcquired( c );
-			c.setCursor( zoomCsr[ 0 ]);
-			if( c instanceof JComponent ) {
+		public void toolAcquired(final Component c) {
+			super.toolAcquired(c);
+			c.setCursor(zoomCsr[0]);
+			if (c instanceof JComponent) {
 				final JComponent jc = (JComponent) c;
-				if( actionZoomOut == null ) actionZoomOut = new MenuAction( "zoomOut",
-						KeyStroke.getKeyStroke(KeyEvent.VK_ALT, InputEvent.ALT_DOWN_MASK, false)) {
-					public void actionPerformed(ActionEvent e) {
-						c.setCursor(zoomCsr[1]);
-					}
-				};
-				if (actionZoomIn == null) actionZoomIn = new MenuAction("zoomIn",
-						KeyStroke.getKeyStroke(KeyEvent.VK_ALT, 0, true)) {
-					public void actionPerformed(ActionEvent e) {
-						c.setCursor(zoomCsr[0]);
-					}
-				};
+				if (actionZoomOut == null) actionZoomOut = new SetCursorAction("zoomOut",
+						KeyStroke.getKeyStroke(KeyEvent.VK_ALT, InputEvent.ALT_DOWN_MASK, false), c, zoomCsr[1]);
+				if (actionZoomIn == null) actionZoomIn = new SetCursorAction("zoomIn",
+						KeyStroke.getKeyStroke(KeyEvent.VK_ALT, 0, true), c, zoomCsr[0]);
 				actionZoomOut.installOn(jc, JComponent.WHEN_IN_FOCUSED_WINDOW);
 				actionZoomIn .installOn(jc, JComponent.WHEN_IN_FOCUSED_WINDOW);
 			}
@@ -3390,24 +3403,22 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 		}
 
 		// zoom to mouse position
-		public void mouseClicked( MouseEvent e )
-		{
-			super.mouseClicked( e );
+		public void mouseClicked(MouseEvent e) {
+			super.mouseClicked(e);
 
-			if( !e.isAltDown() ) clickZoom( 0.5f, e );
+			if (!e.isAltDown()) clickZoom(0.5f, e);
 		}
-		
-		private void clickZoom( float factor, MouseEvent e )
-		{
-			long	pos, visibleLen, start, stop;
-			Span	visibleSpan;
-			
-			visibleSpan	= timelineVis;
-			visibleLen		= visibleSpan.getLength();
-			pos			= visibleSpan.getStart() + (long) ((double) e.getX() / (double) getComponent().getWidth() *
-													visibleSpan.getLength());
-			visibleLen		= (long) (visibleLen * factor + 0.5f);
-			if( visibleLen < 2 ) return;
+
+		private void clickZoom(float factor, MouseEvent e) {
+			long pos, visibleLen, start, stop;
+			Span visibleSpan;
+
+			visibleSpan = timelineVis;
+			visibleLen 	= visibleSpan.getLength();
+			pos 		= visibleSpan.getStart() + (long) ((double) e.getX() / (double) getComponent().getWidth() *
+								visibleSpan.getLength());
+			visibleLen 	= (long) (visibleLen * factor + 0.5f);
+			if (visibleLen < 2) return;
 			
 			start		= Math.max( 0, Math.min( timelineLen, pos - (long) ((pos - visibleSpan.getStart()) * factor + 0.5f) ));
 			stop		= start + visibleLen;

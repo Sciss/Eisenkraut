@@ -479,6 +479,7 @@ public class MapManager
 		public static final int OWNER_MODIFIED	= 1;
 		
 		private final MapManager map;
+		private final Set<String> propertyNames;
 		private final Object param;
 		private final int ownerModType;
 
@@ -486,15 +487,17 @@ public class MapManager
 			super(source, MAP_CHANGED, System.currentTimeMillis());
 
 			this.map = map;
-			this.param = propertyNames;
+			this.propertyNames = propertyNames;
+			this.param = null;
 			this.ownerModType = -1;
 		}
 
 		public Event(MapManager map, Object source, int ownerModType, Object ownerModParam) {
 			super(source, OWNER_MODIFIED, System.currentTimeMillis());
-			
+
 			this.map			= map;
 			this.param			= ownerModParam;
+			this.propertyNames	= null;
 			this.ownerModType	= ownerModType;
 		}
 
@@ -503,7 +506,7 @@ public class MapManager
 		}
 
 		public Set<String> getPropertyNames() {
-			return (Set) param;
+			return propertyNames;
 		}
 
 		public Object getOwner() {

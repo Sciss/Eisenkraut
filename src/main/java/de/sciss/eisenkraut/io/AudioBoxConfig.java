@@ -15,13 +15,8 @@ package de.sciss.eisenkraut.io;
 
 import java.util.prefs.Preferences;
 
-/**
- *	@version	0.70, 27-Mar-07
- *	@author		Hanns Holger Rutz
- */
-public class AudioBoxConfig
-implements Comparable
-{
+public class AudioBoxConfig implements Comparable<AudioBoxConfig> {
+
 	public static final String ID_DEFAULT			= "default";
 
 	/*
@@ -113,12 +108,7 @@ implements Comparable
 	
 	// ----------- Comparable interface -----------
 
-	public int compareTo( Object o )
-	{
-		if( (o instanceof AudioBoxConfig) ) {
-			return name.compareTo( ((AudioBoxConfig) o).name );
-		} else {
-			throw new ClassCastException();
-		}
-	}	
+	public int compareTo(AudioBoxConfig o) {
+		return name.compareTo(o.name);
+	}
 }

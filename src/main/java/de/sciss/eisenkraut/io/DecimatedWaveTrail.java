@@ -34,14 +34,12 @@ import de.sciss.io.AudioFileCacheInfo;
 import de.sciss.io.AudioFileDescr;
 import de.sciss.io.CacheManager;
 import de.sciss.io.Span;
+import de.sciss.timebased.Stake;
 import de.sciss.util.MutableInt;
 
 /**
- *	@version	0.70, 28-Jun-08
- *	@author		Hanns Holger Rutz
- * 
- *	@todo	common superclass of AudioTrail and DecimatedTrail
- *	@todo	drawWaveform : the initial idea was that readFrames should be removed ;
+ *	TODO: common superclass of AudioTrail and DecimatedTrail
+ *	TODO: drawWaveform : the initial idea was that readFrames should be removed ;
  *      	instead of filling "missing" samples, the polygon creation should use
  *       	biased x position. also for coherency, drawPCM should use a Polygon not
  *       	GeneralPath
@@ -253,11 +251,8 @@ extends DecimatedTrail
 	 * is about twice as fast as using GeneralPath objects. The integer
 	 * resolution can be compensated for by scaling the points by factor 4.0 and
 	 * scaling the Graphics2D by 1/4 at no significant CPU cost.
-	 * 
-	 * @synchronization must be called in the event thread
 	 */
-	public void drawWaveform( DecimationInfo info, WaveformView view, Graphics2D g2 )
-	{
+	public void drawWaveform(DecimationInfo info, WaveformView view, Graphics2D g2) {
 		final boolean			fromPCM 		= info.idx == -1;
 		final boolean			toPCM			= fromPCM && (info.inlineDecim == 1);
 		// final long maxLen = toPCM ? tmpBufSize : (fromPCM ? Math.min(
@@ -403,11 +398,11 @@ extends DecimatedTrail
 					if( !drawBusyList.isEmpty() ) {
 						// g2.setColor( Color.red );
 						g2.setPaint( pntBusy );
-						for( int i = 0; i < drawBusyList.size(); i++ ) {
-							chunkSpan = (Span) drawBusyList.get( i );
+						for (Span aDrawBusyList : drawBusyList) {
+							chunkSpan = aDrawBusyList;
 							scaleX = r.width / (float) info.getTotalLength(); // (info.sublength - 1);
-							g2.fillRect( (int) ((chunkSpan.start - info.span.start) * scaleX) + r.x, r.y,
-										 (int) (chunkSpan.getLength() * scaleX), r.height );
+							g2.fillRect((int) ((chunkSpan.start - info.span.start) * scaleX) + r.x, r.y,
+									(int) (chunkSpan.getLength() * scaleX), r.height);
 						}
 					}
 					g2.translate( r.x, r.y + r.height * offY );
@@ -423,14 +418,15 @@ extends DecimatedTrail
 				}
 			}
 		} catch( IOException e1 ) {
-			System.err.println( e1 );
+			System.err.println("draw waveform:");
+			e1.printStackTrace();
 		}
 	}
 
 
 	/**
-	 * Determines which subsampled version is suitable for a given display range
-	 * (the most RAM and CPU economic while maining optimal display resolution).
+	 * Determines which sub-sampled version is suitable for a given display range
+	 * (the most RAM and CPU economic while maintaining optimal display resolution).
 	 * For a given time span, the lowest resolution is chosen which will produce
 	 * at least <code>minLen</code> frames.
 	 * 
@@ -441,7 +437,7 @@ extends DecimatedTrail
 	 * @return an information object describing the best subsample of the track
 	 *         editor. note that info.sublength will be smaller than minLen if
 	 *         tag.getLength() was smaller than minLen (in this case the
-	 *         fullrate version is used).
+	 *         full-rate version is used).
 	 */
 	public DecimationInfo getBestSubsample( Span tag, int minLen )
 	{
@@ -486,19 +482,8 @@ extends DecimatedTrail
 	}
 
 	/**
-	 * Reads a block of subsampled frames.
+	 * Reads a block of sub-sampled frames.
 	 * 
-	 * @param info
-	 *            the <code>DecimationInfo</code> as returned by
-	 *            <code>getBestSubsample</code>, describing the span to read
-	 *            and which resolution to choose.
-	 * @param frames
-	 *            to buffer to fill, where frames[0][] corresponds to the first
-	 *            channel etc. and the buffer length must be at least off +
-	 *            info.sublength!
-	 * @param off
-	 *            offset in frames, such that the first frame will be placed in
-	 *            frames[ch][off]
 	 * @throws IOException
 	 *             if a read error occurs
 	 * @see #getBestSubsample( Span, int )
@@ -720,9 +705,8 @@ Thread.currentThread().setPriority( pri - 2 );
 								}
 								subsampleWrite( tmpBuf, tmpBuf2, das, MAXCOARSE,
 								                cacheWriteAS, framesWrittenCache );
-								pos += MAXCOARSE;
-								// framesWritten += MAXCOARSE;
-								framesWrittenCache += minCoarse;
+								// pos += MAXCOARSE;
+								// framesWrittenCache += minCoarse;
 							}
 						}
 					}
@@ -744,9 +728,8 @@ Thread.currentThread().setPriority( pri - 2 );
 							final File[] f = createCacheFileNames();
 							 // ... therefore delete incomplete cache files!
 							if( f != null ) {
-								for( int i = 0; i < f.length; i++ ) {
-									if( !f[i].delete() ) f[i].deleteOnExit();
-									// cm.removeFile( f[ i ]);
+								for (File aF : f) {
+									if (!aF.delete()) aF.deleteOnExit();
 								}
 							}
 						}
@@ -768,7 +751,7 @@ Thread.currentThread().setPriority( pri - 2 );
 		threadAsync.start();
 	}
 
-	protected void addAllDep( Object source, List stakes, AbstractCompoundEdit ce, Span union )
+	protected void addAllDep( Object source, List<Stake> stakes, AbstractCompoundEdit ce, Span union )
 	throws IOException
 	{
 		if( DEBUG ) System.err.println( "addAllDep " + union.toString() );
@@ -820,21 +803,18 @@ Thread.currentThread().setPriority( pri - 2 );
 					}
 				}
 				subsampleWrite( tmpBuf, tmpBuf2, das, MAXCOARSE, null, 0 );
-				pos += MAXCOARSE;
+				// pos += MAXCOARSE;
 				framesWritten += MAXCOARSE;
 
 				setProgression( framesWritten, progWeight );
 			}
 		} // synchronized( bufSync )
 
-		// editRemove( source, das.getSpan(), ce );
 		editClear( source, das.getSpan(), ce );
-		// System.err.println( "editRemove "+das.getSpan() );
 		editAdd( source, das, ce );
-		// System.err.println( "editAdd ..." );
 	}
 
-	// ----------- private schnucki -----------
+	// ----------- private -----------
 
 	protected File[] createCacheFileNames()
 	{
@@ -916,12 +896,9 @@ Thread.currentThread().setPriority( pri - 2 );
 			return result;
 		} finally {
 			if( result == null ) {
-				for( int i = 0; i < cacheAFs.length; i++ ) {
-					if( cacheAFs[ i ] != null ) {
-						cacheAFs[ i ].cleanUp();
-						// if( !cacheAFs[ i ].getFile().delete() ) {
-						// cacheAFs[ i ].getFile().deleteOnExit();
-						// }
+				for (AudioFile cacheAF : cacheAFs) {
+					if (cacheAF != null) {
+						cacheAF.cleanUp();
 					}
 				}
 			}
@@ -973,12 +950,12 @@ Thread.currentThread().setPriority( pri - 2 );
 			// System.err.println( "Cache was written" );
 			return result;
 		} finally {
-			if( result == null ) {
-				for( int i = 0; i < cacheAFs.length; i++ ) {
-					if( cacheAFs[ i ] != null ) {
-						cacheAFs[ i ].cleanUp();
-						if( !cacheAFs[ i ].getFile().delete() ) {
-							cacheAFs[ i ].getFile().deleteOnExit();
+			if (result == null) {
+				for (AudioFile cacheAF : cacheAFs) {
+					if (cacheAF != null) {
+						cacheAF.cleanUp();
+						if (!cacheAF.getFile().delete()) {
+							cacheAF.getFile().deleteOnExit();
 						}
 					}
 				}

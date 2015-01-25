@@ -716,33 +716,40 @@ public class PrefsUtil
 	 *  all selected transmitters
 	 */
 	public static Action getDebugDumpAction() {
-		return new AbstractAction("Dump preferences tree") {
-			public void actionPerformed(ActionEvent e) {
-				debugDump(AbstractApplication.getApplication().getUserPrefs());
-			}
+		return new DebugDumpAction();
+	}
 
-			private void debugDump(Preferences prefs) {
-				System.err.println( "------- debugDump prefs : "+prefs.name()+" -------" );
-				String[]	keys;
-				String[]	children;
-				String		value;
-				int			i;
+	@SuppressWarnings("serial")
+	private static class DebugDumpAction extends AbstractAction {
+		public DebugDumpAction() {
+			super("Dump preferences tree");
+		}
 
-				try {
-					keys		= prefs.keys();
-					for( i = 0; i < keys.length; i++ ) {
-						value   = prefs.get( keys[i], null );
-						System.err.println( "  key = '"+keys[i]+"' ; value = '"+value+"'" );
-					}
-					children	= prefs.childrenNames();
-					for( i = 0; i < children.length; i++ ) {
-						debugDump( prefs.node( children[i] ));
-					}
-				} catch( BackingStoreException e1 ) {
-					System.err.println( e1.getLocalizedMessage() );
+		public void actionPerformed(ActionEvent e) {
+			debugDump(AbstractApplication.getApplication().getUserPrefs());
+		}
+
+		private void debugDump(Preferences prefs) {
+			System.err.println( "------- debugDump prefs : "+prefs.name()+" -------" );
+			String[]	keys;
+			String[]	children;
+			String		value;
+			int			i;
+
+			try {
+				keys		= prefs.keys();
+				for( i = 0; i < keys.length; i++ ) {
+					value   = prefs.get( keys[i], null );
+					System.err.println( "  key = '"+keys[i]+"' ; value = '"+value+"'" );
 				}
+				children	= prefs.childrenNames();
+				for( i = 0; i < children.length; i++ ) {
+					debugDump( prefs.node( children[i] ));
+				}
+			} catch( BackingStoreException e1 ) {
+				System.err.println( e1.getLocalizedMessage() );
 			}
-		};
+		}
 	}
 
 	/**
