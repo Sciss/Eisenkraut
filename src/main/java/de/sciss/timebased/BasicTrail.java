@@ -205,16 +205,15 @@ public abstract class BasicTrail
 	
 	private void ensureEditCopy()
 	{
-		if( collEditByStart == null ) {
-			collEditByStart = new ArrayList<Stake>( collStakesByStart );
-			collEditByStop	= new ArrayList<Stake>( collStakesByStop );
+		if (collEditByStart == null) {
+			collEditByStart = new ArrayList<Stake>(collStakesByStart);
+			collEditByStop  = new ArrayList<Stake>(collStakesByStop );
 		}
 	}
 
 	// returns stakes that intersect OR TOUCH the span
-	public List<Stake> getRange( Span span, boolean byStart )
-	{
-		return editGetRange( span, byStart, null );
+	public List<Stake> getRange(Span span, boolean byStart) {
+		return editGetRange(span, byStart, null);
 	}
 
 	// returns stakes that intersect OR TOUCH the span
@@ -1419,17 +1418,16 @@ if( DEBUG ) {
 
 	// ---------------- comparators ----------------
 
+	// XXX TODO - this is really horrible, allowing both `Stake` and `Long`
+
 	private static class StartComparator
 			implements Comparator<Object> {
 		protected StartComparator() { /* empty */ }
 
 		public int compare(Object o1, Object o2) {
-			Span s1 = null;
-			Span s2 = null;
-			if (o1 instanceof Stake) s1 = ((Stake) o1).getSpan();
-			if (o2 instanceof Stake) s2 = ((Stake) o2).getSpan();
-
-			return Span.startComparator.compare(s1, s2);
+			long l1 = (o1 instanceof Stake) ? ((Stake) o1).getSpan().start : (Long) o1;
+			long l2 = (o2 instanceof Stake) ? ((Stake) o2).getSpan().start : (Long) o2;
+			return l1 < l2 ? -1 : (l1 > l2 ? 1 : 0);
 		}
 
 		public boolean equals(Object o) {
@@ -1442,12 +1440,9 @@ if( DEBUG ) {
 		protected StopComparator() { /* empty */ }
 
 		public int compare(Object o1, Object o2) {
-			Span s1 = null;
-			Span s2 = null;
-			if (o1 instanceof Stake) s1 = ((Stake) o1).getSpan();
-			if (o2 instanceof Stake) s2 = ((Stake) o2).getSpan();
-
-			return Span.stopComparator.compare(s1, s2);
+			long l1 = (o1 instanceof Stake) ? ((Stake) o1).getSpan().stop : (Long) o1;
+			long l2 = (o2 instanceof Stake) ? ((Stake) o2).getSpan().stop : (Long) o2;
+			return l1 < l2 ? -1 : (l1 > l2 ? 1 : 0);
 		}
 
 		public boolean equals(Object o) {
