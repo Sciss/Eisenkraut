@@ -3,6 +3,7 @@
 # Eisenkraut
 
 [![Flattr this](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=sciss&url=https%3A%2F%2Fgithub.com%2FSciss%2FEisenkraut&title=Eisenkraut%20Audio%20Editor&language=Java&tags=github&category=software)
+[![Build Status](https://travis-ci.org/Sciss/Eisenkraut.svg?branch=master)](https://travis-ci.org/Sciss/Eisenkraut)
 
 ## statement
 
