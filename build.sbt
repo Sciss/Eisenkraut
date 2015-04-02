@@ -1,6 +1,6 @@
 name             := "Eisenkraut"
 
-version          := "1.1.0"
+version          := "1.1.1-SNAPSHOT"
 
 organization     := "de.sciss"
 
@@ -10,7 +10,7 @@ homepage         := Some(url("https://github.com/Sciss/Eisenkraut"))
 
 licenses         := Seq("GPL v3+" -> url("http://www.gnu.org/licenses/gpl-3.0.txt"))
 
-scalaVersion     := "2.11.5"
+scalaVersion     := "2.11.6"
 
 autoScalaLibrary := false
 
