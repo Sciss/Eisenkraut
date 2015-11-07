@@ -259,8 +259,8 @@ public class TrackRowHeader
 	 *	Handle mouse presses.
 	 *	<pre>
 	 *  Keyboard shortcuts as in ProTools:
-	 *  Alt+Click   = Toggle item & set all others to same new state
-	 *  Meta+Click  = Toggle item & set all others to opposite state
+	 *  Alt+Click   = Toggle item and set all others to same new state
+	 *  Meta+Click  = Toggle item and set all others to opposite state
 	 *	</pre>
 	 */
 	public void mousePressed(MouseEvent e) {

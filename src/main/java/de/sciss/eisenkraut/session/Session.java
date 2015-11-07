@@ -746,7 +746,7 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 	}
 
 	/**
-	 * "insertSilence", <numFrames>
+	 * "insertSilence", &lt;numFrames&gt;
 	 */
 	public void oscCmd_insertSilence(RoutedOSCMessage rom) {
 		final long				pos, numFrames;
@@ -779,7 +779,7 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 	}
 	
 	/**
-	 *	"editMode", <modeName>
+	 *	"editMode", &lt;modeName&gt;
 	 */
 	public void oscCmd_editMode(RoutedOSCMessage rom) {
 		final String	mode;
@@ -807,7 +807,9 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 	 *	the contents of a given audio file, applying
 	 *	blending if activated.
 	 *
-	 *	"replace", <fileName>[, <fileOffset> ]
+	 *	"replace", &lt;fileName&gt;[, &lt;fileOffset&gt; ]
+	 *
+	 * @param rom	...
 	 */
 	public void oscCmd_replace(RoutedOSCMessage rom) {
 		final RenderPlugIn	plugIn;

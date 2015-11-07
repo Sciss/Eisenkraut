@@ -74,6 +74,8 @@ public class RenderSource {
 	 *  initialized, i.e. senseBlockBuf will
 	 *  become new float[numTrns][numRcv][] etc.
 	 *  All request fields are set to false by default.
+	 *
+	 *  @param 	context	...
 	 */
 	public RenderSource(RenderContext context) {
 		this.context = context;

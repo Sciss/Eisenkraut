@@ -319,6 +319,9 @@ public class ConstQ
 	
 	/**
 	 * 	Helper method for SwingOSC
+	 *
+	 * 	@param data	the array of `Number` elements to convert
+	 * 	@return	the array with elements converted to primitive floats
 	 */
 	public float[] castToFloatArray( Object[] data )
 	{
@@ -331,6 +334,10 @@ public class ConstQ
 	
 	/**
 	 * 	Helper method for SwingOSC
+	 *
+	 * 	@param data	an array to peek
+	 * 	@param idx	the index into the array
+	 * 	@return	the element of `data` at index `idx
 	 */
 	public float getArrayElement( float[] data, int idx )
 	{

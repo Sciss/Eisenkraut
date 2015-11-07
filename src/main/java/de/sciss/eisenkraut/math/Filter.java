@@ -130,7 +130,7 @@ public class Filter
 	 *	@param	impResp			wird mit Impulsantworten gefuellt
 	 *	@param	impRespD		Differenzen : null erlaubt, dann keine Interpolation
 	 *							von Resample etc. moeglich
-	 *	@param	Nwing			Zahl d. Koeffizienten; => smpPerCrossing * ZahlDerNulldurchlaeufe
+	 *	@param	Nwing			Zahl d. Koeffizienten; i.e. smpPerCrossing * ZahlDerNulldurchlaeufe
 	 *	@param	smpPerCrossing	bezogen auf den sinc
 	 *	@param	rollOff			0...1 CutOff
 	 *	@param	kaiserBeta		Parameter fuer Kaiser-Fenster
@@ -415,7 +415,7 @@ public class Filter
 	 *	@param	filter		Dimension 0: flt (erstes createAntiAliasFilter Argument), 1: fltD;
 	 *						2: fltSmpPerCrossing; 3: fltGain (createAAF result)
 	 *
-	 *	wenn fltD == null => keine lineare Interpolation (wesentlich schneller!)
+	 *	wenn fltD == null, dann keine lineare Interpolation (wesentlich schneller!)
 	 */
 	public static void resample( float src[], double srcOff, float dest[], int destOff, int length,
 								 double factor, float[][] filter )

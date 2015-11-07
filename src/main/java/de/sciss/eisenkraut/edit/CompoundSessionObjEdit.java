@@ -50,6 +50,7 @@ public class CompoundSessionObjEdit extends AbstractCompoundEdit {
 	 *	@param	ownerModType		XXX
 	 *	@param	ownerModParam		XXX
 	 *	@param	ownerUndoParam		XXX
+	 *  @param representationName	...
 	 *
 	 *  @see	de.sciss.eisenkraut.session.SessionCollection
 	 *  @see	de.sciss.eisenkraut.session.SessionCollection.Event

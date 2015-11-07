@@ -77,7 +77,7 @@ public class CrossfadePanel
 	 *	Instantly update crossfade.
 	 *
 	 *	@param	fade	value between 0 (component A only) and 1 (component B only)
-	 *	@throws	IllegalArgumentException	if fade < 0 or fade > 1
+	 *	@throws	IllegalArgumentException	if fade less than 0 or fade greater than 1
 	 */
 	public void setFade( float fade )
 	{
@@ -114,7 +114,8 @@ public class CrossfadePanel
 	 *	@param	target						target value between 0 (component A only) and 1 (component B only)
 	 *	@param	initialDelay				milliseconds to wait before the fade starts
 	 *	@param	fadeTime					fade duration in milliseconds
-	 *	@throws	IllegalArgumentException	if fade < 0 or fade > 1 or initialDelay < 0 or fadeTime < 0
+	 *	@throws	IllegalArgumentException	if fade less than 0 or fade greater than 1 or initialDelay less than 0
+	 *										or fadeTime less than 0
 	 */
 	public void performFade( float target, int initialDelay, int fadeTime )
 	{

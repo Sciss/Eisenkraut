@@ -285,7 +285,7 @@ public class Transport
 	 *	@param	loopMin		a minimum length of the loop such as to prevent cpu overload or
 	 *						osc message overflow (imagine the user would make a 1 sample long loop).
 	 *						leave to zero if no minimum required.
-	 *	@return				an array of folded spans (array length is >= 1)
+	 *	@return				an array of folded spans (array length is greater than or equal to 1)
 	 */
 	public Span[] foldSpans( Span unfolded, int loopMin )
 	{

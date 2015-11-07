@@ -44,6 +44,7 @@ public class EditPutMapValue
 	 *  @param  map				the map to change (e.g. a session object's map)
 	 *	@param	key				the map entry to change
 	 *  @param  value			the new property value
+	 *  @param name				representation name of the edit or `null`
 	 *
 	 *  @see	de.sciss.eisenkraut.util.MapManager#putValue( Object, String, Object )
 	 *  @see	de.sciss.eisenkraut.util.MapManager.Event

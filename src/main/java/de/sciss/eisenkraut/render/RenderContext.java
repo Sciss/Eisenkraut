@@ -104,6 +104,8 @@ public class RenderContext {
  	 *
 	 *  @param  host				the object responsible for hosting
 	 *								the rendering process
+     *  @param consumer         ...
+     *  @param trackInfo        ...
 	 *  @param  sourceRate			the source sense data rate
 	 */
 	public RenderContext(RenderHost host, RenderConsumer consumer, List<Track.Info> trackInfo,
@@ -127,15 +129,11 @@ public class RenderContext {
 		return host;
 	}
 
-	/**
-	 */
 	public RenderConsumer getConsumer()
 	{
 		return consumer;
 	}
 
-	/**
-	 */
 	public List<Track.Info> getTrackInfo()
 	{
 		return trackInfo;
@@ -218,6 +216,8 @@ public class RenderContext {
 	
 	/**
 	 *  Queries the value of an options.
+	 *
+	 * @param key	the conventional key for the option
 	 *
 	 *	@return		the value corresponding to the key
 	 *				or null if the option wasn't set.

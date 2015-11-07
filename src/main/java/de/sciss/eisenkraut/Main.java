@@ -13,18 +13,15 @@
 
 package de.sciss.eisenkraut;
 
-import java.awt.*;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.prefs.Preferences;
-
-import javax.swing.UIManager;
-
-import com.alee.laf.WebLookAndFeel;
 import com.alee.laf.checkbox.WebCheckBoxStyle;
 import com.alee.laf.progressbar.WebProgressBarStyle;
+import de.sciss.app.DocumentHandler;
+import de.sciss.common.AppWindow;
+import de.sciss.common.BasicApplication;
+import de.sciss.common.BasicDocument;
+import de.sciss.common.BasicMenuFactory;
+import de.sciss.common.BasicWindowHandler;
+import de.sciss.common.ProcessingThread;
 import de.sciss.eisenkraut.gui.AudioFileInfoPalette;
 import de.sciss.eisenkraut.gui.ControlRoomFrame;
 import de.sciss.eisenkraut.gui.IOSetupFrame;
@@ -34,28 +31,29 @@ import de.sciss.eisenkraut.gui.ObserverPalette;
 import de.sciss.eisenkraut.gui.PrefsFrame;
 import de.sciss.eisenkraut.gui.WelcomeScreen;
 import de.sciss.eisenkraut.io.PrefCacheManager;
+import de.sciss.eisenkraut.net.OSCRoot;
 import de.sciss.eisenkraut.net.OSCRouter;
 import de.sciss.eisenkraut.net.OSCRouterWrapper;
-import de.sciss.eisenkraut.net.OSCRoot;
 import de.sciss.eisenkraut.net.RoutedOSCMessage;
-//import de.sciss.eisenkraut.net.SCPlugInManager;
 import de.sciss.eisenkraut.net.SuperColliderClient;
 import de.sciss.eisenkraut.render.FilterDialog;
-//import de.sciss.eisenkraut.session.DocumentHandler;
 import de.sciss.eisenkraut.util.PrefsUtil;
-
-import de.sciss.app.DocumentHandler;
-import de.sciss.common.AppWindow;
-import de.sciss.common.BasicApplication;
-import de.sciss.common.BasicDocument;
-import de.sciss.common.BasicMenuFactory;
-import de.sciss.common.BasicWindowHandler;
-import de.sciss.common.ProcessingThread;
 import de.sciss.gui.GUIUtil;
 import de.sciss.gui.HelpFrame;
 import de.sciss.io.CacheManager;
 import de.sciss.io.IOUtil;
 import de.sciss.util.Flag;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.prefs.Preferences;
+
+//import de.sciss.eisenkraut.net.SCPlugInManager;
+//import de.sciss.eisenkraut.session.DocumentHandler;
 
 /**
  *  The <code>Main</code> class contains the java VM
@@ -85,7 +83,7 @@ implements OSCRouter // ProgressComponent // , PreferenceChangeListener
 	 *
 	 *  @todo   should be saved in the session file as well
 	 */
-	private static final double APP_VERSION		= 1.0;
+	private static final double APP_VERSION		= 1.2;
 
 	/**
 	 *  Enables / disables event dispatching debugging
@@ -153,7 +151,11 @@ implements OSCRouter // ProgressComponent // , PreferenceChangeListener
 	private static final String					OSC_MAIN		= "main";
 
 	private final ProcessingThread.Listener		quitAfterSaveListener;
-	
+
+	public final static boolean	isMac		= System.getProperty("os.name").contains("Mac OS");
+	public final static boolean	isWindows	= System.getProperty("os.name").contains("Windows");
+	public final static boolean	isLinux		= !(isMac || isWindows);	// Well...
+
 	/**
 	 *	The arguments may contain the following options:
 	 *	<UL>

@@ -15,19 +15,35 @@ To contact the author, send an email to `contact at sciss.de`. For project statu
 
 ## downloading
 
-A binary version of Eisenkraut for Linux, OS X and Windows is provided through [Bintray](https://bintray.com/sciss/generic/Eisenkraut).
+A binary version of Eisenkraut for all platforms is provided through [GitHub Releases](https://github.com/Sciss/Eisenkraut/releases/latest).
 
 ## setting up and running
 
-Eisenkraut uses the [SuperCollider](http://supercollider.sourceforge.net/) server as the audio playback engine. You need to install a recent SuperCollider 3 version to run this software. The recommended version is SuperCollider 3.6.3 or newer. On Linux Debian, you should be fine with `sudo apt-get install supercollider`.
+### installing supercollider
 
-To launch Eisenkraut, you can use the `Eisenkraut.command` shell script. On a Linux desktop system, you may copy `Eisenkraut.desktop` to `~/.local/share/applications` in order to be able to place Eisenkraut in your desktop's application bar. Make sure you open this file with a text editor and change paths in the `Exec` and `Icon` entries to match your installation location. Future versions will hopefully provide an automatic installation procedure to do that work for you. Installing the `.desktop` file means you can open sound files directly from the desktop or file manager (Nautilus).
+Eisenkraut uses the [SuperCollider](http://supercollider.sourceforge.net/) server as the audio playback engine. You need to install a recent SuperCollider 3 version to run this software. The recommended version is SuperCollider 3.6.3 or 3.6.5.
+__Warning:__ The widely circulated version 3.6.6 of SuperCollider is defect, in particular the multi-channel support for streaming sound-files is broken, a crucial featured required by Eisenkraut. While installers for 3.6.5 exists for OS X and Windows, the situation for Linux is a bit more complicated:
+
+Linux: You must find the older package version `3.6.3~repack-7` for Debian or `1:3.6.3-0ubuntu1~oneiric1` for Ubuntu.
+
+- Ubuntu: Here is graphical tutorial on installing old package versions for Ubuntu: http://www.howtogeek.com/117929/how-to-downgrade-packages-on-ubuntu/
+- Debian: You can find the old packages here: http://snapshot.debian.org/package/supercollider/1%3A3.6.3~repack-7/ - note that you must also install the dependencies this way (`libscsynth1`, `supercollider-common`, `supercollider-server`, etc.), using `sudo dpkg -i <downloaded-deb-file>`.
+
+You may then also want to inhibit automatic updates of SuperCollider which would proceed to the broken 3.6.6:
+
+    sudo apt-mark hold supercollider
+
+If you want to build SuperCollider from source, we have compiled the required steps to build 3.6.5 on Debian here: https://gist.github.com/Sciss/0567b4236a1a9450265b
+
+### starting eisenkraut
+
+To launch Eisenkraut, you use the `eisenkraut` shell script (Linux and OS X) or the `eisenkraut.bat` script (Windows). When using the Debian package, you have `eisenkraut` on your path and can find a desktop entry to add to your favourites.
 
 After launching Eisenkraut for the first time, make sure that the "SuperCollider Server (scsynth)" field in the audio preferences is pointing to the valid `scsynth` or `scsynth.exe` (on Windows) file! __On OS X, newer SuperCollider versions "hide" the `scsynth` command line tool inside the `SuperCollider.app` bundle.__ So the correct path will be something like `/Applications/SuperCollider/SuperCollider.app/Contents/Resources/scsynth`.
 
 Also note that, by default, the audio server is not automatically booted, so you need to press the "Boot" button in the main window to launch the server and be able to actually _hear_ the sound file when playing it back. There is a preferences switch to enable automatic booting.
 
-## compiling
+## building from source
 
 Eisenkraut can be build from source with [sbt](http://www.scala-sbt.org/#install) version 0.13. It requires Java 1.6, and library dependencies are currently included as jars in the `lib` folder.
 
@@ -73,3 +89,5 @@ A lot. Here are some suggestions:
  - Finishing sonogram functionality (needs decimation and must be editable)
  - Improving SuperCollider interface and classes
  - etc. etc.
+
+In the long-term, Eisenkraut will most likely be integrated with Mellite.

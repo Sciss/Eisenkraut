@@ -29,25 +29,27 @@ public interface RenderPlugIn extends Disposable {
 	public boolean hasUserParameters();
 	public boolean shouldDisplayParameters();
 	/**
-	 *	Either of POLICY_BYPASS, POLICY_CLEAR, or POLICY_MODIFY
+	 * @return Either of POLICY_BYPASS, POLICY_CLEAR, or POLICY_MODIFY
 	 */
 	public int getAudioPolicy();
 	/**
-	 *	Either of POLICY_BYPASS, or POLICY_MODIFY
+	 *	@return	Either of POLICY_BYPASS, or POLICY_MODIFY
 	 */
 	public int getUnselectedAudioPolicy();
 	/**
-	 *	Either of POLICY_BYPASS, POLICY_CLEAR, or POLICY_MODIFY
+	 *	@return Either of POLICY_BYPASS, POLICY_CLEAR, or POLICY_MODIFY
 	 */
 	public int getMarkerPolicy();
 	/**
-	 *	Either of POLICY_BYPASS or POLICY_MODIFY
+	 *	@return Either of POLICY_BYPASS or POLICY_MODIFY
 	 */
 	public int getLengthPolicy();
 	
 	/**
 	 *  This gets called right after the
 	 *  instantiation of a new render module
+	 *
+	 *  @param	prefs	the plug-in's preferences
 	 */
 	public void init(Preferences prefs);
 

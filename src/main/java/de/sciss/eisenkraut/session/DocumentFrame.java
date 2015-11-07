@@ -13,47 +13,6 @@
 
 package de.sciss.eisenkraut.session;
 
-import java.awt.BasicStroke;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Stroke;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.ClipboardOwner;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.prefs.PreferenceChangeEvent;
-import java.util.prefs.PreferenceChangeListener;
-import java.util.prefs.Preferences;
-import java.text.MessageFormat;
-
-import javax.swing.*;
-import javax.swing.event.MouseInputAdapter;
-import javax.swing.undo.CompoundEdit;
-import javax.swing.undo.UndoableEdit;
-
 import de.sciss.app.AbstractApplication;
 import de.sciss.app.AbstractWindow;
 import de.sciss.app.DynamicPrefChangeManager;
@@ -130,8 +89,36 @@ import de.sciss.io.Marker;
 import de.sciss.io.Span;
 import de.sciss.timebased.Trail;
 import de.sciss.util.Flag;
-
 import org.unicode.Normalizer;
+
+import javax.swing.*;
+import javax.swing.event.MouseInputAdapter;
+import javax.swing.undo.CompoundEdit;
+import javax.swing.undo.UndoableEdit;
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 
 public class DocumentFrame
 		extends AppWindow
@@ -155,10 +142,8 @@ public class DocumentFrame
 	protected long							timelineLen;
 	protected double						timelineRate;
 
-	private final JPanel					ggTrackPanel;
 	protected final WaveformView			waveView;
 	protected final ComponentHost			wavePanel;
-	private final JPanel					waveHeaderPanel;
 	protected final JPanel					channelHeaderPanel;
 	private final JPanel					flagsPanel;
 	private final JPanel					rulersPanel;
@@ -188,22 +173,13 @@ public class DocumentFrame
 	protected final ActionClose				actionClose;
 	protected final ActionSave				actionSave;
 	protected final ActionSaveAs			actionSaveAs;
-	private final ActionSaveAs				actionSaveCopyAs;
 	private final ActionSaveAs				actionSaveSelectionAs;
-	private final ActionSelectAll			actionSelectAll;
-	private final MenuAction				actionProcess, actionFadeIn, actionFadeOut, actionGain,
-											actionInvert, // actionMix,
-											actionReverse, actionRotateChannels, // actionSilence, 
-											actionFScNeedlehole,
-											actionDebugDump, actionDebugVerify, actionInsertRec;
-	protected final ActionProcessAgain		actionProcessAgain;
+	private final MenuAction				actionProcess;
+    protected final ActionProcessAgain		actionProcessAgain;
 
-	private final ActionSpanWidth			actionIncHoriz, actionDecHoriz;
-	protected final ActionScroll			actionZoomAllOut;
-	private final AbstractAction			actionIncVertMax, actionDecVertMax;
-	private final AbstractAction			actionIncVertMin, actionDecVertMin;
+    protected final ActionScroll			actionZoomAllOut;
 
-	private final AbstractWindow.Adapter	winListener;
+    private final AbstractWindow.Adapter	winListener;
 
 	private final JLabel					lbWriteProtected;
 	private boolean							writeProtected			= false;
@@ -267,8 +243,7 @@ public class DocumentFrame
 	private final boolean					internalFrames;
 
 	protected final BasicApplication		app;
-	private final SuperColliderClient		superCollider;
-	private final PeakMeterManager			lmm;
+    private final PeakMeterManager			lmm;
 
 	protected boolean						disposed		= false;
 	
@@ -303,11 +278,10 @@ public class DocumentFrame
 	 *
 	 *  @param  doc		session Session
 	 */
-	public DocumentFrame( final Session doc )
-	{
-		super( REGULAR );
-		
-		app					= (BasicApplication) AbstractApplication.getApplication();
+    public DocumentFrame(final Session doc) {
+        super(REGULAR);
+
+        app					= (BasicApplication) AbstractApplication.getApplication();
 
 		this.doc			= doc;
 		transport			= doc.getTransport();
@@ -316,8 +290,8 @@ public class DocumentFrame
 		timelineVis			= doc.timeline.getVisibleSpan();
 		timelineRate		= doc.timeline.getRate();
 		timelineLen			= doc.timeline.getLength();
-		
-		superCollider		= SuperColliderClient.getInstance();
+
+        SuperColliderClient superCollider = SuperColliderClient.getInstance();
 
 		lmm					= new PeakMeterManager( superCollider.getMeterManager() );
 
@@ -355,7 +329,7 @@ public class DocumentFrame
 		metersPanel			= new JPanel( new StretchedGridLayout( 0, 1, 1, 1 )); // SpringPanel( 0, 0, 1, 1 );
 		rulersPanel			= new JPanel( new StretchedGridLayout( 0, 1, 1, 1 ));
 		lmm.setDynamicComponent( metersPanel );
-		waveHeaderPanel		= new JPanel( new BorderLayout() );
+		JPanel waveHeaderPanel = new JPanel(new BorderLayout());
 		channelHeaderPanel	= new JPanel();
 		channelHeaderPanel.setLayout( new BoxLayout( channelHeaderPanel, BoxLayout.X_AXIS ));
 final Box bbb = Box.createVerticalBox();
@@ -365,11 +339,11 @@ gp.setLayout( null );
 gp.setPreferredSize( new Dimension( 0, timeAxis.getPreferredSize().height ));
 bbb.add( gp );
 bbb.add( markAxisHeader );
-		waveHeaderPanel.add( bbb, BorderLayout.NORTH );
+		waveHeaderPanel.add(bbb, BorderLayout.NORTH);
 		channelHeaderPanel.add( flagsPanel );
 		channelHeaderPanel.add( metersPanel );
 		channelHeaderPanel.add( rulersPanel );
-		waveHeaderPanel.add( channelHeaderPanel, BorderLayout.CENTER );
+		waveHeaderPanel.add(channelHeaderPanel, BorderLayout.CENTER);
 
 		waveView			= new WaveformView( doc, wavePanel );
 		wavePanel.setLayout( new BoxLayout( wavePanel, BoxLayout.Y_AXIS ));
@@ -378,10 +352,10 @@ bbb.add( markAxisHeader );
 		wavePanel.add( waveView );
 
         scroll				= new TimelineScroll( doc );
-		ggTrackPanel		= new JPanel( new BorderLayout() );
-		ggTrackPanel.add( wavePanel, BorderLayout.CENTER );
-		ggTrackPanel.add( waveHeaderPanel, BorderLayout.WEST );
-		ggTrackPanel.add( scroll, BorderLayout.SOUTH );
+		JPanel ggTrackPanel = new JPanel(new BorderLayout());
+		ggTrackPanel.add(wavePanel, BorderLayout.CENTER);
+		ggTrackPanel.add(waveHeaderPanel, BorderLayout.WEST);
+		ggTrackPanel.add(scroll, BorderLayout.SOUTH);
         
 		lbWriteProtected	= new JLabel();
 		ggAudioInfo			= new ModificationButton( ModificationButton.SHAPE_INFO );
@@ -402,7 +376,7 @@ bbb.add( markAxisHeader );
 		box.add( Box.createHorizontalStrut( 4 ));
 		box.add( lbWriteProtected );
 		box.add( ggAudioInfo );
-		if (internalFrames) box.add( ggRevealFile );
+		if (internalFrames || Main.isLinux /* !Main.isMac */) box.add(ggRevealFile);
 		box.add( Box.createHorizontalStrut( 4 ));
 		
 		pProgress			= new ProgressPanel();
@@ -646,48 +620,48 @@ bbb.add( markAxisHeader );
 		actionClose			= new ActionClose();
 		actionSave			= new ActionSave();
 		actionSaveAs		= new ActionSaveAs( false, false );
-		actionSaveCopyAs	= new ActionSaveAs( true, false );
+		ActionSaveAs actionSaveCopyAs = new ActionSaveAs(true, false);
 		actionSaveSelectionAs = new ActionSaveAs( true, true );
-		actionSelectAll		= new ActionSelectAll();
-		actionInsertRec		= new ActionInsertRec();
+		ActionSelectAll actionSelectAll = new ActionSelectAll();
+        MenuAction actionInsertRec = new ActionInsertRec();
 
 		actionProcess		= new ActionProcess();
 		actionProcessAgain	= new ActionProcessAgain();
-		actionFadeIn		= new ActionPlugIn( plugInPackage + "FadeIn" );
-		actionFadeOut		= new ActionPlugIn( plugInPackage + "FadeOut" );
-		actionGain			= new ActionPlugIn( plugInPackage + "Gain" );
-		actionInvert		= new ActionPlugIn( plugInPackage + "Invert" );
-		actionReverse		= new ActionPlugIn( plugInPackage + "Reverse" );
-		actionRotateChannels = new ActionPlugIn( plugInPackage + "RotateChannels" );
-		actionFScNeedlehole	= new ActionPlugIn( fscapePackage + "Needlehole" );
+		MenuAction actionFadeIn = new ActionPlugIn(plugInPackage + "FadeIn");
+		MenuAction actionFadeOut = new ActionPlugIn(plugInPackage + "FadeOut");
+		MenuAction actionGain = new ActionPlugIn(plugInPackage + "Gain");
+		MenuAction actionInvert = new ActionPlugIn(plugInPackage + "Invert");
+		MenuAction actionReverse = new ActionPlugIn(plugInPackage + "Reverse");
+		MenuAction actionRotateChannels = new ActionPlugIn(plugInPackage + "RotateChannels");
+		MenuAction actionFScNeedlehole = new ActionPlugIn(fscapePackage + "Needlehole");
 
-		actionDebugDump		= new ActionDebugDump();
-		actionDebugVerify	= new ActionDebugVerify();
+        MenuAction actionDebugDump = new ActionDebugDump();
+        MenuAction actionDebugVerify = new ActionDebugVerify();
 
-		actionIncVertMax	= new ActionVerticalMax( 2.0f, 6f );
-		actionDecVertMax	= new ActionVerticalMax( 0.5f, -6f );
-		actionIncVertMin	= new ActionVerticalMin( 6f );
-		actionDecVertMin	= new ActionVerticalMin( -6f );
-		actionIncHoriz		= new ActionSpanWidth( 2.0f );
-		actionDecHoriz		= new ActionSpanWidth( 0.5f );
+		AbstractAction actionIncVertMax = new ActionVerticalMax(2.0f, 6f);
+        AbstractAction actionDecVertMax = new ActionVerticalMax(0.5f, -6f);
+        AbstractAction actionIncVertMin = new ActionVerticalMin(6f);
+        AbstractAction actionDecVertMin = new ActionVerticalMin(-6f);
+        ActionSpanWidth actionIncHoriz = new ActionSpanWidth(2.0f);
+        ActionSpanWidth actionDecHoriz = new ActionSpanWidth(0.5f);
 		actionZoomAllOut	= new ActionScroll( SCROLL_ENTIRE_SESSION );
 
 		actionShowWindow	= new ShowWindowAction( this );
 
 		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_DOWN, InputEvent.CTRL_MASK ), "incvmax" );
-		aMap.put( "incvmax", actionIncVertMax );
+		aMap.put( "incvmax", actionIncVertMax);
 		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_UP, InputEvent.CTRL_MASK ), "decvmax" );
-		aMap.put( "decvmax", actionDecVertMax );
+		aMap.put( "decvmax", actionDecVertMax);
 		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_DOWN, InputEvent.CTRL_MASK | InputEvent.ALT_MASK ), "incvmin" );
-		aMap.put( "incvmin", actionIncVertMin );
+		aMap.put( "incvmin", actionIncVertMin);
 		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_UP, InputEvent.CTRL_MASK | InputEvent.ALT_MASK ), "decvmin" );
-		aMap.put( "decvmin", actionDecVertMin );
+		aMap.put( "decvmin", actionDecVertMin);
 		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LEFT, InputEvent.CTRL_MASK ), "inch" );
 		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_OPEN_BRACKET, BasicMenuFactory.MENU_SHORTCUT ), "inch" );
-		aMap.put( "inch", actionIncHoriz );
+		aMap.put( "inch", actionIncHoriz);
 		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_RIGHT, InputEvent.CTRL_MASK ), "dech" );
 		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_CLOSE_BRACKET, BasicMenuFactory.MENU_SHORTCUT ), "dech" );
-		aMap.put( "dech", actionDecHoriz );
+		aMap.put( "dech", actionDecHoriz);
 		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_RIGHT, myMeta ), "samplvl" );
 		aMap.put( "samplvl", new ActionSpanWidth( 0.0f ));
 		iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_ENTER, 0 ), "retn" );
@@ -743,7 +717,7 @@ bbb.add( markAxisHeader );
 		mr.putMimic( "file.close", this, actionClose );
 		mr.putMimic( "file.save", this, actionSave );
 		mr.putMimic( "file.saveAs", this, actionSaveAs );
-		mr.putMimic( "file.saveCopyAs", this, actionSaveCopyAs );
+		mr.putMimic( "file.saveCopyAs", this, actionSaveCopyAs);
 		mr.putMimic( "file.saveSelectionAs", this, actionSaveSelectionAs );
 
 		mr.putMimic( "edit.undo", this, doc.getUndoManager().getUndoAction() );
@@ -752,23 +726,23 @@ bbb.add( markAxisHeader );
 		mr.putMimic( "edit.copy", this, doc.getCopyAction() );
 		mr.putMimic( "edit.paste", this, doc.getPasteAction() );
 		mr.putMimic( "edit.clear", this, doc.getDeleteAction() );
-		mr.putMimic( "edit.selectAll", this, actionSelectAll );
+		mr.putMimic( "edit.selectAll", this, actionSelectAll);
 
 		mr.putMimic( "timeline.insertSilence", this, doc.getSilenceAction() );
-		mr.putMimic( "timeline.insertRecording", this, actionInsertRec );
+		mr.putMimic( "timeline.insertRecording", this, actionInsertRec);
 		mr.putMimic( "timeline.trimToSelection", this, doc.getTrimAction() );
 
 		mr.putMimic( "process.again", this, actionProcessAgain );
-		mr.putMimic( "process.fadeIn", this, actionFadeIn );
-		mr.putMimic( "process.fadeOut", this, actionFadeOut );
-		mr.putMimic( "process.gain", this, actionGain );
-		mr.putMimic( "process.invert", this, actionInvert );
-		mr.putMimic( "process.reverse", this, actionReverse );
-		mr.putMimic( "process.rotateChannels", this, actionRotateChannels );
-		mr.putMimic( "process.fscape.needlehole", this, actionFScNeedlehole );
+		mr.putMimic( "process.fadeIn", this, actionFadeIn);
+		mr.putMimic( "process.fadeOut", this, actionFadeOut);
+		mr.putMimic( "process.gain", this, actionGain);
+		mr.putMimic( "process.invert", this, actionInvert);
+		mr.putMimic( "process.reverse", this, actionReverse);
+		mr.putMimic( "process.rotateChannels", this, actionRotateChannels);
+		mr.putMimic( "process.fscape.needlehole", this, actionFScNeedlehole);
 
-		mr.putMimic( "debug.dumpRegions", this, actionDebugDump );
-		mr.putMimic( "debug.verifyRegions", this, actionDebugVerify );
+		mr.putMimic( "debug.dumpRegions", this, actionDebugDump);
+		mr.putMimic( "debug.verifyRegions", this, actionDebugVerify);
 		
 		updateEditEnabled( false );
 
@@ -2375,27 +2349,41 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 	}
 
 	@SuppressWarnings("serial")
-	private class ActionRevealFile
-			extends MenuAction {
+	private class ActionRevealFile extends MenuAction {
 		private File f;
-	
-		protected ActionRevealFile()
-		{
-			super( "Reveal File in Finder" );
-			setFile( null );
+
+		protected ActionRevealFile() {
+			super("Reveal File in Finder");
+			setFile(null);
 		}
 	
+		/**
+		 *  Shows the file in the desktop manager (Mac and Linux only)
+		 */
+        public void actionPerformed(ActionEvent e) {
+            if (f == null) return;
+            if      (Main.isMac  ) performMac  ();
+            else if (Main.isLinux) performLinux();
+        }
+
+        /* Show parent directory, that's as much as we can do I think... */
+		private void performLinux() {
+			final String dir = f.getParent();
+			if (dir == null) return;
+
+			final String[] cmdArray = { "xdg-open", dir };
+			try {
+				Runtime.getRuntime().exec( cmdArray, null, null );
+			} catch (IOException e1) {
+				displayError(e1, getValue(NAME).toString());
+			}
+		}
+
 		// osascript -e 'tell application "Finder"' -e 'activate' -e 'open location "file:///Volumes/Claude/audio"'
 		//   -e 'select file "Sine441HzGain.aif" of folder of the front window'
 		//   -e 'end tell'
 
-		/**
-		 *  Shows the file in the finder (Mac OS only)
-		 */
-		public void actionPerformed( ActionEvent e )
-		{
-			if( f == null ) return;
-			
+		private void performMac() {
 			try {
 				// File.toURL() ends up with sth. like "file:/Volumes/Claude/..." omitting the two initial slashes
 //				final String[] cmdArray = { "osascript", "-e", "tell application \"Finder\"", "-e", "activate",
@@ -2428,7 +2416,7 @@ final String fileName = n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" )
 //final String parentDir = path.substring( 0, i );
 //final String fileName = path.substring( i );
 //System.err.println( "'" + parentDir + "'" );				
-//System.err.println( "'" + fileName + "'" );				
+//System.err.println( "'" + fileName + "'" );
 				final String[] cmdArray = { "osascript", "-e", "tell application \"Finder\"", "-e", "activate",
 											"-e", "open location \"file://" + parentDir + "\"",
 //											"-e", "select location \"file://" + parentDir + "\"",

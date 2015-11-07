@@ -40,6 +40,7 @@ import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 
+import de.sciss.eisenkraut.Main;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -349,16 +350,13 @@ public class PrefsUtil {
 		String			value;
 		Preferences		childPrefs, childPrefs2;
 		final String	fs			= File.separator;
-		final boolean	isMacOS		= System.getProperty("os.name").contains("Mac OS");
-		final boolean	isWindows	= System.getProperty("os.name").contains("Windows");
-		final boolean	isLinux		= !(isMacOS || isWindows);	// Well...
 		final List<String> warnings	= new ArrayList<String>();
 
 		putDontOverwrite(IOUtil.getUserPrefs(), IOUtil.KEY_TEMPDIR, System.getProperty("java.io.tmpdir"));
 
 		// general
 		putDontOverwrite( mainPrefs, KEY_LOOKANDFEEL, UIManager.getSystemLookAndFeelClassName() );
-		putBooleanDontOverwrite( mainPrefs, CoverGrowBox.KEY_INTRUDINGSIZE, isMacOS );
+		putBooleanDontOverwrite( mainPrefs, CoverGrowBox.KEY_INTRUDINGSIZE, Main.isMac );
 		putBooleanDontOverwrite( mainPrefs, KEY_INSERTIONFOLLOWSPLAY, true );
 		putBooleanDontOverwrite( mainPrefs, KEY_VIEWCHANMETERS , true );
 		putBooleanDontOverwrite( mainPrefs, KEY_VIEWMARKERS , true );
@@ -384,7 +382,7 @@ public class PrefsUtil {
 		try {
 			if (!childPrefs.nodeExists(NODE_AUDIOBOXES)) {
 				childPrefs2 = childPrefs.node(NODE_AUDIOBOXES);
-				new AudioBoxConfig(value, isLinux ? "Eisenkraut" : "Default", 8, 8, true).toPrefs(childPrefs2.node(value));
+				new AudioBoxConfig(value, Main.isLinux ? "Eisenkraut" : "Default", 8, 8, true).toPrefs(childPrefs2.node(value));
 			}
 		} catch (BackingStoreException e1) {
 			warnings.add(e1.toString());
@@ -451,7 +449,7 @@ public class PrefsUtil {
 		
 		// sc app
 		if( childPrefs.get( KEY_SUPERCOLLIDERAPP, null ) == null ) {
-			f	= findFile( isWindows ? "scsynth.exe" : "scsynth", new String[] {
+			f	= findFile( Main.isWindows ? "scsynth.exe" : "scsynth", new String[] {
 				fs + "Applications" + fs + "SuperCollider_f",
 				fs + "Applications" + fs + "SuperCollider",
 				fs + "usr" + fs + "local" + fs + "bin",
@@ -460,7 +458,7 @@ public class PrefsUtil {
 				"C:\\Program Files\\PsyCollider"
 			});
 			if( f == null ) {
-				if( isMacOS ) {
+				if( Main.isMac ) {
 					try {
 						f = MRJAdapter.findApplication( "SCjm" );
 						if( f != null ) f = new File( f.getParentFile(), "scsynth" );
@@ -481,7 +479,7 @@ public class PrefsUtil {
 		childPrefs  = OSCRoot.getInstance().getPreferences();
 		putDontOverwrite   	   (childPrefs, OSCRoot.KEY_PROTOCOL, OSCChannel.TCP      );
 		putIntDontOverwrite	   (childPrefs, OSCRoot.KEY_PORT	, OSCRoot.DEFAULT_PORT);
-		putBooleanDontOverwrite(childPrefs, OSCRoot.KEY_ACTIVE	, isLinux			  ); // used to enforce MDA
+		putBooleanDontOverwrite(childPrefs, OSCRoot.KEY_ACTIVE	, Main.isLinux		); // used to enforce MDA
 
 		if (childPrefs.get(OSCGUI.KEY_SWINGAPP, null) == null) {
 			final String[] folders = new String[ value == null ? 2 : 4 ];

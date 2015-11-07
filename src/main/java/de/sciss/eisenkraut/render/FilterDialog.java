@@ -674,12 +674,12 @@ public class FilterDialog
  *
  *		(initially empty)
  *
- *		+--------+----------------------+--------+--------+
- *		| fltLenI|          >= 0        | fltLenI| fltLenI|
- *		+--------+----------------------+--------+--------+
- *										|<--overlapLen--->|
+ *		+--------+----------------------+-----------+-----------+
+ *		| fltLenI|          &gt;= 0     | fltLenI   | fltLenI   |
+ *		+--------+----------------------+-----------+-----------+
+ *										|&lt;--overlapLen---&gt;|
  *										|=overlapOff
- *				 |<-------trnsInside------------>|
+ *				 |&lt;----trnsInside---------&gt;|
  *
  *		first buffer read (mte.read()):
  *

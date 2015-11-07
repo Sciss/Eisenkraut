@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Eisenkraut
+Version=1.2.0
+GenericName=Eisenkraut
+Comment=Eisenkraut Audio File Editor
+Exec=/usr/share/eisenkraut/bin/eisenkraut %F
+StartupWMClass=de-sciss-eisenkraut-Main
+Icon=/usr/share/eisenkraut/Eisenkraut.png
+Categories=Audio;AudioVideo;
+Terminal=false
+Type=Application
+MimeType=audio/basic;audio/x-aiff;audio/x-wav;audio/x-w64

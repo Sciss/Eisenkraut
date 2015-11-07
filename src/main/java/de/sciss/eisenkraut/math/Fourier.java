@@ -191,8 +191,9 @@ public class Fourier
 	 *
 	 *	@param	src		Array with interleaved real/ imag data
 	 *	@param	dest	target array which can be the same object as source (in place operation)
-	 *	@param	srcOff	array offset, physical (complex offset << 1)
-	 *	@param	length	complex length << 1
+	 *	@param	srcOff	array offset, physical (complex offset * 2)
+	 *	@param	destOff	offset, physical (complex offset * 2) into `dest`
+	 *	@param	length	complex length * 2
 	 */
 	public static void rect2Polar( float src[], int srcOff, float dest[], int destOff, int length )
 	{
@@ -221,8 +222,8 @@ public class Fourier
 	 *
 	 *	@param	src		Array with interleaved amplitude/ phase data
 	 *	@param	dest	target array which can be the same object as source (in place operation)
-	 *	@param	srcOff	array offset, physical (complex offset << 1)
-	 *	@param	length	complex length << 1
+	 *	@param	srcOff	array offset, physical (complex offset * 2)
+	 *	@param	length	complex length * 2
 	 */
 	public static void polar2Rect( float src[], int srcOff, float dest[], int destOff, int length )
 	{
@@ -250,11 +251,11 @@ public class Fourier
 	 *	Multiplies two complex data vectors
 	 *
 	 *	@param	src1	Array with interleaved real/ imag data
-	 *	@param	srcOff1	array offset, physical (complex offset << 1)
+	 *	@param	srcOff1	array offset, physical (complex offset * 2)
 	 *	@param	src2	Array with interleaved real/ imag data
-	 *	@param	srcOff2	array offset, physical (complex offset << 1)
+	 *	@param	srcOff2	array offset, physical (complex offset * 2)
 	 *	@param	dest	kann identisch mit *einem* src sein (in-place)
-	 *	@param	length	complex length << 1
+	 *	@param	length	complex length * 2
 	 */
 	public static void complexMult( float src1[], int srcOff1, float src2[], int srcOff2,
 									float dest[], int destOff, int length )
@@ -292,8 +293,8 @@ public class Fourier
 	 *	@param	src		Array with interleaved amplitude/ phase data
 	 *	@param	dest	target array which can be the same object as source (in place operation);
 	 *					in this case, however, destOff must not be less than srcOff!
-	 *	@param	srcOff	array offset, physical (complex offset << 1)
-	 *	@param	length	complex length << 1
+	 *	@param	srcOff	array offset, physical (complex offset * 2)
+	 *	@param	length	complex length * 2
 	 */
 	public static void unwrapPhases( float src[], int srcOff, float dest[], int destOff, int length )
 	{
@@ -323,8 +324,8 @@ public class Fourier
 	 *	@param	src		Array with interleaved amplitude/ phase data
 	 *	@param	dest	target array which can be the same object as source (in place operation);
 	 *					in this case, however, destOff must not be less than srcOff!
-	 *	@param	srcOff	array offset, physical (complex offset << 1)
-	 *	@param	length	complex length << 1
+	 *	@param	srcOff	array offset, physical (complex offset * 2)
+	 *	@param	length	complex length * 2
 	 */
 	public static void wrapPhases( float src[], int srcOff, float dest[], int destOff, int length )
 	{

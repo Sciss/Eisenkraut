@@ -100,7 +100,7 @@ public class IOSetupFrame extends AppWindow {
 	
 	protected static final String[]	staticColNames	= { "ioConfig", "ioNumChannels", "ioStartAngle" };
 	private static final int[]		staticColWidths	= { 160, 54, 54 };
-	private static final int		MAPPING_WIDTH	= 40; // 36;
+	private static final int		MAPPING_WIDTH	= 48; // 40; // 36;
 //	private static final Font		fnt				= GraphicsUtil.smallGUIFont;
 
 	private static final int[] pntMapNormGradientPixels = { 0xFFF4F4F4, 0xFFF1F1F1, 0xFFEEEEEE, 0xFFECECEC,

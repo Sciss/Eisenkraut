@@ -399,19 +399,19 @@ System.err.println( "BasicTrail.insert, touchmode resize : not tested" );
 	 *	<code>&lt;=</code> the start of removed span, remain unaffected. Stakes that intersect the
 	 *	removed span are traited according to the <code>touchMode</code> setting:
 	 *	<ul>
-	 *	<li><code>TOUCH_NONE</code></li> : intersecting stakes whose <code>start</code> is smaller than
+	 *	<li><code>TOUCH_NONE</code> : intersecting stakes whose <code>start</code> is smaller than
 	 *		the removed span's start remain unaffected ; otherwise they are removed. This mode is usefull
-	 *		for markers.
-	 *	<li><code>TOUCH_SPLIT</code></li> : the stake is cut at the removed span's start and stop ; a
+	 *		for markers.</li>
+	 *	<li><code>TOUCH_SPLIT</code> : the stake is cut at the removed span's start and stop ; a
 	 *		middle part (if existing) is removed ; the left part (if existing) remains as is ; the right part
-	 *		(if existing) is shifted by <code>-span.getLength()</code>. This mode is usefull for audio regions.
-	 *	<li><code>TOUCH_RESIZE</code></li> : intersecting stakes whose <code>start</code> is smaller than
+	 *		(if existing) is shifted by <code>-span.getLength()</code>. This mode is usefull for audio regions.</li>
+	 *	<li><code>TOUCH_RESIZE</code> : intersecting stakes whose <code>start</code> is smaller than
 	 *		the removed span's start, will keep their start position ; if their stop position lies within the
 	 *		removed span, it is truncated to the removed span's start. if their stop position exceeds the removed
 	 *		span's stop, the stake's length is shortened by <code>-span.getLength()</code> . 
 	 *		intersecting stakes whose <code>start</code> is greater or equal to the
 	 *		the removed span's start, will by shortened by <code>(removed_span_stop - stake_start)</code> and
-	 *		shifted by <code>-span.getLength()</code> . This mode is usefull for marker regions.
+	 *		shifted by <code>-span.getLength()</code> . This mode is usefull for marker regions.</li>
 	 *	</ul>
 	 *
 	 *	@param	source		source object for event dispatching (or <code>null</code> for no dispatching)

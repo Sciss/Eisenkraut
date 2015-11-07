@@ -1,5 +1,16 @@
 # change history
 
+## v1.2.0 (nov 2015)
+
+ - improve build scripts, package for Debian
+ - improve Linux support
+ - add drop-file element to main window
+
+## v1.1.0 (jan 2015)
+
+ - fix incompatibilities with SC versions
+ - improve Linux support, keyboard control
+
 ## v1.0.0 (oct 2012)
 
  - move to sbt (simple build tool) for building, instead of Ant

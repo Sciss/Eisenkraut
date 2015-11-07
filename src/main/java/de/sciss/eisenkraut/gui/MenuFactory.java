@@ -13,32 +13,6 @@
 
 package de.sciss.eisenkraut.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.FileDialog;
-import java.awt.Frame;
-import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.io.File;
-import java.io.IOException;
-import java.util.StringTokenizer;
-import java.util.prefs.PreferenceChangeEvent;
-import java.util.prefs.PreferenceChangeListener;
-import java.util.prefs.Preferences;
-import javax.swing.Action;
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.KeyStroke;
-
-import de.sciss.eisenkraut.Main;
-import de.sciss.eisenkraut.io.AudioStake;
-import de.sciss.eisenkraut.io.PrefCacheManager;
-import de.sciss.eisenkraut.net.SuperColliderClient;
-import de.sciss.eisenkraut.session.Session;
-import de.sciss.eisenkraut.util.PrefsUtil;
-
 import de.sciss.app.AbstractApplication;
 import de.sciss.app.AbstractWindow;
 import de.sciss.app.DynamicPrefChangeManager;
@@ -46,6 +20,13 @@ import de.sciss.common.BasicApplication;
 import de.sciss.common.BasicMenuFactory;
 import de.sciss.common.BasicWindowHandler;
 import de.sciss.common.ProcessingThread;
+import de.sciss.eisenkraut.Main;
+import de.sciss.eisenkraut.io.AudioStake;
+import de.sciss.eisenkraut.io.PrefCacheManager;
+import de.sciss.eisenkraut.net.SuperColliderClient;
+import de.sciss.eisenkraut.session.Session;
+import de.sciss.eisenkraut.util.PrefsUtil;
+import de.sciss.gui.AboutBox;
 import de.sciss.gui.AbstractWindowHandler;
 import de.sciss.gui.BooleanPrefsMenuAction;
 import de.sciss.gui.IntPrefsMenuAction;
@@ -59,10 +40,24 @@ import de.sciss.gui.MenuSeparator;
 import de.sciss.io.AudioFileDescr;
 import de.sciss.io.AudioFileFormatPane;
 import de.sciss.io.Span;
+import de.sciss.jcollider.Server;
 import de.sciss.util.Flag;
 import de.sciss.util.Param;
+import net.roydesign.app.AboutJMenuItem;
 
-import de.sciss.jcollider.Server;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.StringTokenizer;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 
 /**
  *  <code>JMenu</code>s cannot be added to more than
@@ -88,6 +83,27 @@ extends BasicMenuFactory
 	private ActionOpenMM			actionOpenMM;
 	private ActionNewEmpty			actionNewEmpty;
 
+	/** Base directory of FScape installation.
+	 * I.e. parent directory of `help`, `sounds` etc.
+	 */
+	private static final File installDir;
+
+	static {
+		File base = null;
+		final String cp = System.getProperty("java.class.path");
+		final String[] paths = cp.split(":");
+		for (int i = 0; i < paths.length; i++) {
+			final String entry = paths[i];
+			if (entry.contains("eisenkraut")) {
+				final File lib = new File(entry).getParentFile();
+				if (lib != null) {
+					base = lib.getParentFile();
+				}
+			}
+		}
+		installDir = (base != null) ? base : new File("").getAbsoluteFile();
+	}
+
 	/**
 	 *  The constructor is called only once by
 	 *  the <code>Main</code> class and will create a prototype
@@ -97,6 +113,7 @@ extends BasicMenuFactory
 	public MenuFactory( BasicApplication app )
 	{
 		super( app );
+
 		createActions();
 	}
 	
@@ -292,7 +309,45 @@ if( doc.getFrame() == null ) {
 		mg.add( new MenuItem( "dumpNodeTree", SuperColliderClient.getInstance().getDebugNodeTreeAction() ));
 		mg.add( new MenuItem( "dumpKillAll", SuperColliderClient.getInstance().getDebugKillAllAction() ));
 		i	= indexOf( "help" );
-		add( mg, i );
+//		add( mg, i );
+
+		remove(i);
+
+		add(mg);
+
+		mg	= new MenuGroup( "help", getResourceString( "menuHelp" ));
+		// this is pretty weird, but it works at least on german keyboards: command+questionmark is defaut help shortcut
+		// on mac os x. KeyEvent.VK_QUESTION_MARK doesn't exist, plus apple's vm ignore german keyboard layout, therefore the
+		// the question mark becomes a minus. however it's wrongly displayed in the menu...
+		try {
+			final URL urlManual = new File(new File(installDir, "help"), "index.html").toURI().toURL();
+			mg.add(new MenuItem("manual", new URLViewerAction(getResourceString("menuHelpManual"),
+					KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, MENU_SHORTCUT + InputEvent.SHIFT_MASK), urlManual /* "index" */, false)));
+		} catch (MalformedURLException e) {
+			// nada
+		}
+		try {
+			final URL urlShortcuts = new File(new File(installDir, "help"), "Shortcuts.html").toURI().toURL();
+			mg.add(new MenuItem("shortcuts", new URLViewerAction(getResourceString("menuHelpShortcuts"), null, urlShortcuts, false)));
+		} catch (MalformedURLException e) {
+			// nada
+		}
+		try {
+			final URL urlApp = new URL("http://www.sciss.de/eisenkraut");
+			mg.addSeparator();
+			mg.add(new MenuItem("website", new URLViewerAction(getResourceString("menuHelpWebsite"), null, urlApp, true)));
+		} catch (MalformedURLException e) {
+			// nada
+		}
+		final Action a = new ActionAbout(getResourceString("menuAbout"), null);
+		if (AboutJMenuItem.isAutomaticallyPresent()) {
+			getApplication().getAboutJMenuItem().setAction(a);
+		} else {
+			mg.addSeparator();
+			mg.add(new MenuItem("about", a));
+		}
+
+		add( mg );
 
 //		// --- help menu ---
 //		mg	= new MenuGroup( "help", getResourceString( "menuHelp" ));
@@ -824,4 +879,25 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 			f.toFront();
 		}
 	}
+
+	// action for the About menu item
+    private class ActionAbout extends MenuAction {
+
+        protected ActionAbout(String text, KeyStroke shortcut) {
+            super(text, shortcut);
+        }
+
+        /**
+         * Brings up the About-Box
+         */
+        public void actionPerformed(ActionEvent e) {
+            JFrame aboutBox = (JFrame) getApplication().getComponent(AboutBox.COMP_ABOUTBOX);
+
+            if (aboutBox == null) {
+                aboutBox = new AboutBox();
+            }
+            aboutBox.setVisible(true);
+            aboutBox.toFront();
+        }
+    }
 }
