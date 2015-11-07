@@ -49,17 +49,12 @@ Eisenkraut can be build from source with [sbt](http://www.scala-sbt.org/#install
 
 If you do not have or wish to install sbt on your system, a shortcut is to use the provided Unix (OS X and Linux) script `sbt` which comes in the main folder. It may be invoked as `./sbt` and will automatically download the correct `sbt-launch.jar` version and place it in the main Eisenkraut directory, the first time it is executed. 
 
-To build on __Linux__ or __Windows__:
-
-    $ sbt assembly
-
-The result will be `Eisenkraut.jar`. This should be double-clickable, and otherwise can be launched with `java -jar Eisenkraut.jar`. The preferred way, however, is to use the `Eisenkraut.command` shell script which will give the application more memory.
-
-To build on __OS X__:
-
-    $ sbt appbundle
-
-The result will be `Eisenkraut.app` in the main directory.
+ - to compile: `sbt compile`
+ - to package: `sbt package`
+ - to run: `sbt run`
+ - to make a standalone jar: `sbt assembly`
+ 
+The release bundles are produced with tasks `universal:packageBin` and `debian:packageBin`.
 
 ## source code distribution
 
