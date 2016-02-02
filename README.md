@@ -3,13 +3,14 @@
 # Eisenkraut
 
 [![Flattr this](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=sciss&url=https%3A%2F%2Fgithub.com%2FSciss%2FEisenkraut&title=Eisenkraut%20Audio%20Editor&language=Java&tags=github&category=software)
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Sciss/Eisenkraut?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/Sciss/Eisenkraut.svg?branch=master)](https://travis-ci.org/Sciss/Eisenkraut)
 
 ## statement
 
 Eisenkraut is a standalone, cross-platform audio file editor using the SuperCollider 3 server application.
 
-Eisenkraut is (C)opyright 2004&ndash;2015 by Hanns Holger Rutz. All rights reserved. It is released under the [GNU General Public License](http://github.com/Sciss/Eisenkraut/blob/master/licenses/Eisenkraut-License.txt).
+Eisenkraut is (C)opyright 2004&ndash;2016 by Hanns Holger Rutz. All rights reserved. It is released under the [GNU General Public License](http://github.com/Sciss/Eisenkraut/blob/master/licenses/Eisenkraut-License.txt).
 
 To contact the author, send an email to `contact at sciss.de`. For project status, API and current version visit [github.com/Sciss/Eisenkraut](http://github.com/Sciss/Eisenkraut).
 
@@ -67,6 +68,10 @@ For OSC communication, the NetUtil library is used, which is licensed under the 
 It uses the ScissLib library which is licensed under the GNU General Public License, source code provided through [github.com/Sciss/ScissLib](https://github.com/Sciss/ScissLib), and Steve Roy's MRJAdapter published under the Artistic License, source code provided through [java.net/projects/mrjadapter/sources/svn/show](https://java.net/projects/mrjadapter/sources/svn/show).
 
 ICU4J and Unicode Java code (`Normalizer.jar`) is used which is licensed under a BSD 3-clause type license.
+
+## contributing
+
+Please see the file [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ## documentation
 
