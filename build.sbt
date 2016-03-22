@@ -10,20 +10,21 @@ lazy val basicJavaOpts = Seq("-source", "1.6")
 
 lazy val commonSettings = Seq(
   name             := "Eisenkraut",
-  version          := "1.2.0",
+  version          := "1.3.0-SNAPSHOT",
   organization     := "de.sciss",
   description      := "A multi-channel and hi-res capable audio file editor",
   homepage         := Some(url("https://github.com/Sciss/Eisenkraut")),
   licenses         := Seq("GPL v3+" -> url("http://www.gnu.org/licenses/gpl-3.0.txt")),
   javacOptions    ++= basicJavaOpts ++ Seq("-encoding", "utf8", "-target", "1.6"),
   javacOptions in (Compile, doc) := basicJavaOpts,  // doesn't eat `-encoding`
+  scalaVersion     := "2.11.8", // not used
   autoScalaLibrary := false,
   crossPaths       := false,
   mainClass        := Some("de.sciss.eisenkraut.Main"),
   libraryDependencies ++= Seq(
     "de.sciss" % "jcollider" % "1.0.0",
     "de.sciss" % "scisslib"  % "1.0.0",
-    "de.sciss" % "weblaf"    % "1.28"
+    "de.sciss" % "weblaf-submin" % "1.29-SNAPSHOT"
   )
 )
 

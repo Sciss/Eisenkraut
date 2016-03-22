@@ -13,8 +13,6 @@
 
 package de.sciss.eisenkraut;
 
-import com.alee.laf.checkbox.WebCheckBoxStyle;
-import com.alee.laf.progressbar.WebProgressBarStyle;
 import de.sciss.app.DocumentHandler;
 import de.sciss.common.AppWindow;
 import de.sciss.common.BasicApplication;
@@ -196,12 +194,14 @@ implements OSCRouter // ProgressComponent // , PreferenceChangeListener
         // WebLookAndFeel.install();
         // System.out.println(UIManager.getLookAndFeel().getName());
         UIManager.installLookAndFeel("WebLookAndFeel", "com.alee.laf.WebLookAndFeel");
+/*
         WebCheckBoxStyle   .animated            = false;
         WebProgressBarStyle.progressTopColor    = Color.lightGray;
         WebProgressBarStyle.progressBottomColor = Color.gray;
         // XXX TODO: how to really turn of animation?
         WebProgressBarStyle.highlightWhite      = new Color(255, 255, 255, 0); // 48)
         WebProgressBarStyle.highlightDarkWhite  = new Color(255, 255, 255, 0);
+*/
 
 		lafName = prefs.get(PrefsUtil.KEY_LOOKANDFEEL, null);
 		for (int i = 0; i < args.length; i++) {
@@ -229,7 +229,8 @@ implements OSCRouter // ProgressComponent // , PreferenceChangeListener
         
 		// ---- init look-and-feel ----
 
-		lookAndFeelUpdate(lafName);
+//		lookAndFeelUpdate(lafName);
+de.sciss.weblaf.submin.SubminSkin.install();
 
 //		JFrame.setDefaultLookAndFeelDecorated( true );
 
