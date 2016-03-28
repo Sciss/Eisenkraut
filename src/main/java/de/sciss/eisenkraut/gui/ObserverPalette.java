@@ -167,7 +167,7 @@ implements	ParamField.Listener, TimelineListener, DynamicListening, DocumentList
         
 		cp.add( BorderLayout.CENTER, ggTabPane );
 		
-		AbstractWindowHandler.setDeepFont( ggTabPane );
+//		AbstractWindowHandler.setDeepFont( ggTabPane );
 		
 		// --- Listener ---
         addDynamicListening( this );

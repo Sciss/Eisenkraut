@@ -568,7 +568,7 @@ final SpringPanel tabAudio = tab;
 		// ---------- generic gadgets ----------
 
 		cp.add( ggTabPane, BorderLayout.CENTER );
-		AbstractWindowHandler.setDeepFont( cp );
+//		AbstractWindowHandler.setDeepFont( cp );
 
 		// ---------- listeners ----------
 
@@ -843,7 +843,7 @@ ggAssistent.setEnabled( false );  // XXX ;-(  sadly we didn't get the text outpu
 		// row++;
 		pane2.setVisible( false );
 		pane.add( pane2, BorderLayout.CENTER );
-		AbstractWindowHandler.setDeepFont( pane );
+//		AbstractWindowHandler.setDeepFont( pane );
 		
 //		op = new JOptionPane( pane, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION,
 //				new ImageIcon( GUIUtil.class.getResource( "assistent_64x64.png" )));

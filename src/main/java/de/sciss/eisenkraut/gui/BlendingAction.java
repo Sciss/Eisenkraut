@@ -174,10 +174,10 @@ public class BlendingAction
 		destroyBlendPan();
 
 		createGadgets( 0 );
-		final Font fnt = AbstractApplication.getApplication().getGraphicsHandler()
-			.getFont(GraphicsHandler.FONT_SMALL);
-		GUIUtil.setDeepFont( ggSettingsPane, fnt );
-		GUIUtil.setDeepFont( bottomPanel, fnt );
+//		final Font fnt = AbstractApplication.getApplication().getGraphicsHandler()
+//			.getFont(GraphicsHandler.FONT_SMALL);
+//		GUIUtil.setDeepFont( ggSettingsPane, fnt );
+//		GUIUtil.setDeepFont( bottomPanel, fnt );
 		ggBlendTime.setCycling( popped ); // cannot open popup menu in another popup menu!
 		if( palette != null ) {
 			palette.getContentPane().add( ggSettingsPane, BorderLayout.CENTER );

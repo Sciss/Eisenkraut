@@ -248,7 +248,7 @@ implements Constants, ServerListener, NodeListener, OSCRouter,
 		cp.add( recPane, BorderLayout.NORTH );
 		cp.add( butPane, BorderLayout.SOUTH );
 
-		GUIUtil.setDeepFont( cp, app.getGraphicsHandler().getFont(GraphicsHandler.FONT_SMALL));
+//		GUIUtil.setDeepFont( cp, app.getGraphicsHandler().getFont(GraphicsHandler.FONT_SMALL));
 
 //		runPeakUpdate = new Runnable() {
 //			public void run()

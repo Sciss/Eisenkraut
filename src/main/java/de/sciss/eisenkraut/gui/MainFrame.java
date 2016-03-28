@@ -13,6 +13,24 @@
 
 package de.sciss.eisenkraut.gui;
 
+import de.sciss.app.AbstractApplication;
+import de.sciss.app.AbstractWindow;
+import de.sciss.app.Application;
+import de.sciss.common.AppWindow;
+import de.sciss.common.BasicApplication;
+import de.sciss.eisenkraut.Main;
+import de.sciss.eisenkraut.net.SuperColliderClient;
+import de.sciss.gui.AbstractWindowHandler;
+import de.sciss.gui.CoverGrowBox;
+import de.sciss.gui.LogTextArea;
+import de.sciss.gui.MultiStateButton;
+import de.sciss.gui.TreeExpanderButton;
+import de.sciss.jcollider.Server;
+import de.sciss.jcollider.ServerEvent;
+import de.sciss.jcollider.ServerListener;
+
+import javax.swing.*;
+import javax.swing.border.AbstractBorder;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -23,25 +41,6 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Locale;
-import javax.swing.*;
-import javax.swing.border.AbstractBorder;
-
-import de.sciss.eisenkraut.Main;
-import de.sciss.eisenkraut.net.SuperColliderClient;
-
-import de.sciss.app.AbstractApplication;
-import de.sciss.app.AbstractWindow;
-import de.sciss.app.Application;
-import de.sciss.common.AppWindow;
-import de.sciss.common.BasicApplication;
-import de.sciss.gui.AbstractWindowHandler;
-import de.sciss.gui.CoverGrowBox;
-import de.sciss.gui.LogTextArea;
-import de.sciss.gui.MultiStateButton;
-import de.sciss.gui.TreeExpanderButton;
-import de.sciss.jcollider.Server;
-import de.sciss.jcollider.ServerEvent;
-import de.sciss.jcollider.ServerListener;
 
 public class MainFrame
 		extends AppWindow
@@ -260,7 +259,7 @@ public class MainFrame
 			fntMonoSpaced = new Font( "Monospaced", Font.PLAIN, 10 );
 		}
 		
-		AbstractWindowHandler.setDeepFont( cp );
+//		AbstractWindowHandler.setDeepFont( cp );
 		
 		ggBoot.setNumColumns( 9 );
 		ggBoot.addItem( getResourceString( "buttonBoot" ), null, null );
@@ -276,10 +275,10 @@ ggDumpOSC.addItem( getResourceString( "labelDumpHex" ), null, new Color( 0xFF, 0
 		final Dimension d = new Dimension( ggDumpOSC.getPreferredSize().width, ggDumpOSC.getMaximumSize().height );
 		ggBoot.setMaximumSize( d );
 		ggDumpOSC.setMaximumSize( d );
-		
-		lbStatus1.setFont( fntMonoSpaced );
-		lbStatus2.setFont( fntMonoSpaced );
-		lta.setFont( fntMonoSpaced );
+
+		lbStatus1.setFont(fntMonoSpaced);
+		lbStatus2.setFont(fntMonoSpaced);
+		lta      .setFont(fntMonoSpaced);
 
 		// ---- menus and actions ----
 		

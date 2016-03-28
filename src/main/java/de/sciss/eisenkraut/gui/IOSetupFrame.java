@@ -13,54 +13,6 @@
 
 package de.sciss.eisenkraut.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.LayoutManager;
-import java.awt.Paint;
-import java.awt.Rectangle;
-import java.awt.TexturePaint;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
-
-import javax.swing.AbstractButton;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.ListSelectionModel;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.TransferHandler;
-import javax.swing.WindowConstants;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
-
 import de.sciss.app.AbstractApplication;
 import de.sciss.app.Application;
 import de.sciss.app.GraphicsHandler;
@@ -75,6 +27,30 @@ import de.sciss.gui.CoverGrowBox;
 import de.sciss.gui.HelpButton;
 import de.sciss.gui.ModificationButton;
 import de.sciss.gui.SortedTableModel;
+
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 /**
  *  This is the frame that
@@ -207,7 +183,7 @@ public class IOSetupFrame extends AppWindow {
 
 		cp.add( ggTabPane, BorderLayout.CENTER );
         cp.add( buttonPanel, BorderLayout.SOUTH );
-		AbstractWindowHandler.setDeepFont( cp );
+//		AbstractWindowHandler.setDeepFont( cp );
 
 		// ---------- ----------
 
@@ -598,43 +574,40 @@ public class IOSetupFrame extends AppWindow {
 
 	@SuppressWarnings("serial")
 	private static class MappingRenderer
-	extends JComponent
-	implements TableCellRenderer
-	{
-		private Paint pnt		= pntMapNormal;
-		private String value	= null;
-	
-		protected MappingRenderer()
-		{
+			extends JComponent
+			implements TableCellRenderer {
+
+		private Paint pnt = pntMapNormal;
+		private String value = null;
+
+		protected MappingRenderer() {
 			super();
-			setOpaque( true );
-			setFont( AbstractApplication.getApplication().getGraphicsHandler().getFont(GraphicsHandler.FONT_SMALL));
+			setOpaque(true);
+			setFont(AbstractApplication.getApplication().getGraphicsHandler().getFont(GraphicsHandler.FONT_SMALL));
 		}
-	
-		public Component getTableCellRendererComponent( JTable table, Object v,
-														boolean isSelected, boolean hasFocus,
-														int row, int column )
-		{
-			pnt	= hasFocus ? pntMapSelected : pntMapNormal;
+
+		public Component getTableCellRendererComponent(JTable table, Object v,
+													   boolean isSelected, boolean hasFocus,
+													   int row, int column) {
+			pnt = hasFocus ? pntMapSelected : pntMapNormal;
 			value = v == null ? null : v.toString();
 			return this;
 		}
-		
-		public void paintComponent( Graphics g )
-		{
-			super.paintComponent( g );
-			
-			Graphics2D	g2 = (Graphics2D) g;
-			
-			if( value == null ) {
-				g2.setColor( Color.white );
-				g2.fillRect( 0, 0, getWidth(), getHeight() );
+
+		public void paintComponent(Graphics g) {
+			super.paintComponent(g);
+
+			Graphics2D g2 = (Graphics2D) g;
+
+			if (value == null) {
+				g2.setColor(Color.white);
+				g2.fillRect(0, 0, getWidth(), getHeight());
 			} else {
-				final FontMetrics fm = g2.getFontMetrics( g2.getFont() );
-				g2.setPaint( pnt );
-				g2.fillRect( 0, 0, getWidth(), getHeight() );
-				g2.setColor( Color.black );
-				g2.drawString( value, (getWidth() - fm.stringWidth( value )) * 0.5f, fm.getAscent() );
+				final FontMetrics fm = g2.getFontMetrics(g2.getFont());
+				g2.setPaint(pnt);
+				g2.fillRect(0, 0, getWidth(), getHeight());
+				g2.setColor(Color.black);
+				g2.drawString(value, (getWidth() - fm.stringWidth(value)) * 0.5f, fm.getAscent());
 			}
 		}
 	}

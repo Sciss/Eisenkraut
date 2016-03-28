@@ -129,7 +129,7 @@ implements	DynamicListening, de.sciss.app.DocumentListener, ParamField.Listener,
 //        if( AbstractApplication.getApplication().getUserPrefs().getBoolean( PrefsUtil.KEY_INTRUDINGSIZE, false )) {
 //			cp.add( Box.createVerticalStrut( 16 ), BorderLayout.SOUTH );
 //        }
-		GUIUtil.setDeepFont( p2, app.getGraphicsHandler().getFont(GraphicsHandler.FONT_SMALL));
+//		GUIUtil.setDeepFont( p2, app.getGraphicsHandler().getFont(GraphicsHandler.FONT_SMALL));
 		
 		// --- Listener ---
 //		new DynamicAncestorAdapter( this ).addTo( rp );

@@ -507,7 +507,7 @@ System.err.println( "removeSCPlugIn : NOT YET WORKING" );
 				affp		= new AudioFileFormatPane( AudioFileFormatPane.NEW_FILE_FLAGS );
 				p			= new JPanel( new BorderLayout() );
 				p.add( affp, BorderLayout.NORTH );
-				AbstractWindowHandler.setDeepFont( affp );
+//				AbstractWindowHandler.setDeepFont( affp );
 			}
 
 			status		= SuperColliderClient.getInstance().getStatus();

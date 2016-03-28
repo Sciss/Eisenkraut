@@ -745,8 +745,8 @@ bbb.add( markAxisHeader );
 
         updateEditEnabled( false );
 
-        AbstractWindowHandler.setDeepFont( cp, Collections.singletonList( timeTB ));
-        GUIUtil.setDeepFont( timeTB, app.getGraphicsHandler().getFont(GraphicsHandler.FONT_MINI));
+        AbstractWindowHandler.setDeepFont(cp, Collections.singletonList(timeTB));
+        GUIUtil.setDeepFont(timeTB, app.getGraphicsHandler().getFont(GraphicsHandler.FONT_MINI));
         app.getMenuFactory().addToWindowMenu( actionShowWindow );	// MUST BE BEFORE INIT()!!
 
         init();
@@ -2086,7 +2086,7 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 //				msgPane.gridAdd( new JLabel( " " ), 1, y );
             }
 
-            AbstractWindowHandler.setDeepFont( msgPane );
+//            AbstractWindowHandler.setDeepFont( msgPane );
             msgPane.makeCompactGrid();
             p			= new JPanel( new BorderLayout() );
             p.add( msgPane, BorderLayout.NORTH );

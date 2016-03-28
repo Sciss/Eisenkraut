@@ -13,37 +13,6 @@
 
 package de.sciss.eisenkraut.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Container;
-import java.awt.EventQueue;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.geom.Point2D;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
-
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.WindowConstants;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
-import de.sciss.eisenkraut.Main;
-import de.sciss.eisenkraut.io.AudioBoxConfig;
-import de.sciss.eisenkraut.io.RoutingConfig;
-//import de.sciss.eisenkraut.math.MathUtil;
-import de.sciss.eisenkraut.net.SuperColliderClient;
-import de.sciss.eisenkraut.net.SuperColliderPlayer;
-import de.sciss.eisenkraut.session.Session;
-import de.sciss.eisenkraut.util.PrefsUtil;
-
 import de.sciss.app.AbstractApplication;
 import de.sciss.app.AbstractWindow;
 import de.sciss.app.Application;
@@ -53,13 +22,17 @@ import de.sciss.app.DocumentListener;
 import de.sciss.app.DynamicListening;
 import de.sciss.common.AppWindow;
 import de.sciss.common.BasicWindowHandler;
-import de.sciss.gui.AbstractWindowHandler;
-import de.sciss.gui.MultiStateButton;
+import de.sciss.eisenkraut.Main;
+import de.sciss.eisenkraut.io.AudioBoxConfig;
+import de.sciss.eisenkraut.io.RoutingConfig;
+import de.sciss.eisenkraut.net.SuperColliderClient;
+import de.sciss.eisenkraut.net.SuperColliderPlayer;
+import de.sciss.eisenkraut.session.Session;
+import de.sciss.eisenkraut.util.PrefsUtil;
 import de.sciss.gui.PeakMeterPanel;
 import de.sciss.gui.PrefComboBox;
 import de.sciss.gui.SpringPanel;
 import de.sciss.gui.StringItem;
-
 import de.sciss.jcollider.Constants;
 import de.sciss.jcollider.Group;
 import de.sciss.jcollider.NodeWatcher;
@@ -68,6 +41,23 @@ import de.sciss.jcollider.ServerEvent;
 import de.sciss.jcollider.ServerListener;
 import de.sciss.jcollider.ServerOptions;
 import de.sciss.net.OSCBundle;
+
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.geom.Point2D;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
+
+//import de.sciss.eisenkraut.math.MathUtil;
 
 /**
  *	TODO: could use an explicit GroupAnySync for lmm, which would go into SuperColliderClient
@@ -111,7 +101,6 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
 
 		final Container			cp				= getContentPane();
 		final JPanel			b2				= new JPanel( new BorderLayout() ); // Box.createHorizontalBox();
-		final MultiStateButton	ggLimiter;
 		audioPrefs								= app.getUserPrefs().node( PrefsUtil.NODE_AUDIO );
 		final Object			comboProto		= "XXXXXXXX";
 
@@ -146,49 +135,42 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
 			}
 		});
 		
-		ggLimiter = new MultiStateButton();
-		ggLimiter.setNumColumns( 8 );
-		ggLimiter.addItem( "Limiter" );
-// NOTE: BUG WITH CUSTOM COMPOSITE ON WIN-XP!!!
-//		ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ), new Color( 0xFA, 0xE7, 0x9D ));
-ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
+		final JToggleButton ggLimiter = new JToggleButton("Limiter");
 		ggLimiter.addActionListener( new ActionListener() {
 			public void actionPerformed( ActionEvent e ) {
-				superCollider.setLimiter( ggLimiter.getSelectedIndex() == 1 );
+				superCollider.setLimiter( ggLimiter.isSelected() );
 			}
 		});
-		if( superCollider.getLimiter() ) ggLimiter.setSelectedIndex( 1 );
+		if( superCollider.getLimiter() ) ggLimiter.setSelected(true); // setSelectedIndex( 1 );
 		
 		pmg	= new PeakMeterPanel();
 		pmg.setBorder( true );
 		pmg.setCaption( true );
 		oCfg = superCollider.getOutputConfig();
 		rebuildMeters();
-		
-		b2.add( pmg, BorderLayout.WEST );
-		b2.add( ggVolume, BorderLayout.EAST );
-		
-		b1.gridAdd( ggLimiter, 0, 0, -1, 1 );
-		b1.gridAdd( b2, 0, 1, -1, 1 );
-		b1.gridAdd( ggOutputConfig, 0, 2, -1, 1 );
-		b1.gridAdd( ggAudioBox, 0, 3, -1, 1 );
+
+		b2.add(pmg, BorderLayout.WEST);
+		b2.add(ggVolume, BorderLayout.EAST);
+
+		b1.gridAdd(ggLimiter, 0, 0, -1, 1);
+		b1.gridAdd(b2, 0, 1, -1, 1);
+		b1.gridAdd(ggOutputConfig, 0, 2, -1, 1);
+		b1.gridAdd(ggAudioBox, 0, 3, -1, 1);
 		b1.makeCompactGrid();
 
-		cp.add( b1, BorderLayout.CENTER );
+		cp.add(b1, BorderLayout.CENTER);
 
-		AbstractWindowHandler.setDeepFont( b1 );
+//		AbstractWindowHandler.setDeepFont( b1 );
 
 		// ---- listeners -----
 
-		addListener( new AbstractWindow.Adapter() {
-			public void windowOpened( AbstractWindow.Event e )
-			{
+		addListener(new AbstractWindow.Adapter() {
+			public void windowOpened(AbstractWindow.Event e) {
 				startListening();
 			}
 
-			public void windowClosing( AbstractWindow.Event e )
-			{
-				setVisible( false );
+			public void windowClosing(AbstractWindow.Event e) {
+				setVisible(false);
 				dispose();
 			}
 		});
@@ -214,26 +196,23 @@ ggLimiter.addItem( "Limiter", null, new Color( 0xFF, 0xFA, 0x9D ));
 		return true;
 	}
 
-	protected Point2D getPreferredLocation()
-	{
-		return new Point2D.Float( 0.95f, 0.2f );
+	protected Point2D getPreferredLocation() {
+		return new Point2D.Float(0.95f, 0.2f);
 	}
 
-	public void dispose()
-	{
-		AbstractApplication.getApplication().removeComponent( Main.COMP_CTRLROOM );
+	public void dispose() {
+		AbstractApplication.getApplication().removeComponent(Main.COMP_CTRLROOM);
 		lmm.dispose();
-		if( grpMeters != null ) {
+		if (grpMeters != null) {
 			try {
 				grpMeters.free();
-			}
-			catch( IOException e1 ) {
-				printError( "dispose", e1 );
+			} catch (IOException e1) {
+				printError("dispose", e1);
 			}
 			grpMeters = null;
 		}
 		stopListening();
-		
+
 		pmg.dispose();
 		super.dispose();
 	}

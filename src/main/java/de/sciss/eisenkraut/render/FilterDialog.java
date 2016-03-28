@@ -155,7 +155,7 @@ public class FilterDialog
 			if( !guiCreated ) createGUI();
 			ggHelp.setHelpFile( plugInClassName.substring( plugInClassName.lastIndexOf( '.' ) + 1 ));
 			view = plugIn.getSettingsView( context );
-			AbstractWindowHandler.setDeepFont( view );
+//			AbstractWindowHandler.setDeepFont( view );
 			ggSettingsPane.setViewportView( view );
 			pack();
 			setTitle( plugIn.getName() );
@@ -184,7 +184,7 @@ public class FilterDialog
 			cp.add( bottomPanel, BorderLayout.SOUTH );
 		}
 		
-		AbstractWindowHandler.setDeepFont( cp );
+//		AbstractWindowHandler.setDeepFont( cp );
 		
 		// --- Listener ---
 //		new DynamicAncestorAdapter( new DynamicPrefChangeManager( classPrefs,
