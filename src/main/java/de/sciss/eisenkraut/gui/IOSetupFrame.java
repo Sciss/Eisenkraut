@@ -22,7 +22,6 @@ import de.sciss.eisenkraut.Main;
 import de.sciss.eisenkraut.io.AudioBoxConfig;
 import de.sciss.eisenkraut.io.RoutingConfig;
 import de.sciss.eisenkraut.util.PrefsUtil;
-import de.sciss.gui.AbstractWindowHandler;
 import de.sciss.gui.CoverGrowBox;
 import de.sciss.gui.HelpButton;
 import de.sciss.gui.ModificationButton;
@@ -136,6 +135,7 @@ public class IOSetupFrame extends AppWindow {
 		audioHwChannels[1]	= abCfg.numOutputChannels;
 
 		ggTabPane			= new JTabbedPane();
+		ggTabPane.putClientProperty("styleId", "attached");
 
 		// ---------- tabs ----------
 
@@ -151,8 +151,8 @@ public class IOSetupFrame extends AppWindow {
 		buttonPanel.setBorder( BorderFactory.createEmptyBorder( 0, 0, 2, 0 ));
 		buttonPanel.add( new HelpButton( "IOSetup" ));
 		buttonPanel.add( Box.createHorizontalGlue() );
-        ggButton	= new JButton( app.getResourceString( "buttonOk" ));
-        ggButton.addActionListener( new ActionListener() {
+		ggButton = new JButton(app.getResourceString(" Ok "));
+		ggButton.addActionListener( new ActionListener() {
 			public void actionPerformed( ActionEvent e )
 			{
 				final ControlRoomFrame f;

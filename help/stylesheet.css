@@ -1,6 +1,5 @@
 body {
 	padding: 8px;
-	background-color: white;
 	font-family:"Lucida Grande" Helvetica sans-serif;
 	font-size:12pt;
 }
@@ -21,10 +20,6 @@ a.ext {
 	font-style: italic;
 }
 
-a.anchor {
-	color: #6000C0;
-}
-
 a:hover {
 	text-decoration:underline;	
 }
@@ -34,6 +29,7 @@ li.none {
 }
 
 tt {
+    color: black;
 	outline-width: 2pt;
 	outline-color: #808080;
 	outline-style: outset;
