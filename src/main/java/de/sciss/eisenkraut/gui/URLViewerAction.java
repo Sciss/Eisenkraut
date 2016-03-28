@@ -25,15 +25,15 @@
 
 package de.sciss.eisenkraut.gui;
 
-import java.awt.event.ActionEvent;
-import java.io.IOException;
-import java.net.URL;
-
-import javax.swing.KeyStroke;
-
 import de.sciss.common.BasicWindowHandler;
-import net.roydesign.mac.MRJAdapter;
+import de.sciss.gui.HelpFrame;
 import de.sciss.gui.MenuAction;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.net.URI;
+import java.net.URL;
 
 /**
  *	Generic action for bringing up
@@ -57,8 +57,7 @@ public class URLViewerAction extends MenuAction
      * @param   openWebBrowser	if true, use the default web browser,
      *							if false use internal help viewer
      */
-    public URLViewerAction( String text, KeyStroke shortcut, URL theURL, boolean openWebBrowser )
-    {
+    public URLViewerAction(String text, KeyStroke shortcut, URL theURL, boolean openWebBrowser) {
         super( text, shortcut );
 
         this.theURL			= theURL;
@@ -73,17 +72,16 @@ public class URLViewerAction extends MenuAction
      *  If the window is already open, this
      *  method will bring it to the front.
      */
-    public void actionPerformed( ActionEvent e )
-    {
-        if( openWebBrowser ) {
+    public void actionPerformed(ActionEvent e) {
+        if (openWebBrowser) {
             try {
-                MRJAdapter.openURL( theURL.toString() );
-            }
-            catch( IOException e1 ) {
+                final URI uri = theURL.toURI();
+                Desktop.getDesktop().browse(uri);
+            } catch (Exception e1) {
                 BasicWindowHandler.showErrorDialog(null, e1, NAME);
             }
         } else {
-            HelpFrame.openViewerAndLoadHelpFile( theURL );
+            HelpFrame.openViewerAndLoadHelpFile(theURL);
         }
     }
 }

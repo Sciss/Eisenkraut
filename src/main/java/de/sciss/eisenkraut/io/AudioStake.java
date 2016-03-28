@@ -13,16 +13,6 @@
 
 package de.sciss.eisenkraut.io;
 
-import java.awt.event.ActionEvent;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-
-import org.unicode.Normalizer;
-
 import de.sciss.io.CacheManager;
 import de.sciss.io.InterleavedStreamFile;
 import de.sciss.io.Span;
@@ -30,20 +20,24 @@ import de.sciss.jcollider.Buffer;
 import de.sciss.net.OSCBundle;
 import de.sciss.timebased.BasicStake;
 
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  *  @see		de.sciss.io.Span
  */
 public abstract class AudioStake
-extends BasicStake
-{
+		extends BasicStake {
+
 	private static final boolean			DEBUG				= false;
 
 	private boolean							disposed			= false;
 	
 	private static final List<AudioStake> allStakes			= new ArrayList<AudioStake>();
 	
-	protected static final Normalizer		fileNameNormalizer	= new Normalizer( Normalizer.C, false );
-		
 	private StackTraceElement[]				debugTrace;
 
 	protected AudioStake(Span span) {

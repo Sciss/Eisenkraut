@@ -13,20 +13,8 @@
 
 package de.sciss.eisenkraut.io;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Paint;
-import java.awt.Rectangle;
-import java.awt.Shape;
-import java.awt.Stroke;
-import java.awt.geom.AffineTransform;
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-
-import de.sciss.app.AbstractApplication;
 import de.sciss.app.AbstractCompoundEdit;
+import de.sciss.eisenkraut.Main;
 import de.sciss.eisenkraut.gui.WaveformView;
 import de.sciss.eisenkraut.util.PrefsUtil;
 import de.sciss.io.AudioFile;
@@ -37,6 +25,12 @@ import de.sciss.io.Span;
 import de.sciss.timebased.Stake;
 import de.sciss.util.MutableInt;
 
+import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
 /**
  *	TODO: common superclass of AudioTrail and DecimatedTrail
  *	TODO: drawWaveform : the initial idea was that readFrames should be removed ;
@@ -45,8 +39,8 @@ import de.sciss.util.MutableInt;
  *       	GeneralPath
  */
 public class DecimatedWaveTrail
-extends DecimatedTrail
-{
+		extends DecimatedTrail {
+
 	private static final int		UPDATE_PERIOD			= 2000; // milliseconds in async overview calculation
 
 	private final Decimator			decimator;
@@ -843,7 +837,7 @@ Thread.currentThread().setPriority( pri - 2 );
 		final AudioFile[]	audioFiles	= fullScale.getAudioFiles();
 		final Span[]		fileSpans	= new Span[ audioFiles.length ];
 		final AudioFile[]	cacheAFs	= new AudioFile[ audioFiles.length ];
-		final String		ourCode		= AbstractApplication.getApplication().getMacOSCreator();
+		final String		ourCode		= Main.getMacOSCreator(); // AbstractApplication.getApplication().getMacOSCreator();
 		final int[][]		channelMaps	= createCacheChannelMaps();
 		AudioStake			result		= null;
 		AudioFileDescr		afd;
@@ -916,7 +910,7 @@ Thread.currentThread().setPriority( pri - 2 );
 		final CacheManager		cm			= PrefCacheManager.getInstance();
 		final Span[]			fileSpans	= new Span[ audioFiles.length ];
 		final AudioFile[]		cacheAFs	= new AudioFile[ audioFiles.length ];
-		final String			ourCode		= AbstractApplication.getApplication().getMacOSCreator();
+		final String			ourCode		= Main.getMacOSCreator(); // AbstractApplication.getApplication().getMacOSCreator();
 		final int[][]			channelMaps	= createCacheChannelMaps();
 		AudioStake				result		= null;
 		AudioFileDescr			afd;

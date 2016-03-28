@@ -13,17 +13,6 @@
 
 package de.sciss.eisenkraut.io;
 
-import java.awt.Paint;
-import java.awt.Rectangle;
-import java.awt.TexturePaint;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.undo.CompoundEdit;
-
 import de.sciss.app.BasicEvent;
 import de.sciss.app.EventManager;
 import de.sciss.common.ProcessingThread;
@@ -34,6 +23,14 @@ import de.sciss.io.IOUtil;
 import de.sciss.io.Span;
 import de.sciss.timebased.BasicTrail;
 import de.sciss.timebased.Stake;
+
+import javax.swing.undo.CompoundEdit;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class DecimatedTrail extends BasicTrail {
 
@@ -115,26 +112,23 @@ public abstract class DecimatedTrail extends BasicTrail {
 
 	public abstract DecimationInfo getBestSubsample( Span tag, int minLen );
 
-	protected static void setProgression( long len, double progWeight )
-	throws ProcessingThread.CancelledException
-	{
-		ProcessingThread.update( (float) (len * progWeight) );
+	protected static void setProgression(long len, double progWeight)
+			throws ProcessingThread.CancelledException {
+		ProcessingThread.update((float) (len * progWeight));
 	}
 
-	protected static void flushProgression()
-	{
+	protected static void flushProgression() {
 		ProcessingThread.flushProgression();
 	}
 
-	protected final void killAsyncThread()
-	{
-		if( threadAsync != null ) {
-			synchronized( threadAsync ) {
-				if( threadAsync.isAlive() ) {
+	protected final void killAsyncThread() {
+		if (threadAsync != null) {
+			synchronized (threadAsync) {
+				if (threadAsync.isAlive()) {
 					keepAsyncRunning = false;
 					try {
 						threadAsync.wait();
-					} catch( InterruptedException e1 ) {
+					} catch (InterruptedException e1) {
 						System.err.println("DecimatedTrail - killAsyncThread:");
 						e1.printStackTrace();
 					}
@@ -174,40 +168,39 @@ public abstract class DecimatedTrail extends BasicTrail {
 	}
 
 	// @synchronization caller must have sync on fileSync !!!
-	protected DecimatedStake alloc( Span span )
-	throws IOException
-	{
-		if( !Thread.holdsLock( fileSync ) ) throw new IllegalMonitorStateException();
+	protected DecimatedStake alloc(Span span)
+			throws IOException {
+
+		if (!Thread.holdsLock(fileSync)) throw new IllegalMonitorStateException();
 
 		final long floorStart = span.start & MAXMASK;
 		final long ceilStop = (span.stop + MAXCEILADD) & MAXMASK;
-		final Span extSpan = (floorStart == span.start) && (ceilStop == span.stop) ? span : new Span( floorStart,
-		ceilStop );
-		final Span[] fileSpans = new Span[ SUBNUM ];
-		final Span[] biasedSpans = new Span[ SUBNUM ];
+		final Span extSpan = (floorStart == span.start) && (ceilStop == span.stop) ? span : new Span(floorStart,
+				ceilStop);
+		final Span[] fileSpans = new Span[SUBNUM];
+		final Span[] biasedSpans = new Span[SUBNUM];
 		long fileStart;
 		long fileStop;
 
-		if( tempF == null ) {
+		if (tempF == null) {
 			tempF = createTempFiles(); // XXX sync
 		}
-		synchronized( tempF ) {
-			for( int i = 0; i < SUBNUM; i++ ) {
-				fileStart = tempF[ i ].getFrameNum();
-				fileStop = fileStart + (extSpan.getLength() >> decimHelps[ i ].shift);
-				tempF[ i ].setFrameNum( fileStop );
-				fileSpans[ i ] = new Span( fileStart, fileStop );
-				biasedSpans[ i ] = extSpan;
+		synchronized (tempF) {
+			for (int i = 0; i < SUBNUM; i++) {
+				fileStart = tempF[i].getFrameNum();
+				fileStop = fileStart + (extSpan.getLength() >> decimHelps[i].shift);
+				tempF[i].setFrameNum(fileStop);
+				fileSpans[i] = new Span(fileStart, fileStop);
+				biasedSpans[i] = extSpan;
 			}
 		}
 		return new DecimatedStake( extSpan, tempF, fileSpans, biasedSpans, decimHelps );
 	}
 
 	// @synchronization caller must have sync on fileSync !!!
-	protected DecimatedStake allocAsync( Span span )
-	throws IOException
-	{
-		if( !Thread.holdsLock( fileSync )) throw new IllegalMonitorStateException();
+	protected DecimatedStake allocAsync(Span span)
+			throws IOException {
+		if (!Thread.holdsLock(fileSync)) throw new IllegalMonitorStateException();
 
 		final long floorStart	= span.start & MAXMASK;
 		final long ceilStop		= (span.stop + MAXCEILADD) & MAXMASK;
@@ -218,20 +211,20 @@ public abstract class DecimatedTrail extends BasicTrail {
 		long fileStart;
 		long fileStop;
 
-		if( tempFAsync == null ) {
+		if (tempFAsync == null) {
 			// XXX THIS IS THE PLACE TO OPEN WAVEFORM CACHE FILE
 			tempFAsync = createTempFiles();
 		}
-		synchronized( tempFAsync ) {
-			for( int i = 0; i < SUBNUM; i++ ) {
-				fileStart		= tempFAsync[ i ].getFrameNum();
-				fileStop		= fileStart + (extSpan.getLength() >> decimHelps[ i ].shift);
-				tempFAsync[ i ].setFrameNum( fileStop );
-				fileSpans[ i ]	= new Span( fileStart, fileStop );
-				biasedSpans[ i ] = extSpan;
+		synchronized (tempFAsync) {
+			for (int i = 0; i < SUBNUM; i++) {
+				fileStart = tempFAsync[i].getFrameNum();
+				fileStop = fileStart + (extSpan.getLength() >> decimHelps[i].shift);
+				tempFAsync[i].setFrameNum(fileStop);
+				fileSpans[i] = new Span(fileStart, fileStop);
+				biasedSpans[i] = extSpan;
 			}
 		}
-		return new DecimatedStake( extSpan, tempFAsync, fileSpans, biasedSpans, decimHelps );
+		return new DecimatedStake(extSpan, tempFAsync, fileSpans, biasedSpans, decimHelps);
 	}
 
 	protected AudioFile[] createTempFiles()

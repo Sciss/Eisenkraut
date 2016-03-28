@@ -43,7 +43,6 @@ import de.sciss.io.Span;
 import de.sciss.jcollider.Server;
 import de.sciss.util.Flag;
 import de.sciss.util.Param;
-import net.roydesign.app.AboutJMenuItem;
 
 import javax.swing.*;
 import java.awt.*;
@@ -340,14 +339,14 @@ if( doc.getFrame() == null ) {
 			// nada
 		}
 		final Action a = new ActionAbout(getResourceString("menuAbout"), null);
-		if (AboutJMenuItem.isAutomaticallyPresent()) {
-			getApplication().getAboutJMenuItem().setAction(a);
-		} else {
+//		if (AboutJMenuItem.isAutomaticallyPresent()) {
+//			getApplication().getAboutJMenuItem().setAction(a);
+//		} else {
 			mg.addSeparator();
 			mg.add(new MenuItem("about", a));
-		}
+//		}
 
-		add( mg );
+		add(mg);
 
 //		// --- help menu ---
 //		mg	= new MenuGroup( "help", getResourceString( "menuHelp" ));

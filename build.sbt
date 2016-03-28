@@ -8,6 +8,10 @@ lazy val authorEMail  = "contact@sciss.de"
 
 lazy val basicJavaOpts = Seq("-source", "1.6")
 
+lazy val jcolliderVersion = "1.0.0"
+lazy val scissLibVersion  = "1.1.0-SNAPSHOT"
+lazy val subminVersion    = "0.1.0-SNAPSHOT"
+
 lazy val commonSettings = Seq(
   name             := "Eisenkraut",
   version          := "1.3.0-SNAPSHOT",
@@ -22,9 +26,9 @@ lazy val commonSettings = Seq(
   crossPaths       := false,
   mainClass        := Some("de.sciss.eisenkraut.Main"),
   libraryDependencies ++= Seq(
-    "de.sciss" % "jcollider" % "1.0.0",
-    "de.sciss" % "scisslib"  % "1.0.0",
-    "de.sciss" % "weblaf-submin" % "1.29-SNAPSHOT"
+    "de.sciss" % "jcollider" % jcolliderVersion,
+    "de.sciss" % "scisslib"  % scissLibVersion,
+    "de.sciss" % "submin"    % subminVersion
   )
 )
 

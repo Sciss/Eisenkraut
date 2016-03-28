@@ -15,28 +15,25 @@
 
 package de.sciss.eisenkraut.timeline;
 
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.util.prefs.PreferenceChangeEvent;
-import java.util.prefs.PreferenceChangeListener;
-
-import javax.swing.undo.CompoundEdit;
-import javax.swing.undo.UndoableEdit;
-
+import de.sciss.app.AbstractApplication;
+import de.sciss.app.DynamicAncestorAdapter;
+import de.sciss.app.DynamicListening;
+import de.sciss.app.DynamicPrefChangeManager;
 import de.sciss.eisenkraut.edit.TimelineVisualEdit;
 import de.sciss.eisenkraut.session.Session;
 import de.sciss.eisenkraut.util.PrefsUtil;
 import de.sciss.gui.Axis;
 import de.sciss.gui.ComponentHost;
 import de.sciss.gui.VectorSpace;
-
-import de.sciss.app.AbstractApplication;
-import de.sciss.app.DynamicAncestorAdapter;
-import de.sciss.app.DynamicListening;
-import de.sciss.app.DynamicPrefChangeManager;
-
 import de.sciss.io.Span;
+
+import javax.swing.undo.CompoundEdit;
+import javax.swing.undo.UndoableEdit;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 
 /**
  *  A GUI element for displaying
@@ -70,19 +67,18 @@ public class TimelineAxis
 	 *
 	 *  @param  doc		session Session
 	 */
-	public TimelineAxis( Session doc, ComponentHost host )
-	{
-		super( HORIZONTAL, 0, host );
-        
-        this.doc    = doc;
+	public TimelineAxis(Session doc, ComponentHost host) {
+		super(HORIZONTAL, 0, host);
+
+		this.doc = doc;
 		
 		// --- Listener ---
-        new DynamicAncestorAdapter( this ).addTo( this );
-        new DynamicAncestorAdapter( new DynamicPrefChangeManager(
-			AbstractApplication.getApplication().getUserPrefs(), new String[] { PrefsUtil.KEY_TIMEUNITS }, this
-		)).addTo( this );
-		this.addMouseListener( this );
-		this.addMouseMotionListener( this );
+		new DynamicAncestorAdapter(this).addTo(this);
+		new DynamicAncestorAdapter(new DynamicPrefChangeManager(
+				AbstractApplication.getApplication().getUserPrefs(), new String[]{PrefsUtil.KEY_TIMEUNITS}, this
+		)).addTo(this);
+		this.addMouseListener(this);
+		this.addMouseMotionListener(this);
 
 //		// ------
 //		HelpGlassPane.setHelp( this, "TimelineAxis" );
