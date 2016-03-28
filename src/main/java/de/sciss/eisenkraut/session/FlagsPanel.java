@@ -25,25 +25,22 @@ public class FlagsPanel
 	private final SessionCollection sc;
 	protected SessionObject so;
 
-	public FlagsPanel( SessionObject so, SessionCollection sc )
-	{
-		this( sc );
+	public FlagsPanel(SessionObject so, SessionCollection sc) {
+		this(sc);
 
-		this.so		= so;
-		setOpaque( false );
-        new DynamicAncestorAdapter( this ).addTo( this );
+		this.so = so;
+		setOpaque(false);
+		new DynamicAncestorAdapter(this).addTo(this);
 	}
-	
-	protected FlagsPanel( SessionCollection sc )
-	{
+
+	protected FlagsPanel(SessionCollection sc) {
 		super();
 
-		this.sc		= sc;
+		this.sc = sc;
 	}
 
 	// sync : attempt exclusive on doors
-	protected void setFlags( int mask, boolean set )
-	{
+	protected void setFlags(int mask, boolean set) {
 		int				flags, flagsNew;
 		Object			o;
 		MapManager		map;

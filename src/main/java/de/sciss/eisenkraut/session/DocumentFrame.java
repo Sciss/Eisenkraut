@@ -201,8 +201,9 @@ public class DocumentFrame
 
     // --------- former viewport ---------
     // --- painting ---
-    private final Color colrSelection			= GraphicsUtil.colrSelection;
-    private final Color colrSelection2			= new Color( 0x00, 0x00, 0x00, 0x20 );  // selected timeline span over unselected trns
+    // private final boolean isDark                = UIManager.getBoolean("dark-skin");
+    private final Color colrSelection			= GraphicsUtil.colrSelection();
+    private final Color colrSelection2			= GraphicsUtil.colrInactiveSelection();   // selected timeline span over unselected trns
     protected final Color colrPosition			= new Color( 0xFF, 0x00, 0x00, 0x7F );
     protected final Color colrZoom				= new Color( 0xA0, 0xA0, 0xA0, 0x7F );
     protected Rectangle	vpRecentRect			= new Rectangle();
@@ -307,8 +308,8 @@ public class DocumentFrame
 
         internalFrames		= app.getWindowHandler().usesInternalFrames();
 
-        timeTB		= new TimelineToolBar( doc );
-        transTB		= new TransportToolBar( doc );
+        timeTB		        = new TimelineToolBar( doc );
+        transTB		        = new TransportToolBar( doc );
 
         wavePanel			= new ComponentHost();
         timeAxis			= new TimelineAxis( doc, wavePanel );
@@ -499,8 +500,7 @@ bbb.add( markAxisHeader );
         // ---- TopPainter ----
 
         trackPainter	= new TopPainter() {
-            public void paintOnTop( Graphics2D g2 )
-            {
+            public void paintOnTop(Graphics2D g2) {
                 Rectangle r;
 
                 r = new Rectangle(0, 0, wavePanel.getWidth(), wavePanel.getHeight()); // getViewRect();

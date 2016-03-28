@@ -13,18 +13,6 @@
  
 package de.sciss.eisenkraut.gui;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Insets;
-import java.awt.Paint;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Stroke;
-
-import javax.swing.JComponent;
-
 import de.sciss.eisenkraut.io.AudioTrail;
 import de.sciss.eisenkraut.io.DecimatedSonaTrail;
 import de.sciss.eisenkraut.io.DecimatedWaveTrail;
@@ -34,6 +22,9 @@ import de.sciss.eisenkraut.util.PrefsUtil;
 import de.sciss.gui.ComponentHost;
 import de.sciss.io.Span;
 import de.sciss.util.Disposable;
+
+import javax.swing.*;
+import java.awt.*;
 
 @SuppressWarnings("serial")
 public class WaveformView
@@ -69,13 +60,11 @@ public class WaveformView
 
 	private final ComponentHost	host;
 
-	public WaveformView( Session doc )
-	{
-		this( doc, null );
+	public WaveformView(Session doc) {
+		this(doc, null);
 	}
 
-	public WaveformView( Session doc, ComponentHost host )
-	{
+	public WaveformView(Session doc, ComponentHost host) {
 		super();
 		
 		this.host			= host;
@@ -89,31 +78,27 @@ public class WaveformView
 		
 		this.doc			= doc;
 	}
-	
-	public void setNullLinie( boolean onOff )
-	{
-		if( nullLinie != onOff ) {
+
+	public void setNullLinie(boolean onOff) {
+		if (nullLinie != onOff) {
 			nullLinie = onOff;
 //			if( !logarithmic )
-				triggerRedisplay();
+			triggerRedisplay();
 		}
 	}
 
-	public boolean getNullLinie()
-	{
+	public boolean getNullLinie() {
 		return nullLinie;
 	}
-	
-	public void setVerticalScale( int mode )
-	{
-		if( vertScale != mode ) {
+
+	public void setVerticalScale(int mode) {
+		if (vertScale != mode) {
 			vertScale = mode;
 			triggerRedisplay();
 		}
 	}
 
-	public int getVerticalScale()
-	{
+	public int getVerticalScale() {
 		return vertScale;
 	}
 
@@ -176,55 +161,40 @@ public class WaveformView
 	 *  @param  min		new minimum y value
 	 *  @param  max		new maximum y value
 	 */
-	public void setAmpLinMinMax( float min, float max )
-	{
-		if( (this.ampLinMin != min) || (this.ampLinMax != max) ) {
-			this.ampLinMin	= min;
-			this.ampLinMax	= max;
+	public void setAmpLinMinMax(float min, float max) {
+		if ((this.ampLinMin != min) || (this.ampLinMax != max)) {
+			this.ampLinMin = min;
+			this.ampLinMax = max;
 
-			if( vertScale == PrefsUtil.VSCALE_AMP_LIN ) triggerRedisplay();
-		}
-	}
-	
-	public void setAmpLogMinMax( float min, float max )
-	{
-		if( (this.ampLogMin != min) || (this.ampLogMax != max) ) {
-			this.ampLogMin	= min;
-			this.ampLogMax	= max;
-
-			if( vertScale != PrefsUtil.VSCALE_AMP_LIN ) triggerRedisplay();
+			if (vertScale == PrefsUtil.VSCALE_AMP_LIN) triggerRedisplay();
 		}
 	}
 
-	public float getFreqMin()
-	{
+	public void setAmpLogMinMax(float min, float max) {
+		if ((this.ampLogMin != min) || (this.ampLogMax != max)) {
+			this.ampLogMin = min;
+			this.ampLogMax = max;
+
+			if (vertScale != PrefsUtil.VSCALE_AMP_LIN) triggerRedisplay();
+		}
+	}
+
+	public float getFreqMin() {
 		return freqMin;
 	}
 
-
-	public float getFreqMax()
-	{
+	public float getFreqMax() {
 		return freqMax;
 	}
 
-	public void setFreqMinMax( float min, float max )
-	{
-		if( (this.freqMin != min) || (this.freqMax != max) ) {
-			this.freqMin	= min;
-			this.freqMax	= max;
+	public void setFreqMinMax(float min, float max) {
+		if ((this.freqMin != min) || (this.freqMax != max)) {
+			this.freqMin = min;
+			this.freqMax = max;
 
-			if( vertScale == PrefsUtil.VSCALE_FREQ_SPECT ) triggerRedisplay();
+			if (vertScale == PrefsUtil.VSCALE_FREQ_SPECT) triggerRedisplay();
 		}
 	}
-
-	//	public float[][] gimmeBaffa( int numCh, int len )
-//	{
-//		if( (buffer != null) && (buffer.length >= numCh) && (bufLen >= len) ) return buffer;
-//		
-//		buffer	= new float[ numCh ][ len ];
-//		bufLen	= len;
-//		return buffer;
-//	}
 
 	public void update(Span s) {
 		viewSpan = s;
@@ -241,8 +211,7 @@ public class WaveformView
 	 *						be sure to not use this rectangle outside the swing thread,
 	 *						otherwise make a copy. do not modify the returned rectangle
 	 */
-	public Rectangle rectForChannel( int ch )
-	{
+	public Rectangle rectForChannel(int ch) {
 		final int ht	= getHeight() - (insets.top + insets.bottom);
 		final int temp	= ht * ch / fullChannels;
 		final int y		= insets.top + temp;
@@ -254,9 +223,8 @@ public class WaveformView
 		
 		return r;
 	}
-	
-	public int channelForPoint( Point p )
-	{
+
+	public int channelForPoint(Point p) {
 		final int	py	= p.y - insets.top;
 		final int	ht	= getHeight();
 		int			y1	= 0;
@@ -272,57 +240,53 @@ public class WaveformView
 	
 	public DecimationInfo getDecimationInfo() { return info; }
 
-	public void paintComponent( Graphics g )
-	{
-		super.paintComponent( g );
-		
-		if( viewSpan.isEmpty() ) return;
+	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
+
+		if (viewSpan.isEmpty()) return;
 		final Graphics2D g2 = (Graphics2D) g;
 
-		switch( vertScale ) {
-		case PrefsUtil.VSCALE_AMP_LIN:
-			paintAmpLin( g2 );
-			break;
-		case PrefsUtil.VSCALE_AMP_LOG:
-			paintAmpLog( g2 );
-			break;
-		case PrefsUtil.VSCALE_FREQ_SPECT:
-			paintFreqSpect( g2 );
-			break;
-		default:
-			assert false : vertScale;
+		switch (vertScale) {
+			case PrefsUtil.VSCALE_AMP_LIN:
+				paintAmpLin(g2);
+				break;
+			case PrefsUtil.VSCALE_AMP_LOG:
+				paintAmpLog(g2);
+				break;
+			case PrefsUtil.VSCALE_FREQ_SPECT:
+				paintFreqSpect(g2);
+				break;
+			default:
+				assert false : vertScale;
 		}
 	}
-	
-	private void paintAmpLin( Graphics2D g2 )
-	{
 
-		final DecimatedWaveTrail	dt		= doc.getDecimatedWaveTrail();
-		if( dt == null ) return;
-		
-		final int	w	= getWidth();
-		Rectangle	cr;
-		int			y;
-		
-		info = dt.getBestSubsample( new Span( viewSpan.start, viewSpan.stop + 1 ), w );
-		dt.drawWaveform( info, this, g2 );
+	private void paintAmpLin(Graphics2D g2) {
+		final DecimatedWaveTrail dt = doc.getDecimatedWaveTrail();
+		if (dt == null) return;
 
-		if( nullLinie ) {
-			g2.setPaint( pntNull );
-			g2.setStroke( strkNull );
-			for( int ch = 0; ch < fullChannels; ch++ ) {
-				cr = rectForChannel( ch );
+		final int w = getWidth();
+		Rectangle cr;
+		int y;
+
+		info = dt.getBestSubsample(new Span(viewSpan.start, viewSpan.stop + 1), w);
+		dt.drawWaveform(info, this, g2);
+
+		if (nullLinie) {
+			g2.setPaint(pntNull);
+			g2.setStroke(strkNull);
+			for (int ch = 0; ch < fullChannels; ch++) {
+				cr = rectForChannel(ch);
 				y = cr.y + (cr.height >> 1);
-				g2.drawLine( cr.x, y, cr.x + cr.width, y );
+				g2.drawLine(cr.x, y, cr.x + cr.width, y);
 			}
 		}
 	}
 
-	private void paintAmpLog( Graphics2D g2 )
-	{
+	private void paintAmpLog(Graphics2D g2) {
 
-		final DecimatedWaveTrail	dt		= doc.getDecimatedWaveTrail();
-		if( dt == null ) return;
+		final DecimatedWaveTrail dt = doc.getDecimatedWaveTrail();
+		if (dt == null) return;
 		
 		final int	w	= getWidth();
 		Rectangle	cr;
@@ -331,21 +295,20 @@ public class WaveformView
 		info = dt.getBestSubsample( new Span( viewSpan.start, viewSpan.stop + 1 ), w );
 		dt.drawWaveform( info, this, g2 );
 
-		if( nullLinie ) {
-			g2.setPaint( pntNull );
-			g2.setStroke( strkNull );
-			for( int ch = 0; ch < fullChannels; ch++ ) {
-				cr = rectForChannel( ch );
+		if (nullLinie) {
+			g2.setPaint(pntNull);
+			g2.setStroke(strkNull);
+			for (int ch = 0; ch < fullChannels; ch++) {
+				cr = rectForChannel(ch);
 				y = cr.y + cr.height - 1;
-				g2.drawLine( cr.x, y, cr.x + cr.width, y );
+				g2.drawLine(cr.x, y, cr.x + cr.width, y);
 			}
 		}
 	}
 
-	private void paintFreqSpect( Graphics2D g2 )
-	{
-		final DecimatedSonaTrail	dt		= doc.getDecimatedSonaTrail();
-		if( dt == null ) return;
+	private void paintFreqSpect(Graphics2D g2) {
+		final DecimatedSonaTrail dt = doc.getDecimatedSonaTrail();
+		if (dt == null) return;
 		
 		final int	w		= getWidth();
 //		Rectangle	cr;

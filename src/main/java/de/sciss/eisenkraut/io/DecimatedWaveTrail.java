@@ -49,8 +49,12 @@ public class DecimatedWaveTrail
     // private static final Stroke strkLine = new BasicStroke( 0.5f );
     private static final Stroke		strkLine				= new BasicStroke(2.0f);
 
-    private static final Paint		pntLineDark     = Color.white; // new Color(220, 220, 220);
+    private static final Paint		pntLineDark     = Color.white;
     private static final Paint		pntLineLight    = Color.black;
+    private static final Paint		pntPeakDark     = new Color(100, 100, 100);
+    private static final Paint		pntPeakLight    = Color.gray;
+    private static final Paint		pntRMSDark      = new Color(200, 200, 200);
+    private static final Paint		pntRMSLight     = Color.black;
 
     private final Paint pntLine;
     private final Paint pntPeak;
@@ -61,8 +65,8 @@ public class DecimatedWaveTrail
         super();
 
         pntLine = isDark ? pntLineDark : pntLineLight;
-        pntPeak = isDark ? Color.gray  : Color.gray;
-        pntRMS  = isDark ? Color.white : Color.black;
+        pntPeak = isDark ? pntPeakDark : pntPeakLight;
+        pntRMS  = isDark ? pntRMSDark  : pntRMSLight;
 
         switch (model) {
             case MODEL_HALFWAVE_PEAKRMS:

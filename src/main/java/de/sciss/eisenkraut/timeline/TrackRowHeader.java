@@ -13,36 +13,27 @@
 
 package de.sciss.eisenkraut.timeline;
 
-import java.awt.Color;
-import java.awt.GradientPaint;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Paint;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.Spring;
-import javax.swing.SpringLayout;
-import javax.swing.undo.UndoableEdit;
-import javax.swing.undo.UndoManager;
-
+import de.sciss.app.AbstractApplication;
+import de.sciss.app.DynamicAncestorAdapter;
+import de.sciss.app.DynamicListening;
+import de.sciss.app.GraphicsHandler;
 import de.sciss.eisenkraut.edit.EditSetSessionObjects;
 import de.sciss.eisenkraut.gui.GraphicsUtil;
 import de.sciss.eisenkraut.session.SessionCollection;
 import de.sciss.eisenkraut.session.SessionObject;
 import de.sciss.eisenkraut.util.MapManager;
 import de.sciss.gui.GradientPanel;
-
-import de.sciss.app.AbstractApplication;
-import de.sciss.app.DynamicAncestorAdapter;
-import de.sciss.app.DynamicListening;
-import de.sciss.app.GraphicsHandler;
 import de.sciss.util.Disposable;
+
+import javax.swing.*;
+import javax.swing.undo.UndoManager;
+import javax.swing.undo.UndoableEdit;
+import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  *	A row header in Swing's table 'ideology'
@@ -68,11 +59,11 @@ public class TrackRowHeader
 
 	protected boolean				selected		= false;
 
-    private static final Color		colrSelected	= GraphicsUtil.colrSelection;
+    private final Color		colrSelected	= GraphicsUtil.colrSelection();
     private static final Color		colrUnselected	= new Color( 0x00, 0x00, 0x00, 0x20 );
     private static final Color		colrDarken		= new Color( 0x00, 0x00, 0x00, 0x18 );
-	private static final Paint		pntSelected		= new GradientPaint(  0, 0, colrSelected,
-																		 36, 0, new Color( colrSelected.getRGB() & 0xFFFFFF, true ));
+	private final Paint		pntSelected		= new GradientPaint(  0, 0, colrSelected,
+																 36, 0, new Color( colrSelected.getRGB() & 0xFFFFFF, true ));
 	private static final Paint		pntUnselected	= new GradientPaint(  0, 0, colrUnselected,
 																		 36, 0, new Color( colrUnselected.getRGB() & 0xFFFFFF, true ));
 	private static final Paint		pntDarken		= new GradientPaint(  0, 0, colrDarken,
@@ -201,26 +192,24 @@ public class TrackRowHeader
 //		g2.setPaint( pntTopBorder );
 //		g2.fillRect( 0, 0, w, 8 );
 	g2.translate( 0, h - 8 );
-		g2.setPaint( GradientPanel.pntBottomBorder );
+		g2.setPaint( GradientPanel.pntBottomBorder());
 //		g2.fillRect( 0, h - 9, w, 8 );
 		g2.fillRect( 0, 0, w, 8 );
 	g2.translate( 0, 8 - h );
 
 	}
 
-	public void paintChildren( Graphics g )
-	{
-		super.paintChildren( g );
-		final Graphics2D	g2	= (Graphics2D) g;
-		final int			w	= getWidth();
-		g2.setPaint( GradientPanel.pntTopBorder );
-		g2.fillRect( 0, 0, w, 8 );
+	public void paintChildren(Graphics g) {
+		super.paintChildren(g);
+		final Graphics2D g2 = (Graphics2D) g;
+		final int w = getWidth();
+		g2.setPaint(GradientPanel.pntTopBorder());
+		g2.fillRect(0, 0, w, 8);
 	}
 
-	protected void checkTrackName()
-	{
-		if( !t.getName().equals( lbTrackName.getText() )) {
-			lbTrackName.setText( t.getName() );
+	protected void checkTrackName() {
+		if (!t.getName().equals(lbTrackName.getText())) {
+			lbTrackName.setText(t.getName());
 		}
 	}
 
