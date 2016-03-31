@@ -22,19 +22,8 @@ A binary version of Eisenkraut for all platforms is provided through [GitHub Rel
 
 ### installing supercollider
 
-Eisenkraut uses the [SuperCollider](http://supercollider.sourceforge.net/) server as the audio playback engine. You need to install a recent SuperCollider 3 version to run this software. The recommended version is SuperCollider 3.6.3 or 3.6.5.
-__Warning:__ The widely circulated version 3.6.6 of SuperCollider is defect, in particular the multi-channel support for streaming sound-files is broken, a crucial featured required by Eisenkraut. While installers for 3.6.5 exists for OS X and Windows, the situation for Linux is a bit more complicated:
-
-Linux: You must find the older package version `3.6.3~repack-7` for Debian or `1:3.6.3-0ubuntu1~oneiric1` for Ubuntu.
-
-- Ubuntu: Here is graphical tutorial on installing old package versions for Ubuntu: http://www.howtogeek.com/117929/how-to-downgrade-packages-on-ubuntu/
-- Debian: You can find the old packages here: http://snapshot.debian.org/package/supercollider/1%3A3.6.3~repack-7/ - note that you must also install the dependencies this way (`libscsynth1`, `supercollider-common`, `supercollider-server`, etc.), using `sudo dpkg -i <downloaded-deb-file>`.
-
-You may then also want to inhibit automatic updates of SuperCollider which would proceed to the broken 3.6.6:
-
-    sudo apt-mark hold supercollider
-
-If you want to build SuperCollider from source, we have compiled the required steps to build 3.6.5 on Debian here: https://gist.github.com/Sciss/0567b4236a1a9450265b
+Eisenkraut uses the [SuperCollider](https://supercollider.github.io/) server as the audio playback engine. You need to install a recent SuperCollider 3 version to run this software. The recommended versions of SuperCollider are 3.7.0, 3.6.3 or 3.6.5.
+__Warning:__ The version 3.6.6 of SuperCollider is defect, in particular the multi-channel support for streaming sound-files is broken.
 
 ### starting eisenkraut
 
@@ -61,13 +50,9 @@ The release bundles are produced with tasks `universal:packageBin` and `debian:p
 
 Eisenkraut's GPL'ed source code is made available through [github.com/Sciss/Eisenkraut](http://github.com/Sciss/Eisenkraut).
 
-As a SuperCollider client it uses the JCollider library, which is also licensed under the GNU General Public License. The compiled library is included, for source code and details visit [sourceforge.net/projects/jcollider/](http://sourceforge.net/projects/jcollider/).
-
-For OSC communication, the NetUtil library is used, which is licensed under the GNU Lesser General Public License (LGPL), for source code and details visit [sourceforge.net/projects/netutil/](http://sourceforge.net/projects/netutil/).
-
-It uses the ScissLib library which is licensed under the GNU General Public License, source code provided through [github.com/Sciss/ScissLib](https://github.com/Sciss/ScissLib), and Steve Roy's MRJAdapter published under the Artistic License, source code provided through [java.net/projects/mrjadapter/sources/svn/show](https://java.net/projects/mrjadapter/sources/svn/show).
-
-ICU4J and Unicode Java code (`Normalizer.jar`) is used which is licensed under a BSD 3-clause type license.
+- As a SuperCollider client it uses the JCollider library, which is also licensed under the GNU Lesser General Public License (LGPL). The compiled library is included, for source code and details visit [github.com/Sciss/JCollider](https://github.com/Sciss/JCollider).
+- For OSC communication, the NetUtil library is used, which is licensed under the GNU Lesser General Public License (LGPL), for source code and details visit [github.com/Sciss/NetUtil](https://github.com/Sciss/NetUtil).
+- It uses the ScissLib library which is licensed under the GNU Lesser General Public License (LGPL), source code provided through [github.com/Sciss/ScissLib](https://github.com/Sciss/ScissLib).
 
 ## contributing
 
