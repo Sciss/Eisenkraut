@@ -105,6 +105,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
@@ -349,6 +350,17 @@ public class DocumentFrame
         wavePanel.add(timeAxis);
         wavePanel.add(markAxis);
         wavePanel.add(waveView);
+
+        // fixes bug with WebLaF scroll-bar (timeline-scroll)
+        // that will otherwise get focus despite being focus-disabled...
+        waveView.setFocusable(true);
+        waveView.requestFocus();
+        waveView.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                waveView.requestFocus();
+            }
+        });
 
         scroll = new TimelineScroll(doc);
         JPanel ggTrackPanel = new JPanel(new BorderLayout());
@@ -610,8 +622,10 @@ public class DocumentFrame
 
         actionProcess		            = new ActionProcess();
         actionProcessAgain	            = new ActionProcessAgain();
-        MenuAction actionFadeIn         = new ActionPlugIn(plugInPackage + "FadeIn");
-        MenuAction actionFadeOut        = new ActionPlugIn(plugInPackage + "FadeOut");
+        MenuAction actionFadeIn         = new ActionPlugIn(plugInPackage + "FadeIn", false);
+        MenuAction actionFadeInD        = new ActionPlugIn(plugInPackage + "FadeIn", true );
+        MenuAction actionFadeOut        = new ActionPlugIn(plugInPackage + "FadeOut", false);
+        MenuAction actionFadeOutD       = new ActionPlugIn(plugInPackage + "FadeOut", true);
         MenuAction actionGain           = new ActionPlugIn(plugInPackage + "Gain");
         MenuAction actionInvert         = new ActionPlugIn(plugInPackage + "Invert");
         MenuAction actionReverse        = new ActionPlugIn(plugInPackage + "Reverse");
@@ -717,7 +731,9 @@ public class DocumentFrame
 
         mr.putMimic("process.again", this, actionProcessAgain);
         mr.putMimic("process.fadeIn", this, actionFadeIn);
+        mr.putMimic("process.fadeInD", this, actionFadeInD);
         mr.putMimic("process.fadeOut", this, actionFadeOut);
+        mr.putMimic("process.fadeOutD", this, actionFadeOutD);
         mr.putMimic("process.gain", this, actionGain);
         mr.putMimic("process.invert", this, actionInvert);
         mr.putMimic("process.reverse", this, actionReverse);
@@ -1701,7 +1717,7 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
         final String key = e.getKey();
 
         if (key.equals(PrefsUtil.KEY_VIEWNULLLINIE)) {
-            waveView.setNullLinie(e.getNode().getBoolean(e.getKey(), false));
+            waveView.setNullLine(e.getNode().getBoolean(e.getKey(), false));
         } else if (key.equals(PrefsUtil.KEY_VIEWVERTICALRULERS)) {
             final boolean visible = e.getNode().getBoolean(e.getKey(), false);
             rulersPanel.setVisible(visible);
@@ -2206,28 +2222,21 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
             }
         }
 
-        protected void confirmDelete( File path )
-        {
-            final int		choice;
-            final Object[]	options	= new String[] { getResourceString( "buttonKeepFile" ), getResourceString( "buttonDeleteFile" )};
-            final JOptionPane op = new JOptionPane( getResourceString( "optionDlgKeepRec1" ) + path.getAbsolutePath() + getResourceString( "optionDlgKeepRec2" ),
-                                                    JOptionPane.ERROR_MESSAGE, JOptionPane.YES_NO_OPTION, null, options, options[ 0 ]);
-//			choice = JOptionPane.showOptionDialog( getWindow(), getResourceString( "optionDlgKeepRec1" ) + path.getAbsolutePath() + getResourceString( "optionDlgKeepRec2" ),
-//					   getValue( NAME ).toString(), JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE, null,
-//					   options, options[ 0 ]);
-            choice = BasicWindowHandler.showDialog( op, getWindow(), getValue( NAME ).toString() );
-            if( choice == 1 ) {
-                deleteFile( path );
+        protected void confirmDelete(File path) {
+            final int choice;
+            final Object[] options = new String[]{getResourceString("buttonKeepFile"), getResourceString("buttonDeleteFile")};
+            final JOptionPane op = new JOptionPane(getResourceString("optionDlgKeepRec1") + path.getAbsolutePath() + getResourceString("optionDlgKeepRec2"),
+                    JOptionPane.ERROR_MESSAGE, JOptionPane.YES_NO_OPTION, null, options, options[0]);
+            choice = BasicWindowHandler.showDialog(op, getWindow(), getValue(NAME).toString());
+            if (choice == 1) {
+                deleteFile(path);
             }
         }
 
-        protected void deleteFile( File path )
-        {
-            if( !path.delete() ) {
-                final JOptionPane op = new JOptionPane( path.getAbsolutePath() + ":\n" + getResourceString( "errDeleteFile" ), JOptionPane.WARNING_MESSAGE );
-//				JOptionPane.showMessageDialog( getWindow(), path.getAbsolutePath() + ":\n" + getResourceString( "errDeleteFile" ), getValue( NAME ).toString(), 
-//					JOptionPane.WARNING_MESSAGE );
-                BasicWindowHandler.showDialog( op, getWindow(), getValue( NAME ).toString() );
+        protected void deleteFile(File path) {
+            if (!path.delete()) {
+                final JOptionPane op = new JOptionPane(path.getAbsolutePath() + ":\n" + getResourceString("errDeleteFile"), JOptionPane.WARNING_MESSAGE);
+                BasicWindowHandler.showDialog(op, getWindow(), getValue(NAME).toString());
             }
         }
     } // class actionInsertRecClass
@@ -2244,21 +2253,28 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
     private class ActionPlugIn
             extends MenuAction {
         private final String plugInClassName;
+        private final boolean forceDisplay;
 
-        protected ActionPlugIn( String plugInClassName )
-        {
-            this.plugInClassName	= plugInClassName;
+        protected ActionPlugIn(String plugInClassName) {
+            this(plugInClassName, false);
         }
 
-        public void actionPerformed( ActionEvent e )
-        {
-            FilterDialog filterDlg = (FilterDialog) app.getComponent( Main.COMP_FILTER );
+        protected ActionPlugIn(String plugInClassName, boolean forceDisplay) {
+            this.plugInClassName    = plugInClassName;
+            this.forceDisplay       = forceDisplay;
+        }
 
-            if( filterDlg == null ) {
+        public void actionPerformed(ActionEvent e) {
+            FilterDialog filterDlg = (FilterDialog) app.getComponent(Main.COMP_FILTER);
+
+//            System.out.println("MOD -- " + e.getModifiers());
+//            System.out.println("SRC -- " + e.getSource());
+
+            if (filterDlg == null) {
                 filterDlg = new FilterDialog();
             }
-            filterDlg.process( plugInClassName, doc, (e.getModifiers() & ActionEvent.SHIFT_MASK) != 0, false );
-            actionProcessAgain.setPlugIn( filterDlg.getPlugIn() );
+            filterDlg.process(plugInClassName, doc, forceDisplay /* (e.getModifiers() & ActionEvent.SHIFT_MASK) != 0 */, false);
+            actionProcessAgain.setPlugIn(filterDlg.getPlugIn());
         }
     }
 

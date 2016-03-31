@@ -74,8 +74,8 @@ import java.util.prefs.Preferences;
  *  <code>Main</code> class.
  */
 public class MenuFactory
-extends BasicMenuFactory
-{
+        extends BasicMenuFactory {
+
     // ---- misc actions ----
     private ActionOpen				actionOpen;
     private ActionOpenMM			actionOpenMM;
@@ -108,15 +108,13 @@ extends BasicMenuFactory
      *  main menu from which all copies are
      *  derived.
      */
-    public MenuFactory( BasicApplication app )
-    {
-        super( app );
+    public MenuFactory(BasicApplication app) {
+        super(app);
 
         createActions();
     }
 
-    public ProcessingThread closeAll( boolean force, Flag confirmed )
-    {
+    public ProcessingThread closeAll(boolean force, Flag confirmed) {
         final de.sciss.app.DocumentHandler	dh	= AbstractApplication.getApplication().getDocumentHandler();
         Session								doc;
         ProcessingThread					pt;
@@ -142,20 +140,18 @@ if( doc.getFrame() == null ) {
         return null;
     }
 
-    private void createActions()
-    {
+    private void createActions() {
         // --- file menu ---
-        actionNewEmpty	= new ActionNewEmpty( getResourceString( "menuNewEmpty" ),
-                                                KeyStroke.getKeyStroke( KeyEvent.VK_N, MENU_SHORTCUT ));
-        actionOpen		= new ActionOpen(  getResourceString( "menuOpen" ),
-                                                KeyStroke.getKeyStroke( KeyEvent.VK_O, MENU_SHORTCUT ));
-        actionOpenMM	= new ActionOpenMM( getResourceString( "menuOpenMM" ),
-                                                KeyStroke.getKeyStroke( KeyEvent.VK_O, MENU_SHORTCUT + InputEvent.SHIFT_MASK ));
+        actionNewEmpty = new ActionNewEmpty(getResourceString("menuNewEmpty"),
+                KeyStroke.getKeyStroke(KeyEvent.VK_N, MENU_SHORTCUT));
+        actionOpen = new ActionOpen(getResourceString("menuOpen"),
+                KeyStroke.getKeyStroke(KeyEvent.VK_O, MENU_SHORTCUT));
+        actionOpenMM = new ActionOpenMM(getResourceString("menuOpenMM"),
+                KeyStroke.getKeyStroke(KeyEvent.VK_O, MENU_SHORTCUT + InputEvent.SHIFT_MASK));
     }
 
-    // @todo	this should eventually read the tree from an xml file
-    protected void addMenuItems()
-    {
+    // todo: this should eventually read the tree from an xml file
+    protected void addMenuItems() {
         final Preferences		prefs = getApplication().getUserPrefs();
         MenuGroup				mg, smg;
         MenuCheckItem			mci;
@@ -194,23 +190,25 @@ if( doc.getFrame() == null ) {
         add( mg, i + 1 );
 
         // --- process menu ---
-        mg  = new MenuGroup( "process", getResourceString( "menuProcess" ));
-        mg.add( new MenuItem( "again", getResourceString( "menuProcessAgain" ), KeyStroke.getKeyStroke( KeyEvent.VK_F, MENU_SHORTCUT )));
+        mg = new MenuGroup("process", getResourceString("menuProcess"));
+        mg.add(new MenuItem("again", getResourceString("menuProcessAgain"), KeyStroke.getKeyStroke(KeyEvent.VK_F, MENU_SHORTCUT)));
         mg.addSeparator();
-        smg  = new MenuGroup( "fscape", getResourceString( "menuFScape" ));
-        smg.add( new MenuItem( "needlehole", getResourceString( "menuFScNeedlehole" )));
-        mg.add( smg );
-        smg = new MenuGroup( "sc", getResourceString( "menuSuperCollider" ));
-        mg.add( smg );
+        smg = new MenuGroup("fscape", getResourceString("menuFScape"));
+        smg.add(new MenuItem("needlehole", getResourceString("menuFScNeedlehole")));
+        mg.add(smg);
+        smg = new MenuGroup("sc", getResourceString("menuSuperCollider"));
+        mg.add(smg);
         mg.addSeparator();
-        mg.add( new MenuItem( "fadeIn", getResourceString( "menuFadeIn" ), KeyStroke.getKeyStroke( KeyEvent.VK_I, myCtrl )));
-        mg.add( new MenuItem( "fadeOut", getResourceString( "menuFadeOut" ), KeyStroke.getKeyStroke( KeyEvent.VK_O, myCtrl )));
-        mg.add( new MenuItem( "gain", getResourceString( "menuGain" ), KeyStroke.getKeyStroke( KeyEvent.VK_N, myCtrl )));
-        mg.add( new MenuItem( "invert", getResourceString( "menuInvert" )));
+        mg.add(new MenuItem("fadeIn"  , getResourceString("menuFadeIn"), KeyStroke.getKeyStroke(KeyEvent.VK_I, myCtrl)));
+        mg.add(new MenuItem("fadeInD" , getResourceString("menuFadeInD")));
+        mg.add(new MenuItem("fadeOut" , getResourceString("menuFadeOut"), KeyStroke.getKeyStroke(KeyEvent.VK_O, myCtrl)));
+        mg.add(new MenuItem("fadeOutD", getResourceString("menuFadeOutD")));
+        mg.add(new MenuItem("gain", getResourceString("menuGain"), KeyStroke.getKeyStroke(KeyEvent.VK_N, myCtrl)));
+        mg.add(new MenuItem("invert", getResourceString("menuInvert")));
 //		mg.add( new MenuItem( "mix", getResourceString( "menuMix" )));
-        mg.add( new MenuItem( "reverse", getResourceString( "menuReverse" )));
-        mg.add( new MenuItem( "rotateChannels", getResourceString( "menuRotateChannels" )));
-        add( mg, i + 2 );
+        mg.add(new MenuItem("reverse", getResourceString("menuReverse")));
+        mg.add(new MenuItem("rotateChannels", getResourceString("menuRotateChannels")));
+        add(mg, i + 2);
 
         // --- operation menu ---
         mg			= new MenuGroup( "operation", getResourceString( "menuOperation" ));

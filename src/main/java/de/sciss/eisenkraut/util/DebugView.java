@@ -397,7 +397,7 @@ vaxis.setSpace( spc );
 		 */
 		private void recalcTransforms()
 		{
-	// System.out.println( "recalc trns for "+recentSize.width+" x "+recentSize.height );
+	// System.out.println( "recalculate trns for "+recentSize.width+" x "+recentSize.height );
 
 			trnsVirtualToScreen.setToTranslation( 0.0, recentSize.height );
 			trnsVirtualToScreen.scale( recentSize.width,recentSize.height / (min - max) );

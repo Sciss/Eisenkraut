@@ -13,23 +13,18 @@
 
 package de.sciss.eisenkraut.render;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.geom.CubicCurve2D;
-import java.io.IOException;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-
 import de.sciss.eisenkraut.gui.CurvePanel;
 import de.sciss.eisenkraut.io.BlendContext;
-
 import de.sciss.io.Span;
 
-// @version	0.70, 26-Sep-07
+import javax.swing.*;
+import java.awt.*;
+import java.awt.geom.CubicCurve2D;
+import java.io.IOException;
+
 public abstract class FadePlugIn
-extends AbstractRenderPlugIn
-{
-	private CurvePanel		curvePanel;
+		extends AbstractRenderPlugIn {
+
 	private final boolean	isFadeIn;	// true for fade-in, false for fade-out
 
 	protected static final	String KEY_BLENDING	= "blend";
@@ -49,16 +44,15 @@ extends AbstractRenderPlugIn
 	{
 		return true;
 	}
-	
-	public JComponent getSettingsView( RenderContext context )
-	{
+
+	public JComponent getSettingsView(RenderContext context) {
 		final CubicCurve2D basicShape = new CubicCurve2D.Double(
-			0.0, isFadeIn ? 0.0 : 1.0, 0.5, 0.5, 0.5, 0.5, 1.0, isFadeIn ? 1.0 : 0.0 );
-		final JPanel p = new JPanel( new BorderLayout() );
-	
-		curvePanel = new CurvePanel( new CubicCurve2D[] { basicShape }, prefs );
-		curvePanel.setPreferredSize( new Dimension( 162, 162 ));
-		p.add( curvePanel, BorderLayout.CENTER );
+				0.0, isFadeIn ? 0.0 : 1.0, 0.5, 0.5, 0.5, 0.5, 1.0, isFadeIn ? 1.0 : 0.0);
+		final JPanel p = new JPanel(new BorderLayout());
+
+		CurvePanel curvePanel = new CurvePanel(new CubicCurve2D[]{basicShape}, prefs);
+		curvePanel.setPreferredSize(new Dimension(162, 162));
+		p.add(curvePanel, BorderLayout.CENTER);
 		return p;
 	}
 	

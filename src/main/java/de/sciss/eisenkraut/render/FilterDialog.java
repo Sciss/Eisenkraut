@@ -133,16 +133,18 @@ public class FilterDialog
         if ((!blockDisplay && plugIn.shouldDisplayParameters()) ||
                 (forceDisplay && plugIn.hasUserParameters())) {
 
-            final String plugInClassName = plugIn.getName();
+            final String plugInClassName = plugIn.getClass().getSimpleName(); // .getName();
             final JComponent view;
 
             // display settings
             if (!guiCreated) createGUI();
-            ggHelp.setHelpFile(plugInClassName.substring(plugInClassName.lastIndexOf('.') + 1));
+            ggHelp.setHelpFile(plugInClassName); // .substring(plugInClassName.lastIndexOf('.') + 1));
             view = plugIn.getSettingsView(context);
             ggSettingsPane.setViewportView(view);
             pack();
             setTitle(plugIn.getName());
+            // final Rectangle docR = aDoc.getFrame().getBounds();
+            setLocationRelativeTo(aDoc.getFrame().getComponent());
             setVisible(true);    // modal
 
         } else {    // process immediately
@@ -762,12 +764,11 @@ public class FilterDialog
             }
         }
         finally {
-            if( consStarted && !consFinished ) {	// on failure cancel rendering and undo edits
+            if (consStarted && !consFinished) {    // on failure cancel rendering and undo edits
                 try {
                     invokeProducerCancel( proc, source, plugIn );
-                }
-                catch( IOException e2 ) {
-                    proc.setException( e2 );
+                } catch (IOException e2) {
+                    proc.setException(e2);
                 }
             }
             if( source.markers != null ) {
@@ -780,82 +781,59 @@ public class FilterDialog
     /**
      *	Re-enables the frame components.
      */
-    public void processFinished( ProcessingThread proc )
-    {
-        ConsumerContext	consc   = (ConsumerContext) context.getOption( KEY_CONSC );
+    public void processFinished(ProcessingThread proc) {
+        ConsumerContext consc = (ConsumerContext) context.getOption(KEY_CONSC);
 
-        if( proc.getReturnCode() == DONE ) {
-            if( consc != null && consc.edit != null ) {
+        if (proc.getReturnCode() == DONE) {
+            if (consc != null && consc.edit != null) {
                 consc.edit.perform();
                 consc.edit.end();
-                doc.getUndoManager().addEdit( consc.edit );
+                doc.getUndoManager().addEdit(consc.edit);
             }
         } else {
-            if( consc != null && consc.edit != null ) {
+            if (consc != null && consc.edit != null) {
                 consc.edit.cancel();
             }
-            if( proc.getReturnCode() == FAILED ) {
-                final Object message = proc.getClientArg( "error" );
-                if( message != null ) {
-                    final JOptionPane op = new JOptionPane( message, JOptionPane.ERROR_MESSAGE );
-//					JOptionPane.showMessageDialog( getWindow(), message, plugIn == null ? null : plugIn.getName(), JOptionPane.ERROR_MESSAGE );
-                    BasicWindowHandler.showDialog( op, getWindow(), plugIn == null ? null : plugIn.getName() );
+            if (proc.getReturnCode() == FAILED) {
+                final Object message = proc.getClientArg("error");
+                if (message != null) {
+                    final JOptionPane op = new JOptionPane(message, JOptionPane.ERROR_MESSAGE);
+                    BasicWindowHandler.showDialog(op, getWindow(), plugIn == null ? null : plugIn.getName());
                 }
             }
         }
     }
 
     // we'll check shouldCancel() from time to time anyway
-    public void processCancel( ProcessingThread proc ) { /* ignore */ }
+    public void processCancel(ProcessingThread proc) { /* ignore */ }
 
 // ---------------- Action objects ---------------- 
 
     @SuppressWarnings("serial")
     private class ActionClose
-    extends AbstractAction
-    {
-        protected ActionClose( String text )
-        {
-            super( text );
+            extends AbstractAction {
+        protected ActionClose(String text) {
+            super(text);
         }
 
-        public void actionPerformed( ActionEvent e )
-        {
+        public void actionPerformed(ActionEvent e) {
             hideAndDispose();
         }
     }
 
     @SuppressWarnings("serial")
-    private class ActionRender extends AbstractAction
-    {
-        protected ActionRender( String text )
-        {
-            super( text );
+    private class ActionRender extends AbstractAction {
+        protected ActionRender(String text) {
+            super(text);
         }
 
-        public void actionPerformed( ActionEvent e )
-        {
+        public void actionPerformed(ActionEvent e) {
             processStart();
         }
     }
 
-//	private class actionCancelClass
-//	extends AbstractAction
-//	{
-//		private actionCancelClass( String text )
-//		{
-//			super( text );
-//		}
-//
-//		public void actionPerformed( ActionEvent e )
-//		{
-//			processStop();
-//		}
-//	}
-
 // -------- ConsumerContext internal class --------
-    private static class ConsumerContext
-    {
+    private static class ConsumerContext {
         protected Session					doc;
         protected RenderPlugIn				plugIn;
         protected AbstractCompoundEdit		edit;
