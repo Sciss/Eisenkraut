@@ -48,252 +48,212 @@ import java.util.List;
  */
 @SuppressWarnings("serial")
 public class TrackRowHeader
-		extends JPanel
-		implements MouseListener, DynamicListening, Disposable {
+        extends JPanel
+        implements MouseListener, DynamicListening, Disposable {
 
-	private final JLabel			lbTrackName;
-	private final Track				t;
-	private final SessionCollection	tracks;
-	private final SessionCollection	selectedTracks;
-	private final UndoManager		undo;
+    private final JLabel			lbTrackName;
+    private final Track				t;
+    private final SessionCollection	tracks;
+    private final SessionCollection	selectedTracks;
+    private final UndoManager		undo;
 
-	protected boolean				selected		= false;
+    protected boolean				selected		= false;
 
-    private final Color		colrSelected	= GraphicsUtil.colrSelection();
-    private static final Color		colrUnselected	= new Color( 0x00, 0x00, 0x00, 0x20 );
-    private static final Color		colrDarken		= new Color( 0x00, 0x00, 0x00, 0x18 );
-	private final Paint		pntSelected		= new GradientPaint(  0, 0, colrSelected,
-																 36, 0, new Color( colrSelected.getRGB() & 0xFFFFFF, true ));
-	private static final Paint		pntUnselected	= new GradientPaint(  0, 0, colrUnselected,
-																		 36, 0, new Color( colrUnselected.getRGB() & 0xFFFFFF, true ));
-	private static final Paint		pntDarken		= new GradientPaint(  0, 0, colrDarken,
-																		 36, 0, new Color( colrDarken.getRGB() & 0xFFFFFF, true ));
-	
+	private final Color colrSelected = GraphicsUtil.colrSelection();
+	private static final Color colrUnselected = GraphicsUtil.colrInactiveSelection();
+	private static final Color colrDarken = new Color(0x00, 0x00, 0x00, 0x18);
+	private final Paint pntSelected = new GradientPaint(0, 0, colrSelected,
+			36, 0, new Color(colrSelected.getRGB() & 0xFFFFFF, true));
+	private static final Paint pntUnselected = new GradientPaint(0, 0, colrUnselected,
+			36, 0, new Color(colrUnselected.getRGB() & 0xFFFFFF, true));
+	private static final Paint pntDarken = new GradientPaint(0, 0, colrDarken,
+			36, 0, new Color(colrDarken.getRGB() & 0xFFFFFF, true));
+
 	private final MapManager.Listener trackListener;
-	private final SessionCollection.Listener selectedTracksListener;
+    private final SessionCollection.Listener selectedTracksListener;
 
-	/**
-	 */
-	public TrackRowHeader(final Track t, final SessionCollection tracks, final SessionCollection selectedTracks,
-						  UndoManager undo) {
-		super();
-		
-		this.t				= t;
-		this.tracks			= tracks;
-		this.selectedTracks	= selectedTracks;
-		this.undo			= undo;
-		
-		final SpringLayout	lay	= new SpringLayout();
+    public TrackRowHeader(final Track t, final SessionCollection tracks, final SessionCollection selectedTracks,
+                          UndoManager undo) {
+        super();
+
+        this.t				= t;
+        this.tracks			= tracks;
+        this.selectedTracks	= selectedTracks;
+        this.undo			= undo;
+
+		final SpringLayout lay = new SpringLayout();
 		SpringLayout.Constraints cons;
-		setLayout( lay );
-		
- 		lbTrackName = new JLabel();
-		lbTrackName.setFont( AbstractApplication.getApplication().getGraphicsHandler().getFont(GraphicsHandler.FONT_SMALL));
-		cons		= lay.getConstraints( lbTrackName );
-		cons.setX( Spring.constant( 7 ));
-// doesn't work (why???)
-//		cons.setY( Spring.minus( Spring.max(	// min( X, Y ) = -max( -X, -Y )
-//			Spring.constant( -4 ), Spring.minus( Spring.sum(
-//				lay.getConstraints( this ).getHeight(), Spring.constant( -15 )))
-//		)));
-		cons.setY( Spring.minus( Spring.max(	// min( X, Y ) = -max( -X, -Y )
-				Spring.constant( -4 ),
-				Spring.minus( Spring.sum( Spring.sum( lay.getConstraint( SpringLayout.SOUTH, this ), Spring.minus( lay.getConstraint( SpringLayout.NORTH, this ))), Spring.constant( -15 ))))));
-		add( lbTrackName );
-		setBorder( BorderFactory.createMatteBorder( 0, 0, 0, 2, Color.white ));   // top left bottom right
+		setLayout(lay);
 
-		// --- Listener ---
-        new DynamicAncestorAdapter( this ).addTo( this );
-		this.addMouseListener( this );
+		lbTrackName = new JLabel();
+		lbTrackName.setFont(AbstractApplication.getApplication().getGraphicsHandler().getFont(GraphicsHandler.FONT_SMALL));
+		cons = lay.getConstraints(lbTrackName);
+		cons.setX(Spring.constant(7));
 
-//		// XXX should only listen to the track itself (requires event manager in AbstractSessionObject ?)
-//		tracksListener = new SessionCollection.Listener() {
-//			public void sessionCollectionChanged( SessionCollection.Event e ) {}	// XXX could dispose
-//			
-//			public void sessionObjectChanged( SessionCollection.Event e )
-//			{
-//				if( e.collectionContains( t ) && (e.getModificationType() == Track.OWNER_RENAMED) ) {
-//					checkTrackName();
-//				}
-//			}
-//
-//			public void sessionObjectMapChanged( SessionCollection.Event e ) {}
-//		};
+		cons.setY(Spring.minus(Spring.max(    // min( X, Y ) = -max( -X, -Y )
+				Spring.constant(-4),
+				Spring.minus(Spring.sum(Spring.sum(lay.getConstraint(SpringLayout.SOUTH, this),
+						Spring.minus(lay.getConstraint(SpringLayout.NORTH, this))), Spring.constant(-15))))));
+		add(lbTrackName);
+		// setBorder(BorderFactory.createMatteBorder(0, 0, 0, 2, Color.white));   // top left bottom right
+		setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 2));   // top left bottom right
 
-		trackListener = new MapManager.Listener() {
-			public void mapChanged( MapManager.Event e ) { /* ignore */ }
-		
-			public void mapOwnerModified( MapManager.Event e )
-			{
-				if( e.getOwnerModType() == SessionObject.OWNER_RENAMED ) {
-					checkTrackName();
-				}
-			}
-		};
+        // --- Listener ---
+        new DynamicAncestorAdapter(this).addTo(this);
+        this.addMouseListener(this);
 
-		selectedTracksListener = new SessionCollection.Listener() {
-			public void sessionCollectionChanged( SessionCollection.Event e )
-			{
-				if( e.collectionContains( t )) {
-					if( selected != selectedTracks.contains( t )) {
-						selected = !selected;
-						repaint();
-					}
-				}
-			}
-			
-			public void sessionObjectChanged( SessionCollection.Event e ) { /* ignore */ }
-			public void sessionObjectMapChanged( SessionCollection.Event e ) { /* ignore */ }
-		};
-	}
-	
-	public void dispose()
-	{
+        trackListener = new MapManager.Listener() {
+            public void mapChanged(MapManager.Event e) { /* ignore */ }
+
+            public void mapOwnerModified(MapManager.Event e) {
+                if (e.getOwnerModType() == SessionObject.OWNER_RENAMED) {
+                    checkTrackName();
+                }
+            }
+        };
+
+        selectedTracksListener = new SessionCollection.Listener() {
+            public void sessionCollectionChanged(SessionCollection.Event e) {
+                if (e.collectionContains(t)) {
+                    if (selected != selectedTracks.contains(t)) {
+                        selected = !selected;
+                        repaint();
+                    }
+                }
+            }
+
+            public void sessionObjectChanged(SessionCollection.Event e) { /* ignore */ }
+
+            public void sessionObjectMapChanged(SessionCollection.Event e) { /* ignore */ }
+        };
+    }
+
+    public void dispose() {
 //		pan.dispose();
-	}
-	
-	/**
-	 *  Determines if this row is selected
-	 *  i.e. is part of the selected transmitters
-	 *
-	 *	@return	<code>true</code> if the row (and thus the transmitter) is selected
-	 */
-	public boolean isSelected()
-	{
-		return selected;
-	}
+    }
 
-	public Track getTrack()
-	{
-		return t;
-	}
+    /**
+     *  Determines if this row is selected
+     *  i.e. is part of the selected transmitters
+     *
+     *	@return	<code>true</code> if the row (and thus the transmitter) is selected
+     */
+    public boolean isSelected() {
+        return selected;
+    }
 
-	public void paintComponent( Graphics g )
-	{
-		super.paintComponent( g );
-//System.err.println(" - ");		
-		final Graphics2D	g2	= (Graphics2D) g;
-		final int			h	= getHeight();
-		final int			w	= getWidth();
-		final int			x	= Math.min( w - 36, lbTrackName.getX() + lbTrackName.getWidth() );
-		
-//		g2.setColor( colrDarken );
-//		g2.fillRect( 0, 19, w, 2 );
-	g2.translate( x, 0 );
-		g2.setPaint( pntDarken );
-		g2.fillRect( -x, 19, x + 36, 2 );
-//		g2.setColor( selected ? colrSelected : colrUnselected );
-//		g2.fillRect( 0, 0, 5, h );
-//		g2.fillRect( 5, 0, w, 20 );
-		g2.setPaint( selected ? pntSelected : pntUnselected );
-		g2.fillRect( -x, 0, x + 36, 20 );
-	g2.translate( -x, 0 );
+    public Track getTrack() {
+        return t;
+    }
 
-//		g2.setPaint( pntTopBorder );
-//		g2.fillRect( 0, 0, w, 8 );
-	g2.translate( 0, h - 8 );
-		g2.setPaint( GradientPanel.pntBottomBorder());
-//		g2.fillRect( 0, h - 9, w, 8 );
-		g2.fillRect( 0, 0, w, 8 );
-	g2.translate( 0, 8 - h );
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
 
-	}
+        final Graphics2D	g2	= (Graphics2D) g;
+        final int			h	= getHeight();
+        final int			w	= getWidth();
+        final int			x	= Math.min( w - 36, lbTrackName.getX() + lbTrackName.getWidth() );
 
-	public void paintChildren(Graphics g) {
-		super.paintChildren(g);
-		final Graphics2D g2 = (Graphics2D) g;
-		final int w = getWidth();
-		g2.setPaint(GradientPanel.pntTopBorder());
-		g2.fillRect(0, 0, w, 8);
-	}
+        g2.translate(x, 0);
+        g2.setPaint(pntDarken);
+        g2.fillRect(-x, 19, x + 36, 2);
+        g2.setPaint(selected ? pntSelected : pntUnselected);
+        g2.fillRect(-x, 0, x + 36, 20);
+        g2.translate(-x, 0);
 
-	protected void checkTrackName() {
-		if (!t.getName().equals(lbTrackName.getText())) {
-			lbTrackName.setText(t.getName());
-		}
-	}
+        g2.translate(0, h - 8);
+        g2.setPaint(GradientPanel.pntBottomBorder());
+        g2.fillRect(0, 0, w, 8);
+        g2.translate(0, 8 - h);
+    }
+
+    public void paintChildren(Graphics g) {
+        super.paintChildren(g);
+        final Graphics2D g2 = (Graphics2D) g;
+        final int w = getWidth();
+        g2.setPaint(GradientPanel.pntTopBorder());
+        g2.fillRect(0, 0, w, 8);
+    }
+
+    protected void checkTrackName() {
+        if (!t.getName().equals(lbTrackName.getText())) {
+            lbTrackName.setText(t.getName());
+        }
+    }
 
 // ---------------- DynamicListening interface ---------------- 
 
-    public void startListening()
-    {
-		t.getMap().addListener( trackListener );
-		selectedTracks.addListener( selectedTracksListener );
-		checkTrackName();
-//		if( !lm.attemptShared( doors, 250 )) return;
-//		try {
-			if( selected != selectedTracks.contains( t )) {
-				selected = !selected;
-				repaint();
-			}
-//		}
-//		finally {
-//			lm.releaseShared( doors );
-//		}
+    public void startListening() {
+        t.getMap().addListener(trackListener);
+        selectedTracks.addListener(selectedTracksListener);
+        checkTrackName();
+        if (selected != selectedTracks.contains(t)) {
+            selected = !selected;
+            repaint();
+        }
     }
 
-    public void stopListening()
-    {
-		t.getMap().removeListener( trackListener );
-		selectedTracks.removeListener( selectedTracksListener );
+    public void stopListening() {
+        t.getMap().removeListener(trackListener);
+        selectedTracks.removeListener(selectedTracksListener);
     }
 
 // ---------------- MouseListener interface ---------------- 
 // we're listening to the ourselves
 
-	public void mouseEntered( MouseEvent e ) { /* ignore */ }
-	public void mouseExited( MouseEvent e ) { /* ignore */ }
+    public void mouseEntered(MouseEvent e) { /* ignore */ }
 
-	/**
-	 *	Handle mouse presses.
-	 *	<pre>
-	 *  Keyboard shortcuts as in ProTools:
-	 *  Alt+Click   = Toggle item and set all others to same new state
-	 *  Meta+Click  = Toggle item and set all others to opposite state
-	 *	</pre>
-	 */
-	public void mousePressed(MouseEvent e) {
-		UndoableEdit 	edit;
-		List<SessionObject> collTracks;
-	
-		if( e.isAltDown() ) {
-			selected = !selected;   // toggle item
-			if( selected ) {		// select all
-//					collTracks = doc.activeTransmitters.getAll();
-				collTracks = tracks.getAll();
-			} else {				// deselect all
-				collTracks = new ArrayList<SessionObject>( 1 );
-			}
-		} else if( e.isMetaDown() ) {
-			selected = !selected;   // toggle item
-			if( selected ) {		// deselect all except uns
-				collTracks = Collections.singletonList((SessionObject) t);
-			} else {				// select all except us
-//					collTracks = doc.activeTransmitters.getAll();
-				collTracks = tracks.getAll();
-				collTracks.remove( t );
-			}
-		} else {
-			if( e.isShiftDown() ) {
-				collTracks = selectedTracks.getAll();
-				selected = !selected;
-				if (selected) {
-					collTracks.add(t);            // add us to selection
-				} else {
-					collTracks.remove(t);        // remove us from selection
-				}
-			} else {
-				if( selected ) return;						// no action
-				selected	= true;
-				collTracks	= Collections.singletonList((SessionObject) t);	// deselect all except uns
-			}
-		}
-		// XXX should use a lazy edit here
-		edit = new EditSetSessionObjects(this, selectedTracks, collTracks).perform();
-		undo.addEdit( edit );
-		repaint();
+    public void mouseExited(MouseEvent e) { /* ignore */ }
+
+    /**
+     *	Handle mouse presses.
+     *	<pre>
+     *  Keyboard shortcuts as in ProTools:
+     *  Alt+Click   = Toggle item and set all others to same new state
+     *  Meta+Click  = Toggle item and set all others to opposite state
+     *	</pre>
+     */
+    public void mousePressed(MouseEvent e) {
+        UndoableEdit 	edit;
+        List<SessionObject> collTracks;
+
+        if( e.isAltDown() ) {
+            selected = !selected;   // toggle item
+            if( selected ) {		// select all
+                collTracks = tracks.getAll();
+            } else {				// deselect all
+                collTracks = new ArrayList<SessionObject>( 1 );
+            }
+        } else if( e.isMetaDown() ) {
+            selected = !selected;   // toggle item
+            if( selected ) {		// deselect all except uns
+                collTracks = Collections.singletonList((SessionObject) t);
+            } else {				// select all except us
+                collTracks = tracks.getAll();
+                collTracks.remove( t );
+            }
+        } else {
+            if( e.isShiftDown() ) {
+                collTracks = selectedTracks.getAll();
+                selected = !selected;
+                if (selected) {
+                    collTracks.add(t);            // add us to selection
+                } else {
+                    collTracks.remove(t);        // remove us from selection
+                }
+            } else {
+                if( selected ) return;						// no action
+                selected	= true;
+                collTracks	= Collections.singletonList((SessionObject) t);	// deselect all except uns
+            }
+        }
+        // XXX should use a lazy edit here
+        edit = new EditSetSessionObjects(this, selectedTracks, collTracks).perform();
+        undo.addEdit( edit );
+        repaint();
     }
 
-	public void mouseReleased( MouseEvent e ) { /* ignore */ }
-	public void mouseClicked( MouseEvent e ) { /* ignore */ }
+    public void mouseReleased(MouseEvent e) { /* ignore */ }
+
+    public void mouseClicked(MouseEvent e) { /* ignore */ }
 }

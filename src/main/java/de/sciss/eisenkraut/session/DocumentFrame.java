@@ -149,7 +149,6 @@ public class DocumentFrame
     private final JPanel					metersPanel;
     private final List<AudioTrackRowHeader> collChannelHeaders		= new ArrayList<AudioTrackRowHeader>();
     protected final List<Axis> collChannelRulers		= new ArrayList<Axis>();
-//	private final List						collChannelMeters		= new ArrayList();
     private PeakMeter[]						channelMeters			= new PeakMeter[ 0 ];
 
     private final JLabel					lbSRC;
@@ -197,8 +196,6 @@ public class DocumentFrame
     protected boolean				csrInfoIsInt;
     protected static final double TWENTYDIVLOG10 = 20 / Math.log( 10 );
 
-    private final Color colrClear				= new Color( 0xA0, 0xA0, 0xA0, 0x00 );
-
     // --------- former viewport ---------
     // --- painting ---
     // private final boolean isDark                = UIManager.getBoolean("dark-skin");
@@ -218,10 +215,10 @@ public class DocumentFrame
     private float[]		vpDash					= { 3.0f, 5.0f };
     private float		vpScale;
 
-    protected final Stroke[] vpZoomStroke			= {
-        new BasicStroke( 2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 1.0f, vpDash, 0.0f ),
-        new BasicStroke( 2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 1.0f, vpDash, 4.0f ),
-        new BasicStroke( 2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 1.0f, vpDash, 6.0f ),
+    protected final Stroke[] vpZoomStroke = {
+            new BasicStroke(2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 1.0f, vpDash, 0.0f),
+            new BasicStroke(2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 1.0f, vpDash, 4.0f),
+            new BasicStroke(2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 1.0f, vpDash, 6.0f),
     };
     protected int		vpZoomStrokeIdx			= 0;
 
@@ -295,176 +292,173 @@ public class DocumentFrame
 
         lmm					= new PeakMeterManager( superCollider.getMeterManager() );
 
-        final Container					cp			= getContentPane();
-        final InputMap					iMap		= getInputMap( JComponent.WHEN_IN_FOCUSED_WINDOW );
-        final ActionMap					aMap		= getActionMap();
-        final AbstractButton			ggAudioInfo, ggRevealFile;
-        final int						myMeta		= BasicMenuFactory.MENU_SHORTCUT == InputEvent.CTRL_MASK ?
-            InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK : BasicMenuFactory.MENU_SHORTCUT;	// META on Mac, CTRL+SHIFT on PC
-        final TopPainter				trackPainter;
-        final MenuRoot					mr;
-        final JPanel					topPane		= GUIUtil.createGradientPanel();
-        Box								box;
+        final Container     cp      = getContentPane();
+        final InputMap      iMap    = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        final ActionMap     aMap    = getActionMap();
+        final AbstractButton ggAudioInfo, ggRevealFile;
+        final int           myMeta  = BasicMenuFactory.MENU_SHORTCUT == InputEvent.CTRL_MASK ?
+                InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK : BasicMenuFactory.MENU_SHORTCUT;    // META on Mac, CTRL+SHIFT on PC
+        final TopPainter trackPainter;
+        final MenuRoot mr;
+        final JPanel        topPane = GUIUtil.createGradientPanel();
+        Box box;
 
         internalFrames		= app.getWindowHandler().usesInternalFrames();
 
-        timeTB		        = new TimelineToolBar( doc );
-        transTB		        = new TransportToolBar( doc );
+        timeTB		        = new TimelineToolBar (doc);
+        transTB		        = new TransportToolBar(doc);
 
         wavePanel			= new ComponentHost();
-        timeAxis			= new TimelineAxis( doc, wavePanel );
-        markAxis			= new MarkerAxis( doc, wavePanel );
-        viewMarkers			= app.getUserPrefs().getBoolean( PrefsUtil.KEY_VIEWMARKERS, false );
+        timeAxis			= new TimelineAxis(doc, wavePanel);
+        markAxis			= new MarkerAxis  (doc, wavePanel);
+        viewMarkers			= app.getUserPrefs().getBoolean(PrefsUtil.KEY_VIEWMARKERS, false);
         markVisible			= viewMarkers && waveExpanded;
-        markAxisHeader		= new TrackRowHeader( doc.markerTrack, doc.tracks, doc.selectedTracks, doc.getUndoManager() );
-        markAxisHeader.setPreferredSize( new Dimension( 63, markAxis.getPreferredSize().height ));	// XXX
-        markAxisHeader.setMaximumSize( new Dimension( 128, markAxis.getMaximumSize().height ));		// XXX
-        if( markVisible ) {
+        markAxisHeader = new TrackRowHeader(doc.markerTrack, doc.tracks, doc.selectedTracks, doc.getUndoManager());
+        markAxisHeader.setPreferredSize(new Dimension( 63, markAxis.getPreferredSize().height));    // XXX
+        markAxisHeader.setMaximumSize  (new Dimension(128, markAxis.getMaximumSize  ().height));    // XXX
+        if (markVisible) {
             markAxis.startListening();
         } else {
-            markAxis.setVisible( false );
-            markAxisHeader.setVisible( false );
+            markAxis.setVisible(false);
+            markAxisHeader.setVisible(false);
         }
-        flagsPanel			= new JPanel( new StretchedGridLayout( 0, 1, 1, 1 ));
-        metersPanel			= new JPanel( new StretchedGridLayout( 0, 1, 1, 1 )); // SpringPanel( 0, 0, 1, 1 );
-        rulersPanel			= new JPanel( new StretchedGridLayout( 0, 1, 1, 1 ));
-        lmm.setDynamicComponent( metersPanel );
+        flagsPanel  = new JPanel(new StretchedGridLayout(0, 1, 1, 1));
+        metersPanel = new JPanel(new StretchedGridLayout(0, 1, 1, 1));
+        rulersPanel = new JPanel(new StretchedGridLayout(0, 1, 1, 1));
+        lmm.setDynamicComponent(metersPanel);
         JPanel waveHeaderPanel = new JPanel(new BorderLayout());
         channelHeaderPanel	= new JPanel();
-        channelHeaderPanel.setLayout( new BoxLayout( channelHeaderPanel, BoxLayout.X_AXIS ));
-final Box bbb = Box.createVerticalBox();
-final GradientPanel gp = GUIUtil.createGradientPanel();
-gp.setBottomBorder( true );
-gp.setLayout( null );
-gp.setPreferredSize( new Dimension( 0, timeAxis.getPreferredSize().height ));
-bbb.add( gp );
-bbb.add( markAxisHeader );
+        channelHeaderPanel.setLayout(new BoxLayout(channelHeaderPanel, BoxLayout.X_AXIS));
+
+        final Box bbb = Box.createVerticalBox();
+        final GradientPanel gp = GUIUtil.createGradientPanel();
+        gp.setBottomBorder(true);
+        gp.setLayout(null);
+        gp.setPreferredSize(new Dimension(0, timeAxis.getPreferredSize().height));
+        bbb.add(gp);
+        bbb.add(markAxisHeader);
+
         waveHeaderPanel.add(bbb, BorderLayout.NORTH);
-        channelHeaderPanel.add( flagsPanel );
-        channelHeaderPanel.add( metersPanel );
-        channelHeaderPanel.add( rulersPanel );
+        channelHeaderPanel.add(flagsPanel);
+        channelHeaderPanel.add(metersPanel);
+        channelHeaderPanel.add(rulersPanel);
         waveHeaderPanel.add(channelHeaderPanel, BorderLayout.CENTER);
 
-        waveView			= new WaveformView( doc, wavePanel );
-        wavePanel.setLayout( new BoxLayout( wavePanel, BoxLayout.Y_AXIS ));
-        wavePanel.add( timeAxis );
-        wavePanel.add( markAxis );
-        wavePanel.add( waveView );
+        waveView = new WaveformView(doc, wavePanel);
+        wavePanel.setLayout(new BoxLayout(wavePanel, BoxLayout.Y_AXIS));
+        wavePanel.add(timeAxis);
+        wavePanel.add(markAxis);
+        wavePanel.add(waveView);
 
-        scroll				= new TimelineScroll( doc );
+        scroll = new TimelineScroll(doc);
         JPanel ggTrackPanel = new JPanel(new BorderLayout());
         ggTrackPanel.add(wavePanel, BorderLayout.CENTER);
         ggTrackPanel.add(waveHeaderPanel, BorderLayout.WEST);
         ggTrackPanel.add(scroll, BorderLayout.SOUTH);
-        
-        lbWriteProtected	= new JLabel();
-        ggAudioInfo			= new ModificationButton( ModificationButton.SHAPE_INFO );
-        ggAudioInfo.setAction( new ActionAudioInfo() );
-        ggRevealFile		= new ModificationButton( ModificationButton.SHAPE_REVEAL );
-        actionRevealFile	= new ActionRevealFile();
-        ggRevealFile.setAction( actionRevealFile );
-        //		ggAudioFileDescr	= new JTextField( 32 );
-        //		ggAudioFileDescr.setEditable( false );
-        //		ggAudioFileDescr.setFocusable( false );
-        //		ggAudioFileDescr.setBackground( null );
-        //		ggAudioFileDescr.setBorder( null );
+
+        lbWriteProtected    = new JLabel();
+        ggAudioInfo         = new ModificationButton(ModificationButton.SHAPE_INFO);
+        ggAudioInfo.setAction(new ActionAudioInfo());
+        ggRevealFile        = new ModificationButton(ModificationButton.SHAPE_REVEAL);
+        actionRevealFile    = new ActionRevealFile();
+        ggRevealFile.setAction(actionRevealFile);
+
         ggAudioFileDescr	= new JLabel();
 
-        lbSRC				= new JLabel( getResourceString( "buttonSRC" ));
-        lbSRC.setForeground( colrClear );
-        box					= Box.createHorizontalBox();
-        box.add( Box.createHorizontalStrut( 4 ));
-        box.add( lbWriteProtected );
-        box.add( ggAudioInfo );
+        lbSRC               = new JLabel(getResourceString("buttonSRC"));
+        lbSRC.setForeground(Color.red);
+        lbSRC.setPreferredSize(lbSRC.getPreferredSize());
+        lbSRC.setText(null);
+        box                 = Box.createHorizontalBox();
+        box.add(Box.createHorizontalStrut(4));
+        box.add(lbWriteProtected);
+        box.add(ggAudioInfo);
         if (internalFrames || Main.isLinux /* !Main.isMac */) box.add(ggRevealFile);
-        box.add( Box.createHorizontalStrut( 4 ));
+        box.add(Box.createHorizontalStrut(4));
 
         pProgress			= new ProgressPanel();
         pOverlay			= new CrossfadePanel();
-        pOverlay.setComponentA( ggAudioFileDescr );
-        pOverlay.setComponentB( pProgress );
-        box.add( pOverlay );
+        pOverlay.setComponentA(ggAudioFileDescr);
+        pOverlay.setComponentB(pProgress);
+        box.add(pOverlay);
 
-        box.add( Box.createHorizontalStrut( 4 ));
-        box.add( lbSRC );
-        box.add( CoverGrowBox.create( 2, 0 ));
+        box.add(Box.createHorizontalStrut(4));
+        box.add(lbSRC);
+        box.add(CoverGrowBox.create(2, 0));
 
         updateAFDGadget();
         updateCursorFormat();
 
 // ----- afr export -----
-        final JButton ggExportAFR = new JButton(getResourceString("buttonDragRegion"), new ImageIcon(getClass().getResource("dragicon.png")));
-        ggExportAFR.setTransferHandler( new AFRTransferHandler() );
+        final JButton ggExportAFR = new JButton(getResourceString("buttonDragRegion"),
+                new ImageIcon(getClass().getResource("dragicon.png")));
+        ggExportAFR.setTransferHandler(new AFRTransferHandler());
         final MouseInputAdapter expAFRmia = new MouseInputAdapter() {
             private MouseEvent dndInit = null;
             private boolean dndStarted = false;
 
-            public void mousePressed( MouseEvent e )
-            {
-                dndInit		= e;
-                dndStarted	= false;
+            public void mousePressed(MouseEvent e) {
+                dndInit = e;
+                dndStarted = false;
             }
 
-            public void mouseReleased( MouseEvent e )
-            {
-                dndInit		= null;
-                dndStarted	= false;
+            public void mouseReleased(MouseEvent e) {
+                dndInit = null;
+                dndStarted = false;
             }
 
-            public void mouseDragged( MouseEvent e )
-            {
-                if( !dndStarted && (dndInit != null) &&
-                    ((Math.abs( e.getX() - dndInit.getX() ) > 5) ||
-                     (Math.abs( e.getY() - dndInit.getY() ) > 5))) {
+            public void mouseDragged(MouseEvent e) {
+                if (!dndStarted && (dndInit != null) &&
+                        ((Math.abs(e.getX() - dndInit.getX()) > 5) ||
+                                (Math.abs(e.getY() - dndInit.getY()) > 5))) {
 
                     JComponent c = (JComponent) e.getSource();
-                    c.getTransferHandler().exportAsDrag( c, e, TransferHandler.COPY );
+                    c.getTransferHandler().exportAsDrag(c, e, TransferHandler.COPY);
                     dndStarted = true;
                 }
             }
         };
 
-        ggExportAFR.addMouseListener( expAFRmia );
-        ggExportAFR.addMouseMotionListener( expAFRmia );
+        ggExportAFR.addMouseListener(expAFRmia);
+        ggExportAFR.addMouseMotionListener(expAFRmia);
 
-        timeTB.add( Box.createHorizontalStrut( 4 ));
-        timeTB.addButton( ggExportAFR );
+        timeTB.add(Box.createHorizontalStrut(4));
+        timeTB.addButton(ggExportAFR);
 // ----------
 
-        topPane.setBorder( BorderFactory.createEmptyBorder( 2, 2, 2, 2 ));
-        timeTB.setOpaque( false );
-        topPane.add( timeTB );
-        transTB.setOpaque( false );
-        topPane.add( transTB );
-        topPane.add( Box.createHorizontalGlue() );
+        topPane.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+        timeTB.setOpaque(false);
+        topPane.add(timeTB);
+        transTB.setOpaque(false);
+        topPane.add(transTB);
+        topPane.add(Box.createHorizontalGlue());
         cbr			= new ComponentBoundsRestrictor();
         ggTreeExp	= new TreeExpanderButton();
-        ggTreeExp.setExpandedToolTip( getResourceString( "buttonExpWaveTT" ));
-        ggTreeExp.setCollapsedToolTip( getResourceString( "buttonCollWaveTT" ));
-        ggTreeExp.setExpanded( true );
-        ggTreeExp.addActionListener( new ActionListener() {
-            public void actionPerformed( ActionEvent e )
-            {
+        ggTreeExp.setExpandedToolTip(getResourceString("buttonExpWaveTT"));
+        ggTreeExp.setCollapsedToolTip(getResourceString("buttonCollWaveTT"));
+        ggTreeExp.setExpanded(true);
+        ggTreeExp.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
                 final Dimension d	= getSize();
 
                 waveExpanded	= ggTreeExp.isExpanded();
                 markVisible		= viewMarkers && waveExpanded;
 
-                if( waveExpanded ) {
-                    cbr.remove( getWindow() );
-                    waveView.setVisible( true );
-                    channelHeaderPanel.setVisible( true );
-                    if( viewMarkers ) {
-                        markAxis.setVisible( true );
-                        markAxisHeader.setVisible( true );
+                if (waveExpanded) {
+                    cbr.remove(getWindow());
+                    waveView.setVisible(true);
+                    channelHeaderPanel.setVisible(true);
+                    if (viewMarkers) {
+                        markAxis.setVisible(true);
+                        markAxisHeader.setVisible(true);
                     }
-                    scroll.setVisible( true );
-                    timeTB.setVisible( true );
+                    scroll.setVisible(true);
+                    timeTB.setVisible(true);
                     pack();
 
                 } else {
                     checkDecimatedTrails();
-                    setPreferredSize( getSize() );
+                    setPreferredSize(getSize());
 
                     waveView.setVisible(false);
                     channelHeaderPanel.setVisible(false);
@@ -483,13 +477,13 @@ bbb.add( markAxisHeader );
                 }
             }
         });
-        topPane.add( ggTreeExp );
+        topPane.add(ggTreeExp);
 
         gp.setGradientShift(0, topPane.getPreferredSize().height);
 
-        cp.add(topPane, BorderLayout.NORTH);
-        cp.add(ggTrackPanel, BorderLayout.CENTER);
-        cp.add(box, BorderLayout.SOUTH);
+        cp.add(topPane      , BorderLayout.NORTH);
+        cp.add(ggTrackPanel , BorderLayout.CENTER);
+        cp.add(box          , BorderLayout.SOUTH);
 
         // --- Tools ---
 
@@ -528,89 +522,79 @@ bbb.add( markAxisHeader );
                 }
             }
         };
-        wavePanel.addTopPainter( trackPainter );
+        wavePanel.addTopPainter(trackPainter);
 
         // ---- listeners ----
 
-        doc.timeline.addTimelineListener( this );
-//		doc.addListener( this );
+        doc.timeline.addTimelineListener(this);
 
-//		checkDecimatedTrails();
-
-        doc.audioTracks.addListener( new SessionCollection.Listener() {
-            public void sessionCollectionChanged( SessionCollection.Event e )
-            {
+        doc.audioTracks.addListener(new SessionCollection.Listener() {
+            public void sessionCollectionChanged(SessionCollection.Event e) {
                 documentUpdate();
             }
 
-            public void sessionObjectMapChanged( SessionCollection.Event e ) { /* ignored */ }
+            public void sessionObjectMapChanged(SessionCollection.Event e) { /* ignored */ }
 
-            public void sessionObjectChanged( SessionCollection.Event e )
-            {
+            public void sessionObjectChanged(SessionCollection.Event e) {
                 // nothing
             }
         });
 
-        doc.selectedTracks.addListener( new SessionCollection.Listener() {
-            public void sessionCollectionChanged( SessionCollection.Event e )
-            {
+        doc.selectedTracks.addListener(new SessionCollection.Listener() {
+            public void sessionCollectionChanged(SessionCollection.Event e) {
                 updateSelectionAndRepaint();
             }
 
-            public void sessionObjectMapChanged( SessionCollection.Event e ) { /* ignore */ }
-            public void sessionObjectChanged( SessionCollection.Event e ) { /* ignore */ }
+            public void sessionObjectMapChanged(SessionCollection.Event e) { /* ignore */ }
+
+            public void sessionObjectChanged(SessionCollection.Event e) { /* ignore */ }
         });
 
-        transport.addTransportListener( this );
+        transport.addTransportListener(this);
 
-        doc.markers.addListener( new Trail.Listener() {
-            public void trailModified( Trail.Event e )
-            {
-                repaintMarkers( e.getAffectedSpan() );
+        doc.markers.addListener(new Trail.Listener() {
+            public void trailModified(Trail.Event e) {
+                repaintMarkers(e.getAffectedSpan());
             }
         });
 
-        doc.getAudioTrail().addListener( new Trail.Listener() {
-            public void trailModified( Trail.Event e )
-            {
-                if( !waveExpanded || !e.getAffectedSpan().touches( timelineVis )) return;
+        doc.getAudioTrail().addListener(new Trail.Listener() {
+            public void trailModified(Trail.Event e) {
+                if (!waveExpanded || !e.getAffectedSpan().touches(timelineVis)) return;
 
-                updateOverviews( false, false );
+                updateOverviews(false, false);
             }
         });
 
         winListener = new AbstractWindow.Adapter() {
-            public void windowClosing( AbstractWindow.Event e ) {
+            public void windowClosing(AbstractWindow.Event e) {
                 actionClose.perform();
             }
 
-            public void windowActivated( AbstractWindow.Event e )
-            {
+            public void windowActivated(AbstractWindow.Event e) {
                 // need to check 'disposed' to avoid runtime exception in doc handler if document was just closed
-                if( !disposed ) {
-                    app.getDocumentHandler().setActiveDocument( DocumentFrame.this, doc );
-                    ((BasicWindowHandler) app.getWindowHandler()).setMenuBarBorrower( DocumentFrame.this );
+                if (!disposed) {
+                    app.getDocumentHandler().setActiveDocument(DocumentFrame.this, doc);
+                    ((BasicWindowHandler) app.getWindowHandler()).setMenuBarBorrower(DocumentFrame.this);
                 }
             }
         };
-        this.addListener( winListener );
+        this.addListener(winListener);
 
-        waveView.addComponentListener( new ComponentAdapter() {
-            public void componentResized( ComponentEvent e )
-            {
+        waveView.addComponentListener(new ComponentAdapter() {
+            public void componentResized(ComponentEvent e) {
                 updateSelectionAndRepaint();
             }
         });
 
-        timeTB.addToolActionListener( this );
-        timeTB.selectTool( ToolAction.POINTER );
+        timeTB.addToolActionListener(this);
+        timeTB.selectTool(ToolAction.POINTER);
 
-        playTimer = new Timer( 33, new ActionListener() {
-            public void actionPerformed( ActionEvent e )
-            {
+        playTimer = new Timer(33, new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
                 timelinePos = transport.getCurrentFrame();
                 updatePositionAndRepaint();
-                scroll.setPosition( timelinePos, 50, TimelineScroll.TYPE_TRANSPORT );
+                scroll.setPosition(timelinePos, 50, TimelineScroll.TYPE_TRANSPORT);
             }
         });
 
@@ -618,132 +602,132 @@ bbb.add( markAxisHeader );
         actionNewFromSel	= new ActionNewFromSel();
         actionClose			= new ActionClose();
         actionSave			= new ActionSave();
-        actionSaveAs		= new ActionSaveAs( false, false );
+        actionSaveAs		= new ActionSaveAs(false, false);
         ActionSaveAs actionSaveCopyAs = new ActionSaveAs(true, false);
-        actionSaveSelectionAs = new ActionSaveAs( true, true );
+        actionSaveSelectionAs = new ActionSaveAs(true, true);
         ActionSelectAll actionSelectAll = new ActionSelectAll();
         MenuAction actionInsertRec = new ActionInsertRec();
 
-        actionProcess		= new ActionProcess();
-        actionProcessAgain	= new ActionProcessAgain();
-        MenuAction actionFadeIn = new ActionPlugIn(plugInPackage + "FadeIn");
-        MenuAction actionFadeOut = new ActionPlugIn(plugInPackage + "FadeOut");
-        MenuAction actionGain = new ActionPlugIn(plugInPackage + "Gain");
-        MenuAction actionInvert = new ActionPlugIn(plugInPackage + "Invert");
-        MenuAction actionReverse = new ActionPlugIn(plugInPackage + "Reverse");
+        actionProcess		            = new ActionProcess();
+        actionProcessAgain	            = new ActionProcessAgain();
+        MenuAction actionFadeIn         = new ActionPlugIn(plugInPackage + "FadeIn");
+        MenuAction actionFadeOut        = new ActionPlugIn(plugInPackage + "FadeOut");
+        MenuAction actionGain           = new ActionPlugIn(plugInPackage + "Gain");
+        MenuAction actionInvert         = new ActionPlugIn(plugInPackage + "Invert");
+        MenuAction actionReverse        = new ActionPlugIn(plugInPackage + "Reverse");
         MenuAction actionRotateChannels = new ActionPlugIn(plugInPackage + "RotateChannels");
-        MenuAction actionFScNeedlehole = new ActionPlugIn(fscapePackage + "Needlehole");
+        MenuAction actionFScNeedlehole  = new ActionPlugIn(fscapePackage + "Needlehole");
 
-        MenuAction actionDebugDump = new ActionDebugDump();
-        MenuAction actionDebugVerify = new ActionDebugVerify();
+        MenuAction actionDebugDump      = new ActionDebugDump();
+        MenuAction actionDebugVerify    = new ActionDebugVerify();
 
         AbstractAction actionIncVertMax = new ActionVerticalMax(2.0f, 6f);
         AbstractAction actionDecVertMax = new ActionVerticalMax(0.5f, -6f);
         AbstractAction actionIncVertMin = new ActionVerticalMin(6f);
         AbstractAction actionDecVertMin = new ActionVerticalMin(-6f);
-        ActionSpanWidth actionIncHoriz = new ActionSpanWidth(2.0f);
-        ActionSpanWidth actionDecHoriz = new ActionSpanWidth(0.5f);
-        actionZoomAllOut	= new ActionScroll( SCROLL_ENTIRE_SESSION );
+        ActionSpanWidth actionIncHoriz  = new ActionSpanWidth(2.0f);
+        ActionSpanWidth actionDecHoriz  = new ActionSpanWidth(0.5f);
+        actionZoomAllOut                = new ActionScroll(SCROLL_ENTIRE_SESSION);
 
-        actionShowWindow	= new ShowWindowAction( this );
+        actionShowWindow                = new ShowWindowAction(this);
 
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_DOWN, InputEvent.CTRL_MASK ), "incvmax" );
-        aMap.put( "incvmax", actionIncVertMax);
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_UP, InputEvent.CTRL_MASK ), "decvmax" );
-        aMap.put( "decvmax", actionDecVertMax);
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_DOWN, InputEvent.CTRL_MASK | InputEvent.ALT_MASK ), "incvmin" );
-        aMap.put( "incvmin", actionIncVertMin);
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_UP, InputEvent.CTRL_MASK | InputEvent.ALT_MASK ), "decvmin" );
-        aMap.put( "decvmin", actionDecVertMin);
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LEFT, InputEvent.CTRL_MASK ), "inch" );
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_OPEN_BRACKET, BasicMenuFactory.MENU_SHORTCUT ), "inch" );
-        aMap.put( "inch", actionIncHoriz);
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_RIGHT, InputEvent.CTRL_MASK ), "dech" );
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_CLOSE_BRACKET, BasicMenuFactory.MENU_SHORTCUT ), "dech" );
-        aMap.put( "dech", actionDecHoriz);
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_RIGHT, myMeta ), "samplvl" );
-        aMap.put( "samplvl", new ActionSpanWidth( 0.0f ));
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_ENTER, 0 ), "retn" );
-        aMap.put( "retn", new ActionScroll( SCROLL_SESSION_START ));
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LEFT, 0 ), "left" );
-        aMap.put( "left", new ActionScroll( SCROLL_SELECTION_START ));
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_RIGHT, 0 ), "right" );
-        aMap.put( "right", new ActionScroll( SCROLL_SELECTION_STOP ));
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_F, InputEvent.ALT_MASK ), "fit" );
-        aMap.put( "fit", new ActionScroll( SCROLL_FIT_TO_SELECTION ));
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_A, InputEvent.ALT_MASK ), "entire" );
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LEFT, myMeta ), "entire" );
-        aMap.put( "entire", actionZoomAllOut );
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_ENTER, InputEvent.SHIFT_MASK ), "seltobeg" );
-        aMap.put( "seltobeg", new ActionSelect( SELECT_TO_SESSION_START ));
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_ENTER, InputEvent.SHIFT_MASK + InputEvent.ALT_MASK ), "seltoend" );
-        aMap.put( "seltoend", new ActionSelect( SELECT_TO_SESSION_END ));
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_UP, 0 ), "postoselbegc" );
-        aMap.put( "postoselbegc", doc.timeline.getPosToSelAction( true, true ));
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_DOWN, 0 ), "postoselendc" );
-        aMap.put( "postoselendc", doc.timeline.getPosToSelAction( false, true ));
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_UP, InputEvent.ALT_MASK ), "postoselbeg" );
-        aMap.put( "postoselbeg", doc.timeline.getPosToSelAction( true, false ));
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_DOWN, InputEvent.ALT_MASK ), "postoselend" );
-        aMap.put( "postoselend", doc.timeline.getPosToSelAction( false, false ));
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_M, 0 ), "dropmark" );
-        aMap.put( "dropmark", new ActionDropMarker() );
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_TAB       , 0 ), "selnextreg" );
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LESS      , 0 ), "selnextreg" );
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_BACK_QUOTE, 0 ), "selnextreg" );
-        aMap.put( "selnextreg", new ActionSelectRegion( SELECT_NEXT_REGION ));
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_TAB       , InputEvent.ALT_MASK ), "selprevreg" );
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LESS      , InputEvent.CTRL_MASK), "selprevreg" );
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_BACK_QUOTE, InputEvent.CTRL_MASK), "selprevreg" );
-        aMap.put( "selprevreg", new ActionSelectRegion( SELECT_PREV_REGION ));
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_TAB       , InputEvent.SHIFT_MASK), "extnextreg" );
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LESS      , InputEvent.SHIFT_MASK), "extnextreg" );
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_BACK_QUOTE, InputEvent.SHIFT_MASK), "extnextreg" );
-        aMap.put( "extnextreg", new ActionSelectRegion( EXTEND_NEXT_REGION ));
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_TAB       , InputEvent.ALT_MASK  + InputEvent.SHIFT_MASK ), "extprevreg" );
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LESS      , InputEvent.CTRL_MASK + InputEvent.SHIFT_MASK ), "extprevreg" );
-        iMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_BACK_QUOTE, InputEvent.CTRL_MASK + InputEvent.SHIFT_MASK ), "extprevreg" );
-        aMap.put( "extprevreg", new ActionSelectRegion( EXTEND_PREV_REGION ));
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, InputEvent.CTRL_MASK), "incvmax");
+        aMap.put("incvmax", actionIncVertMax);
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, InputEvent.CTRL_MASK), "decvmax");
+        aMap.put("decvmax", actionDecVertMax);
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, InputEvent.CTRL_MASK | InputEvent.ALT_MASK), "incvmin");
+        aMap.put("incvmin", actionIncVertMin);
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, InputEvent.CTRL_MASK | InputEvent.ALT_MASK), "decvmin");
+        aMap.put("decvmin", actionDecVertMin);
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.CTRL_MASK), "inch");
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_OPEN_BRACKET, BasicMenuFactory.MENU_SHORTCUT), "inch");
+        aMap.put("inch", actionIncHoriz);
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.CTRL_MASK), "dech");
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_CLOSE_BRACKET, BasicMenuFactory.MENU_SHORTCUT), "dech");
+        aMap.put("dech", actionDecHoriz);
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, myMeta), "samplvl");
+        aMap.put("samplvl", new ActionSpanWidth(0.0f));
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "retn");
+        aMap.put("retn", new ActionScroll(SCROLL_SESSION_START));
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), "left");
+        aMap.put("left", new ActionScroll(SCROLL_SELECTION_START));
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "right");
+        aMap.put("right", new ActionScroll(SCROLL_SELECTION_STOP));
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.ALT_MASK), "fit");
+        aMap.put("fit", new ActionScroll(SCROLL_FIT_TO_SELECTION));
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.ALT_MASK), "entire");
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, myMeta), "entire");
+        aMap.put("entire", actionZoomAllOut);
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.SHIFT_MASK), "seltobeg");
+        aMap.put("seltobeg", new ActionSelect(SELECT_TO_SESSION_START));
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.SHIFT_MASK + InputEvent.ALT_MASK), "seltoend");
+        aMap.put("seltoend", new ActionSelect(SELECT_TO_SESSION_END));
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "postoselbegc");
+        aMap.put("postoselbegc", doc.timeline.getPosToSelAction(true, true));
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "postoselendc");
+        aMap.put("postoselendc", doc.timeline.getPosToSelAction(false, true));
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, InputEvent.ALT_MASK), "postoselbeg");
+        aMap.put("postoselbeg", doc.timeline.getPosToSelAction(true, false));
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, InputEvent.ALT_MASK), "postoselend");
+        aMap.put("postoselend", doc.timeline.getPosToSelAction(false, false));
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_M, 0), "dropmark");
+        aMap.put("dropmark", new ActionDropMarker());
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0), "selnextreg");
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LESS, 0), "selnextreg");
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_QUOTE, 0), "selnextreg");
+        aMap.put("selnextreg", new ActionSelectRegion(SELECT_NEXT_REGION));
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.ALT_MASK), "selprevreg");
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LESS, InputEvent.CTRL_MASK), "selprevreg");
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_QUOTE, InputEvent.CTRL_MASK), "selprevreg");
+        aMap.put("selprevreg", new ActionSelectRegion(SELECT_PREV_REGION));
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.SHIFT_MASK), "extnextreg");
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LESS, InputEvent.SHIFT_MASK), "extnextreg");
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_QUOTE, InputEvent.SHIFT_MASK), "extnextreg");
+        aMap.put("extnextreg", new ActionSelectRegion(EXTEND_NEXT_REGION));
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.ALT_MASK + InputEvent.SHIFT_MASK), "extprevreg");
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LESS, InputEvent.CTRL_MASK + InputEvent.SHIFT_MASK), "extprevreg");
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_QUOTE, InputEvent.CTRL_MASK + InputEvent.SHIFT_MASK), "extprevreg");
+        aMap.put("extprevreg", new ActionSelectRegion(EXTEND_PREV_REGION));
 
-        setFocusTraversalKeysEnabled( false ); // we want the tab! we gotta have that tab! ouwe!
+        setFocusTraversalKeysEnabled(false); // we want the tab! we gotta have that tab!
 
-        setDefaultCloseOperation( WindowConstants.DO_NOTHING_ON_CLOSE );
+        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
         // ---- menus and actions ----
         mr = app.getMenuBarRoot();
 
-        mr.putMimic( "file.new.fromSelection", this, actionNewFromSel );
-        mr.putMimic( "file.close", this, actionClose );
-        mr.putMimic( "file.save", this, actionSave );
-        mr.putMimic( "file.saveAs", this, actionSaveAs );
-        mr.putMimic( "file.saveCopyAs", this, actionSaveCopyAs);
-        mr.putMimic( "file.saveSelectionAs", this, actionSaveSelectionAs );
+        mr.putMimic("file.new.fromSelection", this, actionNewFromSel);
+        mr.putMimic("file.close", this, actionClose);
+        mr.putMimic("file.save", this, actionSave);
+        mr.putMimic("file.saveAs", this, actionSaveAs);
+        mr.putMimic("file.saveCopyAs", this, actionSaveCopyAs);
+        mr.putMimic("file.saveSelectionAs", this, actionSaveSelectionAs);
 
-        mr.putMimic( "edit.undo", this, doc.getUndoManager().getUndoAction() );
-        mr.putMimic( "edit.redo", this, doc.getUndoManager().getRedoAction() );
-        mr.putMimic( "edit.cut", this, doc.getCutAction() );
-        mr.putMimic( "edit.copy", this, doc.getCopyAction() );
-        mr.putMimic( "edit.paste", this, doc.getPasteAction() );
-        mr.putMimic( "edit.clear", this, doc.getDeleteAction() );
-        mr.putMimic( "edit.selectAll", this, actionSelectAll);
+        mr.putMimic("edit.undo", this, doc.getUndoManager().getUndoAction());
+        mr.putMimic("edit.redo", this, doc.getUndoManager().getRedoAction());
+        mr.putMimic("edit.cut", this, doc.getCutAction());
+        mr.putMimic("edit.copy", this, doc.getCopyAction());
+        mr.putMimic("edit.paste", this, doc.getPasteAction());
+        mr.putMimic("edit.clear", this, doc.getDeleteAction());
+        mr.putMimic("edit.selectAll", this, actionSelectAll);
 
-        mr.putMimic( "timeline.insertSilence", this, doc.getSilenceAction() );
-        mr.putMimic( "timeline.insertRecording", this, actionInsertRec);
-        mr.putMimic( "timeline.trimToSelection", this, doc.getTrimAction() );
+        mr.putMimic("timeline.insertSilence", this, doc.getSilenceAction());
+        mr.putMimic("timeline.insertRecording", this, actionInsertRec);
+        mr.putMimic("timeline.trimToSelection", this, doc.getTrimAction());
 
-        mr.putMimic( "process.again", this, actionProcessAgain );
-        mr.putMimic( "process.fadeIn", this, actionFadeIn);
-        mr.putMimic( "process.fadeOut", this, actionFadeOut);
-        mr.putMimic( "process.gain", this, actionGain);
-        mr.putMimic( "process.invert", this, actionInvert);
-        mr.putMimic( "process.reverse", this, actionReverse);
-        mr.putMimic( "process.rotateChannels", this, actionRotateChannels);
-        mr.putMimic( "process.fscape.needlehole", this, actionFScNeedlehole);
+        mr.putMimic("process.again", this, actionProcessAgain);
+        mr.putMimic("process.fadeIn", this, actionFadeIn);
+        mr.putMimic("process.fadeOut", this, actionFadeOut);
+        mr.putMimic("process.gain", this, actionGain);
+        mr.putMimic("process.invert", this, actionInvert);
+        mr.putMimic("process.reverse", this, actionReverse);
+        mr.putMimic("process.rotateChannels", this, actionRotateChannels);
+        mr.putMimic("process.fscape.needlehole", this, actionFScNeedlehole);
 
-        mr.putMimic( "debug.dumpRegions", this, actionDebugDump);
-        mr.putMimic( "debug.verifyRegions", this, actionDebugVerify);
+        mr.putMimic("debug.dumpRegions", this, actionDebugDump);
+        mr.putMimic("debug.verifyRegions", this, actionDebugVerify);
 
-        updateEditEnabled( false );
+        updateEditEnabled(false);
 
         AbstractWindowHandler.setDeepFont(cp, Collections.singletonList(timeTB));
         GUIUtil.setDeepFont(timeTB, app.getGraphicsHandler().getFont(GraphicsHandler.FONT_MINI));
@@ -760,23 +744,19 @@ bbb.add( markAxisHeader );
 
         initBounds();	// be sure this is after documentUpdate!
 
-        setVisible( true );
+        setVisible(true);
         toFront();
     }
 
-    public void setLoop( boolean onOff ) {
-        transTB.setLoop( onOff );
+    public void setLoop(boolean onOff) {
+        transTB.setLoop(onOff);
     }
 
-    protected boolean alwaysPackSize()
-    {
+    protected boolean alwaysPackSize() {
         return false;
     }
 
-    /*
-     */
-    private void initBounds()
-    {
+    private void initBounds() {
         final Preferences			cp	= getClassPrefs();
         final BasicWindowHandler	bwh	= getWindowHandler();
         final Rectangle				sr	= bwh.getWindowSpace();
@@ -797,102 +777,98 @@ bbb.add( markAxisHeader );
         if( h <= 0 ) {
             h = (sr.height - 106) / 4; // 106 = approx. extra space for title bar, tool bar etc.
         }
-//System.out.println( "read KEY_TRACKSIZE : " + d );
-//System.out.println( "w " + w + "; h " + h + "; hf " + hf );
-        waveView.setPreferredSize( new Dimension( w, (int) (h * hf + 0.5f) ));
+
+        waveView.setPreferredSize(new Dimension(w, (int) (h * hf + 0.5f)));
         pack();
         winSize = getSize();
-        wr = new Rectangle( lastLeftTop.x + 21, lastLeftTop.y + 23,
-                winSize.width, winSize.height );
-        GUIUtil.wrapWindowBounds( wr, sr );
-        lastLeftTop.setLocation( wr.getLocation() );
-        setBounds( wr );
-//System.out.println( "winSize " + winSize + "; wr " + wr );
-        waveView.addComponentListener( new ComponentAdapter() {
-            public void componentResized( ComponentEvent e )
-            {
-                if( waveExpanded ) {
+        wr = new Rectangle(lastLeftTop.x + 21, lastLeftTop.y + 23,
+                winSize.width, winSize.height);
+        GUIUtil.wrapWindowBounds(wr, sr);
+        lastLeftTop.setLocation(wr.getLocation());
+        setBounds(wr);
+
+        waveView.addComponentListener(new ComponentAdapter() {
+            public void componentResized(ComponentEvent e) {
+                if (waveExpanded) {
                     final Dimension dNew = e.getComponent().getSize();
                     dNew.height = (int) (dNew.height / hf + 0.5f);
-                    if( !dNew.equals( d )) {
-//System.out.println( "write KEY_TRACKSIZE : " + dNew );
-                        d.setSize( dNew );
-                        cp.put( KEY_TRACKSIZE, AppWindow.dimensionToString( dNew ));
+                    if (!dNew.equals(d)) {
+                        d.setSize(dNew);
+                        cp.put(KEY_TRACKSIZE, AppWindow.dimensionToString(dNew));
                     }
                 }
             }
         });
     }
 
-    protected void checkDecimatedTrails()
-    {
+    protected void checkDecimatedTrails() {
         final DecimatedTrail dt;
 
-        if( waveExpanded ) {
-            if( verticalScale == PrefsUtil.VSCALE_FREQ_SPECT ) {
-                if( doc.getDecimatedSonaTrail() == null ) {
+        if (waveExpanded) {
+            if (verticalScale == PrefsUtil.VSCALE_FREQ_SPECT) {
+                if (doc.getDecimatedSonaTrail() == null) {
                     try {
                         final DecimatedSonaTrail dst = doc.createDecimatedSonaTrail();
                         // set initial freq bounds of waveview
-                        waveView.setFreqMinMax( dst.getMinFreq(), dst.getMaxFreq() );
-                    }
-                    catch( IOException e1 ) {
+                        waveView.setFreqMinMax(dst.getMinFreq(), dst.getMaxFreq());
+                    } catch (IOException e1) {
                         e1.printStackTrace();
                     }
                 }
                 dt = doc.getDecimatedSonaTrail();
             } else {
-                if( doc.getDecimatedWaveTrail() == null ) {
+                if (doc.getDecimatedWaveTrail() == null) {
                     try {
                         doc.createDecimatedWaveTrail();
-                    }
-                    catch( IOException e1 ) {
+                    } catch (IOException e1) {
                         e1.printStackTrace();
                     }
                 }
                 dt = doc.getDecimatedWaveTrail();
             }
-            if( dt != asyncTrail ) {
-                if( asyncTrail != null ) asyncTrail.removeAsyncListener( this );
+            if (dt != asyncTrail) {
+                if (asyncTrail != null) asyncTrail.removeAsyncListener(this);
                 asyncTrail = dt;
-                if( asyncTrail != null ) asyncTrail.addAsyncListener( this );
+                if (asyncTrail != null) asyncTrail.addAsyncListener(this);
             }
         }
     }
 
-    public void addCatchBypass() { scroll.addCatchBypass(); }
-    public void removeCatchBypass() { scroll.removeCatchBypass(); }
+    public void addCatchBypass() {
+        scroll.addCatchBypass();
+    }
 
-    public void repaintMarkers( Span affectedSpan )
-    {
-        if( !markVisible || !affectedSpan.touches( timelineVis )) return;
+    public void removeCatchBypass() {
+        scroll.removeCatchBypass();
+    }
 
-        final Span span	 = affectedSpan.shift( -timelineVis.start );
+    public void repaintMarkers(Span affectedSpan) {
+        if (!markVisible || !affectedSpan.touches(timelineVis)) return;
+
+        final Span span = affectedSpan.shift(-timelineVis.start);
         final Rectangle updateRect = new Rectangle(
-            (int) (span.start * vpScale), 0,
-            (int) (span.getLength() * vpScale) + 2, wavePanel.getHeight() ).
-                intersection( new Rectangle( 0, 0, wavePanel.getWidth(), wavePanel.getHeight() ));
-        if( !updateRect.isEmpty() ) {
+                (int) (span.start * vpScale), 0,
+                (int) (span.getLength() * vpScale) + 2, wavePanel.getHeight()).
+                intersection(new Rectangle(0, 0, wavePanel.getWidth(), wavePanel.getHeight()));
+        if (!updateRect.isEmpty()) {
             // update markAxis in any case, even if it's invisible
             // coz otherwise the flag stakes are not updated!
-            wavePanel.update( markAxis );
-            wavePanel.repaint( updateRect );
+            wavePanel.update(markAxis);
+            wavePanel.repaint(updateRect);
         }
     }
 
-    public void playerCreated( SuperColliderPlayer p )
-    {
-        lmm.setInputs( p.getInputBus() );
-        lmm.addTaskSync( p.getInputSync() );
+    public void playerCreated(SuperColliderPlayer p) {
+        lmm.setInputs(p.getInputBus());
+        lmm.addTaskSync(p.getInputSync());
     }
 
-    public void playerDestroyed( SuperColliderPlayer p )
-    {
+    public void playerDestroyed(SuperColliderPlayer p) {
         lmm.clearInputs();
     }
 
     public void setSRCEnabled(boolean onOff) {
-        lbSRC.setForeground(onOff ? Color.red : colrClear);
+        lbSRC.setText(onOff ? getResourceString("buttonSRC") : null);
     }
 
     public void setForceMeters(boolean onOff) {
@@ -1466,20 +1442,20 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 
         vpSelections.clear();
         vpSelectionColors.clear();
-        if( !timelineSel.isEmpty() ) {
-            x			= waveView.getX();
-            y			= waveView.getY();
-            vpSelections.add( timeAxis.getBounds() );
-            vpSelectionColors.add( colrSelection );
-            t			= doc.markerTrack;
-            vpSelections.add( markAxis.getBounds() );
-            vpSelectionColors.add( doc.selectedTracks.contains( t ) ? colrSelection : colrSelection2 );
-            for( int ch = 0; ch < waveView.getNumChannels(); ch++ ) {
-                r		= new Rectangle( waveView.rectForChannel( ch ));
-                r.translate( x, y );
-                t		= (Track) doc.audioTracks.get( ch );
-                vpSelections.add( r );
-                vpSelectionColors.add( doc.selectedTracks.contains( t ) ? colrSelection : colrSelection2 );
+        if (!timelineSel.isEmpty()) {
+            x = waveView.getX();
+            y = waveView.getY();
+            vpSelections.add(timeAxis.getBounds());
+            vpSelectionColors.add(colrSelection);
+            t = doc.markerTrack;
+            vpSelections.add(markAxis.getBounds());
+            vpSelectionColors.add(doc.selectedTracks.contains(t) ? colrSelection : colrSelection2);
+            for (int ch = 0; ch < waveView.getNumChannels(); ch++) {
+                r = new Rectangle(waveView.rectForChannel(ch));
+                r.translate(x, y);
+                t = (Track) doc.audioTracks.get(ch);
+                vpSelections.add(r);
+                vpSelectionColors.add(doc.selectedTracks.contains(t) ? colrSelection : colrSelection2);
             }
         }
     }
@@ -2088,8 +2064,8 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 
 //            AbstractWindowHandler.setDeepFont( msgPane );
             msgPane.makeCompactGrid();
-            p			= new JPanel( new BorderLayout() );
-            p.add( msgPane, BorderLayout.NORTH );
+            p = new JPanel(new BorderLayout());
+            p.add(msgPane, BorderLayout.NORTH);
 
             final JOptionPane op = new JOptionPane( p, JOptionPane.QUESTION_MESSAGE, JOptionPane.YES_NO_OPTION, null, queryOptions, queryOptions[ 0 ]);
 //			result		= JOptionPane.showOptionDialog( getWindow(), p, getValue( NAME ).toString(),
@@ -3112,27 +3088,26 @@ final String fileName = f.getName(); // n.normalize( f.getName() ); // .getBytes
                     dt.readFrame( Math.min( dt.getNumDecimations() - 1, info.idx + 1 ), pos, ch, frame );
                 }
                 catch( IOException e1 ) { return; }
-                f1			= Math.max( frame[ 0 ], -frame[ 1 ] );	// peak pos/neg
+                f1			= Math.max(frame[0], -frame[1]);    // peak pos/neg
                 argsCsr[4]	= f1;
                 argsCsr[5]	= (float) (Math.log(f1) * TWENTYDIVLOG10);
-                f1			= (float) Math.sqrt( frame[ 2 ]);	// mean sqr pos/neg
+                f1          = (float) Math.sqrt(frame[2]);    // mean sqr pos/neg
                 argsCsr[6]	= f1;
                 argsCsr[7]	= (float) (Math.log(f1) * TWENTYDIVLOG10);
-                csrInfo[1]	= msgCsr2Peak.format( argsCsr );
-                csrInfo[2]	= msgCsr3RMS.format( argsCsr );
+                csrInfo[1]	= msgCsr2Peak.format(argsCsr);
+                csrInfo[2]	= msgCsr3RMS.format(argsCsr);
                 break;
 
             default:
                 return;
             }
 
-            observer = (ObserverPalette) app.getComponent( Main.COMP_OBSERVER );
-            if( observer != null ) observer.showCursorInfo( csrInfo );
+            observer = (ObserverPalette) app.getComponent(Main.COMP_OBSERVER);
+            if (observer != null) observer.showCursorInfo(csrInfo);
         }
 
-        private void selectRegion( MouseEvent e )
-        {
-            final Point pt	= SwingUtilities.convertPoint( e.getComponent(), e.getPoint(), wavePanel );
+        private void selectRegion(MouseEvent e) {
+            final Point pt = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), wavePanel);
 
             Span			span, span2;
             long			pos, start, stop;
@@ -3165,24 +3140,23 @@ final String fileName = f.getName(); // n.normalize( f.getName() ); // .getBytes
             }
 
             // union with current selection
-            if( e.isShiftDown() && !span2.isEmpty() ) {
-                start	= Math.min( start, span2.start );
-                stop	= Math.max( stop, span2.stop );
+            if (e.isShiftDown() && !span2.isEmpty()) {
+                start   = Math.min(start, span2.start);
+                stop    = Math.max(stop, span2.stop);
             }
 
-            span	= new Span( start, stop );
-            if( span.equals( span2 )) {
-                span	= new Span( 0, timelineLen );
+            span = new Span(start, stop);
+            if (span.equals(span2)) {
+                span = new Span(0, timelineLen);
             }
-            if( !span.equals( span2 )) {
-                edit = TimelineVisualEdit.select( this, doc, span ).perform();
-                doc.getUndoManager().addEdit( edit );
+            if (!span.equals(span2)) {
+                edit = TimelineVisualEdit.select(this, doc, span).perform();
+                doc.getUndoManager().addEdit(edit);
             }
         }
 
-        private void processDrag( MouseEvent e, boolean hasStarted )
-        {
-            final Point pt	= SwingUtilities.convertPoint( e.getComponent(), e.getPoint(), wavePanel );
+        private void processDrag(MouseEvent e, boolean hasStarted) {
+            final Point pt = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), wavePanel);
 
             Span			span, span2;
             long			position;

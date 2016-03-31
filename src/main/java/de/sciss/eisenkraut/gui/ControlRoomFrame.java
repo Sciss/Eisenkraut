@@ -104,8 +104,8 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
         audioPrefs								= app.getUserPrefs().node( PrefsUtil.NODE_AUDIO );
         final Object			comboProto		= "XXXXXXXX";
 
-        b1				= new SpringPanel( 2, 4, 2, 4 );
-        lmm.setDynamicComponent( b1 );
+        b1				= new SpringPanel(2, 4, 2, 4);
+        lmm.setDynamicComponent(b1);
         ggVolume		= new VolumeFader();
         ggOutputConfig	= new PrefComboBox();
         ggOutputConfig.putClientProperty( "JComboBox.isSquare", Boolean.TRUE );
