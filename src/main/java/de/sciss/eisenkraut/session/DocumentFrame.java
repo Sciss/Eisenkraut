@@ -261,7 +261,7 @@ public class DocumentFrame
 
     static {
         final Toolkit tk = Toolkit.getDefaultToolkit();
-        final Point hotSpot = new Point(6, 6);
+        final Point hotSpot = new Point(7, 7);
         zoomCsr = new Cursor[]{
                 tk.createCustomCursor(tk.createImage(
                         ToolAction.class.getResource("zoomin.png")), hotSpot, "zoom-in"),
@@ -515,7 +515,7 @@ public class DocumentFrame
 
                 r = new Rectangle(0, 0, wavePanel.getWidth(), wavePanel.getHeight()); // getViewRect();
                 if (!vpRecentRect.equals(r)) {
-                    recalcTransforms(r);
+                    recalculateTransforms(r);
                 }
 
                 for (int i = 0; i < vpSelections.size(); i++) {
@@ -1382,63 +1382,60 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
     /**
      *  Only call in the Swing thread!
      */
-    protected void updateSelectionAndRepaint()
-    {
-        final Rectangle r = new Rectangle( 0, 0, wavePanel.getWidth(), wavePanel.getHeight() );
+    protected void updateSelectionAndRepaint() {
+        final Rectangle r = new Rectangle(0, 0, wavePanel.getWidth(), wavePanel.getHeight());
 
-        vpUpdateRect.setBounds( vpSelectionRect );
-        recalcTransforms( r );
+        vpUpdateRect.setBounds(vpSelectionRect);
+        recalculateTransforms(r);
         updateSelection();
-        if( vpUpdateRect.isEmpty() ) {
-            vpUpdateRect.setBounds( vpSelectionRect );
-        } else if( !vpSelectionRect.isEmpty() ) {
-            vpUpdateRect = vpUpdateRect.union( vpSelectionRect );
+        if (vpUpdateRect.isEmpty()) {
+            vpUpdateRect.setBounds(vpSelectionRect);
+        } else if (!vpSelectionRect.isEmpty()) {
+            vpUpdateRect = vpUpdateRect.union(vpSelectionRect);
         }
-        vpUpdateRect = vpUpdateRect.intersection( new Rectangle( 0, 0, wavePanel.getWidth(), wavePanel.getHeight() ));
-        if( !vpUpdateRect.isEmpty() ) {
-            wavePanel.repaint( vpUpdateRect );
+        vpUpdateRect = vpUpdateRect.intersection(new Rectangle(0, 0, wavePanel.getWidth(), wavePanel.getHeight()));
+        if (!vpUpdateRect.isEmpty()) {
+            wavePanel.repaint(vpUpdateRect);
         }
     }
 
     /**
      *  Only call in the Swing thread!
      */
-    private void updateTransformsAndRepaint( boolean verticalSelection )
-    {
-        final Rectangle r = new Rectangle( 0, 0, wavePanel.getWidth(), wavePanel.getHeight() );
+    private void updateTransformsAndRepaint(boolean verticalSelection) {
+        final Rectangle r = new Rectangle(0, 0, wavePanel.getWidth(), wavePanel.getHeight());
 
-        vpUpdateRect = vpSelectionRect.union( vpPositionRect );
-        recalcTransforms( r );
-        if( verticalSelection ) updateSelection();
-        vpUpdateRect = vpUpdateRect.union( vpPositionRect ).union( vpSelectionRect ).intersection( r );
-        if( !vpUpdateRect.isEmpty() ) {
-            wavePanel.repaint( vpUpdateRect );	// XXX ??
+        vpUpdateRect = vpSelectionRect.union(vpPositionRect);
+        recalculateTransforms(r);
+        if (verticalSelection) updateSelection();
+        vpUpdateRect = vpUpdateRect.union(vpPositionRect).union(vpSelectionRect).intersection(r);
+        if (!vpUpdateRect.isEmpty()) {
+            wavePanel.repaint(vpUpdateRect);    // XXX ??
         }
     }
 
-    protected void recalcTransforms( Rectangle newRect )
-    {
+    protected void recalculateTransforms(Rectangle newRect) {
         int x, w;
 
         vpRecentRect = newRect; // getViewRect();
 
-        if( !timelineVis.isEmpty() ) {
-            vpScale			= (float) vpRecentRect.width / (float) timelineVis.getLength(); // - 1;
-            playTimer.setDelay( Math.min( (int) (1000 / (vpScale * timelineRate * playRate)), 33 ));
-            vpPosition		= (int) ((timelinePos - timelineVis.getStart()) * vpScale + 0.5f);
-            vpPositionRect.setBounds( vpPosition, 0, 1, vpRecentRect.height );
-            if( !timelineSel.isEmpty() ) {
-                x			= (int) ((timelineSel.getStart() - timelineVis.getStart()) * vpScale + 0.5f) + vpRecentRect.x;
-                w			= Math.max( 1, (int) ((timelineSel.getStop() - timelineVis.getStart()) * vpScale + 0.5f) - x );
-                vpSelectionRect.setBounds( x, 0, w, vpRecentRect.height );
+        if (!timelineVis.isEmpty()) {
+            vpScale = (float) vpRecentRect.width / (float) timelineVis.getLength(); // - 1;
+            playTimer.setDelay(Math.min((int) (1000 / (vpScale * timelineRate * playRate)), 33));
+            vpPosition = (int) ((timelinePos - timelineVis.getStart()) * vpScale + 0.5f);
+            vpPositionRect.setBounds(vpPosition, 0, 1, vpRecentRect.height);
+            if (!timelineSel.isEmpty()) {
+                x = (int) ((timelineSel.getStart() - timelineVis.getStart()) * vpScale + 0.5f) + vpRecentRect.x;
+                w = Math.max(1, (int) ((timelineSel.getStop() - timelineVis.getStart()) * vpScale + 0.5f) - x);
+                vpSelectionRect.setBounds(x, 0, w, vpRecentRect.height);
             } else {
-                vpSelectionRect.setBounds( 0, 0, 0, 0 );
+                vpSelectionRect.setBounds(0, 0, 0, 0);
             }
         } else {
-            vpScale			= 0.0f;
-            vpPosition		= -1;
-            vpPositionRect.setBounds( 0, 0, 0, 0 );
-            vpSelectionRect.setBounds( 0, 0, 0, 0 );
+            vpScale = 0.0f;
+            vpPosition = -1;
+            vpPositionRect .setBounds(0, 0, 0, 0);
+            vpSelectionRect.setBounds(0, 0, 0, 0);
         }
     }
 
@@ -2492,20 +2489,18 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
          *  @param  linFactor  factors > 1 increase the row height,
          *					factors < 1 decrease.
          */
-        protected ActionVerticalMax( float linFactor, float logOffset )
-        {
+        protected ActionVerticalMax(float linFactor, float logOffset) {
             super();
             this.linFactor = linFactor;
             this.logOffset = logOffset;
         }
 
-        public void actionPerformed( ActionEvent e )
-        {
-            if( waveView.getVerticalScale() == PrefsUtil.VSCALE_AMP_LIN ) zoomLin(); else zoomLog();
+        public void actionPerformed(ActionEvent e) {
+            if (waveView.getVerticalScale() == PrefsUtil.VSCALE_AMP_LIN) zoomLin();
+            else zoomLog();
         }
 
-        private void zoomLin()
-        {
+        private void zoomLin() {
             float min, max;
 
             min = waveView.getAmpLinMin();
@@ -3307,13 +3302,13 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
         }
 
         public void actionPerformed(ActionEvent e) {
-            c.setCursor(zoomCsr[1]);
+            c.setCursor(csr);
         }
     }
 
     private class TimelineZoomTool
-    extends TimelineTool
-    {
+            extends TimelineTool {
+
         private boolean					validDrag	= false, dragStarted = false;
         private long					startPos;
         private Point					startPt;
@@ -3323,12 +3318,10 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
         private MenuAction actionZoomIn		= null;
         private MenuAction actionZoomOut	= null;
 
-        protected TimelineZoomTool()
-        {
-            zoomTimer = new javax.swing.Timer( 250, new ActionListener() {
-                public void actionPerformed( ActionEvent e )
-                {
-                    setZoomRect( zoomRect );
+        protected TimelineZoomTool() {
+            zoomTimer = new javax.swing.Timer(250, new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    setZoomRect(zoomRect);
                 }
             });
         }
@@ -3341,19 +3334,18 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
                 if (actionZoomOut == null) actionZoomOut = new SetCursorAction("zoomOut",
                         KeyStroke.getKeyStroke(KeyEvent.VK_ALT, InputEvent.ALT_DOWN_MASK, false), c, zoomCsr[1]);
                 if (actionZoomIn == null) actionZoomIn = new SetCursorAction("zoomIn",
-                        KeyStroke.getKeyStroke(KeyEvent.VK_ALT, 0, true), c, zoomCsr[0]);
+                            KeyStroke.getKeyStroke(KeyEvent.VK_ALT, 0, true), c, zoomCsr[0]);
                 actionZoomOut.installOn(jc, JComponent.WHEN_IN_FOCUSED_WINDOW);
                 actionZoomIn .installOn(jc, JComponent.WHEN_IN_FOCUSED_WINDOW);
             }
         }
 
-        public void toolDismissed( Component c )
-        {
-            super.toolDismissed( c );
-            if( c instanceof JComponent ) {
+        public void toolDismissed(Component c) {
+            super.toolDismissed(c);
+            if (c instanceof JComponent) {
                 final JComponent jc = (JComponent) c;
-                if( actionZoomOut != null ) actionZoomOut.deinstallFrom( jc, JComponent.WHEN_IN_FOCUSED_WINDOW );
-                if( actionZoomIn != null ) actionZoomIn.deinstallFrom( jc, JComponent.WHEN_IN_FOCUSED_WINDOW );
+                if (actionZoomOut != null) actionZoomOut.deinstallFrom(jc, JComponent.WHEN_IN_FOCUSED_WINDOW);
+                if (actionZoomIn  != null) actionZoomIn .deinstallFrom(jc, JComponent.WHEN_IN_FOCUSED_WINDOW);
             }
         }
 
@@ -3430,42 +3422,41 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
             Span visibleSpan;
 
             visibleSpan = timelineVis;
-            visibleLen 	= visibleSpan.getLength();
-            pos 		= visibleSpan.getStart() + (long) ((double) e.getX() / (double) getComponent().getWidth() *
-                                visibleSpan.getLength());
-            visibleLen 	= (long) (visibleLen * factor + 0.5f);
+            visibleLen = visibleSpan.getLength();
+            pos = visibleSpan.getStart() + (long) ((double) e.getX() / (double) getComponent().getWidth() *
+                    visibleSpan.getLength());
+            visibleLen = (long) (visibleLen * factor + 0.5f);
             if (visibleLen < 2) return;
 
-            start		= Math.max( 0, Math.min( timelineLen, pos - (long) ((pos - visibleSpan.getStart()) * factor + 0.5f) ));
-            stop		= start + visibleLen;
-            if( stop > timelineLen ) {
-                stop	= timelineLen;
-                start	= Math.max( 0, stop - visibleLen );
+            start = Math.max(0, Math.min(timelineLen, pos - (long) ((pos - visibleSpan.getStart()) * factor + 0.5f)));
+            stop = start + visibleLen;
+            if (stop > timelineLen) {
+                stop = timelineLen;
+                start = Math.max(0, stop - visibleLen);
             }
-            visibleSpan	= new Span( start, stop );
-            if( !visibleSpan.isEmpty() ) {
-                doc.timeline.editScroll( this, visibleSpan );
+            visibleSpan = new Span(start, stop);
+            if (!visibleSpan.isEmpty()) {
+                doc.timeline.editScroll(this, visibleSpan);
             }
         }
 
-        private void processDrag( MouseEvent e, boolean hasStarted )
-        {
-            final Point pt	= SwingUtilities.convertPoint( e.getComponent(), e.getPoint(), wavePanel );
+        private void processDrag(MouseEvent e, boolean hasStarted) {
+            final Point pt = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), wavePanel);
 
-            Span	span;
-            int		zoomX;
+            Span span;
+            int zoomX;
 
-            span        = timelineVis;
-            position    = span.getStart() + (long) (pt.getX() / getComponent().getWidth() *
-                                                    span.getLength());
-            position    = Math.max( 0, Math.min( timelineLen, position ));
-            if( !hasStarted ) {
-                startPos= position;
-                startPt	= pt;
+            span = timelineVis;
+            position = span.getStart() + (long) (pt.getX() / getComponent().getWidth() *
+                    span.getLength());
+            position = Math.max(0, Math.min(timelineLen, position));
+            if (!hasStarted) {
+                startPos = position;
+                startPt = pt;
             } else {
-                zoomX	= Math.min( startPt.x, pt.x );
-                zoomRect.setBounds( zoomX, waveView.getY() + 6, Math.abs( startPt.x - pt.x ), waveView.getHeight() - 12 );
-                setZoomRect( zoomRect );
+                zoomX = Math.min(startPt.x, pt.x);
+                zoomRect.setBounds(zoomX, waveView.getY() + 6, Math.abs(startPt.x - pt.x), waveView.getHeight() - 12);
+                setZoomRect(zoomRect);
             }
         }
     }
