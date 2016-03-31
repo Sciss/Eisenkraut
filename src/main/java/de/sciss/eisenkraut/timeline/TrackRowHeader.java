@@ -129,7 +129,6 @@ public class TrackRowHeader
     }
 
     public void dispose() {
-//		pan.dispose();
     }
 
     /**

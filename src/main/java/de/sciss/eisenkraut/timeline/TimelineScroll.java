@@ -109,21 +109,19 @@ public class TimelineScroll
 
         timelineLen = doc.timeline.getLength();
         timelineVis = doc.timeline.getVisibleSpan();
-        for( timelineLenShift = 0; (timelineLen >> timelineLenShift) > 0x3FFFFFFF; timelineLenShift++ );
-        recalcTransforms();
-        recalcBoundedRange();
+        for (timelineLenShift = 0; (timelineLen >> timelineLenShift) > 0x3FFFFFFF; timelineLenShift++) ;
+        recalculateTransforms();
+        recalculateBoundedRange();
 
         // --- Listener ---
 
-        new DynamicAncestorAdapter( this ).addTo( this );
-        this.addAdjustmentListener( this );
+        new DynamicAncestorAdapter(this).addTo(this);
+        this.addAdjustmentListener(this);
 
-//        new DynamicAncestorAdapter( new DynamicPreferenceChangeManager( Main.prefs.node( PrefsUtil.NODE_SHARED ),
-//			new String[] { PrefsUtil.KEY_CATCH }, this )).addTo( this );
-        new DynamicAncestorAdapter( new DynamicPrefChangeManager( AbstractApplication.getApplication().getUserPrefs(),
-            new String[] { PrefsUtil.KEY_CATCH }, this )).addTo( this );
+        new DynamicAncestorAdapter(new DynamicPrefChangeManager(AbstractApplication.getApplication().getUserPrefs(),
+                new String[]{PrefsUtil.KEY_CATCH}, this)).addTo(this);
 
-        setFocusable(false);
+        setFocusable(false);    // XXX TODO -- doesn't have effect with WebLaF ?
     }
 
     /**
@@ -139,37 +137,36 @@ public class TimelineScroll
         Stroke		strkOrig	= g2.getStroke();
         Paint		pntOrig		= g2.getPaint();
 
-        if( d.width != recentSize.width || d.height != recentSize.height ) {
+        if (d.width != recentSize.width || d.height != recentSize.height) {
             recentSize = d;
-            recalcTransforms();
-        }
-        
-        if( shpSelection != null ) {
-            g2.setColor( colrSelection );
-            g2.fill( shpSelection );
-        }
-        if( shpPosition != null ) {
-            g2.setColor( colrPosition );
-            g2.setStroke( strkPosition );
-            g2.draw( shpPosition );
+            recalculateTransforms();
         }
 
-        g2.setStroke( strkOrig );
-        g2.setPaint( pntOrig );
+        if (shpSelection != null) {
+            g2.setColor(colrSelection);
+            g2.fill(shpSelection);
+        }
+        if (shpPosition != null) {
+            g2.setColor(colrPosition);
+            g2.setStroke(strkPosition);
+            g2.draw(shpPosition);
+        }
+
+        g2.setStroke(strkOrig);
+        g2.setPaint(pntOrig);
     }
 
-    private void recalcBoundedRange()
-    {
-        final int len	= (int) (timelineLen >> timelineLenShift);
-        final int len2	= (int) (timelineVis.getLength() >> timelineLenShift);
-        if( len > 0 ) {
-            if( !isEnabled() ) setEnabled( true );
-            setValues( (int) (timelineVis.getStart() >> timelineLenShift), len2, 0, len );   // val, extent, min, max
-            setUnitIncrement( Math.max( 1, (len2 >> 5) ));             // 1/32 extent
-            setBlockIncrement( Math.max( 1, ((len2 * 3) >> 2) ));      // 3/4 extent
+    private void recalculateBoundedRange() {
+        final int len  = (int) (timelineLen >> timelineLenShift);
+        final int len2 = (int) (timelineVis.getLength() >> timelineLenShift);
+        if (len > 0) {
+            if (!isEnabled()) setEnabled(true);
+            setValues((int) (timelineVis.getStart() >> timelineLenShift), len2, 0, len);   // val, extent, min, max
+            setUnitIncrement(Math.max(1, (len2 >> 5)));             // 1/32 extent
+            setBlockIncrement(Math.max(1, ((len2 * 3) >> 2)));      // 3/4 extent
         } else {
-            if( isEnabled() ) setEnabled( false );
-            setValues( 0, 100, 0, 100 );	// full view will hide the scrollbar knob
+            if (isEnabled()) setEnabled(false);
+            setValues(0, 100, 0, 100);    // full view will hide the scrollbar knob
         }
     }
 
@@ -177,29 +174,22 @@ public class TimelineScroll
      *  Calculates virtual->screen coordinates
      *  for timeline position and selection
      */
-    private void recalcTransforms()
-    {
+    private void recalculateTransforms() {
         double  scale, x;
 
-//for( int i = 0; i < getComponentCount(); i++ ) {
-//	Component c = getComponent( i );
-//	System.err.println( "scroll container component : "+c.getClass().getName()+" ; at "+c.getLocation().x+", "+
-//		c.getLocation().y+"; w = "+c.getWidth()+"; h = "+c.getHeight() );
-//}
-//        
-        if( timelineLen > 0 ) {
-            scale           = (double) (recentSize.width - trackMargin) / (double) timelineLen;
-            if( timelineSel != null ) {
-                shpSelection = new Rectangle2D.Double( timelineSel.getStart() * scale + trackMarginLeft, 0,
-                                                       timelineSel.getLength() * scale, recentSize.height );
+        if (timelineLen > 0) {
+            scale = (double) (recentSize.width - trackMargin) / (double) timelineLen;
+            if (timelineSel != null) {
+                shpSelection = new Rectangle2D.Double(timelineSel.getStart() * scale + trackMarginLeft, 0,
+                        timelineSel.getLength() * scale, recentSize.height);
             } else {
                 shpSelection = null;
             }
-            x               = timelinePos * scale + trackMarginLeft;
-            shpPosition     = new Line2D.Double( x, 0, x, recentSize.height );
+            x = timelinePos * scale + trackMarginLeft;
+            shpPosition = new Line2D.Double(x, 0, x, recentSize.height);
         } else {
-            shpSelection    = null;
-            shpPosition     = null;
+            shpSelection = null;
+            shpPosition  = null;
         }
     }
     
@@ -216,10 +206,8 @@ public class TimelineScroll
      *
      *  @see	java.awt.Component#repaint( long )
      */
-    public void setPosition( long pos, long patience, int type )
-    {
+    public void setPosition(long pos, long patience, int type) {
         if( prefCatch && (catchBypassCount == 0) /* && timelineVis.contains( timelinePos ) */ &&
-//			(timelineVis.stop < timelineLen) &&
             ((timelineVis.stop != timelineLen) || (pos < timelineVis.start)) &&
             !timelineVis.contains( pos + (type == TYPE_TRANSPORT ? timelineVis.getLength() >> 3 : 0) )) {
 
@@ -227,60 +215,57 @@ public class TimelineScroll
             long		start;
             final long	stop;
 
-            start	= timelinePos;
-            if( type == TYPE_TRANSPORT ) {
+            start = timelinePos;
+            if (type == TYPE_TRANSPORT) {
                 start -= timelineVis.getLength() >> 3;
-            } else if( type == TYPE_DRAG ) {
-                if( timelineVis.getStop() <= timelinePos ) {
+            } else if (type == TYPE_DRAG) {
+                if (timelineVis.getStop() <= timelinePos) {
                     start -= timelineVis.getLength();
                 }
             } else {
                 start -= timelineVis.getLength() >> 2;
             }
-            stop	= Math.min( timelineLen, Math.max( 0, start ) + timelineVis.getLength() );
-            start	= Math.max( 0, stop - timelineVis.getLength() );
-//				if( (stop > start) && ((start != timelineVis.getStart()) || (stop != timelineVis.getStop())) ) {
-            if( stop > start ) {
+            stop    = Math.min(timelineLen, Math.max(0, start) + timelineVis.getLength());
+            start   = Math.max(0, stop - timelineVis.getLength());
+
+            if (stop > start) {
                 // it's crucial to update internal var timelineVis here because
                 // otherwise the delay between emitting the edit and receiving the
                 // change via timelineScrolled might be two big, causing setPosition
                 // to fire more than one edit!
-                timelineVis = new Span( start, stop );
-                doc.timeline.editScroll( this, timelineVis );
-//					doc.getUndoManager().addEdit( TimelineVisualEdit.scroll( this, doc, timelineVis ));
+                timelineVis = new Span(start, stop);
+                doc.timeline.editScroll(this, timelineVis);
                 return;
             }
         }
         timelinePos = pos;
-        recalcTransforms();
-        repaint( patience );
+        recalculateTransforms();
+        repaint(patience);
     }
 
-    public void addCatchBypass()
-    {
-        if( ++catchBypassCount == 1 ) {
-            catchBypassWasSynced = timelineVis.contains( timelinePos );
+    public void addCatchBypass() {
+        if (++catchBypassCount == 1) {
+            catchBypassWasSynced = timelineVis.contains(timelinePos);
         }
     }
 
-    public void removeCatchBypass()
-    {
-        if( (--catchBypassCount == 0) && catchBypassWasSynced ) {
+    public void removeCatchBypass() {
+        if ((--catchBypassCount == 0) && catchBypassWasSynced) {
             catchBypassWasSynced = false;
-            if( prefCatch && !timelineVis.contains( timelinePos )) {
+            if (prefCatch && !timelineVis.contains(timelinePos)) {
                 long		start;
                 final long	stop;
 
-                start	= timelinePos - (timelineVis.getLength() >> 2);
-                stop	= Math.min( timelineLen, Math.max( 0, start ) + timelineVis.getLength() );
-                start	= Math.max( 0, stop - timelineVis.getLength() );
-                if( stop > start ) {
+                start   = timelinePos - (timelineVis.getLength() >> 2);
+                stop    = Math.min(timelineLen, Math.max(0, start) + timelineVis.getLength());
+                start   = Math.max(0, stop - timelineVis.getLength());
+                if (stop > start) {
                     // it's crucial to update internal var timelineVis here because
                     // otherwise the delay between emitting the edit and receiving the
                     // change via timelineScrolled might be two big, causing setPosition
                     // to fire more than one edit!
-                    timelineVis = new Span( start, stop );
-                    doc.timeline.editScroll( this, timelineVis );
+                    timelineVis = new Span(start, stop);
+                    doc.timeline.editScroll(this, timelineVis);
                 }
             }
         }
@@ -288,78 +273,71 @@ public class TimelineScroll
 
 // ---------------- DynamicListening interface ---------------- 
 
-    public void startListening()
-    {
-        doc.timeline.addTimelineListener( this );
-        recalcTransforms();
+    public void startListening() {
+        doc.timeline.addTimelineListener(this);
+        recalculateTransforms();
         repaint();
     }
 
-    public void stopListening()
-    {
-        doc.timeline.removeTimelineListener( this );
+    public void stopListening() {
+        doc.timeline.removeTimelineListener(this);
     }
- 
+
 // ---------------- PreferenceChangeListener interface ---------------- 
 
-    public void preferenceChange( PreferenceChangeEvent e )
-    {
-        final String  key	= e.getKey();
-        final String  value	= e.getNewValue();
+    public void preferenceChange(PreferenceChangeEvent e) {
+        final String key    = e.getKey();
+        final String value  = e.getNewValue();
 
-        if( !key.equals( PrefsUtil.KEY_CATCH )) return;
+        if (!key.equals(PrefsUtil.KEY_CATCH)) return;
 
-        prefCatch	= Boolean.valueOf(value);
-        if( !prefCatch ) return;
+        prefCatch = Boolean.valueOf(value);
+        if (!prefCatch) return;
 
         catchBypassCount	= 0;
         adjustCatchBypass	= false;
-        if( !(timelineVis.contains( timelinePos ))) {
-            long		start	= Math.max( 0, timelinePos - (timelineVis.getLength() >> 2) );
-            final long	stop	= Math.min( timelineLen, start + timelineVis.getLength() );
-            start				= Math.max( 0, stop - timelineVis.getLength() );
-            if( stop > start ) {
-                doc.timeline.editScroll( this, new Span( start, stop ));
+        if (!(timelineVis.contains(timelinePos))) {
+            long start      = Math.max(0, timelinePos - (timelineVis.getLength() >> 2));
+            final long stop = Math.min(timelineLen, start + timelineVis.getLength());
+            start = Math.max(0, stop - timelineVis.getLength());
+            if (stop > start) {
+                doc.timeline.editScroll(this, new Span(start, stop));
             }
         }
     }
 
 // ---------------- TimelineListener interface ---------------- 
 
-    public void timelineSelected( TimelineEvent e )
-    {
+    public void timelineSelected(TimelineEvent e) {
         timelineSel = doc.timeline.getSelectionSpan();
-        recalcTransforms();
+        recalculateTransforms();
         repaint();
     }
-    
-    public void timelineChanged( TimelineEvent e )
-    {
+
+    public void timelineChanged(TimelineEvent e) {
         timelineLen = doc.timeline.getLength();
         timelineVis = doc.timeline.getVisibleSpan();
-        for( timelineLenShift = 0; (timelineLen >> timelineLenShift) > 0x3FFFFFFF; timelineLenShift++ );
-        recalcTransforms();
-        recalcBoundedRange();
+        for (timelineLenShift = 0; (timelineLen >> timelineLenShift) > 0x3FFFFFFF; timelineLenShift++) ;
+        recalculateTransforms();
+        recalculateBoundedRange();
         repaint();
     }
 
     // ignored since the timeline frame will inform us
-    public void timelinePositioned( TimelineEvent e ) { /* ignore */ }
+    public void timelinePositioned(TimelineEvent e) { /* ignore */ }
 
-    public void timelineScrolled( TimelineEvent e )
-    {
+    public void timelineScrolled(TimelineEvent e) {
         timelineVis = doc.timeline.getVisibleSpan();
-        if( e.getSource() != adjustmentSource ) {
-            recalcBoundedRange();
+        if (e.getSource() != adjustmentSource) {
+            recalculateBoundedRange();
         }
     }
 
 // ---------------- AdjustmentListener interface ---------------- 
 // we're listening to ourselves
 
-    public void adjustmentValueChanged( AdjustmentEvent e )
-    {
-        if( !isEnabled() ) return;
+    public void adjustmentValueChanged(AdjustmentEvent e) {
+        if (!isEnabled()) return;
 
         final boolean	isAdjusting	= e.getValueIsAdjusting();
 
