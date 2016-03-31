@@ -11,6 +11,7 @@ lazy val basicJavaOpts = Seq("-source", "1.6")
 lazy val jcolliderVersion = "1.0.0"
 lazy val scissLibVersion  = "1.1.0"
 lazy val subminVersion    = "0.1.0"
+lazy val raphaelVersion   = "1.0.2"
 
 lazy val commonSettings = Seq(
   name             := "Eisenkraut",
@@ -21,14 +22,13 @@ lazy val commonSettings = Seq(
   licenses         := Seq("GPL v3+" -> url("http://www.gnu.org/licenses/gpl-3.0.txt")),
   javacOptions    ++= basicJavaOpts ++ Seq("-encoding", "utf8", "-target", "1.6"),
   javacOptions in (Compile, doc) := basicJavaOpts,  // doesn't eat `-encoding`
-  scalaVersion     := "2.11.8", // not used
-  autoScalaLibrary := false,
-  crossPaths       := false,
+  scalaVersion     := "2.11.8",
   mainClass        := Some("de.sciss.eisenkraut.Main"),
   libraryDependencies ++= Seq(
-    "de.sciss" % "jcollider" % jcolliderVersion,
-    "de.sciss" % "scisslib"  % scissLibVersion,
-    "de.sciss" % "submin"    % subminVersion
+    "de.sciss" %  "jcollider"     % jcolliderVersion,
+    "de.sciss" %  "scisslib"      % scissLibVersion,
+    "de.sciss" %  "submin"        % subminVersion,
+    "de.sciss" %% "raphael-icons" % raphaelVersion
   )
 )
 

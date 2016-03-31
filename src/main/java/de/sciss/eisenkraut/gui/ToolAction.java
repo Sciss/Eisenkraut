@@ -65,12 +65,6 @@ public class ToolAction extends AbstractAction {
 	 */
 	public static final int MAX_ID  = 6;
 	
-//	private final static Toolkit	tk			= Toolkit.getDefaultToolkit();
-//	private final static Cursor		csrZoomIn	= tk.createCustomCursor(
-//		tk.createImage( "images" + File.separator + "zoomincursor.png" ), new Point( 5, 4 ), "zoom in" );
-//	private final static Cursor		csrZoomOut	= tk.createCustomCursor(
-//		tk.createImage( "images" + File.separator + "zoomoutcursor.png" ), new Point( 5, 4 ), "zoom out" );
-	
 	private static final int[] ICONS = {
 		GraphicsUtil.ICON_POINTER,  GraphicsUtil.ICON_LINE,
 		GraphicsUtil.ICON_CURVE,	GraphicsUtil.ICON_ARC,

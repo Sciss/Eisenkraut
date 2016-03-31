@@ -260,13 +260,13 @@ public class DocumentFrame
     protected static final Cursor[]			zoomCsr;
 
     static {
-        final Toolkit tk		= Toolkit.getDefaultToolkit();
-        final Point   hotSpot	= new Point( 6, 6 );
-        zoomCsr					= new Cursor[] {
-            tk.createCustomCursor( tk.createImage(
-                ToolAction.class.getResource( "zoomin.png" )), hotSpot, "zoom-in" ),
-            tk.createCustomCursor( tk.createImage(
-                ToolAction.class.getResource( "zoomout.png" )), hotSpot, "zoom-out" )
+        final Toolkit tk = Toolkit.getDefaultToolkit();
+        final Point hotSpot = new Point(6, 6);
+        zoomCsr = new Cursor[]{
+                tk.createCustomCursor(tk.createImage(
+                        ToolAction.class.getResource("zoomin.png")), hotSpot, "zoom-in"),
+                tk.createCustomCursor(tk.createImage(
+                        ToolAction.class.getResource("zoomout.png")), hotSpot, "zoom-out")
         };
     }
 
@@ -3114,7 +3114,7 @@ final String fileName = f.getName(); // n.normalize( f.getName() ); // .getBytes
                 catch( IOException e1 ) { return; }
                 f1			= Math.max( frame[ 0 ], -frame[ 1 ] );	// peak pos/neg
                 argsCsr[4]	= f1;
-                argsCsr[5]	= new Float( Math.log( f1 ) * TWENTYDIVLOG10 );
+                argsCsr[5]	= (float) (Math.log(f1) * TWENTYDIVLOG10);
                 f1			= (float) Math.sqrt( frame[ 2 ]);	// mean sqr pos/neg
                 argsCsr[6]	= f1;
                 argsCsr[7]	= (float) (Math.log(f1) * TWENTYDIVLOG10);

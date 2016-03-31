@@ -450,21 +450,20 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
         }
     }
 
-    public void refillAudioBoxes()
-    {
+    public void refillAudioBoxes() {
         final Preferences	childPrefs;
         final String[]		cfgIDs;
         final Set<StringItem> cfgItems;
         Preferences			childPrefs2;
 
         try {
-            if( isListening ) {
+            if (isListening) {
                 ggAudioBox.stopListening();
-                ggAudioBox.removeActionListener( audioBoxListener );
+                ggAudioBox.removeActionListener(audioBoxListener);
             }
-            childPrefs	= audioPrefs.node( PrefsUtil.NODE_AUDIOBOXES );
-            cfgIDs		= childPrefs.childrenNames();
-            cfgItems	= new TreeSet<StringItem>( StringItem.valueComparator );
+            childPrefs  = audioPrefs.node(PrefsUtil.NODE_AUDIOBOXES);
+            cfgIDs      = childPrefs.childrenNames();
+            cfgItems    = new TreeSet<StringItem>(StringItem.valueComparator);
             for (String cfgID : cfgIDs) {
                 childPrefs2 = childPrefs.node(cfgID);
                 if (childPrefs2.getBoolean(AudioBoxConfig.KEY_ACTIVE, false)) {
@@ -476,99 +475,19 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
             for (Object cfgItem : cfgItems) {
                 ggAudioBox.addItem(cfgItem);
             }
-        }
-        catch( BackingStoreException e1 ) {
-            System.err.println( e1.getClass().getName() + " : " + e1.getLocalizedMessage() );
-        }
-        finally {
-            if( isListening ) {
+        } catch (BackingStoreException e1) {
+            System.err.println(e1.getClass().getName() + " : " + e1.getLocalizedMessage());
+        } finally {
+            if (isListening) {
                 ggAudioBox.startListening();
                 // add ActionListener _after_ startListening() so no superfluous
                 // event is caught (resulting in the reboot-question-dialog)
-                ggAudioBox.addActionListener( audioBoxListener );
+                ggAudioBox.addActionListener(audioBoxListener);
             }
         }
     }
 
-    protected static String getResourceString( String key )
-    {
-        return AbstractApplication.getApplication().getResourceString( key );
+    protected static String getResourceString(String key) {
+        return AbstractApplication.getApplication().getResourceString(key);
     }
-
-//	private static class TestSliderUI
-//	extends javax.swing.plaf.basic.BasicSliderUI
-//	{
-//		final Image imgFader;
-//		final Image imgTrack;
-//		final Image imgTrackShadow;
-//		final Paint	pntTrack;
-//	
-//		private TestSliderUI( JSlider s )
-//		{
-//			super( s );
-//			imgFader		= Toolkit.getDefaultToolkit().getImage( getClass().getResource( "blackfader.png" ));	// 32 x 44
-//			imgTrack		= Toolkit.getDefaultToolkit().getImage( getClass().getResource( "fadertrack.png" ));	// 5 x 73
-//			imgTrackShadow	= Toolkit.getDefaultToolkit().getImage( getClass().getResource( "fadertracksh.png" ));	// 5 x 51
-//final MediaTracker mt = new MediaTracker( s );
-//mt.addImage( imgTrack, 0 );
-//try { mt.waitForAll(); } catch( InterruptedException e1 ) {}
-//			final BufferedImage bufImg = new BufferedImage( 5, 16, BufferedImage.TYPE_INT_ARGB );
-//			final Graphics g2 = bufImg.createGraphics();
-//			g2.drawImage( imgTrack, 0, 0, 5, 16, 0, 39, 5, 32, s );
-//			g2.dispose();
-////			pntTrack	= new TexturePaint( bufImg, new Rectangle( 0, 0, 5, 16 ));
-//			pntTrack	= new TexturePaint( bufImg, new Rectangle( 9, 0, 5, 16 ));
-//			focusInsets	= new Insets( 2, 1, 5, 13 );
-//		}
-//		
-//		protected Dimension getThumbSize()
-//		{
-////			return new Dimension( 32, 44 );
-//			return new Dimension( 32, 51 );
-//		}
-//
-////		public Dimension getPreferredHorizontalSize() {
-////			return PREFERRED_HORIZONTAL_SIZE;
-////		}
-////		public Dimension getPreferredVerticalSize() {
-////			return PREFERRED_VERTICAL_SIZE;
-////		}
-////		
-////		public Dimension getMinimumHorizontalSize() {
-////			return MINIMUM_HORIZONTAL_SIZE;
-////		}
-////		
-////		public Dimension getMinimumVerticalSize() {
-////			return MINIMUM_VERTICAL_SIZE;
-////		}
-//
-////		protected void calculateTrackRect()
-////		{
-////			trackRect = new Rectangle( 8, 8, 5, slider.getHeight() - 16 );
-////		}
-//		
-//		public void paintTrack( Graphics g )
-//		{
-//			final Graphics2D g2 = (Graphics2D) g;
-//			
-//			g2.setPaint( pntTrack );
-////			g2.translate( trackRect.x, trackRect.y );
-////			g2.translate( 8, trackRect.y );
-////			g2.fillRect( 0, 0, trackRect.width, trackRect.height );
-//			g2.fillRect( 9, 48, 5, trackRect.height - 23 );
-//			g2.drawImage( imgTrack, 9, 9, 14, 48, 0, 0, 5, 39, slider );
-//			g2.drawImage( imgTrack, 9, contentRect.y + contentRect.height - 27, 14, contentRect.y + contentRect.height - 9, 0, 55, 5, 73, slider );
-////			g2.translate( -trackRect.x, -trackRect.y );
-////			g2.translate( -8, -trackRect.y );
-////			g.drawImage( imgTrackShadow, 9, thumbRect.y - 5, slider ); 
-//		}
-//		
-//		public void paintThumb( Graphics g )
-//		{
-//			g.drawImage( imgTrackShadow, 9, thumbRect.y - 9, slider ); 
-//			g.drawImage( imgFader, thumbRect.x, thumbRect.y - 4, slider ); 
-//		}
-//
-//		public void paintFocus( Graphics g ) {}
-//	}
 }

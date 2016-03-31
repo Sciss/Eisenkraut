@@ -2,7 +2,7 @@
 
 # Eisenkraut
 
-[![Flattr this](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=sciss&url=https%3A%2F%2Fgithub.com%2FSciss%2FEisenkraut&title=Eisenkraut%20Audio%20Editor&language=Java&tags=github&category=software)
+[![Flattr this](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=sciss&url=https%3A%2F%2Fgithub.com%2FSciss%2FEisenkraut&title=Eisenkraut%20Audio%20Editor&language=Scala&tags=github&category=software)
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Sciss/Eisenkraut?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/Sciss/Eisenkraut.svg?branch=master)](https://travis-ci.org/Sciss/Eisenkraut)
 
@@ -35,7 +35,7 @@ Also note that, by default, the audio server is not automatically booted, so you
 
 ## building from source
 
-Eisenkraut can be build from source with [sbt](http://www.scala-sbt.org/#install) version 0.13. It requires Java 1.6, and library dependencies are currently included as jars in the `lib` folder.
+Eisenkraut can be build from source with [sbt](http://www.scala-sbt.org/#install) version 0.13. It requires Java 1.6.
 
 If you do not have or wish to install sbt on your system, a shortcut is to use the provided Unix (OS X and Linux) script `sbt` which comes in the main folder. It may be invoked as `./sbt` and will automatically download the correct `sbt-launch.jar` version and place it in the main Eisenkraut directory, the first time it is executed. 
 
