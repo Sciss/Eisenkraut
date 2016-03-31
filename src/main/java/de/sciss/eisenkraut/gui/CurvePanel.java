@@ -237,7 +237,7 @@ public class CurvePanel extends JComponent {
             recentHeight	= currentHeight;
             at.setToScale( currentWidth, -currentHeight );
             at.translate( 0, -1.0 );
-            recalcTransforms();
+            recalculateTransforms();
         }
 
         g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
@@ -261,10 +261,10 @@ public class CurvePanel extends JComponent {
             g2.translate(-trnsX, -trnsY);
         }
 
-        g2.setTransform( atOrig );
+        g2.setTransform(atOrig);
     }
 
-    private void recalcTransforms()
+    private void recalculateTransforms()
     {
 //		if( prefs != null ) {
 //			ctrlPt[0].setLocation( prefs.getDouble( KEY_CTRLX1, 0.5 ), prefs.getDouble( KEY_CTRLY1, 0.5 ));
@@ -281,13 +281,6 @@ public class CurvePanel extends JComponent {
         recalculate = false;
     }
 
-//	// o instanceof PreferenceChangeEvent
-//	public void laterInvocation( Object o )
-//	{
-//		recalculate = true;
-//		repaint();
-//	}
-
     public static class Icon
             implements javax.swing.Icon {
 
@@ -297,6 +290,8 @@ public class CurvePanel extends JComponent {
 
         private final CubicCurve2D[]	shpFades;
         private final Shape[]			tShpFades;
+
+        private Stroke strk = null;
 
         private final Point2D[] ctrlPt = new Point2D[]{
                 new Point2D.Double(0.5, 0.5), new Point2D.Double(0.5, 0.5)};
@@ -337,17 +332,28 @@ public class CurvePanel extends JComponent {
             }
         }
 
+        public void setStroke(Stroke stroke) {
+            this.strk = stroke;
+        }
+
+        public Stroke getStroke(Stroke stroke) {
+            return strk;
+        }
+
         public void paintIcon(Component c, Graphics g, int x, int y) {
             final Graphics2D		g2				= (Graphics2D) g;
             final AffineTransform	atOrig			= g2.getTransform();
 
+            final Stroke strkOrig = g2.getStroke();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.translate(x, y);
             g2.setColor(c.getForeground());
+            if (strk != null) g2.setStroke(strk);
             for (Shape tShpFade : tShpFades) {
                 g2.draw(tShpFade);
             }
             g2.setTransform(atOrig);
+            g2.setStroke(strkOrig);
         }
     }
 }

@@ -148,7 +148,7 @@ public class GraphicsUtil
         return isDarkSkin() ? colrSelectionDarkI : colrSelectionLightI;
     }
 
-    private static final Color colrSelectionDark    = new Color(0x7F, 0x7F, 0xFF, 0x3F);
+    private static final Color colrSelectionDark    = new Color(95, 142, 255, 0x38); // new Color(0x7F, 0x7F, 0xFF, 0x3F);
     private static final Color colrSelectionLight   = new Color(0x00, 0x00, 0xFF, 0x2F);
 
     private static final Color colrSelectionDarkI   = new Color(0xE0, 0xE0, 0xE0, 0x30);
