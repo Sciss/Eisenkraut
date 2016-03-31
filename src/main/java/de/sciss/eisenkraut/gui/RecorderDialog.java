@@ -167,41 +167,33 @@ public class RecorderDialog
         audioPrefs	= app.getUserPrefs().node( PrefsUtil.NODE_AUDIO );
         classPrefs	= app.getUserPrefs().node( className.substring( className.lastIndexOf( '.' ) + 1 ));
 
-        recPane		= new SpringPanel( 4, 2, 4, 2 );
-//		affp		= new AudioFileFormatPane( AudioFileFormatPane.ENCODING );
-//		recPane.gridAdd( new JLabel( getResourceString( "labelFormat" ), SwingConstants.RIGHT ), 0, 1 );
-//		recPane.gridAdd( affp, 1, 1 );
+        recPane         = new SpringPanel(4, 2, 4, 2);
         ggRecordConfig	= new PrefComboBox();
-        ggRecordConfig.setFocusable( false );
+        ggRecordConfig.setFocusable(false);
         lbPeak			= new JLabel();
         colrPeakNorm    = lbPeak.getForeground();
         actionPeakReset	= new ActionPeakReset();
-        ggPeakReset		= new JButton( actionPeakReset );
+        ggPeakReset		= new JButton(actionPeakReset);
         ggPeakReset.setFocusable( false );
         lbTime			= new TimeLabel();
-        // tbMonitoring	= new JToolBar();
-        // tbMonitoring.setFloatable( false );
         ggMonitoring	= new JToggleButton( new ActionMonitoring() );
-        ggMonitoring.setFocusable( false );
-        // tbMonitoring.add( ggMonitoring );
-        recPane.gridAdd( lbTime, 1, 0, -2, 1 );
-        recPane.gridAdd( new JLabel( getResourceString( "labelRecInputs" ), SwingConstants.RIGHT ), 0, 1 );
-        recPane.gridAdd( ggRecordConfig, 1, 1, -1, 1 );
-        recPane.gridAdd( ggMonitoring /* tbMonitoring */, 2, 1 );
-        recPane.gridAdd( new JLabel( getResourceString( "labelHeadroom" ) + " :", SwingConstants.RIGHT ), 0, 2 );
-        recPane.gridAdd( lbPeak, 1, 2 );
-//		recPane.gridAdd( new JLabel( getResourceString( "labelDB" ), SwingConstants.RIGHT ), 2, 1 );
-        recPane.gridAdd( ggPeakReset, 2, 2, -1, 1 );
+        ggMonitoring.setFocusable(false);
+        recPane.gridAdd(lbTime, 1, 0, /* -2 */ -1, 1);
+        recPane.gridAdd(new JLabel(getResourceString("labelRecInputs"), SwingConstants.RIGHT), 0, 1);
+        recPane.gridAdd(ggRecordConfig, 1, 1, -1, 1);
+        recPane.gridAdd(ggMonitoring /* tbMonitoring */, 2, 1);
+        recPane.gridAdd(new JLabel(getResourceString("labelHeadroom") + " :", SwingConstants.RIGHT), 0, 2);
+        recPane.gridAdd(lbPeak, 1, 2);
+        recPane.gridAdd(ggPeakReset, 2, 2, -1, 1);
 
         refillConfigs();
 
-//		affp.setPreferences( classPrefs );
-        ggRecordConfig.setPreferences( classPrefs, KEY_CONFIG );
+        ggRecordConfig.setPreferences(classPrefs, KEY_CONFIG);
 
         recPane.makeCompactGrid();
 
         butPane				= new JPanel(); // new FlowLayout( FlowLayout.TRAILING ));
-        butPane.setLayout( new BoxLayout( butPane, BoxLayout.X_AXIS ));
+        butPane.setLayout(new BoxLayout(butPane, BoxLayout.X_AXIS));
         actionRecord		= new ActionRecord();
         actionStop			= new ActionStop();
         actionAbort			= new ActionAbort();
@@ -225,16 +217,6 @@ public class RecorderDialog
         cp.add( recPane, BorderLayout.NORTH );
         cp.add( butPane, BorderLayout.SOUTH );
 
-//		GUIUtil.setDeepFont( cp, app.getGraphicsHandler().getFont(GraphicsHandler.FONT_SMALL));
-
-//		runPeakUpdate = new Runnable() {
-//			public void run()
-//			{
-//				peakArgs[0] = new Double( MathUtil.linearToDB( 1.0 / maxPeak ));
-//				lbPeak.setText( frmtPeak.format( peakArgs ));
-//			}
-//		};
-//		runPeakUpdate.run();	// initially reset peak hold
         meterTimer = new Timer(100, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 final float value = docFrame.getMaxMeterHold();
@@ -250,51 +232,7 @@ public class RecorderDialog
 
         recLenTimer = new RecLenTimer(lbTime, recFrames, doc.timeline.getRate());
 
-//		cSetNRespBody = new OSCListener() {
-//			public void messageReceived( OSCMessage msg, SocketAddress sender, long time )
-//			{
-//				final int		busIndex	= ((Number) msg.getArg( 0 )).intValue();
-//				final Context	ct			= RecorderDialog.this.ct;	// quasi sync
-//				
-//				if( (ct == null) || (busIndex != ct.busMeter.getIndex()) ) return;
-//
-////				final long		now			= System.currentTimeMillis();
-//				
-//				try {
-//					final int numValues = ((Number) msg.getArg( 1 )).intValue();
-//					if( numValues != meterValues.length ) {
-//						meterValues = new float[ numValues ];
-//					}
-//						
-//					for( int i = 0; i < meterValues.length; i++ ) {
-//						meterValues[ i ] = ((Number) msg.getArg( i + 2 )).floatValue();
-//					}
-//						
-//					meterUpdate();
-//				}
-////				catch( IOException e1 ) {
-////					printError( "Receive /c_setn", e1 );
-////				}
-//				catch( ClassCastException e2 ) {
-//					printError( "Receive /c_setn", e2 );
-//				}
-//			}
-//		};
-
-        // ---- meters -----
-
-//		meterTimer	= new javax.swing.Timer( 33, new ActionListener() {
-//			public void actionPerformed( ActionEvent e )
-//			{
-//				try {
-//					if( (server != null) && (ct != null) ) server.sendMsg( ct.meterBangMsg );
-//				}
-//				catch( IOException e1 ) {}
-//			}
-//		});
-
         setDefaultCloseOperation( DO_NOTHING_ON_CLOSE );
-//		root.addComponent( Main.COMP_RECORDER, this );
 
         server	= superCollider.getServer();
         player	= superCollider.getPlayerForDocument( doc );

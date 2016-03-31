@@ -13,6 +13,12 @@ General preferences affect the overall program look and performance.
 <UL>
 <LI><A HREF="prefsTmpDir.html">Temporary Folder</A></LI>
 <LI><A HREF="wavecache.html">Waveform Cache</A> (Active, Capacity, Folder)</LI>
+<LI>Reveal File Command: Specify a shell command to execute when pressing the magnifying glass icon in the bottom
+    left of a document frame. For example, on Linux you might want to use <TT>xdg-open %d</TT> to show the
+    directory in the desktop manager, or <TT>nautilus %p</TT> to show the file in the Nautilus file manager.
+    Allowed escape words are <TT>%p</TT> (full path), <TT>%d</TT> (directory), <TT>%f</TT> (file name).
+    Use capitalized character (e.g. <TT>%P</TT>) for URL style.
+</LI>
 <LI><A HREF="prefsLookAndFeel.html">Look-and-Feel</A> (Look-and-Feel class, Window Decoration, Internal Frames, Grow Box, Floating Palettes)</LI>
 </UL>
 </body>

@@ -13,148 +13,149 @@
 
 package de.sciss.eisenkraut.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GraphicsEnvironment;
-import java.awt.Image;
-import java.awt.RenderingHints;
-import java.util.Locale;
-
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-
 import de.sciss.gui.TimeFormat;
 import de.sciss.util.Disposable;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.Locale;
 
 /**
  *	A GUI component showing a time position.
  */
 @SuppressWarnings("serial")
 public class TimeLabel
-		extends JPanel
-		implements Disposable {
+        extends JPanel
+        implements Disposable {
 
-	private final TimeFormat	frmt;
-	protected String			text;
+    private final TimeFormat 	format;
+    protected String			text;
 
-	protected static final Font	fntMono;
-	protected boolean			dimsKnown		= false;
-	protected int				textWidth, textHeight, textAscent;
+    protected static final Font	fntMono;
+    protected boolean			dimsKnown		= false;
+    protected int				textWidth, textHeight, textAscent;
 
-	private static final Color		colrTime		= new Color( 0xF1, 0xFA, 0xCA );
+    private static final Color colrTimeLight    = new Color(0xF1, 0xFA, 0xCA);
+    // private static final Color colrTimeDark     = new Color(0x2A, 0x3E, 0x52);
+    private static final Color colrTimeDark     = new Color(16, 16, 16);
+    private static final Color colrFgLight      = Color.black;
+    private static final Color colrFgDark       = new Color(220, 220, 200);
+    private static final Color colrHoverLight   = Color.blue;
+    private static final Color colrHoverDark    = new Color(0x5E, 0x97, 0xFF);
 
-	private final Label		lb;
+    private final Label lb;
 
-	static {
-		final String[] fntNames = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
-		if (contains(fntNames, "Monaco")) {                            // Mac OS
-			fntMono = new Font("Monaco", Font.PLAIN, 11);                // looks bigger than "normal monospaced"
-		} else if (contains(fntNames, "Lucida Sans Unicode")) {        // Windows XP
-			fntMono = new Font("Lucida Sans Unicode", Font.PLAIN, 12);
-		} else {
-			fntMono = new Font("Monospaced", Font.PLAIN, 12);
-		}
-	}
-	
-	public TimeLabel()
-	{
-		this( colrTime );
-	}
+    static {
+        final String[] fntNames = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+        if (contains(fntNames, "DejaVu Sans Mono")) {
+			// Linux
+            fntMono = new Font("DejaVu Sans Mono", Font.PLAIN, 12);
+        } else if (contains(fntNames, "Monaco")) {            			// Mac OS
+            fntMono = new Font("Monaco", Font.PLAIN, 11);               // looks bigger than "normal monospaced"
+        } else if (contains(fntNames, "Lucida Sans Unicode")) {        	// Windows XP
+            fntMono = new Font("Lucida Sans Unicode", Font.PLAIN, 12);
+        } else {
+            fntMono = new Font("Monospaced", Font.PLAIN, 12);
+        }
+    }
 
-	public TimeLabel( Color background )
-	{
-		super( new BorderLayout() );
+    private final boolean isDark;
 
-		setBorder( new RoundedBorder( background ));
-		
-		frmt	= new TimeFormat( 0, null, null, 3, Locale.US );
-		lb		= new Label();
-		add( lb, BorderLayout.CENTER );
-		lb.setOpaque( true );
-		lb.setBackground( background );
-		lb.setForeground( Color.black );
-		
-		final Dimension d = new Dimension( 106, 22 );	// XXX
-		setMinimumSize( d );
-		setMaximumSize( d );
-		setPreferredSize( d );
-		
-		text	= frmt.formatTime(0);
-	}
+    public TimeLabel() {
+        this(null);
+    }
 
-	private static boolean contains(String[] array, String name) {
-		for (String anArray : array) {
-			if (anArray.equals(name)) return true;
-		}
-		return false;
-	}
+    public TimeLabel(Color background) {
+        super(new BorderLayout());
 
-	public void blue() {
-		lb.setForeground(Color.blue);
-	}
+        isDark = GraphicsUtil.isDarkSkin();
+        if (background == null) background = isDark ? colrTimeDark : colrTimeLight;
+        setBorder(new RoundedBorder(background));
 
-	public void black() {
-		lb.setForeground(Color.black);
-	}
+        format  = new TimeFormat(0, null, null, 3, Locale.US);
+        lb      = new Label();
+        add(lb, BorderLayout.CENTER);
+        lb.setOpaque(true);
+        lb.setBackground(background);
+        normalState();
+        // lb.setFont(fntMono);
 
-	public void setTime(Number seconds) {
-		text = frmt.formatTime(seconds);
-		lb.repaint();
-	}
+        final Dimension d = new Dimension(106, 22);    // XXX
+        setMinimumSize(d);
+        setMaximumSize(d);
+        setPreferredSize(d);
 
-	public void dispose()
-	{
-		lb.dispose();
-	}
+        text = format.formatTime(0);
+    }
 
-	@SuppressWarnings("serial")
-	private class Label
-			extends JComponent
-			implements Disposable {
+//    public Color getLabelBackground() { return lb.getBackground(); }
 
-		private Image img;
-	
-		protected Label() { /* empty */ }
+    private static boolean contains(String[] array, String name) {
+        for (String anArray : array) {
+            if (anArray.equals(name)) return true;
+        }
+        return false;
+    }
 
-		public void dispose()
-		{
-			if( img != null ) {
-				img.flush();
-				img = null;
-			}
-		}
-		
-		public void paintComponent( Graphics g )
-		{
-			super.paintComponent( g );
-			
-			final Graphics2D	g2	= (Graphics2D) g;
-			g2.setFont( fntMono );
-			final FontMetrics	fm	= g2.getFontMetrics();
+    public void hoverState() {
+        lb.setForeground(isDark ? colrHoverDark : colrHoverLight);
+    }
 
-			if( !dimsKnown ) {
-				textWidth				= fm.stringWidth( "00:00:00.000" );
-				textAscent				= fm.getAscent();
-				textHeight				= fm.getHeight(); // textAscent + fm.getDescent();
-				dimsKnown				= true;
-				Dimension d				= new Dimension( textWidth, textHeight );
-				setPreferredSize( d );
-				setMinimumSize( d );
-				setMaximumSize( d );
-			}
-			
-			g2.setColor( getBackground() );
-			g2.fillRect( 0, 0, getWidth(), getHeight() );
-			g2.setColor( getForeground() );
-			g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+    public void normalState() {
+        lb.setForeground(isDark ? colrFgDark : colrFgLight);
+    }
 
-			g2.drawString( text, (getWidth() - fm.stringWidth( text )) >> 1, ((getHeight() - textHeight) >> 1) + textAscent );
-		}
-	}
+    public void setTime(Number seconds) {
+        text = format.formatTime(seconds);
+        lb.repaint();
+    }
+
+    public void dispose()
+    {
+        lb.dispose();
+    }
+
+    @SuppressWarnings("serial")
+    private class Label
+            extends JComponent
+            implements Disposable {
+
+        private Image img;
+
+        protected Label() { /* empty */ }
+
+        public void dispose() {
+            if (img != null) {
+                img.flush();
+                img = null;
+            }
+        }
+
+        public void paintComponent(Graphics g) {
+            super.paintComponent(g);
+
+            final Graphics2D	g2	= (Graphics2D) g;
+            g2.setFont(fntMono);
+            final FontMetrics	fm	= g2.getFontMetrics();
+
+            if (!dimsKnown) {
+                textWidth   = fm.stringWidth("00:00:00.000");
+                textAscent  = fm.getAscent() - 1;
+                textHeight  = fm.getHeight(); // textAscent + fm.getDescent();
+                dimsKnown   = true;
+                final Dimension d = new Dimension(textWidth, textHeight);
+                setPreferredSize(d);
+                setMinimumSize(d);
+                setMaximumSize(d);
+            }
+
+            g2.setColor(getBackground());
+            g2.fillRect(0, 0, getWidth(), getHeight());
+            g2.setColor(getForeground());
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            g2.drawString(text, (getWidth() - fm.stringWidth(text)) >> 1, ((getHeight() - textHeight) >> 1) + textAscent);
+        }
+    }
 }
 

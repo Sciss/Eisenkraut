@@ -200,7 +200,7 @@ public class Timeline
 	 *  Queries the timeline's selected span
 	 *
 	 *  @return the portion of the timeline currently
-	 *			selected (highlighted blue). start and
+	 *			selected (highlighted hoverState). start and
 	 *			stop are measured in frames
 	 */
 	public Span getSelectionSpan()
@@ -299,7 +299,7 @@ public class Timeline
 	 *
 	 *  @param  source	the source of the <code>TimelineEvent</code>
 	 *  @param  span	the portion of the timeline which should be
-	 *					selected (highlighted blue). start and
+	 *					selected (highlighted hoverState). start and
 	 *					stop are measured in frames
 	 *
 	 *  @see	de.sciss.eisenkraut.edit.TimelineVisualEdit

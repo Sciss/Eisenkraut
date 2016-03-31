@@ -109,6 +109,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -371,9 +373,11 @@ public class DocumentFrame
         lbWriteProtected    = new JLabel();
         ggAudioInfo         = new ModificationButton(ModificationButton.SHAPE_INFO);
         ggAudioInfo.setAction(new ActionAudioInfo());
+        ggAudioInfo.setToolTipText(getResourceString("ttAudioInfo"));
         ggRevealFile        = new ModificationButton(ModificationButton.SHAPE_REVEAL);
         actionRevealFile    = new ActionRevealFile();
         ggRevealFile.setAction(actionRevealFile);
+        ggRevealFile.setToolTipText(getResourceString("ttRevealFile"));
 
         ggAudioFileDescr	= new JLabel();
 
@@ -385,7 +389,7 @@ public class DocumentFrame
         box.add(Box.createHorizontalStrut(4));
         box.add(lbWriteProtected);
         box.add(ggAudioInfo);
-        if (internalFrames || Main.isLinux /* !Main.isMac */) box.add(ggRevealFile);
+        box.add(ggRevealFile);
         box.add(Box.createHorizontalStrut(4));
 
         pProgress			= new ProgressPanel();
@@ -2337,23 +2341,72 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
             setFile(null);
         }
 
+        private void splitAndAdd(String cmd, int i, int j, List<String> list) {
+            final String[] pre = cmd.substring(i, j).split(" ");
+            for (String s : pre) {
+                final String t = s.trim();
+                if (!t.isEmpty()) list.add(t);
+            }
+        }
+
         /**
          *  Shows the file in the desktop manager (Mac and Linux only)
          */
         public void actionPerformed(ActionEvent e) {
             if (f == null) return;
-            if      (Main.isMac  ) performMac  ();
-            else if (Main.isLinux) performLinux();
-        }
+//            if      (Main.isMac  ) performMac  ();
+//            else if (Main.isLinux) performLinux();
+            final String cmd = app.getUserPrefs().get(PrefsUtil.KEY_REVEAL_FILE, null);
+            if (cmd == null) return;
 
-        /* Show parent directory, that's as much as we can do I think... */
-        private void performLinux() {
-            final String dir = f.getParent();
-            if (dir == null) return;
+            final List<String> cmdList = new ArrayList<String>();
+            int i = 0;
+            while (i < cmd.length()) {
+                final int j = cmd.indexOf('\'', i);
+                final int k = cmd.indexOf('\'', j + 1);
+                if (j < k) {
+                    splitAndAdd(cmd, i, j, cmdList);
+                    final String s = cmd.substring(j + 1, k);
+                    cmdList.add(s);
+                    i = k + 1;
+                } else {
+                    splitAndAdd(cmd, i, cmd.length(), cmdList);
+                    i = cmd.length();
+                }
+            }
 
-            final String[] cmdArray = { "xdg-open", dir };
             try {
-                Runtime.getRuntime().exec( cmdArray, null, null );
+                boolean hasEscape = false;
+                for (int j = 0; j < cmdList.size(); j++) {
+                    final String s = cmdList.get(j);
+                    if (s.startsWith("%")) {
+                        hasEscape = true;
+                        if (s.length() > 2) throw new IOException("Reveal Command - illegal placeholder " + s);
+                        final char tpe = s.length() == 1 ? 'p' : s.charAt(1);
+                        final boolean isURL = Character.isUpperCase(tpe);
+                        final String plain;
+                        switch(Character.toLowerCase(tpe)) {
+                            case 'p':
+                                plain = f.getPath();
+                                break;
+                            case 'd':
+                                plain = f.getParent();
+                                break;
+                            case 'f':
+                                plain = f.getName();
+                                break;
+                            default:
+                                throw new IOException("Reveal Command - illegal placeholder " + s);
+                        }
+                        final String rep = isURL ? mkURL(plain) : plain;
+                        cmdList.set(j, rep);
+                    }
+                }
+                if (!hasEscape) cmdList.add(f.getPath());
+                final String[] cmdArray = new String[cmdList.size()];
+                cmdList.toArray(cmdArray);
+
+                Runtime.getRuntime().exec(cmdArray, null, null);
             } catch (IOException e1) {
                 displayError(e1, getValue(NAME).toString());
             }
@@ -2363,63 +2416,59 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
         //   -e 'select file "Sine441HzGain.aif" of folder of the front window'
         //   -e 'end tell'
 
-        private void performMac() {
-            try {
-                // File.toURL() ends up with sth. like "file:/Volumes/Claude/..." omitting the two initial slashes
-//				final String[] cmdArray = { "osascript", "-e", "tell application \"Finder\"", "-e", "activate",
-//											"-e", "open location \"" + f.getAbsoluteFile().toURL().toString() + "\"",
-//											"-e", "end tell" };
-                // make sure space characters are escaped as %20 in URL stylee
-//				final Normalizer n		= new Normalizer( Normalizer.C, false );
-//				final String parentDir	= n.normalize( f.getParentFile().getAbsolutePath() ).replaceAll( " ", "%20" );
-                String path				= f.getParentFile().getAbsoluteFile().toURI().toURL().toExternalForm();
-//				path = n.normalize(path);
-//				String path				= n.normalize( f.getAbsoluteFile().toURL().toExternalForm() ); // getAbsolutePath() ).replaceAll( " ", "%20" );
-                path					= path.substring( 5 );
-StringBuilder sb = new StringBuilder();
-//char ch;
-int  chI;
-byte[] hex = "0123456789abcdef".getBytes();
-byte[] enc = path.getBytes( "UTF-8" );
-                for (byte anEnc : enc) {
-                    chI = anEnc; // parentDir.charAt( i );
-//	chI = (int) ch;
-                    if ((chI < 33) || (chI > 127)) {
-                        sb.append("%").append((char) hex[(chI >> 4) & 0x0F]).append((char) hex[chI & 0x0F]);
-                    } else {
-                        sb.append((char) chI);
-                    }
+        private String mkURL(String in) throws MalformedURLException, UnsupportedEncodingException {
+            final File f = new File(in);
+            String path = f.toURI().toURL().toExternalForm();
+            path = path.substring(5);
+            StringBuilder sb = new StringBuilder();
+            int chI;
+            byte[] hex = "0123456789abcdef".getBytes();
+            byte[] enc = path.getBytes("UTF-8");
+            for (byte anEnc : enc) {
+                chI = anEnc; // parentDir.charAt( i );
+                if ((chI < 33) || (chI > 127)) {
+                    sb.append("%").append((char) hex[(chI >> 4) & 0x0F]).append((char) hex[chI & 0x0F]);
+                } else {
+                    sb.append((char) chI);
                 }
-path = sb.toString();
-//int i = path.lastIndexOf( '/' ) + 1;
-final String parentDir = path;
-final String fileName = f.getName(); // n.normalize( f.getName() ); // .getBytes( "ISO-8859-1" ));
-//final String parentDir = path.substring( 0, i );
-//final String fileName = path.substring( i );
-//System.err.println( "'" + parentDir + "'" );				
-//System.err.println( "'" + fileName + "'" );
-                final String[] cmdArray = { "osascript", "-e", "tell application \"Finder\"", "-e", "activate",
-                                            "-e", "open location \"file://" + parentDir + "\"",
-//											"-e", "select location \"file://" + parentDir + "\"",
-//											"-e", "select file \"" + f.getName() + "\" of folder of the front window",
-//											"-e", "select location \"" + fileName + "\" of folder of the front window",
-                                            "-e", "select file \"" + fileName + "\" of folder of the front window",
-                                            "-e", "end tell" };
-//for( int i = 0; i < cmdArray.length; i++ ) {
-//	System.err.println( "#" + cmdArray[i] + "#" );
-//}
-
-                Runtime.getRuntime().exec( cmdArray, null, null );
             }
-            catch( IOException e1 ) {
-                displayError( e1, getValue( NAME ).toString() );
-            }
+            path = sb.toString();
+            return path;
         }
 
-        protected void setFile( File f )
-        {
-            this.f	= f;
-            setEnabled( f != null );
+//        private void performMac() {
+//            try {
+//                // make sure space characters are escaped as %20 in URL style
+//                String path = f.getParentFile().getAbsoluteFile().toURI().toURL().toExternalForm();
+//                path = path.substring(5);
+//                StringBuilder sb = new StringBuilder();
+//                int chI;
+//                byte[] hex = "0123456789abcdef".getBytes();
+//                byte[] enc = path.getBytes("UTF-8");
+//                for (byte anEnc : enc) {
+//                    chI = anEnc; // parentDir.charAt( i );
+//                    if ((chI < 33) || (chI > 127)) {
+//                        sb.append("%").append((char) hex[(chI >> 4) & 0x0F]).append((char) hex[chI & 0x0F]);
+//                    } else {
+//                        sb.append((char) chI);
+//                    }
+//                }
+//                path = sb.toString();
+//                final String parentDir = path;
+//                final String fileName = f.getName();
+//                final String[] cmdArray = {"osascript", "-e", "tell application \"Finder\"", "-e", "activate",
+//                        "-e", "open location \"file://" + parentDir + "\"",
+//                        "-e", "select file \"" + fileName + "\" of folder of the front window",
+//                        "-e", "end tell"};
+//                Runtime.getRuntime().exec(cmdArray, null, null);
+//            } catch (IOException e1) {
+//                displayError(e1, getValue(NAME).toString());
+//            }
+//        }
+
+        protected void setFile(File f) {
+            this.f = f;
+            setEnabled(f != null);
         }
     }
 

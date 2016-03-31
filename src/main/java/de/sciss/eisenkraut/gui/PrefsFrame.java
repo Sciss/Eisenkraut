@@ -37,6 +37,7 @@ import de.sciss.gui.PathField;
 import de.sciss.gui.PrefCheckBox;
 import de.sciss.gui.PrefComboBox;
 import de.sciss.gui.PrefParamField;
+import de.sciss.gui.PrefTextField;
 import de.sciss.gui.SortedTableModel;
 import de.sciss.gui.SpringPanel;
 import de.sciss.gui.StringItem;
@@ -80,8 +81,8 @@ public class PrefsFrame
         extends AppWindow
         implements SwingConstants {
 
-    private static final ParamSpace	spcIntegerFromZero = new ParamSpace( 0, Double.POSITIVE_INFINITY, 1, 0, 0, 0 );
-    private static final ParamSpace	spcIntegerFromOne  = new ParamSpace( 1, Double.POSITIVE_INFINITY, 1, 0, 0, 1 );
+    private static final ParamSpace spcIntegerFromZero = new ParamSpace(0, Double.POSITIVE_INFINITY, 1, 0, 0, 0);
+    private static final ParamSpace spcIntegerFromOne  = new ParamSpace(1, Double.POSITIVE_INFINITY, 1, 0, 0, 1);
 
     private final Preferences		audioPrefs;
     protected final Preferences		abPrefs;
@@ -93,12 +94,11 @@ public class PrefsFrame
     protected static final String[]	audioBoxColNames	= { "prefsAudioDevice", "prefsAudioInputChannels", "prefsAudioOutputChannels", "prefsAudioDeviceActive" };
 
     private static final StringItem[] RATE_ITEMS = {
-        new StringItem( new Param( 0, ParamSpace.FREQ | ParamSpace.HERTZ ).toString(), "System Default" ),
-//		new StringItem( new Param( 32000, ParamSpace.FREQ | ParamSpace.HERTZ ).toString(), "32 kHz" ),
-        new StringItem( new Param( 44100, ParamSpace.FREQ | ParamSpace.HERTZ ).toString(), "44.1 kHz" ),
-        new StringItem( new Param( 48000, ParamSpace.FREQ | ParamSpace.HERTZ ).toString(), "48 kHz" ),
-        new StringItem( new Param( 88200, ParamSpace.FREQ | ParamSpace.HERTZ ).toString(), "88.2 kHz" ),
-        new StringItem( new Param( 96000, ParamSpace.FREQ | ParamSpace.HERTZ ).toString(), "96 kHz" )
+            new StringItem(new Param(0, ParamSpace.FREQ | ParamSpace.HERTZ).toString(), "System Default"),
+            new StringItem(new Param(44100, ParamSpace.FREQ | ParamSpace.HERTZ).toString(), "44.1 kHz"),
+            new StringItem(new Param(48000, ParamSpace.FREQ | ParamSpace.HERTZ).toString(), "48 kHz"),
+            new StringItem(new Param(88200, ParamSpace.FREQ | ParamSpace.HERTZ).toString(), "88.2 kHz"),
+            new StringItem(new Param(96000, ParamSpace.FREQ | ParamSpace.HERTZ).toString(), "96 kHz")
     };
 
     protected AudioBoxTableModel	abtm;
@@ -106,19 +106,17 @@ public class PrefsFrame
     /**
      *  Creates a new preferences frame
      */
-    public PrefsFrame()
-    {
-        super( SUPPORT );
+    public PrefsFrame() {
+        super(SUPPORT);
 
-        setTitle( getResourceString( "framePrefs" ));
+        setTitle(getResourceString("framePrefs"));
 
         final Container					cp					= getContentPane();
         final Application				app					= AbstractApplication.getApplication();
-//		final ActionListener			lafActionListener;
         final OSCRoot					osc;
         final PrefCacheManager			cm;
-        final Flag						haveWarned			= new Flag( false );
-        final String					txtWarnLookAndFeel	= getResourceString( "warnLookAndFeelUpdate" );
+        final Flag						haveWarned          = new Flag(false);
+        final String					txtWarnLookAndFeel  = getResourceString("warnLookAndFeelUpdate");
 
         final TreeExpanderButton		ggTreeAudio;
         final List<JComponent> collAudioAdvanced;
@@ -127,10 +125,11 @@ public class PrefsFrame
         BasicPathField					ggPath;
         PrefCheckBox					ggCheckBox;
         PrefComboBox					ggChoice;
+        PrefTextField                   ggTextField;
         JTabbedPane						ggTabPane;
         JLabel							lb;
         JComboBox						ggCombo;
-        UIManager.LookAndFeelInfo[]		lafInfos;
+        UIManager.LookAndFeelInfo[]		lafInfo;
         Box								b;
 
         Preferences						prefs;
@@ -191,20 +190,15 @@ public class PrefsFrame
         ggPath.setPreferences( prefs, key );
         tab.gridAdd( ggPath, 1, row );
 
-//        row++;
-//        prefs   = app.getUserPrefs();
-//        key     = PrefsUtil.KEY_LOOKANDFEEL;
-//        key2	= "prefsLookAndFeel";
-//        title	= getResourceString( key2 );
-//        lb		= new JLabel( title, TRAILING );
-//        tab.gridAdd( lb, 0, row );
-//        ggChoice = new PrefComboBox();
-//        lafInfos = UIManager.getInstalledLookAndFeels();
-//        for (UIManager.LookAndFeelInfo lafInfo : lafInfos) {
-//            ggChoice.addItem(new StringItem(lafInfo.getClassName(), lafInfo.getName()));
-//        }
-//        ggChoice.setPreferences( prefs, key );
-//        ggChoice.addActionListener( new WarnPrefsChange( ggChoice, ggChoice, haveWarned, txtWarnLookAndFeel, title ));
+        row++;
+        prefs   = app.getUserPrefs();
+        key		= PrefsUtil.KEY_REVEAL_FILE;
+        key2	= "prefsRevealCmd";
+        lb		= new JLabel(getResourceString(key2), TRAILING);
+        tab.gridAdd(lb, 0, row);
+        ggTextField	= new PrefTextField(16);
+        ggTextField.setPreferences(prefs, key);
+        tab.gridAdd(ggTextField, 1, row);
 
         row++;
         prefs   = app.getUserPrefs();
@@ -911,8 +905,8 @@ for (AudioBoxConfig collAudioBoxConfig : collAudioBoxConfigs) {
                             try {
                                 while (inStream.available() > 0) {
                                     len = Math.min(inBuf.length, inStream.available());
-                                    inStream.read(inBuf, 0, len);
-                                    baos.write(inBuf, 0, len);
+                                    final int len1 = inStream.read(inBuf, 0, len);
+                                    baos.write(inBuf, 0, len1);
                                 }
                             }
                             catch( IOException e1 ) { /* ignore for now XXX */ }

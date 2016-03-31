@@ -295,6 +295,20 @@ public class PrefsUtil {
      */
     public static final String KEY_AUDIOBOX		= "audiobox";	// string : active audio box configuration
 
+    /**
+     *  Value: String representing the command
+     *  to reveal a file in the desktop manager.
+     *  The command will be split on space characters,
+     *  where single quotes <tt>'</tt> can be used
+     *  to avoid split. Place holders for escape:
+     *  <tt>%p</tt> for the file path, <tt>%P</tt> for url-style
+     *  <tt>%d</tt> for parent directory, <tt>%D</tt> for url-style,
+     *  <tt>%f</tt> for file, <tt>%F</tt> for url-style.
+     *  Has default value: ???<br>
+     *  Node: general
+     */
+    public static final String KEY_REVEAL_FILE  = "reveal-file";
+
     // ------------ audio->inputconfigs node level ------------
 
     /**
@@ -337,6 +351,18 @@ public class PrefsUtil {
 
     public static final String KEY_SONAENABLED	= "sonaenabled";
 
+    private static String[] execDirs() {
+        final String fs = File.separator;
+        return new String[]{
+                fs + "Applications" + fs + "SuperCollider_f",
+                fs + "Applications" + fs + "SuperCollider",
+                fs + "usr" + fs + "local" + fs + "bin",
+                fs + "usr" + fs + "bin",
+                "C:\\Program Files\\SuperCollider_f",
+                "C:\\Program Files\\PsyCollider"
+        };
+    }
+
     public static List<String> createDefaults(Preferences mainPrefs, double lastVersion) {
         File			f;
         String			value;
@@ -347,24 +373,61 @@ public class PrefsUtil {
         putDontOverwrite(IOUtil.getUserPrefs(), IOUtil.KEY_TEMPDIR, System.getProperty("java.io.tmpdir"));
 
         // general
-        putDontOverwrite( mainPrefs, KEY_LOOKANDFEEL, UIManager.getSystemLookAndFeelClassName() );
-        putBooleanDontOverwrite( mainPrefs, CoverGrowBox.KEY_INTRUDINGSIZE, Main.isMac );
-        putBooleanDontOverwrite( mainPrefs, KEY_INSERTIONFOLLOWSPLAY, true );
-        putBooleanDontOverwrite( mainPrefs, KEY_VIEWCHANMETERS , true );
-        putBooleanDontOverwrite( mainPrefs, KEY_VIEWMARKERS , true );
-        putBooleanDontOverwrite( mainPrefs, KEY_VIEWNULLLINIE , true );
-        putBooleanDontOverwrite( mainPrefs, KEY_VIEWVERTICALRULERS, true );
-        putBooleanDontOverwrite( mainPrefs, KEY_CATCH, true );
+        putDontOverwrite(mainPrefs, KEY_LOOKANDFEEL, UIManager.getSystemLookAndFeelClassName());
+        putBooleanDontOverwrite(mainPrefs, CoverGrowBox.KEY_INTRUDINGSIZE, Main.isMac);
+        putBooleanDontOverwrite(mainPrefs, KEY_INSERTIONFOLLOWSPLAY, true);
+        putBooleanDontOverwrite(mainPrefs, KEY_VIEWCHANMETERS, true);
+        putBooleanDontOverwrite(mainPrefs, KEY_VIEWMARKERS, true);
+        putBooleanDontOverwrite(mainPrefs, KEY_VIEWNULLLINIE, true);
+        putBooleanDontOverwrite(mainPrefs, KEY_VIEWVERTICALRULERS, true);
+        putBooleanDontOverwrite(mainPrefs, KEY_CATCH, true);
 
-        putIntDontOverwrite( mainPrefs, KEY_TIMEUNITS, TIME_MINSECS );
-        putIntDontOverwrite( mainPrefs, KEY_VERTSCALE, VSCALE_AMP_LIN );
+        if (mainPrefs.get(KEY_REVEAL_FILE, null) == null) {
+            if (Main.isMac) {
+                final String[] osa = {
+                        "osascript", "-e", "tell application \"Finder\"", "-e", "activate",
+                        "-e", "open location \"file://%D\"",
+                        "-e", "select file \"%f\" of folder of the front window",
+                        "-e", "end tell"
+                };
+                final StringBuilder sb = new StringBuilder();
+                for (String part : osa) {
+                    sb.append(" ");
+                    if (part.contains(" ")) {
+                        sb.append("'");
+                        sb.append(part);
+                        sb.append("'");
+                    } else {
+                        sb.append(part);
+                    }
+                }
+                final String cmd = sb.toString().trim();
+                putDontOverwrite(mainPrefs, KEY_REVEAL_FILE, cmd);
+
+            } else if (Main.isLinux) {
+                final String[] dirs = execDirs();
+                f = findFile("nautilus", dirs);
+                if (f == null) {
+                    f = findFile("xdg-open", dirs);
+                }
+                if (f != null) {
+                    final String cmd = f.getAbsolutePath();
+                    putDontOverwrite(mainPrefs, KEY_REVEAL_FILE, cmd.contains(" ") ? "'" + cmd + "'" : cmd);
+                }
+            } else {
+                // todo: Windows - no idea
+            }
+        }
+
+        putIntDontOverwrite(mainPrefs, KEY_TIMEUNITS, TIME_MINSECS);
+        putIntDontOverwrite(mainPrefs, KEY_VERTSCALE, VSCALE_AMP_LIN);
 
         // audio
-        childPrefs  = mainPrefs.node( NODE_AUDIO );
-        childPrefs.remove( "boottimeout" );		// not used any more
-        childPrefs.remove( "audiodevice" );		// not used any more
-        childPrefs.remove( "audioinputs" );		// not used any more
-        childPrefs.remove( "audiooutputs" );	// not used any more
+        childPrefs = mainPrefs.node(NODE_AUDIO);
+        childPrefs.remove("boottimeout");       // not used any more
+        childPrefs.remove("audiodevice");       // not used any more
+        childPrefs.remove("audioinputs");       // not used any more
+        childPrefs.remove("audiooutputs");      // not used any more
 
         putDontOverwrite( childPrefs, KEY_AUTOPLAYFROMFINDER, AUTOPLAYFROMFINDER_NONE );
 
@@ -441,24 +504,9 @@ public class PrefsUtil {
 
         // sc app
         if (childPrefs.get(KEY_SUPERCOLLIDERAPP, null) == null) {
-            f = findFile(Main.isWindows ? "scsynth.exe" : "scsynth", new String[]{
-                    fs + "Applications" + fs + "SuperCollider_f",
-                    fs + "Applications" + fs + "SuperCollider",
-                    fs + "usr" + fs + "local" + fs + "bin",
-                    fs + "usr" + fs + "bin",
-                    "C:\\Program Files\\SuperCollider_f",
-                    "C:\\Program Files\\PsyCollider"
-            });
+            f = findFile(Main.isWindows ? "scsynth.exe" : "scsynth", execDirs());
             if (f == null) {
-//                if (Main.isMac) {
-//                    try {
-//                        f = MRJAdapter.findApplication("SCjm");
-//                        if (f != null) f = new File(f.getParentFile(), "scsynth");
-//                    } catch (IOException e1) { /* ignore */ }
-//                }
-//                if (f == null) {
-                    warnings.add(AbstractApplication.getApplication().getResourceString("errSCSynthAppNotFound"));
-//                }
+                warnings.add(AbstractApplication.getApplication().getResourceString("errSCSynthAppNotFound"));
             }
             if (f != null) putDontOverwrite(childPrefs, KEY_SUPERCOLLIDERAPP, f.getAbsolutePath());
         }

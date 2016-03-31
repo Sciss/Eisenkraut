@@ -28,31 +28,19 @@ public abstract class AbstractFlagsPanel extends JPanel {
 
     private final FlagAction actionSolo, actionMute;
 
-    public AbstractFlagsPanel()
-    {
-        super( new FlowLayout( FlowLayout.RIGHT, 2, 2 ));
+    public AbstractFlagsPanel() {
+        super(new FlowLayout(FlowLayout.RIGHT, 2, 2));
 
-//		actionSolo	= new FlagAction( GraphicsUtil.ICON_SOLO, SessionObject.FLAGS_SOLO, SessionObject.FLAGS_SOLOSAFE );
-//		actionMute	= new FlagAction( GraphicsUtil.ICON_MUTE, SessionObject.FLAGS_MUTE, SessionObject.FLAGS_VIRTUALMUTE );
-        actionSolo	= new FlagAction( GraphicsUtil.ICON_SOLO, FLAGS_SOLO, FLAGS_SOLOSAFE );
-        actionMute	= new FlagAction( GraphicsUtil.ICON_MUTE, FLAGS_MUTE, FLAGS_VIRTUALMUTE );
+        actionSolo = new FlagAction(GraphicsUtil.ICON_SOLO, FLAGS_SOLO, FLAGS_SOLOSAFE);
+        actionMute = new FlagAction(GraphicsUtil.ICON_MUTE, FLAGS_MUTE, FLAGS_VIRTUALMUTE);
 
-        add( actionSolo.getButton() );
-        add( actionMute.getButton() );
+        add(actionSolo.getButton());
+        add(actionMute.getButton());
     }
 
-    protected void updateButtons( int flags )
-    {
-//		boolean practicallyMuted;
-
-        actionSolo.set( flags );
-        actionMute.set( flags );
-//		if( (flags & SessionObject.FLAGS_SOLO) == 0 && (flags & SessionObject.FLAGS_SOLOSAFE) == 0 ) {
-//			practicallyMuted = isAny( SessionObject.FLAGS_SOLO, true );
-//		} else {
-//			practicallyMuted = false;
-//		}
-//		actionMute.setThirdState( practicallyMuted );
+    protected void updateButtons(int flags) {
+        actionSolo.set(flags);
+        actionMute.set(flags);
     }
 
     protected abstract void setFlags( int mask, boolean set );
@@ -67,13 +55,13 @@ public abstract class AbstractFlagsPanel extends JPanel {
         private final	Icon			normalState, thirdState;
         private final	AbstractButton	ab;
         private boolean					isNormal	= true;
-        private final	Icon[]			icns;
+        private final	Icon[] icons;
 
         protected TriStateAction(int iconID, int normalID, int thirdID) {
             super();
 
-            icns	= GraphicsUtil.createToolIcons(iconID);
-            ab 		= new JToggleButton(this);
+            icons = GraphicsUtil.createToolIcons(iconID);
+            ab = new JToggleButton(this);
             ab.putClientProperty("styleId", "icon-hover");
             ab.setBorderPainted(false);
             ab.setContentAreaFilled(false);
@@ -81,10 +69,10 @@ public abstract class AbstractFlagsPanel extends JPanel {
             ab.setOpaque(false);
             ab.setFocusable(false);
             ab.setBorder(null);
-            GraphicsUtil.setToolIcons(ab, icns);
+            GraphicsUtil.setToolIcons(ab, icons);
 
-            normalState	= icns[ normalID ];
-            thirdState	= icns[ thirdID ];
+            normalState = icons[normalID];
+            thirdState  = icons[thirdID];
         }
 
         protected AbstractButton getButton()
@@ -92,25 +80,18 @@ public abstract class AbstractFlagsPanel extends JPanel {
             return ab;
         }
 
-        protected void setThirdState( boolean b )
-        {
-            if( b == isNormal ) {
+        protected void setThirdState(boolean b) {
+            if (b == isNormal) {
                 isNormal = !b;
-                ab.setIcon( b ? thirdState : normalState );
+                ab.setIcon(b ? thirdState : normalState);
             }
         }
 
-        protected void setSelected( boolean b )
-        {
-            if( ab.isSelected() != b ) {
-                ab.setSelected( b );
+        protected void setSelected(boolean b) {
+            if (ab.isSelected() != b) {
+                ab.setSelected(b);
             }
         }
-
-//		protected boolean isSelected()
-//		{
-//			return ab.isSelected();
-//		}
     }
 
     @SuppressWarnings("serial")

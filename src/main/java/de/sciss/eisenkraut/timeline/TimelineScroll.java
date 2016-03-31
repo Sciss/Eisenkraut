@@ -43,7 +43,7 @@ import java.util.prefs.PreferenceChangeListener;
  *  simply to override the <code>paintComponent</code>
  *  method: an additional hairline is drawn
  *  to visualize the current timeline position.
- *  also a translucent blue rectangle is drawn
+ *  also a translucent hoverState rectangle is drawn
  *  to show the current timeline selection.
  *	<p>
  *	This class tracks the catch preferences

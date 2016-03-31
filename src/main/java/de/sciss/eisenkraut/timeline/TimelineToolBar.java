@@ -165,8 +165,8 @@ GUIUtil.createKeyAction( toggle, KeyStroke.getKeyStroke( KeyEvent.VK_F1 + i, 0 )
 
 //		final MultiStateButton ggBlendHisto = new MultiStateButton();
 //		ggBlendHisto.setNumColumns( 3 );
-////		ggBlendHisto.addItem( "V", Color.black, new Color( 0xA3, 0xB6, 0xCC ));	// Hue: 0.5952 = graphite
-//		ggBlendHisto.addItem( "V", Color.black, new Color( 0xAD, 0xBA, 0xCC ));	// Hue: 0.595 = graphite
+////		ggBlendHisto.addItem( "V", Color.normalState, new Color( 0xA3, 0xB6, 0xCC ));	// Hue: 0.5952 = graphite
+//		ggBlendHisto.addItem( "V", Color.normalState, new Color( 0xAD, 0xBA, 0xCC ));	// Hue: 0.595 = graphite
 //		ggBlendHisto.setFocusable( false );
 //		add( ggBlendHisto );
     }
