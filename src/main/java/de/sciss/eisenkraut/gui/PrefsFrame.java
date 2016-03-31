@@ -357,27 +357,23 @@ public class PrefsFrame
         key		= PrefsUtil.KEY_SCPROTOCOL;
         key2	= "prefsOSCProtocol";
         lb		= new JLabel( getResourceString( key2 ), TRAILING );
-//		tab.gridAdd( lb, 2, row );
         b		= Box.createHorizontalBox();
         b.add( Box.createHorizontalStrut( 4 ));
         b.add( lb );
         ggChoice = new PrefComboBox();
-        ggChoice.addItem( new StringItem( OSCChannel.TCP, "TCP" ));
-        ggChoice.addItem( new StringItem( OSCChannel.UDP, "UDP" ));
-        ggChoice.setPreferences( prefs, key );
-//		tab.gridAdd( ggChoice, 3, row, -1, 1 );
-        b.add( ggChoice );
+        ggChoice.addItem(new StringItem(OSCChannel.TCP, "TCP"));
+        ggChoice.addItem(new StringItem(OSCChannel.UDP, "UDP"));
+        ggChoice.setPreferences(prefs, key);
+        b.add(ggChoice);
 
         key		= PrefsUtil.KEY_SCPORT;
         key2	= "prefsOSCPort";
         lb		= new JLabel( getResourceString( key2 ), TRAILING );
-//		tab.gridAdd( lb, 4, row );
         b.add( Box.createHorizontalStrut( 16 ));
         b.add( lb );
         ggParam  = new PrefParamField();
         ggParam.addSpace( spcIntegerFromZero );
         ggParam.setPreferences( prefs, key );
-//		tab.gridAdd( ggParam, 5, row, -1, 1 );
         b.add( ggParam );
         b.setVisible( false );
         collAudioAdvanced.add( b );
@@ -410,8 +406,6 @@ public class PrefsFrame
         ggParam.setVisible( false );
         collAudioAdvanced.add( ggParam );
         tab.gridAdd( ggParam, 1, row, -1, 1 );
-//		pAudio.makeCompactGrid();
-//		pAudio.setVisible( false );
 
         row++;
         key		= PrefsUtil.KEY_SCMEMSIZE;
@@ -605,12 +599,10 @@ final SpringPanel tabAudio = tab;
         return AbstractApplication.getApplication().getResourceString( key );
     }
 
-    private JComponent createAudioBoxGUI()
-    {
+    private JComponent createAudioBoxGUI() {
         final JScrollPane			ggScroll;
         final Box					b;
         final ModificationButton	ggPlus, ggMinus;
-        final JButton				ggAssistent;
         final JTable				table;
         final JPanel				p;
         final JTableHeader			th;
@@ -625,16 +617,14 @@ final SpringPanel tabAudio = tab;
         table		= new JTable( stm );
         th			= table.getTableHeader();
         stm.setTableHeader( th );
-        th.setReorderingAllowed( false );
-        th.setResizingAllowed( true );
-//		table.setAutoResizeMode( JTable.AUTO_RESIZE_OFF );
-        table.setCellSelectionEnabled( true );
-        table.setColumnSelectionAllowed( false );
-        table.setShowGrid( true );
-        table.setGridColor( Color.lightGray );
-        table.setSelectionMode( ListSelectionModel.SINGLE_INTERVAL_SELECTION );
-        table.setPreferredScrollableViewportSize( new Dimension( 256, 64 )); // XXX
-        for( int i = 0; i < 4; i++ ) table.getColumnModel().getColumn( i ).setPreferredWidth( i == 0 ? 180 : 60 );
+        th.setReorderingAllowed(false);
+        th.setResizingAllowed(true);
+        table.setCellSelectionEnabled(true);
+        table.setColumnSelectionAllowed(false);
+        table.setShowGrid(true);
+        table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+        table.setPreferredScrollableViewportSize(new Dimension(256, 64)); // XXX
+        for (int i = 0; i < 4; i++) table.getColumnModel().getColumn(i).setPreferredWidth(i == 0 ? 180 : 60);
 
         stm.setSortedColumn( 0, SortedTableModel.ASCENDING );
 
@@ -688,30 +678,20 @@ final SpringPanel tabAudio = tab;
                 }
             }
         });
-        ggAssistent = new JButton( getResourceString("labelAssistant"));
-        ggAssistent.addActionListener( new ActionListener() {
-            public void actionPerformed( ActionEvent e )
-            {
-                showAudioBoxAssistant();
-            }
-        });
-ggAssistent.setEnabled( false );  // XXX ;-(  sadly we didn't get the text output changes to scsynth yet
-        b.add( ggPlus );
-        b.add( ggMinus );
-        b.add( Box.createHorizontalGlue() );
-        b.add( ggAssistent );
+        b.add(ggPlus);
+        b.add(ggMinus);
+        b.add(Box.createHorizontalGlue());
 
-        table.getSelectionModel().addListSelectionListener( new ListSelectionListener() {
-            public void valueChanged( ListSelectionEvent e )
-            {
-                ggMinus.setEnabled( table.getSelectedRowCount() > 0 );
+        table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                ggMinus.setEnabled(table.getSelectedRowCount() > 0);
             }
         });
 
-        p.add( ggScroll, BorderLayout.NORTH );
-        p.add( b, BorderLayout.SOUTH );
+        p.add(ggScroll, BorderLayout.NORTH);
+        p.add(b, BorderLayout.SOUTH);
 
-        p.setBorder( BorderFactory.createEmptyBorder( 8, 0, 8, 0 ));
+        p.setBorder(BorderFactory.createEmptyBorder(8, 0, 8, 0));
 
         return p;
     }

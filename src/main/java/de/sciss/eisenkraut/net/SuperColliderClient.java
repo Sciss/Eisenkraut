@@ -13,7 +13,37 @@
 
 package de.sciss.eisenkraut.net;
 
-import java.awt.EventQueue;
+import de.sciss.app.AbstractApplication;
+import de.sciss.app.Application;
+import de.sciss.app.BasicEvent;
+import de.sciss.app.DocumentListener;
+import de.sciss.app.DynamicPrefChangeManager;
+import de.sciss.app.EventManager;
+import de.sciss.eisenkraut.io.AudioBoxConfig;
+import de.sciss.eisenkraut.io.RoutingConfig;
+import de.sciss.eisenkraut.session.DocumentFrame;
+import de.sciss.eisenkraut.session.Session;
+import de.sciss.eisenkraut.util.PrefsUtil;
+import de.sciss.jcollider.Buffer;
+import de.sciss.jcollider.Bus;
+import de.sciss.jcollider.Constants;
+import de.sciss.jcollider.ContiguousBlockAllocator;
+import de.sciss.jcollider.Group;
+import de.sciss.jcollider.NodeWatcher;
+import de.sciss.jcollider.Server;
+import de.sciss.jcollider.ServerEvent;
+import de.sciss.jcollider.ServerListener;
+import de.sciss.jcollider.ServerOptions;
+import de.sciss.jcollider.Synth;
+import de.sciss.jcollider.UGenInfo;
+import de.sciss.jcollider.gui.NodeTreePanel;
+import de.sciss.net.OSCBundle;
+import de.sciss.net.OSCChannel;
+import de.sciss.net.OSCMessage;
+import de.sciss.util.Param;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
@@ -30,28 +60,6 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.WindowConstants;
-
-import de.sciss.eisenkraut.io.AudioBoxConfig;
-import de.sciss.eisenkraut.io.RoutingConfig;
-import de.sciss.eisenkraut.session.DocumentFrame;
-import de.sciss.eisenkraut.session.Session;
-import de.sciss.eisenkraut.util.PrefsUtil;
-
-import de.sciss.app.AbstractApplication;
-import de.sciss.app.Application;
-import de.sciss.app.BasicEvent;
-import de.sciss.app.DocumentListener;
-import de.sciss.app.DynamicPrefChangeManager;
-import de.sciss.app.EventManager;
-import de.sciss.jcollider.*;
-import de.sciss.net.OSCBundle;
-import de.sciss.net.OSCChannel;
-import de.sciss.net.OSCMessage;
-import de.sciss.jcollider.gui.NodeTreePanel;
-import de.sciss.util.Param;
 
 public class SuperColliderClient
 		implements OSCRouter, Constants, ServerListener, DocumentListener {
@@ -385,21 +393,12 @@ public class SuperColliderClient
 		serverIsReady = false;
 	}
 
-	public void dumpOSC( int mode )
-	{
-		this.dumpMode	= mode;
-	
-//		if( (server != null) && (server.getDumpMode() != mode) ) {
-		if( server != null ) {
-//			try {
-				server.dumpIncomingOSC( mode );
-// scsynth's dumpOSC is buggy at the moment
-//				server.dumpOSC( mode );
-				server.dumpOutgoingOSC( mode );
-//			}
-//			catch( IOException e1 ) {
-//				printError( "dumpOSC", e1 );
-//			}
+	public void dumpOSC(int mode) {
+		this.dumpMode = mode;
+
+		if (server != null) {
+			server.dumpIncomingOSC(mode);
+			server.dumpOutgoingOSC(mode);
 		}
 	}
 	

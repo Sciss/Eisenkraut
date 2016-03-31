@@ -79,7 +79,7 @@ public class Main
      *
      *  @todo   should be saved in the session file as well
      */
-    private static final double APP_VERSION		= 1.2;
+    private static final double APP_VERSION		= 1.3;
 
     /**
      *  Enables / disables event dispatching debugging

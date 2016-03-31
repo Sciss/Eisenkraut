@@ -9,14 +9,6 @@
  *
  *	For further information, please contact Hanns Holger Rutz at
  *	contact@sciss.de
- *
- *
- *  Changelog:
- *      25-Jan-05	created from de.sciss.meloncillo.util.PrefsUtil
- *		13-May-05	updated from Meloncillo
- *		22-Jul-05	suggests 57109 as default scsynth port ; no longer
- *					uses 'Built-in Audio' device on Mac (sc will use
- *					default system output instead) ; TEMPDIR refers to IOUtil
  */
  
 package de.sciss.eisenkraut.util;
@@ -477,21 +469,19 @@ public class PrefsUtil {
         // OSC
         childPrefs  = OSCRoot.getInstance().getPreferences();
         putDontOverwrite   	   (childPrefs, OSCRoot.KEY_PROTOCOL, OSCChannel.TCP      );
-        putIntDontOverwrite	   (childPrefs, OSCRoot.KEY_PORT	, OSCRoot.DEFAULT_PORT);
-        putBooleanDontOverwrite(childPrefs, OSCRoot.KEY_ACTIVE	, Main.isLinux		); // used to enforce MDA
+        putIntDontOverwrite	   (childPrefs, OSCRoot.KEY_PORT    , OSCRoot.DEFAULT_PORT);
+        putBooleanDontOverwrite(childPrefs, OSCRoot.KEY_ACTIVE  , Main.isLinux	      ); // used to enforce MDA
 
         if (childPrefs.get(OSCGUI.KEY_SWINGAPP, null) == null) {
-            final String[] folders = new String[ value == null ? 2 : 4 ];
-            folders[ 0 ] = fs + "Applications" + fs + "SwingOSC";
-            folders[ 1 ] = "C:\\Program Files\\SwingOSC";
-            if( value != null ) {
-                folders[ 2 ] = new File( value ).getParentFile().getAbsolutePath();
-                folders[ 3 ] = new File( new File( new File( value ).getParentFile(), "SwingOSC" ), "build" ).getAbsolutePath();
+            final String[] folders = new String[value == null ? 2 : 4];
+            folders[0] = fs + "Applications" + fs + "SwingOSC";
+            folders[1] = "C:\\Program Files\\SwingOSC";
+            if (value != null) {
+                final File f2 = new File(value).getParentFile();
+                folders[2] = f2 == null ? null : f2.getAbsolutePath();
+                folders[3] = new File(new File(new File(value).getParentFile(), "SwingOSC"), "build").getAbsolutePath();
             }
-            f	= findFile( "SwingOSC.jar", folders );
-//			if( f == null ) {
-//				warnings.add( AbstractApplication.getApplication().getResourceString( "errSCSynthAppNotFound" ));
-//			}
+            f = findFile("SwingOSC.jar", folders);
             if (f != null) putDontOverwrite(childPrefs, OSCGUI.KEY_SWINGAPP, f.getAbsolutePath());
         }
 

@@ -20,10 +20,8 @@ import de.sciss.common.AppWindow;
 import de.sciss.common.BasicApplication;
 import de.sciss.eisenkraut.Main;
 import de.sciss.eisenkraut.net.SuperColliderClient;
-import de.sciss.gui.AbstractWindowHandler;
 import de.sciss.gui.CoverGrowBox;
 import de.sciss.gui.LogTextArea;
-import de.sciss.gui.MultiStateButton;
 import de.sciss.gui.TreeExpanderButton;
 import de.sciss.jcollider.Server;
 import de.sciss.jcollider.ServerEvent;
@@ -50,29 +48,20 @@ public class MainFrame
 
     private final ActionBoot			actionBoot;
 
-//	private final JCheckBox				ggDumpOSC;
-    protected final MultiStateButton	ggDumpOSC;
     private final JLabel				lbStatus1;
     private final JLabel				lbStatus2;
-
-//	private ServerOptions				serverOptions;
 
     private final MessageFormat			msgStatus1;
     private final MessageFormat			msgStatus2;
     private final Object[]				argsStatus		= new Object[ 5 ];
     private final String				unknownStatus;
-    protected final Box					boxStatus2;
+    private final Box					boxStatus2;
 
-    private final LogTextArea			lta;
-    protected final MultiStateButton	ggBoot;
-
-    private final Font					fntMonoSpaced;
-
-    protected final SuperColliderClient	superCollider;
+    private final SuperColliderClient	superCollider;
 
     @SuppressWarnings("serial")
     private class TH extends TransferHandler {
-        public TH() {
+        TH() {
             super();
         }
 
@@ -109,7 +98,7 @@ public class MainFrame
     private static class DropBorder extends AbstractBorder {
         private final Color colr;
 
-        public DropBorder(Color colr) {
+        DropBorder(Color colr) {
             super();
             this.colr = colr;
         }
@@ -152,39 +141,36 @@ public class MainFrame
         final Box						boxStatus1		= Box.createHorizontalBox();
         final JPanel					bottomPane		= new JPanel( new BorderLayout( 4, 2 ));
         final JScrollPane				ggScroll;
-//		final JButton					ggBoot;
         final AbstractWindow.Listener	winListener;
         final TreeExpanderButton		ggStatusExp;
 //		String[]						cfgNames		= null;
         final String[]					fntNames;
 
-        lta				= new LogTextArea( 16, 40, false, null );
+        LogTextArea lta = new LogTextArea(16, 40, false, null);
         ggScroll		= lta.placeMeInAPane();
         lta.makeSystemOutput();
 
-        actionBoot		= new ActionBoot();
-//		ggBoot			= new JButton( actionBoot );
-        ggBoot			= new MultiStateButton();
-        ggBoot.setFocusable( false );	// prevent user from accidentally starting/stopping server
-        ggBoot.setAutoStep( false );
-        ggBoot.addActionListener( actionBoot );
+        actionBoot  = new ActionBoot();
+        final JButton ggBoot = new JButton(actionBoot);
+        ggBoot.setFocusable(false);    // prevent user from accidentally starting/stopping server
+        actionBoot.booted();
+        final Dimension dBoot1 = ggBoot.getPreferredSize();
+        actionBoot.terminated();
+        final Dimension dBoot2 = ggBoot.getPreferredSize();
 
-//		ggDumpOSC		= new JCheckBox( getResourceString( "labelDumpOSC" ));
-//		ggDumpOSC.addItemListener( new ItemListener() {
-//			public void itemStateChanged( ItemEvent e ) {
-//				root.superCollider.dumpOSC( ggDumpOSC.isSelected() ? kDumpText : kDumpOff );
-//			}
-//		});
-        ggDumpOSC		= new MultiStateButton();
-        ggDumpOSC.setFocusable( false );
-        ggDumpOSC.addActionListener( new ActionListener() {
-            public void actionPerformed( ActionEvent e ) {
-                superCollider.dumpOSC( ggDumpOSC.getSelectedIndex() );
-            }
-        });
-//		ggDumpOSC.addItem( getResourceString( "labelDumpOff" ), null, null );
-//		ggDumpOSC.addItem( getResourceString( "labelDumpText" ), null, new Color( 0xFF, 0xFA, 0x9D ), new Color( 0xFA, 0xE7, 0x9D ));
-//		ggDumpOSC.addItem( getResourceString( "labelDumpHex" ), null, new Color( 0xFA, 0x9D, 0xFF ), new Color( 0xE7, 0x9D, 0xFA ));
+        final ActionDumpOSC actionDumpOSC = new ActionDumpOSC();
+        final JButton ggDumpOSC = new JButton(actionDumpOSC);
+        ggDumpOSC.setFocusable(false);
+        actionDumpOSC.setState(1);
+        final Dimension dMaxBut = ggDumpOSC.getPreferredSize();
+        actionDumpOSC.setState(2);
+        final Dimension dDump2 = ggDumpOSC.getPreferredSize();
+        actionDumpOSC.setState(0);
+        final Dimension dDump3 = ggDumpOSC.getPreferredSize();
+        dMaxBut.width  = Math.max(dMaxBut.width , Math.max(dDump2.width , Math.max(dDump3.width , Math.max(dBoot1.width , dBoot2.width ))));
+        dMaxBut.height = Math.max(dMaxBut.height, Math.max(dDump2.height, Math.max(dDump3.height, Math.max(dBoot1.height, dBoot2.height))));
+        ggBoot   .setPreferredSize(dMaxBut);
+        ggDumpOSC.setPreferredSize(dMaxBut);
 
         final boolean isDark = UIManager.getBoolean("dark-skin");
         final Color colrDrop = isDark ? Color.gray : Color.darkGray;
@@ -224,103 +210,76 @@ public class MainFrame
             }
         });
 
-        lbStatus1.setPreferredSize( new Dimension( 192, lbStatus1.getPreferredSize().height ));
-        lbStatus2.setPreferredSize( new Dimension( 226, lbStatus1.getPreferredSize().height ));
+        lbStatus1.setPreferredSize(new Dimension(192, lbStatus1.getPreferredSize().height));
+        lbStatus2.setPreferredSize(new Dimension(226, lbStatus1.getPreferredSize().height));
 
-        boxStatus1.add( new JLabel( new ImageIcon( getClass().getResource( "sc-icon.png" ))));
-        boxStatus1.add( Box.createHorizontalStrut( 2 ));
-        boxStatus1.add( ggStatusExp );
-        boxStatus1.add( lbStatus1 );
-        boxStatus1.add( ggBoot );
-        boxStatus1.add( Box.createHorizontalStrut(4));
+        boxStatus1.add(new JLabel(new ImageIcon(getClass().getResource("sc-icon.png"))));
+        boxStatus1.add(Box.createHorizontalStrut(2));
+        boxStatus1.add(ggStatusExp);
+        boxStatus1.add(lbStatus1);
+        boxStatus1.add(ggBoot);
+        boxStatus1.add(Box.createHorizontalStrut(4));
         boxStatus1.add(ggImport);
-        boxStatus1.add( Box.createHorizontalGlue() );
+        boxStatus1.add(Box.createHorizontalGlue());
 
-//		boxStatus2.add( Box.createHorizontalStrut( 32 ));
-        boxStatus2.add( lbStatus2 );
-        boxStatus2.add( ggDumpOSC );
-        boxStatus2.add( Box.createHorizontalGlue() );
-        boxStatus2.setVisible( false );
+        boxStatus2.add(lbStatus2);
+        boxStatus2.add(ggDumpOSC);
+        boxStatus2.add(Box.createHorizontalGlue());
+        boxStatus2.setVisible(false);
 
-        boxStatus1.add( CoverGrowBox.create() );
-        boxStatus2.add( CoverGrowBox.create() );
-//        if( AbstractApplication.getApplication().getUserPrefs().getBoolean( PrefsUtil.KEY_INTRUDINGSIZE, false )) {
-//    		boxStatus1.add( Box.createHorizontalStrut( 16 ));
-//    		boxStatus2.add( Box.createHorizontalStrut( 16 ));
-//        }
+        boxStatus1.add(CoverGrowBox.create());
+        boxStatus2.add(CoverGrowBox.create());
 
-        bottomPane.add( boxStatus1, BorderLayout.NORTH );
-        bottomPane.add( boxStatus2, BorderLayout.SOUTH );
-//		bottomPane.add( ggBoot, BorderLayout.EAST );
-        bottomPane.setBorder( BorderFactory.createEmptyBorder( 0, 4, 0, 4 ));
-        cp.add( ggScroll, BorderLayout.CENTER );
-        cp.add( bottomPane, BorderLayout.SOUTH );
+        bottomPane.add(boxStatus1, BorderLayout.NORTH);
+        bottomPane.add(boxStatus2, BorderLayout.SOUTH);
+        bottomPane.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 4));
+        cp.add(ggScroll, BorderLayout.CENTER);
+        cp.add(bottomPane, BorderLayout.SOUTH);
 
         fntNames = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
-        if( contains( fntNames, "Monaco" )) {							// Mac OS
-            fntMonoSpaced = new Font( "Monaco", Font.PLAIN, 9 );		// looks bigger than it is
-        } else if( contains( fntNames, "Lucida Sans Unicode" )) {		// Windows XP
-            fntMonoSpaced = new Font( "Lucida Sans Unicode", Font.PLAIN, 9 );
+        final Font fntMonoSpaced;
+        if (contains(fntNames, "DejaVu Sans Mono")) {                       // Linux
+            fntMonoSpaced = new Font("DejaVu Sans Mono", Font.PLAIN, 10);
+        } else if (contains(fntNames, "Monaco")) {                          // Mac
+            fntMonoSpaced = new Font("Monaco", Font.PLAIN, 9);              // looks bigger than it is
+        } else if (contains(fntNames, "Lucida Sans Unicode")) {             // Windows XP
+            fntMonoSpaced = new Font("Lucida Sans Unicode", Font.PLAIN, 9);
         } else {
-            fntMonoSpaced = new Font( "Monospaced", Font.PLAIN, 10 );
+            fntMonoSpaced = new Font("Monospaced", Font.PLAIN, 10);
         }
-
-//		AbstractWindowHandler.setDeepFont( cp );
-
-        ggBoot.setNumColumns( 9 );
-        ggBoot.addItem( getResourceString( "buttonBoot" ), null, null );
-// NOTE: BUG WITH CUSTOM COMPOSITE ON WIN-XP!!!
-//		ggBoot.addItem( getResourceString( "buttonTerminate" ), null, new Color( 0xFF, 0xFA, 0x9D ), new Color( 0xFA, 0xE7, 0x9D ));
-ggBoot.addItem( getResourceString( "buttonTerminate" ), null, new Color( 0xFF, 0xFA, 0x9D ));
-        ggDumpOSC.setNumColumns( 9 );
-        ggDumpOSC.addItem( getResourceString( "labelDumpOff" ), null, null );
-//		ggDumpOSC.addItem( getResourceString( "labelDumpText" ), null, new Color( 0xFF, 0xFA, 0x9D ), new Color( 0xFA, 0xE7, 0x9D ));
-ggDumpOSC.addItem( getResourceString( "labelDumpText" ), null, new Color( 0xFF, 0xFA, 0x9D ));
-//		ggDumpOSC.addItem( getResourceString( "labelDumpHex" ), null, new Color( 0xFF, 0x9D, 0x9D ), new Color( 0xFA, 0x8D, 0x9D ));
-ggDumpOSC.addItem( getResourceString( "labelDumpHex" ), null, new Color( 0xFF, 0x9D, 0x9D ));
-        final Dimension d = new Dimension( ggDumpOSC.getPreferredSize().width, ggDumpOSC.getMaximumSize().height );
-        ggBoot.setMaximumSize( d );
-        ggDumpOSC.setMaximumSize( d );
 
         lbStatus1.setFont(fntMonoSpaced);
         lbStatus2.setFont(fntMonoSpaced);
-        lta      .setFont(fntMonoSpaced);
+        lta.setFont(fntMonoSpaced);
 
         // ---- menus and actions ----
 
-        ((BasicApplication) app).getMenuBarRoot().putMimic( "edit.clear", this, lta.getClearAction() );
+        ((BasicApplication) app).getMenuBarRoot().putMimic("edit.clear", this, lta.getClearAction());
 
         // ---- listeners -----
 
-//		root.getDocumentHandler().addDocumentListener( this );
-
         winListener = new AbstractWindow.Adapter() {
-            public void windowClosing( AbstractWindow.Event e ) {
+            public void windowClosing(AbstractWindow.Event e) {
                 app.quit();
             }
         };
-        addListener( winListener );
+        addListener(winListener);
 
-        superCollider.addServerListener( this );
+        superCollider.addServerListener(this);
 
-//        HelpGlassPane.setHelp( getRootPane(), "MainFrame" );
-
-        setDefaultCloseOperation( WindowConstants.DO_NOTHING_ON_CLOSE );
+        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
         init();
-        app.addComponent( Main.COMP_MAIN, this );
-        setVisible( true );
-//		toFront();
+        app.addComponent(Main.COMP_MAIN, this);
+        setVisible(true);
     }
 
-    protected boolean autoUpdatePrefs()
-    {
+    protected boolean autoUpdatePrefs() {
         return true;
     }
 
-    protected Point2D getPreferredLocation()
-    {
-        return new Point2D.Float( 0f, 0f );
+    protected Point2D getPreferredLocation() {
+        return new Point2D.Float(0f, 0f);
     }
 
     public void dispose() {
@@ -381,40 +340,53 @@ ggDumpOSC.addItem( getResourceString( "labelDumpHex" ), null, new Color( 0xFF, 0
         }
     }
 
-// ------------- interne klassen -------------
+// ------------- internal classes -------------
 
     @SuppressWarnings("serial")
     private class ActionBoot
-    extends AbstractAction
-    {
-        protected ActionBoot()
-        {
+            extends AbstractAction {
+
+        ActionBoot() {
             super();
-//			super( getResourceString( "buttonBoot" ));
-//			putValue( SMALL_ICON, new ImageIcon( getClass().getResource( "sc-icon.png" )));
         }
 
-        public void actionPerformed( ActionEvent e )
-        {
-            if( booted ) {
+        public void actionPerformed(ActionEvent e) {
+            if (booted) {
                 superCollider.stop();
             } else {
                 superCollider.boot();
             }
         }
 
-        protected void terminated()
-        {
+        protected void terminated() {
             booted = false;
-//			putValue( NAME, getResourceString( "buttonBoot" ));
-            ggBoot.setSelectedIndex( 0 );
+            putValue(NAME, getResourceString("buttonBoot"));
         }
 
-        protected void booted()
-        {
+        protected void booted() {
             booted = true;
-//			putValue( NAME, getResourceString( "buttonTerminate" ));
-            ggBoot.setSelectedIndex( 1 );
+            putValue(NAME, getResourceString("buttonTerminate"));
         }
-    } // class actionBootClass
+    }
+
+    @SuppressWarnings("serial")
+    private class ActionDumpOSC
+            extends AbstractAction {
+
+        private int state = 0;
+
+        private String[] labels = { "labelDumpOff", "labelDumpText", "labelDumpHex" };
+
+        public int getState() { return state; }
+
+        public void setState(int state) {
+            this.state = state;
+            putValue(NAME, getResourceString(labels[state]));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            setState((state + 1) % 3);
+            superCollider.dumpOSC(state);
+        }
+    }
 }
