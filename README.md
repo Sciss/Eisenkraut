@@ -20,7 +20,7 @@ A binary version of Eisenkraut for all platforms is provided through [GitHub Rel
 
 ## setting up and running
 
-![screenshot](screenshot.png =701x379)
+<img src="screenshot.png" alt="screenshot" width="701" height="379"/>
 
 ### installing supercollider
 

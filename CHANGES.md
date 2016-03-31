@@ -1,5 +1,13 @@
 # change history
 
+## v1.3.0 (apr 2016)
+
+ - adds dark-skin option (in preferences)
+ - improve reveal-file function (customizable in preferences)
+ - improve keyboard shortcuts
+ - graphics clean-up
+ - various small fixes
+
 ## v1.2.0 (nov 2015)
 
  - improve build scripts, package for Debian

@@ -16,7 +16,7 @@ lazy val subminVersion    = "0.1.0"
 
 lazy val commonSettings = Seq(
   name             := "Eisenkraut",
-  version          := "projectVersion,
+  version          := projectVersion,
   organization     := "de.sciss",
   description      := "A multi-channel and hi-res capable audio file editor",
   homepage         := Some(url("https://github.com/Sciss/Eisenkraut")),
