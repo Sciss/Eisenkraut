@@ -408,6 +408,7 @@ public class DocumentFrame
 // ----- afr export -----
         final JButton ggExportAFR = new JButton(getResourceString("buttonDragRegion"),
                 new ImageIcon(getClass().getResource("dragicon.png")));
+        ggExportAFR.setToolTipText(getResourceString("ttDragRegion"));
         ggExportAFR.setTransferHandler(new AFRTransferHandler());
         final MouseInputAdapter expAFRmia = new MouseInputAdapter() {
             private MouseEvent dndInit = null;

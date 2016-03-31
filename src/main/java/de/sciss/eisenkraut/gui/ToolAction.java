@@ -13,12 +13,9 @@
 
 package de.sciss.eisenkraut.gui;
 
-import java.awt.Cursor;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
-
-import javax.swing.AbstractAction;
-import javax.swing.AbstractButton;
-import javax.swing.Icon;
 
 /**
  *  An extension of <code>AbstractAction</code>
@@ -89,13 +86,12 @@ public class ToolAction extends AbstractAction {
 	 *  @param  id  identier for the tool, e.g. LINE or PENCIL,
 	 *				which determines the icons and mouse pointer
 	 */
-	public ToolAction( int id )
-	{
+	public ToolAction(int id) {
 		super();
-		
+
 		this.id = id;
-		
-		icons = GraphicsUtil.createToolIcons( ICONS[id] );
+
+		icons = GraphicsUtil.createToolIcons(ICONS[id]);
 	}
 	
 	/**

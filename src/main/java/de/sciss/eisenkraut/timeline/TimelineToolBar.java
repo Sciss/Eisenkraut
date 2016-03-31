@@ -14,12 +14,14 @@
 package de.sciss.eisenkraut.timeline;
 
 import de.sciss.app.AbstractApplication;
+import de.sciss.app.Application;
 import de.sciss.eisenkraut.gui.BlendingAction;
 import de.sciss.eisenkraut.gui.CatchAction;
 import de.sciss.eisenkraut.gui.EditModeAction;
 import de.sciss.eisenkraut.gui.ToolAction;
 import de.sciss.eisenkraut.gui.ToolBar;
 import de.sciss.eisenkraut.session.Session;
+import de.sciss.gui.DoClickAction;
 import de.sciss.gui.GUIUtil;
 import de.sciss.util.Disposable;
 
@@ -44,6 +46,17 @@ public class TimelineToolBar
 
     private final Map<Integer, JToggleButton> mapToolButtons	= new HashMap<Integer, JToggleButton>();
 
+    private static void createKeyAction2(AbstractButton comp, int i) {
+        final Action    a   = new DoClickAction(comp);
+        final InputMap  im  = comp.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        final ActionMap am  = comp.getActionMap();
+        final KeyStroke ks1 = KeyStroke.getKeyStroke(KeyEvent.VK_F1 + i, 0);
+        final KeyStroke ks2 = KeyStroke.getKeyStroke(KeyEvent.VK_1  + i, 0);
+        im.put(ks1, "shortcut");
+        im.put(ks2, "shortcut");
+        am.put("shortcut", a);
+    }
+
     /**
      *	Creates a tool palette with
      *	default buttons for editing the timeline frame.
@@ -51,7 +64,8 @@ public class TimelineToolBar
     public TimelineToolBar(Session doc) {
         super(SwingConstants.HORIZONTAL);
 
-        final Preferences		prefs = AbstractApplication.getApplication().getUserPrefs();
+        final Application       app     = AbstractApplication.getApplication();
+        final Preferences		prefs   = app.getUserPrefs();
         final CatchAction		actionCatch;
         final EditModeAction	actionEditMode;
         final AbstractButton	button;
@@ -70,30 +84,33 @@ public class TimelineToolBar
         actionEditMode	= new EditModeAction(doc);
         bg				= actionEditMode.getButtons();
         en				= bg.getElements();
-        for( int i = 0; en.hasMoreElements(); i++ ) {
+        for (int i = 0; en.hasMoreElements(); i++) {
             toggle		= (JToggleButton) en.nextElement();
-            GUIUtil.createKeyAction(toggle, KeyStroke.getKeyStroke(KeyEvent.VK_F1 + i, 0));
+            createKeyAction2(toggle, i);
             addToggleButton(toggle, 3);
         }
         addSeparator();
 
         toolAction		= new ToolAction(ToolAction.POINTER);
         toggle			= new JToggleButton(toolAction);
+        toggle.setToolTipText(app.getResourceString("ttTimelinePointer"));
         toolAction.setIcons(toggle);
-        GUIUtil.createKeyAction(toggle, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
+        createKeyAction2(toggle, 4);
         addToggleButton(toggle, 0);
         mapToolButtons.put(toolAction.getID(), toggle);
 
         toolAction		= new ToolAction(ToolAction.ZOOM);
         toggle			= new JToggleButton(toolAction);
+        toggle.setToolTipText(app.getResourceString("ttTimelineZoom"));
         toolAction.setIcons(toggle);
-        GUIUtil.createKeyAction(toggle, KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0));
+        createKeyAction2(toggle, 5);
         addToggleButton(toggle, 0);
         mapToolButtons.put(toolAction.getID(), toggle);
       
         addSeparator();
         actionBlending  = doc.getBlendingAction();
         button			= actionBlending.getButton();
+        button.setToolTipText(app.getResourceString("ttTimelineBlending"));
 
         // N.B. caps-lock doesn't work nicely on linux with respect to release.
         GUIUtil.createKeyAction(button, KeyStroke.getKeyStroke(KeyEvent.VK_B /* VK_CAPS_LOCK */, 0));

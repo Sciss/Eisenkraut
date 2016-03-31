@@ -160,6 +160,7 @@ public class TransportToolBar
 
         actionGoToTime  = new ActionGoToTime();
         lbTime			= new TimeLabel();
+        lbTime.setToolTipText(AbstractApplication.getApplication().getResourceString("inputDlgGoToTime"));
         lbTime.setCursor(new Cursor(Cursor.HAND_CURSOR));
         lbTime.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
@@ -300,14 +301,12 @@ public class TransportToolBar
 
         protected ActionGoToTime() { /* empty */ }
 
-        public void actionPerformed( ActionEvent e )
-        {
+        public void actionPerformed(ActionEvent e) {
             final int					result;
             final Param					positionSmps;
             final Box					msgPane;
             final DefaultUnitTranslator	timeTrans;
             final ParamField			ggPosition;
-//			final JComboBox				ggPosCombo;
             final Application			app	= AbstractApplication.getApplication();
 
             msgPane			= Box.createVerticalBox();

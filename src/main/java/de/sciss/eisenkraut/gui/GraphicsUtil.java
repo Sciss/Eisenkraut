@@ -20,8 +20,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
-import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
@@ -158,7 +158,7 @@ public class GraphicsUtil
      *  Yellow translucent colour
      *  for consistent style in optional adjustment objects
      */
-    public static final Color		colrAdjusting   = new Color( 0xFF, 0xFF, 0x00, 0x2F );
+    public static final Color		colrAdjusting   = new Color(0xFF, 0xFF, 0x00, 0x2F);
     /**
      *  Default font for GUI elements.
      *
@@ -241,6 +241,8 @@ public class GraphicsUtil
      */
     public static Icon[] createToolIcons(int id) {
         final Shape shp;
+        Color gradient = null;
+        final boolean isDark = isDarkSkin();
         switch(id) {
             case ICON_PLAY:
                 shp = shapePlay();
@@ -257,6 +259,27 @@ public class GraphicsUtil
             case ICON_LOOP:
                 shp = shapeLoop();
                 break;
+            case ICON_ZOOM:
+                shp = shapeZoom();
+                break;
+            case ICON_POINTER:
+                shp = shapePointer();
+                break;
+            case ICON_CATCH:
+                shp = shapeLocation2();
+                break;
+            case ICON_INSERTMODE:
+                shp         = shapeInsert();
+                gradient    = isDark ? new Color(0xFF, 0xFF, 0x4F) : new Color(0xA0, 0xA0, 0x00);
+                break;
+            case ICON_OVERWRITEMODE:
+                shp         = shapeOverwrite();
+                gradient    = isDark ? new Color(0xFF, 0x60, 0x80) : Color.red;
+                break;
+            case ICON_MIXMODE:
+                shp         = shapeMix();
+                gradient    = isDark ? new Color(0x5E, 0x97, 0xFF) : new Color(0x3D, 0x3D, 0xB6);
+                break;
             default:
                 final Icon[] icons = new Icon[4];
                 for (int i = 0; i < 4; i++) {
@@ -265,19 +288,57 @@ public class GraphicsUtil
                 return icons;
         }
         final Icon[] icons = new Icon[4];
-        final boolean isDark = isDarkSkin();
-        icons[0] = new ShapeIcon(shp, isDark ? new Color( 200,  200,  200) : Color.black);
-        icons[1] = new ShapeIcon(shp, isDark ? new Color(0x5E, 0x97, 0xFF) : new Color(0x3D, 0x3D, 0xB6));
+        icons[0] = new ShapeIcon(shp, isDark ? new Color( 200,  200,  200) : new Color( 32,  32,  32));
+        final ShapeIcon iconSel = new ShapeIcon(shp, gradient == null ? (isDark ? new Color(0x5E, 0x97, 0xFF) : new Color(0x3D, 0x3D, 0xB6)) : gradient);
+        icons[1] = iconSel;
         icons[2] = new ShapeIcon(shp, isDark ? new Color( 147,  175,  227) : new Color(26, 26, 77));
-        icons[3] = new ShapeIcon(shp, isDark ? new Color( 200,  200,  200, 0x7F) : new Color(0, 0, 0, 0x7F));
+        icons[3] = new ShapeIcon(shp, isDark ? new Color( 200,  200,  200, 0x7F) : new Color(32, 32, 32, 0x7F));
+        
+        if (gradient != null) {
+            // final Color transparent = new Color(gradient.getRGB() & 0x00FFFFFF, true);
+            final Color transparent = isDark ? colrShadowDefaultDark : colrShadowDefaultLight;
+            final Paint pnt = new GradientPaint(0f, 0f, gradient, 0f, /* 11f */ 15f, transparent);
+            // iconSel.setShadow(Color.black);
+            icons[1] = new PaintIcon(icons[1], pnt);
+        }
         return icons;
     }
 
+    private static class PaintIcon implements Icon {
+        private final Icon peer;
+        private final Paint paint;
+
+        PaintIcon(Icon peer, Paint paint) {
+            this.peer   = peer;
+            this.paint  = paint;
+        }
+
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            final Graphics2D g2 = (Graphics2D) g;
+            g2.setPaint(paint);
+            g2.fillRect(x, y, getIconWidth(), getIconHeight());
+            peer.paintIcon(c, g, x, y);
+        }
+
+        public int getIconWidth() {
+            return peer.getIconWidth();
+        }
+
+        public int getIconHeight() {
+            return peer.getIconHeight();
+        }
+    }
+
+    private static Color colrShadowDefaultLight = new Color(0xFF, 0xFF, 0xFF, 0x7F);
+    private static Color colrShadowDefaultDark  = new Color(0x00, 0x00, 0x00, 0x7F);
+
     private static class ShapeIcon implements Icon {
+
         private final Shape shape;
         private final Paint paint;
         private final int width;
         private final int height;
+        private Color colrShadow;
 
         ShapeIcon(Shape shape, Paint paint) {
             this(shape, paint, 14, 16);
@@ -288,6 +349,11 @@ public class GraphicsUtil
             this.paint  = paint;
             this.width  = width;
             this.height = height;
+            colrShadow  = isDarkSkin() ? colrShadowDefaultDark : colrShadowDefaultLight;
+        }
+
+        public void setShadow(Color shadow) {
+            this.colrShadow = shadow;
         }
 
         public void paintIcon(Component c, Graphics g, int x, int y) {
@@ -295,6 +361,8 @@ public class GraphicsUtil
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING  , RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE );
             g2.translate(x, y);
+            g2.setPaint(colrShadow);
+            g2.draw(shape);
             g2.setPaint(paint);
             g2.fill(shape);
             g2.translate(-x, -y);
@@ -306,6 +374,265 @@ public class GraphicsUtil
 
         public int getIconHeight() {
             return height;
+        }
+    }
+
+    private static Shape shapeInsert() {
+        return shapeInsert(-1f, 0f, 0.5f);
+    }
+
+    private static Shape shapeInsert(float xOff, float yOff, float scale) {
+        final Path2D p = new Path2D.Float();
+        p.moveTo(30.601023f, 17.183632f);
+        p.curveTo(30.2153f, 15.91982f, 29.276339f, 14.946398f, 28.019863f, 14.425948f);
+        p.curveTo(25.931894f, 13.561084f, 23.942749f, 14.339098f, 23.284533f, 15.928166f);
+        p.curveTo(23.009f, 16.593359f, 22.907965f, 17.568958f, 23.577961f, 18.669096f);
+        p.curveTo(24.320553f, 19.907545f, 25.82281f, 20.984406f, 26.461647f, 21.898455f);
+        p.curveTo(27.027885f, 22.674194f, 26.978569f, 23.368145f, 26.764267f, 23.885519f);
+        p.curveTo(26.35097f, 24.883308f, 25.049433f, 25.621418f, 23.38645f, 24.932589f);
+        p.curveTo(22.129974f, 24.412138f, 21.410885f, 23.378256f, 21.161392f, 22.517239f);
+        p.curveTo(21.136572f, 22.420368f, 21.151892f, 22.383413f, 21.182491f, 22.309502f);
+        p.curveTo(21.197802f, 22.272552f, 21.243721f, 22.161682f, 21.185091f, 22.094112f);
+        p.lineTo(19.857967f, 23.103045f);
+        p.curveTo(20.357725f, 24.457386f, 21.444506f, 25.492039f, 22.867281f, 26.081371f);
+        p.curveTo(25.675875f, 27.24473f, 27.491295f, 25.78862f, 28.08828f, 24.347368f);
+        p.curveTo(28.34085f, 23.737608f, 28.485182f, 22.866535f, 28.047739f, 21.88437f);
+        p.curveTo(27.440287f, 20.528715f, 25.952024f, 19.522596f, 25.151371f, 18.476576f);
+        p.curveTo(24.4278f, 17.50578f, 24.507732f, 16.737919f, 24.699074f, 16.275978f);
+        p.curveTo(25.06645f, 15.389054f, 26.15314f, 14.908318f, 27.465048f, 15.451728f);
+        p.curveTo(28.536749f, 15.895641f, 29.169245f, 16.720474f, 29.34483f, 17.550877f);
+        p.curveTo(29.36965f, 17.647747f, 29.335829f, 17.67705f, 29.30525f, 17.750961f);
+        p.curveTo(29.25933f, 17.861826f, 29.29945f, 17.921741f, 29.33641f, 17.93705f);
+        p.lineTo(30.60099f, 17.183632f);
+        p.moveTo(10.07259f, 20.543509f);
+        p.lineTo(11.310588f, 21.056305f);
+        p.lineTo(15.060886f, 12.002285f);
+        p.lineTo(16.365795f, 23.171888f);
+        p.lineTo(17.40054f, 23.600492f);
+        p.lineTo(21.977432f, 12.550894f);
+        p.curveTo(22.031012f, 12.421551f, 22.064793f, 12.392249f, 22.158495f, 12.322822f);
+        p.curveTo(22.192286f, 12.293522f, 22.267504f, 12.216439f, 22.287294f, 12.116398f);
+        p.lineTo(20.919985f, 11.550026f);
+        p.lineTo(17.38399f, 20.086674f);
+        p.lineTo(16.097334f, 9.552419f);
+        p.lineTo(14.840857f, 9.031969f);
+        p.lineTo(10.072622f, 20.543509f);
+        p.moveTo(6.30421f, 5.495974f);
+        p.lineTo(5.852644f, 6.586152f);
+        p.lineTo(7.9775667f, 7.466324f);
+        p.lineTo(4.097157f, 16.834461f);
+        p.lineTo(1.8428907f, 15.900715f);
+        p.lineTo(1.3989779f, 16.972416f);
+        p.lineTo(7.348762f, 19.436895f);
+        p.lineTo(7.7850213f, 18.383675f);
+        p.lineTo(5.3829346f, 17.388697f);
+        p.lineTo(9.270998f, 8.002081f);
+        p.lineTo(11.543742f, 8.943482f);
+        p.lineTo(11.995308f, 7.853304f);
+        p.lineTo(6.30421f, 5.495974f);
+        return scaleAndShift(p, scale, xOff, yOff);
+    }
+
+    private static Shape shapeOverwrite() {
+        return shapeOverwrite(-1f, 0f, 0.5f);
+    }
+
+    private static Shape shapeOverwrite(float xOff, float yOff, float scale) {
+        final Path2D p = new Path2D.Float();
+        p.moveTo(23.98087f, 11.956031f);
+        p.lineTo(19.212635f, 23.467567f);
+        p.lineTo(20.506065f, 24.003325f);
+        p.lineTo(22.610825f, 18.921988f);
+        p.lineTo(24.846613f, 19.848082f);
+        p.lineTo(25.291761f, 25.985624f);
+        p.lineTo(26.751492f, 26.590263f);
+        p.lineTo(26.210785f, 20.369843f);
+        p.curveTo(27.757332f, 20.555838f, 29.261578f, 19.64192f, 29.896832f, 18.10828f);
+        p.curveTo(30.371359f, 16.96267f, 30.25012f, 15.635228f, 29.400377f, 14.655465f);
+        p.curveTo(28.832825f, 13.98742f, 28.119852f, 13.670449f, 27.36227f, 13.356649f);
+        p.lineTo(23.98087f, 11.956028f);
+        p.moveTo(24.76916f, 13.711305f);
+        p.lineTo(26.857126f, 14.57617f);
+        p.curveTo(27.337543f, 14.775165f, 27.79183f, 14.984985f, 28.180403f, 15.405711f);
+        p.curveTo(28.747955f, 16.073755f, 28.811361f, 16.965933f, 28.505215f, 17.705036f);
+        p.curveTo(28.199068f, 18.44414f, 27.564808f, 18.98239f, 26.761848f, 19.039455f);
+        p.curveTo(26.226543f, 19.077496f, 25.775427f, 18.912287f, 25.313486f, 18.720947f);
+        p.lineTo(23.077698f, 17.794853f);
+        p.lineTo(24.76916f, 13.711306f);
+        p.moveTo(14.169269f, 7.8919325f);
+        p.lineTo(13.280014f, 21.118437f);
+        p.lineTo(13.871297f, 21.363356f);
+        p.lineTo(22.539618f, 11.359044f);
+        p.lineTo(21.264664f, 10.830941f);
+        p.lineTo(14.80844f, 18.526003f);
+        p.lineTo(15.518133f, 8.45065f);
+        p.lineTo(14.169269f, 7.8919325f);
+        p.moveTo(10.775881f, 13.26212f);
+        p.curveTo(11.219794f, 12.19042f, 11.735216f, 10.737031f, 11.619773f, 9.238808f);
+        p.curveTo(11.474486f, 7.4468f, 10.445762f, 6.2197185f, 9.189286f, 5.6992693f);
+        p.curveTo(7.4708705f, 4.987478f, 4.499242f, 5.3152337f, 2.624093f, 9.842244f);
+        p.curveTo(0.74894804f, 14.369244f, 2.543221f, 16.77935f, 4.3170695f, 17.514103f);
+        p.curveTo(5.555068f, 18.0269f, 7.1762943f, 17.875814f, 8.56913f, 16.655975f);
+        p.curveTo(9.691687f, 15.670548f, 10.354929f, 14.278388f, 10.775881f, 13.26212f);
+        p.moveTo(8.636365f, 6.8773518f);
+        p.curveTo(9.449379f, 7.214113f, 10.248174f, 8.107828f, 10.225306f, 9.678649f);
+        p.curveTo(10.215305f, 10.800211f, 9.811557f, 11.931828f, 9.413566f, 12.892662f);
+        p.curveTo(9.099766f, 13.650243f, 8.572976f, 14.817501f, 7.6869144f, 15.597818f);
+        p.curveTo(6.6841903f, 16.502995f, 5.613578f, 16.57908f, 4.837519f, 16.257627f);
+        p.curveTo(3.5440876f, 15.72187f, 2.4525034f, 13.862611f, 3.9679298f, 10.204048f);
+        p.curveTo(5.391512f, 6.7672167f, 7.435322f, 6.379863f, 8.636365f, 6.8773518f);
+        return scaleAndShift(p, scale, xOff, yOff);
+    }
+
+    private static Shape shapeMix() {
+        return shapeMix(-1f, 0f, 0.5f);
+    }
+
+    private static Shape shapeMix(float xOff, float yOff, float scale) {
+        final Path2D p = new Path2D.Float();
+        p.moveTo(30.102737f, 15.023929f);
+        p.lineTo(25.93134f, 18.40497f);
+        p.lineTo(25.31704f, 13.041628f);
+        p.lineTo(23.931221f, 12.467603f);
+        p.lineTo(24.656479f, 19.392254f);
+        p.lineTo(19.089077f, 23.948526f);
+        p.lineTo(20.51185f, 24.537859f);
+        p.lineTo(24.852173f, 21.01031f);
+        p.lineTo(25.537756f, 26.619656f);
+        p.lineTo(26.979008f, 27.216642f);
+        p.lineTo(26.168472f, 19.975246f);
+        p.lineTo(31.39617f, 15.559685f);
+        p.lineTo(30.10274f, 15.023928f);
+        p.moveTo(15.50544f, 8.977531f);
+        p.lineTo(15.053874f, 10.067709f);
+        p.lineTo(17.178797f, 10.947881f);
+        p.lineTo(13.298387f, 20.31602f);
+        p.lineTo(11.044121f, 19.382273f);
+        p.lineTo(10.600207f, 20.453972f);
+        p.lineTo(16.549992f, 22.918453f);
+        p.lineTo(16.98625f, 21.86523f);
+        p.lineTo(14.584164f, 20.870255f);
+        p.lineTo(18.472227f, 11.483639f);
+        p.lineTo(20.74497f, 12.425039f);
+        p.lineTo(21.196537f, 11.334862f);
+        p.lineTo(15.505439f, 8.977531f);
+        p.moveTo(5.3797207f, 4.7833204f);
+        p.lineTo(0.6038316f, 16.313337f);
+        p.lineTo(1.8233526f, 16.81848f);
+        p.lineTo(5.397616f, 8.189445f);
+        p.lineTo(5.835336f, 13.717772f);
+        p.lineTo(6.3157535f, 13.916767f);
+        p.lineTo(10.731299f, 10.312137f);
+        p.lineTo(7.126421f, 19.015081f);
+        p.lineTo(8.3459425f, 19.520224f);
+        p.lineTo(13.121831f, 7.9902077f);
+        p.lineTo(12.160997f, 7.592217f);
+        p.lineTo(6.925646f, 12.026256f);
+        p.lineTo(6.3959885f, 5.2042723f);
+        p.lineTo(5.3797207f, 4.7833204f);
+        return scaleAndShift(p, scale, xOff, yOff);
+    }
+
+    private static Shape shapeLocation2() {
+        return shapeLocation2(-1f, -1f, 0.5f);
+    }
+
+    private static Shape shapeLocation2(float xOff, float yOff, float scale) {
+        final Path2D gp = new Path2D.Float();
+        gp.moveTo(15.833999633789062D, 29.083999633789062D);
+        gp.lineTo(15.833999633789062D, 16.166000366210938D);
+        gp.lineTo(2.9170000553131104D, 16.166000366210938D);
+        gp.lineTo(29.08300018310547D, 2.9170000553131104D);
+//        gp.moveTo(16.0D, 3.5D);
+//        gp.curveTo(11.857999801635742D, 3.5D, 8.5D, 6.857999801635742D, 8.5D, 11.0D);
+//        gp.curveTo(8.5D, 15.142999649047852D, 16.0D, 29.121000289916992D, 16.0D, 29.121000289916992D);
+//        gp.curveTo(16.0D, 29.121000289916992D, 23.5D, 15.142999649047852D, 23.5D, 11.0D);
+//        gp.curveTo(23.5D, 6.857999801635742D, 20.14299964904785D, 3.5D, 16.0D, 3.5D);
+//        gp.moveTo(16.0D, 14.583999633789062D);
+//        gp.curveTo(14.020999908447266D, 14.583999633789062D, 12.416000366210938D, 12.979999542236328D, 12.416000366210938D, 11.0D);
+//        gp.curveTo(12.416000366210938D, 9.020000457763672D, 14.020999908447266D, 7.415999889373779D, 16.0D, 7.415999889373779D);
+//        gp.curveTo(17.979000091552734D, 7.415999889373779D, 19.583999633789062D, 9.020999908447266D, 19.583999633789062D, 11.0D);
+//        gp.curveTo(19.583999633789062D, 12.979000091552734D, 17.979000091552734D, 14.583999633789062D, 16.0D, 14.583999633789062D);
+        return scaleAndShift(gp, scale, xOff, yOff);
+    }
+
+    private static Shape shapePointer() {
+        return shapePointer(-1f, -1f, 0.5f);
+    }
+
+    private static Shape shapePointer(float xOff, float yOff, float scale) {
+        final Path2D p = new Path2D.Float();
+        p.moveTo(15.0f, 24.9999f);
+        p.lineTo(21.0f, 24.9999f);
+        p.lineTo(21.0f, 27.9999f);
+        p.lineTo(15.0f, 27.9999f);
+        p.lineTo(15.0f, 24.9999f);
+        p.moveTo(7.0f, 24.9999f);
+        p.lineTo(13.0f, 24.9999f);
+        p.lineTo(13.0f, 27.9999f);
+        p.lineTo(7.0f, 27.9999f);
+        p.lineTo(7.0f, 24.9999f);
+        p.moveTo(15.0f, 2.9999008f);
+        p.lineTo(21.0f, 2.9999008f);
+        p.lineTo(21.0f, 5.999901f);
+        p.lineTo(15.0f, 5.999901f);
+        p.lineTo(15.0f, 2.9999008f);
+        p.moveTo(15.347826f, 6.0f);
+        p.lineTo(15.347826f, 25.0f);
+        p.lineTo(12.347826f, 25.0f);
+        p.lineTo(12.347826f, 6.0f);
+        p.lineTo(15.347826f, 6.0f);
+        p.moveTo(7.0f, 2.9999f);
+        p.lineTo(13.0f, 2.9999f);
+        p.lineTo(13.0f, 5.9999f);
+        p.lineTo(7.0f, 5.9999f);
+        p.lineTo(7.0f, 2.9999f);
+        return scaleAndShift(p, scale, xOff, yOff);
+    }
+
+    private static Shape shapeZoom() {
+        return shapeZoom(-1f, -1f, 0.5f);
+    }
+
+    private static Shape shapeZoom(float xOff, float yOff, float scale) {
+        final Path2D p = new Path2D.Float();
+        p.moveTo(22.645999908447266D, 19.30699920654297D);
+        p.curveTo(23.605998992919922D, 17.7239990234375D, 24.16900062561035D, 15.871999740600586D, 24.170000076293945D, 13.88599967956543D);
+        p.curveTo(24.16900062561035D, 8.093000411987305D, 19.47800064086914D, 3.4010000228881836D, 13.687999725341797D, 3.3989999294281006D);
+        p.curveTo(7.896999835968018D, 3.4010000228881836D, 3.2039999961853027D, 8.093000411987305D, 3.2039999961853027D, 13.885000228881836D);
+        p.curveTo(3.2039999961853027D, 19.673999786376953D, 7.896999835968018D, 24.36600112915039D, 13.687999725341797D, 24.36600112915039D);
+        p.curveTo(15.674999237060547D, 24.36600112915039D, 17.527000427246094D, 23.803001403808594D, 19.110000610351562D, 22.843000411987305D);
+        p.lineTo(26.238000869750977D, 29.970001220703125D);
+        p.lineTo(29.773000717163086D, 26.433000564575195D);
+        p.lineTo(22.645999908447266D, 19.30699920654297D);
+        p.moveTo(13.687999725341797D, 20.368999481201172D);
+        p.curveTo(10.105999946594238D, 20.361000061035156D, 7.2099995613098145D, 17.46500015258789D, 7.2039995193481445D, 13.88499927520752D);
+        p.curveTo(7.2099995613098145D, 10.302999496459961D, 10.106999397277832D, 7.406999111175537D, 13.687999725341797D, 7.398999214172363D);
+        p.curveTo(17.267000198364258D, 7.406999111175537D, 20.166000366210938D, 10.302999496459961D, 20.172000885009766D, 13.88499927520752D);
+        p.curveTo(20.165000915527344D, 17.46500015258789D, 17.267000198364258D, 20.361000061035156D, 13.687999725341797D, 20.368999481201172D);
+        p.moveTo(15.687000274658203D, 9.050999641418457D);
+        p.lineTo(11.687000274658203D, 9.050999641418457D);
+        p.lineTo(11.687000274658203D, 11.883999824523926D);
+        p.lineTo(8.854000091552734D, 11.883999824523926D);
+        p.lineTo(8.854000091552734D, 15.885000228881836D);
+        p.lineTo(11.687000274658203D, 15.885000228881836D);
+        p.lineTo(11.687000274658203D, 18.718000411987305D);
+        p.lineTo(15.687000274658203D, 18.718000411987305D);
+        p.lineTo(15.687000274658203D, 15.884000778198242D);
+        p.lineTo(18.519001007080078D, 15.884000778198242D);
+        p.lineTo(18.519001007080078D, 11.885000228881836D);
+        p.lineTo(15.68600082397461D, 11.885000228881836D);
+        p.lineTo(15.68600082397461D, 9.050999641418457D);
+        return scaleAndShift(p, scale, xOff, yOff);
+    }
+
+    private static Shape scaleAndShift(Shape in, float scale, float xOff, float yOff) {
+        if (scale == 1f && xOff == 0f && yOff == 0f) {
+            return in;
+        } else {
+            final AffineTransform at = AffineTransform.getScaleInstance(scale, scale);
+            at.translate(xOff, yOff);
+            return at.createTransformedShape(in);
         }
     }
 
@@ -322,12 +649,12 @@ public class GraphicsUtil
     }
 
     private static Shape shapePlay(float xOff, float yOff, float scale) {
-        final GeneralPath gp = new GeneralPath();
-        gp.moveTo(xOff, yOff);
-        gp.lineTo(xOff + scale * 15f, yOff + scale * 10f);
-        gp.lineTo(xOff, yOff + scale * 20f);
-        gp.closePath();
-        return gp;
+        final Path2D p = new Path2D.Float();
+        p.moveTo(xOff, yOff);
+        p.lineTo(xOff + scale * 15f, yOff + scale * 10f);
+        p.lineTo(xOff, yOff + scale * 20f);
+        p.closePath();
+        return p;
     }
 
     private static Shape shapeFFwd() {
@@ -361,7 +688,7 @@ public class GraphicsUtil
         final Area res = new Area(new RoundRectangle2D.Float(0f, scale * 4f, scale * 22f, scale * 14f, scale * 10f, scale * 10f));
         res.subtract(new Area(new RoundRectangle2D.Float(0f + scale * 3f, scale * 7f, scale * 16f, scale * 8f, scale * 8f, scale * 8f)));
 
-        final GeneralPath gp = new GeneralPath();
+        final Path2D gp = new Path2D.Float();
         gp.moveTo(0f, scale * 18f);
         gp.lineTo(scale * 11f, scale * 9f);
         gp.lineTo(scale * 11f, 0f);

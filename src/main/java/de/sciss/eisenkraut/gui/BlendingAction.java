@@ -169,14 +169,14 @@ public class BlendingAction
 //			.getFont(GraphicsHandler.FONT_SMALL);
 //		GUIUtil.setDeepFont( ggSettingsPane, fnt );
 //		GUIUtil.setDeepFont( bottomPanel, fnt );
-        ggBlendTime.setCycling( popped ); // cannot open popup menu in another popup menu!
-        if( palette != null ) {
-            palette.getContentPane().add( ggSettingsPane, BorderLayout.CENTER );
-            palette.getContentPane().add( bottomPanel, BorderLayout.SOUTH );
+        ggBlendTime.setCycling(popped); // cannot open popup menu in another popup menu!
+        if (palette != null) {
+            palette.getContentPane().add(ggSettingsPane, BorderLayout.CENTER);
+            palette.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
             palette.revalidate();
         } else {
-            popup.add( ggSettingsPane, BorderLayout.CENTER );
-            popup.add( bottomPanel, BorderLayout.SOUTH );
+            popup.add(ggSettingsPane, BorderLayout.CENTER);
+            popup.add(bottomPanel, BorderLayout.SOUTH);
             popup.revalidate();
         }
     }
@@ -251,15 +251,15 @@ public class BlendingAction
         if (palette != null) destroyPalette();
 
         popup	= new JPopupMenu();
-        createBlendPan( true );
-        popup.addPopupMenuListener( new PopupMenuListener() {
-            public void popupMenuCanceled( PopupMenuEvent e )
-            {
+        createBlendPan(true);
+        popup.addPopupMenuListener(new PopupMenuListener() {
+            public void popupMenuCanceled(PopupMenuEvent e) {
                 stopAndDispose();
             }
 
-            public void popupMenuWillBecomeInvisible( PopupMenuEvent e ) { /* empty */ }
-            public void popupMenuWillBecomeVisible( PopupMenuEvent e ) { /* empty */ }
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) { /* empty */ }
+
+            public void popupMenuWillBecomeVisible(PopupMenuEvent e) { /* empty */ }
         });
     }
 
@@ -314,7 +314,7 @@ public class BlendingAction
         final ComboBoxModel		emptyCBM		= new DefaultComboBoxModel();
         final AbstractButton    button          = b;
         final JComboBox			ggBlend			= new JComboBox(); // ( pcbm );
-        final ListCellRenderer	blendRenderer	= getComboBoxRenderer();
+        final ListCellRenderer	blendRenderer	= mkComboBoxRenderer(ggBlend.getRenderer());
 
         ggBlend.setEditable(true);
         ggBlend.setEditor(new ComboBoxEditor() {
@@ -471,9 +471,8 @@ public class BlendingAction
         return pcbm;
     }
 
-    private ListCellRenderer getComboBoxRenderer()
-    {
-        return new BlendCBRenderer();
+    private ListCellRenderer mkComboBoxRenderer(ListCellRenderer peer) {
+        return new BlendCBRenderer(peer);
     }
 
     protected void storeRecent() {
@@ -565,17 +564,20 @@ public class BlendingAction
             extends JLabel
             implements ListCellRenderer {
 
-        private final Color bgNorm, bgSel, fgNorm, fgSel;
+//        private final Color bgNorm, bgSel, fgNorm, fgSel;
         final CurvePanel.Icon curveIcon;
 
-        protected BlendCBRenderer() {
+        private final ListCellRenderer peer;
+
+        protected BlendCBRenderer(ListCellRenderer peer) {
             super();
-            setOpaque( true );
-            bgNorm		= UIManager.getColor( "List.background" );
-            bgSel		= UIManager.getColor( "List.selectionBackground" );
-            fgNorm		= UIManager.getColor( "List.foreground" );
-            fgSel		= UIManager.getColor( "List.selectionForeground" );
-            curveIcon = new CurvePanel.Icon(createBasicCurves());
+            this.peer = peer;
+//            setOpaque(true);
+//            bgNorm      = UIManager.getColor("List.background");
+//            bgSel       = UIManager.getColor("List.selectionBackground");
+//            fgNorm      = UIManager.getColor("List.foreground");
+//            fgSel       = UIManager.getColor("List.selectionForeground");
+            curveIcon   = new CurvePanel.Icon(createBasicCurves());
             setIcon(curveIcon);
             setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
         }
@@ -586,15 +588,23 @@ public class BlendingAction
             final Settings s	= (Settings) value;
             final Object   view	= uvf.createView(s.duration.unit);
 
+            final String    txt = String.valueOf((int) s.duration.val) + " " + view.toString();
+            final Component res = peer.getListCellRendererComponent(list, txt /* value */, index, isSelected, cellHasFocus);
+
             curveIcon.update(s.ctrlPt[0], s.ctrlPt[1]);
-            if (view instanceof Icon) {
-                // XXX hmmm. should use composite icon
-            } else {
-                setText(String.valueOf((int) s.duration.val) + " " + view.toString());
+            if (res instanceof JLabel) {
+                ((JLabel) res).setIcon(curveIcon);
             }
-            setBackground(isSelected ? bgSel : bgNorm);
-            setForeground(isSelected ? fgSel : fgNorm);
-            return this;
+
+//            if (view instanceof Icon) {
+//                // XXX hmmm. should use composite icon
+//            } else {
+//                setText(String.valueOf((int) s.duration.val) + " " + view.toString());
+//            }
+//            setBackground(isSelected ? bgSel : bgNorm);
+//            setForeground(isSelected ? fgSel : fgNorm);
+//            return this;
+            return res;
         }
     }
 

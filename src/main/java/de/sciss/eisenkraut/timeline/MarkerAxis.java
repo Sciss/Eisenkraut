@@ -90,12 +90,13 @@ public class MarkerAxis
 //														0xFFF9F9F9, 0xFFF4F4F4, 0xFFEFEFEF };
     private static final int barExtent = 15; // pntBarGradientPixels.length;
 
-    private static final int[] pntMarkGradientPixels ={ 0xFF5B8581, 0xFF618A86, 0xFF5D8682, 0xFF59827E,
-                                                        0xFF537D79, 0xFF4F7975, 0xFF4B7470, 0xFF47716D,
-                                                        0xFF446E6A, 0xFF426B67, 0xFF406965, 0xFF3F6965,
-                                                        0xFF3F6864 };	// , 0xFF5B8581
+    private static final int[] pntMarkGradPix= {
+            0xFF5B8581, 0xFF618A86, 0xFF5D8682, 0xFF59827E,
+            0xFF537D79, 0xFF4F7975, 0xFF4B7470, 0xFF47716D,
+            0xFF446E6A, 0xFF426B67, 0xFF406965, 0xFF3F6965,
+            0xFF3F6864};    // , 0xFF5B8581
 
-    private static final int[] pntMarkDragPixels;
+    private static final int[] pntMarkDragPix; // Light, pntMarkDragPixDark;
 
     private static final Color	colrLabel		= Color.white;
     private static final Color	colrLabelDrag	= new Color( 0xFF, 0xFF, 0xFF, 0xBF );
@@ -106,7 +107,7 @@ public class MarkerAxis
     private static final Stroke	strkStick	= new BasicStroke( 1.0f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_BEVEL,
         1.0f, new float[] { 4.0f, 4.0f }, 0.0f );
 
-    private static final int	markExtent = pntMarkGradientPixels.length;
+    private static final int	markExtent = pntMarkGradPix.length;
     private final Paint			pntBackground;
     private final Paint			pntMarkFlag, pntMarkFlagDrag;
     private final BufferedImage img2, img3;
@@ -132,17 +133,17 @@ public class MarkerAxis
     private boolean				adjustCatchBypass	= false;
 
     static {
-        pntMarkDragPixels = new int[ pntMarkGradientPixels.length ];
-        for( int i = 0; i < pntMarkGradientPixels.length; i++ ) {
-            pntMarkDragPixels[ i ] = pntMarkGradientPixels[ i ] & 0xBFFFFFFF;	// = 50% alpha
+        pntMarkDragPix  = new int[markExtent];
+//        pntMarkDragPixDark  = new int[markExtent];
+        for (int i = 0; i < markExtent; i++) {
+            pntMarkDragPix[i] = pntMarkGradPix[i] & 0xBFFFFFFF;    // = 50% alpha
+//            pntMarkDragPixDark [i] = pntMarkGradPixDark [i] & 0xBFFFFFFF;    // = 50% alpha
         }
     }
 
-    public MarkerAxis( Session doc )
-    {
-        this( doc, null );
+    public MarkerAxis(Session doc) {
+        this(doc, null);
     }
-
 
     /**
      * Constructs a new object for
@@ -156,37 +157,32 @@ public class MarkerAxis
         this.doc    = doc;
         this.host	= host;
 
-        fntLabel	= AbstractApplication.getApplication().getGraphicsHandler().getFont( GraphicsHandler.FONT_LABEL | GraphicsHandler.FONT_MINI ).deriveFont( Font.ITALIC );
+        fntLabel = AbstractApplication.getApplication().getGraphicsHandler().getFont(GraphicsHandler.FONT_LABEL | GraphicsHandler.FONT_MINI).deriveFont(Font.ITALIC);
 
         setMaximumSize(new Dimension(getMaximumSize().width, barExtent));
         setMinimumSize(new Dimension(getMinimumSize().width, barExtent));
         setPreferredSize(new Dimension(getPreferredSize().width, barExtent));
 
-//		img1		= new BufferedImage( 1, barExtent, BufferedImage.TYPE_INT_ARGB );
-//		img1.setRGB( 0, 0, 1, barExtent, pntBarGradientPixels, 0, 1 );
-        pntBackground = GraphicsUtil.pntBarGradient(); // new TexturePaint( img1, new Rectangle( 0, 0, 1, barExtent ));
-        img2		= new BufferedImage( 1, markExtent, BufferedImage.TYPE_INT_ARGB );
-        img2.setRGB( 0, 0, 1, markExtent, pntMarkGradientPixels, 0, 1 );
-        pntMarkFlag	= new TexturePaint( img2, new Rectangle( 0, 0, 1, markExtent ));
-        img3		= new BufferedImage( 1, markExtent, BufferedImage.TYPE_INT_ARGB );
-        img3.setRGB( 0, 0, 1, markExtent, pntMarkDragPixels, 0, 1 );
-        pntMarkFlagDrag = new TexturePaint( img3, new Rectangle( 0, 0, 1, markExtent ));
+//        final boolean isDark = GraphicsUtil.isDarkSkin();
 
-        setOpaque( true );
-// not necessary; it also kills the VK_TAB response of DocumentFrame!
-//		setFocusable( true );
+        pntBackground = GraphicsUtil.pntBarGradient(); // new TexturePaint( img1, new Rectangle( 0, 0, 1, barExtent ));
+        img2 = new BufferedImage(1, markExtent, BufferedImage.TYPE_INT_ARGB);
+        img2.setRGB(0, 0, 1, markExtent, pntMarkGradPix, 0, 1);
+        pntMarkFlag = new TexturePaint(img2, new Rectangle(0, 1, 1, markExtent));
+        img3 = new BufferedImage(1, markExtent, BufferedImage.TYPE_INT_ARGB);
+        img3.setRGB(0, 0, 1, markExtent, pntMarkDragPix, 0, 1);
+        pntMarkFlagDrag = new TexturePaint(img3, new Rectangle(0, 1, 1, markExtent));
+
+        setOpaque(true);
+
+        // not necessary; it also kills the VK_TAB response of DocumentFrame!
+        //		setFocusable( true );
 
         // --- Listener ---
-//        new DynamicAncestorAdapter( this ).addTo( this );
-//		new DynamicAncestorAdapter( new DynamicPrefChangeManager(
-//			AbstractApplication.getApplication().getUserPrefs(), new String[] { PrefsUtil.KEY_TIMEUNITS }, this
-//		)).addTo( this );
-        this.addMouseListener( this );
-        this.addMouseMotionListener( this );
-        this.addKeyListener( this );
 
-        // ------
-//        HelpGlassPane.setHelp( this, "MarkerAxis" );
+        this.addMouseListener(this);
+        this.addMouseMotionListener(this);
+        this.addKeyListener(this);
     }
 
     private String getResourceString( String key )
@@ -247,46 +243,43 @@ public class MarkerAxis
 //System.out.println( "recalcDisplay " + (t3-t1) + " / " + (t2-t3) );
     }
 
-    public void paintComponent( Graphics g )
-    {
-        super.paintComponent( g );
-
-//long t1 = System.currentTimeMillis();
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
 
         final Graphics2D	g2	= (Graphics2D) g;
 
-        g2.setFont( fntLabel );
+        g2.setFont(fntLabel);
 
         final FontMetrics	fm	= g2.getFontMetrics();
         final int			y	= fm.getAscent() + 2;
 
-        if( doRecalc || (recentWidth != getWidth()) ) {
+        if (doRecalc || (recentWidth != getWidth())) {
             recentWidth = getWidth();
-            recalcDisplay( fm );
+            recalcDisplay(fm);
         }
 
-        g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF );
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
 
-        g2.setPaint( pntBackground );
-        g2.fillRect( 0, 0, recentWidth, barExtent );
+        g2.setPaint(pntBackground);
+        g2.fillRect(0, 0, recentWidth, barExtent);
 
-        g2.setPaint( pntMarkFlag );
-        g2.fill( shpFlags );
+        g2.setPaint(pntMarkFlag);
+        g2.fill(shpFlags);
 
-        g2.setColor( colrLabel );
-        g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+        g2.setColor(colrLabel);
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        for( int i = 0; i < numMarkers; i++ ) {
-            g2.drawString( markLabels[ i ], markFlagPos[ i ] + 4, y );
+        for (int i = 0; i < numMarkers; i++) {
+            g2.drawString(markLabels[i], markFlagPos[i] + 4, y);
         }
 
         // handle dnd graphics
-        if( dragLastMark != null ) {
+        if (dragLastMark != null) {
             final int dragMarkFlagPos = (int) (((dragLastMark.pos - visibleSpan.start) * (double) recentWidth / visibleSpan.getLength()) + 0.5);
-            g2.setPaint( pntMarkFlagDrag );
-            g2.fillRect( dragMarkFlagPos, 1, fm.stringWidth( dragLastMark.name ) + 8, markExtent );
-            g2.setColor( colrLabelDrag );
-            g2.drawString( dragLastMark.name, dragMarkFlagPos + 4, y );
+            g2.setPaint(pntMarkFlagDrag);
+            g2.fillRect(dragMarkFlagPos, 1, fm.stringWidth(dragLastMark.name) + 8, markExtent);
+            g2.setColor(colrLabelDrag);
+            g2.drawString(dragLastMark.name, dragMarkFlagPos + 4, y);
         }
 
 //long t2 = System.currentTimeMillis();
