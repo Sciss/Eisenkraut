@@ -72,20 +72,19 @@ public class FlagsPanel
 	}
 
 	// sync : attempt exclusive on doors
-	protected void broadcastFlags( int mask, boolean set )
-	{
+	protected void broadcastFlags(int mask, boolean set) {
 		int				i, flags, flagsNew;
 		SessionObject	so2;
 		Object			o;
 		MapManager		map;
 		boolean			virtualMute	= false;
 
-		if( (mask & SessionObject.FLAGS_SOLO) == 0 &&
-			!((mask & SessionObject.FLAGS_SOLOSAFE) != 0 && set) ) {
-		
-			virtualMute = isAny( SessionObject.FLAGS_SOLO, true );
+		if ((mask & SessionObject.FLAGS_SOLO) == 0 &&
+				!((mask & SessionObject.FLAGS_SOLOSAFE) != 0 && set)) {
+
+			virtualMute = isAny(SessionObject.FLAGS_SOLO, true);
 		}
-		for( i = 0; i < sc.size(); i++ ) {
+		for (i = 0; i < sc.size(); i++) {
 			so2		= sc.get( i );
 			map		= so2.getMap();
 			o		= map.getValue( SessionObject.MAP_KEY_FLAGS );
@@ -141,16 +140,14 @@ public class FlagsPanel
 
 // ---------------- DynamicListening interface ---------------- 
 
-    public void startListening()
-    {
+	public void startListening() {
 		updateButtons();
-		sc.addListener( this );
-    }
+		sc.addListener(this);
+	}
 
-    public void stopListening()
-    {
-		sc.removeListener( this );
-    }
+	public void stopListening() {
+		sc.removeListener(this);
+	}
 
 // ---------------- SessionCollection.Listener interface ---------------- 
 

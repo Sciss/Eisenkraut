@@ -98,10 +98,15 @@ public class MarkerAxis
 
     private static final int[] pntMarkDragPix; // Light, pntMarkDragPixDark;
 
-    private static final Color	colrLabel		= Color.white;
-    private static final Color	colrLabelDrag	= new Color( 0xFF, 0xFF, 0xFF, 0xBF );
+    private static final Color	colrLabelLight      = Color.white;
+    private static final Color	colrLabelDragLight  = new Color( 0xFF, 0xFF, 0xFF, 0x7F );
 
-//	private static final Paint	pntMarkStick= new Color( 0x31, 0x50, 0x4D, 0xC0 );
+    private static final Color	colrLabelDark       = Color.black;
+    private static final Color	colrLabelDragDark   = new Color( 0x00, 0x00, 0x00, 0x7F );
+
+    private final Color	colrLabel, colrLabelDrag;
+
+    //	private static final Paint	pntMarkStick= new Color( 0x31, 0x50, 0x4D, 0xC0 );
     private static final Paint	pntMarkStick= new Color( 0x31, 0x50, 0x4D, 0x7F );
     private static final Paint	pntMarkStickDrag = new Color( 0x31, 0x50, 0x4D, 0x5F );
     private static final Stroke	strkStick	= new BasicStroke( 1.0f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_BEVEL,
@@ -157,13 +162,15 @@ public class MarkerAxis
         this.doc    = doc;
         this.host	= host;
 
+        final boolean isDark = GraphicsUtil.isDarkSkin();
+        colrLabel       = isDark ? colrLabelDark     : colrLabelLight;
+        colrLabelDrag   = isDark ? colrLabelDragDark : colrLabelDragLight;
+
         fntLabel = AbstractApplication.getApplication().getGraphicsHandler().getFont(GraphicsHandler.FONT_LABEL | GraphicsHandler.FONT_MINI).deriveFont(Font.ITALIC);
 
         setMaximumSize(new Dimension(getMaximumSize().width, barExtent));
         setMinimumSize(new Dimension(getMinimumSize().width, barExtent));
         setPreferredSize(new Dimension(getPreferredSize().width, barExtent));
-
-//        final boolean isDark = GraphicsUtil.isDarkSkin();
 
         pntBackground = GraphicsUtil.pntBarGradient(); // new TexturePaint( img1, new Rectangle( 0, 0, 1, barExtent ));
         img2 = new BufferedImage(1, markExtent, BufferedImage.TYPE_INT_ARGB);
@@ -185,14 +192,12 @@ public class MarkerAxis
         this.addKeyListener(this);
     }
 
-    private String getResourceString( String key )
-    {
-        return( AbstractApplication.getApplication().getResourceString( key ));
+    private String getResourceString(String key) {
+        return (AbstractApplication.getApplication().getResourceString(key));
     }
 
     // sync: attempts shared on timeline
-    private void recalcDisplay( FontMetrics fm )
-    {
+    private void recalculateDisplay(FontMetrics fm) {
         List<Stake> markers;
         long			start, stop;
         MarkerStake		mark;
@@ -240,7 +245,7 @@ public class MarkerAxis
 //			doc.bird.releaseShared( Session.DOOR_TIME );
 //		}
 //long t2 = System.currentTimeMillis();
-//System.out.println( "recalcDisplay " + (t3-t1) + " / " + (t2-t3) );
+//System.out.println( "recalculateDisplay " + (t3-t1) + " / " + (t2-t3) );
     }
 
     public void paintComponent(Graphics g) {
@@ -255,7 +260,7 @@ public class MarkerAxis
 
         if (doRecalc || (recentWidth != getWidth())) {
             recentWidth = getWidth();
-            recalcDisplay(fm);
+            recalculateDisplay(fm);
         }
 
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
@@ -290,7 +295,7 @@ public class MarkerAxis
     public void paintFlagSticks( Graphics2D g2, Rectangle bounds )
     {
         if( doRecalc ) {
-            recalcDisplay( g2.getFontMetrics() );	// XXX nicht ganz sauber (anderer graphics-context!)
+            recalculateDisplay( g2.getFontMetrics() );	// XXX nicht ganz sauber (anderer graphics-context!)
         }
 
         final Stroke	strkOrig	= g2.getStroke();
@@ -548,7 +553,7 @@ public class MarkerAxis
 //			if( key.equals( PrefsUtil.KEY_TIMEUNITS )) {
 //				int timeUnits = pce.getNode().getInt( key, 0 );
 //				setFlags( timeUnits == 0 ? 0 : TIMEFORMAT );
-//				recalcDisplay();
+//				recalculateDisplay();
 //			}
 //		}
 

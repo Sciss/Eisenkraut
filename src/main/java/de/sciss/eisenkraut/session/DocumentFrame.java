@@ -204,7 +204,7 @@ public class DocumentFrame
     // private final boolean isDark                = UIManager.getBoolean("dark-skin");
     private final Color colrSelection			= GraphicsUtil.colrSelection();
     private final Color colrSelection2			= GraphicsUtil.colrInactiveSelection();   // selected timeline span over unselected trns
-    protected final Color colrPosition			= new Color( 0xFF, 0x00, 0x00, 0x7F );
+    protected final Color colrPosition			= GraphicsUtil.setAlpha(GraphicsUtil.colrRed(), 0x7F);
     protected final Color colrZoom				= new Color( 0xA0, 0xA0, 0xA0, 0x7F );
     protected Rectangle	vpRecentRect			= new Rectangle();
     protected int		vpPosition				= -1;
@@ -382,7 +382,7 @@ public class DocumentFrame
         ggAudioFileDescr	= new JLabel();
 
         lbSRC               = new JLabel(getResourceString("buttonSRC"));
-        lbSRC.setForeground(Color.red);
+        lbSRC.setForeground(GraphicsUtil.colrRed());
         lbSRC.setPreferredSize(lbSRC.getPreferredSize());
         lbSRC.setText(null);
         box                 = Box.createHorizontalBox();

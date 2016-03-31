@@ -135,6 +135,22 @@ public class GraphicsUtil
     public static Color colrSelection() {
         return isDarkSkin() ? colrSelectionDark : colrSelectionLight;
     }
+    
+    public static Color colrYellow() {
+        return isDarkSkin() ? colrYellowDark : colrYellowLight;
+    }
+
+    public static Color colrRed() {
+        return isDarkSkin() ? colrRedDark : colrRedLight;
+    }
+
+    public static Color colrBlue() {
+        return isDarkSkin() ? colrBlueDark : colrBlueLight;
+    }
+
+    public static Color setAlpha(Color in, int alpha) {
+        return new Color(in.getRed(), in.getGreen(), in.getBlue(), alpha);
+    }
 
     /** <tt>true</tt> for bug: https://stackoverflow.com/questions/19480076 */
     public static final boolean animationNeedsSync =
@@ -153,6 +169,15 @@ public class GraphicsUtil
 
     private static final Color colrSelectionDarkI   = new Color(0xE0, 0xE0, 0xE0, 0x30);
     private static final Color colrSelectionLightI  = new Color(0x00, 0x00, 0x00, 0x20);
+
+    private static final Color colrYellowDark       = new Color(0xFF, 0xFF, 0x4F);
+    private static final Color colrYellowLight      = new Color(0x80, 0x80, 0x00);
+
+    private static final Color colrRedDark          = new Color(0xFF, 0x60, 0x60);
+    private static final Color colrRedLight         = Color.red;
+
+    private static final Color colrBlueDark         = new Color(0x5E, 0x97, 0xFF);
+    private static final Color colrBlueLight        = new Color(0x3D, 0x3D, 0xB6);
 
     /**
      *  Yellow translucent colour
@@ -225,8 +250,8 @@ public class GraphicsUtil
      *  <ul>
      *  <li>index 0 - gadget normal</li>
      *  <li>index 1 - gadget selected</li>
-     *  <li>index 2 - gadget pressed down</li>
-     *  <li>index 3 - gadget disabled</li>
+     *  <li>index 2 - gadget disabled</li>
+     *  <li>index 3 - gadget pressed down</li>
      *  </ul>
      *  Usually you'll pass the result directly to
      *  the <code>setToolIcons</code> method.
@@ -241,7 +266,8 @@ public class GraphicsUtil
      */
     public static Icon[] createToolIcons(int id) {
         final Shape shp;
-        Color gradient = null;
+        Color gradient  = null;
+        Color fg        = null;
         final boolean isDark = isDarkSkin();
         switch(id) {
             case ICON_PLAY:
@@ -270,15 +296,26 @@ public class GraphicsUtil
                 break;
             case ICON_INSERTMODE:
                 shp         = shapeInsert();
-                gradient    = isDark ? new Color(0xFF, 0xFF, 0x4F) : new Color(0xA0, 0xA0, 0x00);
+                gradient    = colrYellow();
+                fg          = gradient;
                 break;
             case ICON_OVERWRITEMODE:
                 shp         = shapeOverwrite();
-                gradient    = isDark ? new Color(0xFF, 0x60, 0x80) : Color.red;
+                gradient    = colrRed();
+                fg          = gradient;
                 break;
             case ICON_MIXMODE:
                 shp         = shapeMix();
-                gradient    = isDark ? new Color(0x5E, 0x97, 0xFF) : new Color(0x3D, 0x3D, 0xB6);
+                gradient    = colrBlue();
+                fg          = gradient;
+                break;
+            case ICON_SOLO:
+                shp         = shapeSolo();
+                fg          = colrYellow();
+                break;
+            case ICON_MUTE:
+                shp         = shapeMute();
+                fg          = colrRed();
                 break;
             default:
                 final Icon[] icons = new Icon[4];
@@ -289,11 +326,11 @@ public class GraphicsUtil
         }
         final Icon[] icons = new Icon[4];
         icons[0] = new ShapeIcon(shp, isDark ? new Color( 200,  200,  200) : new Color( 32,  32,  32));
-        final ShapeIcon iconSel = new ShapeIcon(shp, gradient == null ? (isDark ? new Color(0x5E, 0x97, 0xFF) : new Color(0x3D, 0x3D, 0xB6)) : gradient);
+        final ShapeIcon iconSel = new ShapeIcon(shp, fg == null ? (isDark ? new Color(0x5E, 0x97, 0xFF) : new Color(0x3D, 0x3D, 0xB6)) : fg);
         icons[1] = iconSel;
-        icons[2] = new ShapeIcon(shp, isDark ? new Color( 147,  175,  227) : new Color(26, 26, 77));
-        icons[3] = new ShapeIcon(shp, isDark ? new Color( 200,  200,  200, 0x7F) : new Color(32, 32, 32, 0x7F));
-        
+        icons[2] = new ShapeIcon(shp, isDark ? new Color( 180,  180,  180, 0x7F) : new Color(40, 40, 40, 0x7F));
+        icons[3] = icons[2]; // new ShapeIcon(shp, isDark ? new Color( 147,  175,  227) : new Color(26, 26, 77));
+
         if (gradient != null) {
             // final Color transparent = new Color(gradient.getRGB() & 0x00FFFFFF, true);
             final Color transparent = isDark ? colrShadowDefaultDark : colrShadowDefaultLight;
@@ -375,6 +412,109 @@ public class GraphicsUtil
         public int getIconHeight() {
             return height;
         }
+    }
+
+    private static Shape shapeSolo() {
+        return shapeSolo(-1f, 0f, 0.5f);
+    }
+
+    private static Shape shapeSolo(float xOff, float yOff, float scale) {
+        final Path2D p = new Path2D.Float();
+        p.moveTo(21.02539f, 19.7031f);
+        p.curveTo(21.124151f, 21.7796f, 19.508724f, 23.559101f, 17.555538f, 24.0495f);
+        p.curveTo(15.218763f, 24.7005f, 12.6468525f, 24.677f, 10.346678f, 23.8897f);
+        p.curveTo(8.781085f, 23.3209f, 7.5374036f, 21.9438f, 7.2089853f, 20.3008f);
+        p.curveTo(7.9316416f, 20.1563f, 8.654298f, 20.0117f, 9.376954f, 19.8672f);
+        p.curveTo(9.711152f, 21.6459f, 11.499057f, 22.6103f, 13.176753f, 22.6973f);
+        p.curveTo(14.951484f, 22.8091f, 17.180979f, 22.839f, 18.384457f, 21.2908f);
+        p.curveTo(19.223303f, 20.1046f, 18.819178f, 18.2158f, 17.404297f, 17.6758f);
+        p.curveTo(14.717688f, 16.4685f, 11.3840275f, 16.739601f, 9.075926f, 14.7029f);
+        p.curveTo(7.2116766f, 12.8987f, 7.7841997f, 9.310801f, 10.216306f, 8.283899f);
+        p.curveTo(12.451131f, 7.2899995f, 15.055282f, 7.320299f, 17.400627f, 7.882499f);
+        p.curveTo(19.051216f, 8.268099f, 20.249271f, 9.692399f, 20.638672f, 11.300799f);
+        p.curveTo(19.904297f, 11.429699f, 19.169922f, 11.558599f, 18.435547f, 11.687499f);
+        p.curveTo(18.095972f, 9.969099f, 16.292114f, 9.184699f, 14.698726f, 9.201699f);
+        p.curveTo(13.171225f, 9.168699f, 11.167638f, 9.2427f, 10.361328f, 10.785099f);
+        p.curveTo(9.680741f, 12.151099f, 10.651849f, 13.671598f, 12.035823f, 14.030999f);
+        p.curveTo(14.608384f, 14.982699f, 17.647264f, 14.917699f, 19.843254f, 16.736f);
+        p.curveTo(20.666546f, 17.4812f, 21.046705f, 18.6106f, 21.02539f, 19.7031f);
+        p.lineTo(21.02539f, 19.7031f);
+        p.moveTo(10.1875f, 1.0128f);
+        p.curveTo(5.8650985f, 0.9218f, 1.82291f, 4.3041f, 1.1432713f, 8.5721f);
+        p.curveTo(0.8768325f, 10.716f, 1.0492703f, 12.8868f, 1.0f, 15.0436f);
+        p.curveTo(1.025343f, 17.607f, 0.9455098f, 20.174f, 1.047356f, 22.7349f);
+        p.curveTo(1.4026052f, 27.0404f, 5.160718f, 30.736599f, 9.479701f, 30.9859f);
+        p.curveTo(12.413785f, 31.0379f, 15.351056f, 31.012901f, 18.285915f, 31.0009f);
+        p.curveTo(22.611284f, 30.8634f, 26.461956f, 27.2619f, 26.926308f, 22.9662f);
+        p.curveTo(27.078321f, 20.3577f, 26.964987f, 17.7381f, 27.000008f, 15.124701f);
+        p.curveTo(26.958828f, 13.016801f, 27.098648f, 10.899301f, 26.894316f, 8.799601f);
+        p.curveTo(26.322966f, 4.5182004f, 22.370419f, 1.0369005f, 18.049965f, 1.0159006f);
+        p.curveTo(15.429189f, 1.0059006f, 12.808315f, 1.0159006f, 10.187508f, 1.0159006f);
+        p.lineTo(10.1875f, 1.0128f);
+        p.moveTo(10.1875f, 3.0128f);
+        p.curveTo(12.975908f, 3.0348f, 15.767242f, 2.9678f, 18.553688f, 3.0498f);
+        p.curveTo(21.993467f, 3.3112f, 24.903746f, 6.3801003f, 24.990755f, 9.8274f);
+        p.curveTo(24.998755f, 14.0019f, 25.021074f, 18.1784f, 24.979284f, 22.3524f);
+        p.curveTo(24.802372f, 25.8659f, 21.708311f, 28.9126f, 18.185738f, 29.0038f);
+        p.curveTo(15.273218f, 29.0029f, 12.357073f, 29.0528f, 9.446313f, 28.9758f);
+        p.curveTo(5.931402f, 28.7044f, 3.001677f, 25.4988f, 3.0023239f, 21.9813f);
+        p.curveTo(3.010334f, 17.8685f, 2.9744568f, 13.7544f, 3.020722f, 9.6424f);
+        p.curveTo(3.1950474f, 6.1982f, 6.1853743f, 3.2078f, 9.629604f, 3.0335f);
+        p.curveTo(9.815227f, 3.0195f, 10.001367f, 3.0125f, 10.187504f, 3.0125f);
+        p.lineTo(10.1875f, 3.0128f);
+        return scaleAndShift(p, scale, xOff, yOff);
+    }
+
+    private static Shape shapeMute() {
+        return shapeMute(-1f, 0f, 0.5f);
+    }
+
+    private static Shape shapeMute(float xOff, float yOff, float scale) {
+        final Path2D p = new Path2D.Float();
+        p.moveTo(20.134766f, 24.2617f);
+        p.curveTo(20.162645f, 19.6085f, 20.067446f, 14.953099f, 20.208006f, 10.3018f);
+        p.curveTo(20.329603f, 8.9957f, 19.856266f, 11.2871f, 19.652098f, 11.709499f);
+        p.curveTo(18.243673f, 15.7111f, 16.66415f, 19.652f, 15.183624f, 23.6281f);
+        p.curveTo(15.127804f, 24.2578f, 14.702459f, 24.352299f, 14.149389f, 24.2617f);
+        p.curveTo(13.575208f, 24.3741f, 13.190391f, 24.2107f, 13.116675f, 23.5947f);
+        p.curveTo(11.662157f, 19.7638f, 10.143147f, 15.956f, 8.732429f, 12.1094f);
+        p.curveTo(8.501633f, 11.52f, 8.133532f, 9.9785f, 8.008979f, 9.8944f);
+        p.curveTo(8.154377f, 14.681799f, 8.061826f, 19.472599f, 8.087898f, 24.2617f);
+        p.curveTo(7.4238358f, 24.2617f, 6.7597733f, 24.2617f, 6.0957108f, 24.2617f);
+        p.curveTo(6.0957108f, 18.7578f, 6.0957108f, 13.2539f, 6.0957108f, 7.75f);
+        p.curveTo(7.0761795f, 7.75f, 8.056648f, 7.75f, 9.037117f, 7.75f);
+        p.curveTo(10.559278f, 11.7728f, 12.15921f, 15.768f, 13.630867f, 19.808601f);
+        p.curveTo(13.949362f, 20.522102f, 14.127401f, 22.701202f, 14.3984375f, 20.9248f);
+        p.curveTo(15.465224f, 17.657701f, 16.781324f, 14.476801f, 17.961388f, 11.2489f);
+        p.curveTo(18.400692f, 10.082601f, 18.839998f, 8.9163f, 19.279305f, 7.7500005f);
+        p.curveTo(20.236336f, 7.7500005f, 21.193367f, 7.7500005f, 22.150398f, 7.7500005f);
+        p.curveTo(22.150398f, 13.253901f, 22.150398f, 18.757801f, 22.150398f, 24.2617f);
+        p.curveTo(21.478523f, 24.2617f, 20.806648f, 24.2617f, 20.134766f, 24.2617f);
+        p.lineTo(20.134766f, 24.2617f);
+        p.moveTo(10.1875f, 1.0128f);
+        p.curveTo(5.8650985f, 0.9218f, 1.82291f, 4.3041f, 1.1432713f, 8.5721f);
+        p.curveTo(0.8768325f, 10.716f, 1.0492703f, 12.8868f, 1.0f, 15.0436f);
+        p.curveTo(1.025343f, 17.607f, 0.9455098f, 20.174f, 1.047356f, 22.7349f);
+        p.curveTo(1.4026052f, 27.0404f, 5.160718f, 30.736599f, 9.479701f, 30.9859f);
+        p.curveTo(12.413785f, 31.0379f, 15.351056f, 31.012901f, 18.285915f, 31.0009f);
+        p.curveTo(22.611284f, 30.8634f, 26.461956f, 27.2619f, 26.926308f, 22.9662f);
+        p.curveTo(27.078321f, 20.3577f, 26.964987f, 17.7381f, 27.000008f, 15.124701f);
+        p.curveTo(26.958828f, 13.016801f, 27.098648f, 10.899301f, 26.894316f, 8.799601f);
+        p.curveTo(26.322966f, 4.5182004f, 22.370419f, 1.0369005f, 18.049965f, 1.0159006f);
+        p.curveTo(15.429189f, 1.0059006f, 12.808315f, 1.0159006f, 10.187508f, 1.0159006f);
+        p.lineTo(10.1875f, 1.0128f);
+        p.moveTo(10.1875f, 3.0128f);
+        p.curveTo(12.975908f, 3.0348f, 15.767242f, 2.9678f, 18.553688f, 3.0498f);
+        p.curveTo(21.993467f, 3.3112f, 24.903746f, 6.3801003f, 24.990755f, 9.8274f);
+        p.curveTo(24.998755f, 14.0019f, 25.021074f, 18.1784f, 24.979284f, 22.3524f);
+        p.curveTo(24.802372f, 25.8659f, 21.708311f, 28.9126f, 18.185738f, 29.0038f);
+        p.curveTo(15.273218f, 29.0029f, 12.357073f, 29.0528f, 9.446313f, 28.9758f);
+        p.curveTo(5.931402f, 28.7044f, 3.001677f, 25.4988f, 3.0023239f, 21.9813f);
+        p.curveTo(3.010334f, 17.8685f, 2.9744568f, 13.7544f, 3.020722f, 9.6424f);
+        p.curveTo(3.1950474f, 6.1982f, 6.1853743f, 3.2078f, 9.629604f, 3.0335f);
+        p.curveTo(9.815227f, 3.0195f, 10.001367f, 3.0125f, 10.187504f, 3.0125f);
+        p.lineTo(10.1875f, 3.0128f);
+        return scaleAndShift(p, scale, xOff, yOff);
     }
 
     private static Shape shapeInsert() {

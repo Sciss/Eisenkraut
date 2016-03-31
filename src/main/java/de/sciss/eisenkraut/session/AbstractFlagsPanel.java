@@ -20,7 +20,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 
 public abstract class AbstractFlagsPanel extends JPanel {
-    // from de.sciss.meloncillo.session.SessionObject
     public static final int FLAGS_SOLO			= 0x01;
     public static final int FLAGS_MUTE			= 0x02;
     public static final int FLAGS_SOLOSAFE		= 0x04;
@@ -29,7 +28,7 @@ public abstract class AbstractFlagsPanel extends JPanel {
     private final FlagAction actionSolo, actionMute;
 
     public AbstractFlagsPanel() {
-        super(new FlowLayout(FlowLayout.RIGHT, 2, 2));
+        super(new FlowLayout(FlowLayout.RIGHT, 0, 0));
 
         actionSolo = new FlagAction(GraphicsUtil.ICON_SOLO, FLAGS_SOLO, FLAGS_SOLOSAFE);
         actionMute = new FlagAction(GraphicsUtil.ICON_MUTE, FLAGS_MUTE, FLAGS_VIRTUALMUTE);
