@@ -13,12 +13,18 @@
 
 package de.sciss.eisenkraut.gui;
 
+import de.sciss.eisenkraut.Main;
 import de.sciss.gui.TiledImage;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Area;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 
 /**
@@ -130,6 +136,14 @@ public class GraphicsUtil
         return isDarkSkin() ? colrSelectionDark : colrSelectionLight;
     }
 
+    /** <tt>true</tt> for bug: https://stackoverflow.com/questions/19480076 */
+    public static final boolean animationNeedsSync =
+            Main.isLinux && System.getProperty("java.version").startsWith("1.8.");
+
+    public static void sync() {
+        if (animationNeedsSync) Toolkit.getDefaultToolkit().sync();
+    }
+
     public static Color colrInactiveSelection() {
         return isDarkSkin() ? colrSelectionDarkI : colrSelectionLightI;
     }
@@ -217,7 +231,7 @@ public class GraphicsUtil
      *  Usually you'll pass the result directly to
      *  the <code>setToolIcons</code> method.
      *
-     *  @param  ID  ID corresponding to the index in
+     *  @param  id  ID corresponding to the index in
      *				the tool icon tiled image, e.g.
      *				<code>ICON_PLAY</code> or <code>ICON_LINE</code>.
      *  @return		four <code>Icon</code> objects for
@@ -225,14 +239,150 @@ public class GraphicsUtil
      *
      *  @see	#setToolIcons( AbstractButton, Icon[] )
      */
-    public static Icon[] createToolIcons( int ID )
-    {
-        Icon[] icons = new Icon[ 4 ];
-
-        for( int i = 0; i < 4; i++ ) {
-            icons[i]	= imgToolIcons.createIcon( ID, i );
+    public static Icon[] createToolIcons(int id) {
+        final Shape shp;
+        switch(id) {
+            case ICON_PLAY:
+                shp = shapePlay();
+                break;
+            case ICON_STOP:
+                shp = shapeStop();
+                break;
+            case ICON_FASTFORWARD:
+                shp = shapeFFwd();
+                break;
+            case ICON_REWIND:
+                shp = shapeRwd();
+                break;
+            case ICON_LOOP:
+                shp = shapeLoop();
+                break;
+            default:
+                final Icon[] icons = new Icon[4];
+                for (int i = 0; i < 4; i++) {
+                    icons[i] = imgToolIcons.createIcon(id, i);
+                }
+                return icons;
         }
+        final Icon[] icons = new Icon[4];
+        final boolean isDark = isDarkSkin();
+        icons[0] = new ShapeIcon(shp, isDark ? new Color( 200,  200,  200) : Color.black);
+        icons[1] = new ShapeIcon(shp, isDark ? new Color(0x5E, 0x97, 0xFF) : new Color(0x3D, 0x3D, 0xB6));
+        icons[2] = new ShapeIcon(shp, isDark ? new Color( 147,  175,  227) : new Color(26, 26, 77));
+        icons[3] = new ShapeIcon(shp, isDark ? new Color( 200,  200,  200, 0x7F) : new Color(0, 0, 0, 0x7F));
         return icons;
+    }
+
+    private static class ShapeIcon implements Icon {
+        private final Shape shape;
+        private final Paint paint;
+        private final int width;
+        private final int height;
+
+        ShapeIcon(Shape shape, Paint paint) {
+            this(shape, paint, 14, 16);
+        }
+
+        ShapeIcon(Shape shape, Paint paint, int width, int height) {
+            this.shape  = shape;
+            this.paint  = paint;
+            this.width  = width;
+            this.height = height;
+        }
+
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            final Graphics2D g2 = (Graphics2D) g;
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING  , RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE );
+            g2.translate(x, y);
+            g2.setPaint(paint);
+            g2.fill(shape);
+            g2.translate(-x, -y);
+        }
+
+        public int getIconWidth() {
+            return width;
+        }
+
+        public int getIconHeight() {
+            return height;
+        }
+    }
+
+    private static Shape shapeStop() {
+        return shapeStop(1f, 2f, 0.75f);
+    }
+
+    private static Shape shapeStop(float xOff, float yOff, float scale) {
+        return new Rectangle2D.Float(xOff, yOff, scale * 16f, scale * 16f);
+    }
+
+    private static Shape shapePlay() {
+        return shapePlay(2f, 0f, 0.75f);
+    }
+
+    private static Shape shapePlay(float xOff, float yOff, float scale) {
+        final GeneralPath gp = new GeneralPath();
+        gp.moveTo(xOff, yOff);
+        gp.lineTo(xOff + scale * 15f, yOff + scale * 10f);
+        gp.lineTo(xOff, yOff + scale * 20f);
+        gp.closePath();
+        return gp;
+    }
+
+    private static Shape shapeFFwd() {
+        return shapeFFwd(0f, 3f, 0.75f);
+    }
+
+    private static Shape shapeFFwd(float xOff, float yOff, float scale) {
+        final Shape play = shapePlay(xOff, yOff, scale * 0.7f);
+        final Shape p2   = AffineTransform.getTranslateInstance(scale * 10.667f, 0).createTransformedShape(play);
+        final Area res = new Area(play);
+        res.add(new Area(p2));
+        return res;
+    }
+
+    private static Shape shapeRwd() {
+        return shapeRwd(-1f, 3f, 0.75f);
+    }
+
+    private static Shape shapeRwd(float xOff, float yOff, float scale) {
+        final Shape s1 = shapeFFwd(0f, yOff, scale);
+        final AffineTransform at = AffineTransform.getScaleInstance(-1.0, 1.0);
+        at.translate(-s1.getBounds2D().getWidth() - xOff, 0);
+        return at.createTransformedShape(s1);
+    }
+
+    private static Shape shapeLoop() {
+        return shapeLoop(-1f, 4f, 0.75f, true);
+    }
+
+    private static Shape shapeLoop(float xOff, float yOff, float scale, boolean doRotate) {
+        final Area res = new Area(new RoundRectangle2D.Float(0f, scale * 4f, scale * 22f, scale * 14f, scale * 10f, scale * 10f));
+        res.subtract(new Area(new RoundRectangle2D.Float(0f + scale * 3f, scale * 7f, scale * 16f, scale * 8f, scale * 8f, scale * 8f)));
+
+        final GeneralPath gp = new GeneralPath();
+        gp.moveTo(0f, scale * 18f);
+        gp.lineTo(scale * 11f, scale * 9f);
+        gp.lineTo(scale * 11f, 0f);
+        gp.lineTo(scale * 22f, 0f);
+        gp.lineTo(scale * 22f, scale * 18f);
+
+        gp.closePath();
+        res.subtract(new Area(gp));
+        // final Shape play = shapePlay(9f, 0.5f, scale * 0.5f);
+        final Shape play = shapePlay(8f, 0.5f, scale * 0.5f);
+        res.add(new Area(play));
+        final Shape rot = AffineTransform.getRotateInstance(Math.PI, scale * 11f, scale * 12f).createTransformedShape(res);
+        res.add(new Area(rot));
+        final AffineTransform at = AffineTransform.getScaleInstance(1f, 0.8f);
+        if (doRotate) {
+            at.rotate(Math.PI * -0.2, scale * 11f, scale * 12f);
+            at.preConcatenate(AffineTransform.getTranslateInstance(xOff, yOff - 3f));
+        } else {
+            at.translate(xOff, yOff);
+        }
+        return at.createTransformedShape(res);
     }
 
     /**

@@ -994,27 +994,16 @@ public class DocumentFrame
     }
 
     // sync: attempts exclusive on MTE and shared on TIME!
-    protected void updateOverviews( boolean justBecauseOfResize, boolean allTracks )
-    {
-//System.err.println( "update" );
-        waveView.update( timelineVis );
-        if( allTracks ) wavePanel.updateAll();
+    protected void updateOverviews(boolean justBecauseOfResize, boolean allTracks) {
+        waveView.update(timelineVis);
+        if (allTracks) wavePanel.updateAll();
     }
 
-    protected String getResourceString( String key )
-    {
-        return app.getResourceString( key );
+    protected String getResourceString(String key) {
+        return app.getResourceString(key);
     }
 
-//	private BlendContext createBlendContext( long maxLength )
-//	{
-//		return BlendingAction.createBlendContext(
-//			AbstractApplication.getApplication().getUserPrefs().node( BlendingAction.DEFAULT_NODE ),
-//			timelineRate, maxLength );
-//	}
-
-    protected void documentUpdate()
-    {
+    protected void documentUpdate() {
         final List<PeakMeter> collChannelMeters;
         PeakMeter[]				meters;
         AudioTrackRowHeader		chanHead;
