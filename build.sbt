@@ -8,11 +8,11 @@ lazy val authorEMail  = "contact@sciss.de"
 
 lazy val basicJavaOpts = Seq("-source", "1.6")
 
-lazy val projectVersion   = "1.3.0"
+lazy val projectVersion   = "1.3.1-SNAPSHOT"
 
 lazy val jcolliderVersion = "1.0.0"
 lazy val scissLibVersion  = "1.1.1"
-lazy val subminVersion    = "0.1.0"
+lazy val subminVersion    = "0.2.1"
 
 lazy val commonSettings = Seq(
   name             := "Eisenkraut",
