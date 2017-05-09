@@ -8,11 +8,12 @@ lazy val authorEMail  = "contact@sciss.de"
 
 lazy val basicJavaOpts = Seq("-source", "1.6")
 
-lazy val projectVersion   = "1.3.1-SNAPSHOT"
+lazy val projectVersion   = "1.3.1"
 
 lazy val jcolliderVersion = "1.0.0"
 lazy val scissLibVersion  = "1.1.1"
 lazy val subminVersion    = "0.2.1"
+lazy val weblafVersion    = "2.1.3"
 
 lazy val commonSettings = Seq(
   name             := "Eisenkraut",
@@ -23,14 +24,15 @@ lazy val commonSettings = Seq(
   licenses         := Seq("GPL v3+" -> url("http://www.gnu.org/licenses/gpl-3.0.txt")),
   javacOptions    ++= basicJavaOpts ++ Seq("-encoding", "utf8", "-target", "1.6"),
   javacOptions in (Compile, doc) := basicJavaOpts,  // doesn't eat `-encoding`
-  scalaVersion     := "2.12.1", // not used
+  scalaVersion     := "2.12.2", // not used
   autoScalaLibrary := false,
   crossPaths       := false,
   mainClass        := Some("de.sciss.eisenkraut.Main"),
   libraryDependencies ++= Seq(
     "de.sciss" %  "jcollider" % jcolliderVersion,
     "de.sciss" %  "scisslib"  % scissLibVersion,
-    "de.sciss" %  "submin"    % subminVersion
+    "de.sciss" %  "submin"    % subminVersion,
+    "de.sciss" %  "weblaf"    % weblafVersion
   )
 )
 

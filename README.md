@@ -10,7 +10,7 @@
 
 Eisenkraut is a standalone, cross-platform audio file editor using the SuperCollider 3 server application.
 
-Eisenkraut is (C)opyright 2004&ndash;2016 by Hanns Holger Rutz. All rights reserved. It is released under the [GNU General Public License](http://github.com/Sciss/Eisenkraut/blob/master/licenses/Eisenkraut-License.txt).
+Eisenkraut is (C)opyright 2004&ndash;2017 by Hanns Holger Rutz. All rights reserved. It is released under the [GNU General Public License](http://github.com/Sciss/Eisenkraut/blob/master/licenses/Eisenkraut-License.txt).
 
 To contact the author, send an email to `contact at sciss.de`. For project status, API and current version visit [github.com/Sciss/Eisenkraut](http://github.com/Sciss/Eisenkraut).
 
@@ -24,7 +24,7 @@ A binary version of Eisenkraut for all platforms is provided through [GitHub Rel
 
 ### installing supercollider
 
-Eisenkraut uses the [SuperCollider](https://supercollider.github.io/) server as the audio playback engine. You need to install a recent SuperCollider 3 version to run this software. The recommended versions of SuperCollider are 3.7.0, 3.6.3 or 3.6.5.
+Eisenkraut uses the [SuperCollider](https://supercollider.github.io/) server as the audio playback engine. You need to install a recent SuperCollider 3 version to run this software. The recommended version of SuperCollider is 3.8.0.
 __Warning:__ The version 3.6.6 of SuperCollider is defect, in particular the multi-channel support for streaming sound-files is broken.
 
 ### starting eisenkraut

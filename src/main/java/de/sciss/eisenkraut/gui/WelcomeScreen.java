@@ -46,7 +46,7 @@ implements HyperlinkListener
     private static final String htmlWelcome1 =
         "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\" \"http://www.w3.org/TR/REC-html40/loose.dtd\">"+
         "<html><head><style type=\"text/css\"><!--\n"+
-        "body { background:normalState; color:white; padding:20px; }\n"+
+        "body { padding:20px; }\n"+
         "em { font-weight:bold; font-style:normal; }\n"+
         "a { color:white;font-weight:bold; }\n"+
         "p { font-family:\"Lucida Grande\" Helvetica sans-serif;font-size:14pt;padding:4pt 4pt 4pt 4pt;margin:0; }\n"+
