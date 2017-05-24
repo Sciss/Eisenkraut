@@ -377,8 +377,6 @@ public class MainFrame
 
         private String[] labels = { "labelDumpOff", "labelDumpText", "labelDumpHex" };
 
-        public int getState() { return state; }
-
         public void setState(int state) {
             this.state = state;
             putValue(NAME, getResourceString(labels[state]));

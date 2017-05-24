@@ -128,7 +128,7 @@ public class FilterDialog
         this.doc = aDoc;
 
         context = createRenderContext();
-        // if (context == null) return;
+        if (context.getTimeSpan().isEmpty()) return;
 
         if ((!blockDisplay && plugIn.shouldDisplayParameters()) ||
                 (forceDisplay && plugIn.hasUserParameters())) {
@@ -206,8 +206,10 @@ public class FilterDialog
     }
 
     private RenderContext createRenderContext() {
-        return new RenderContext(this, this, Track.getInfos(doc.selectedTracks.getAll(), doc.tracks.getAll()),
-                doc.timeline.getSelectionSpan(), doc.timeline.getRate());
+        final Span span0 = doc.timeline.getSelectionSpan();
+        final Span span = !span0.isEmpty() ? span0 : new Span(0L, doc.timeline.getLength());
+        return new RenderContext(this, this,
+                Track.getInfos(doc.selectedTracks.getAll(), doc.tracks.getAll()), span, doc.timeline.getRate());
     }
 
 // ---------------- concrete methods ---------------- 
@@ -444,7 +446,6 @@ public class FilterDialog
         if( className != null ) {
             try {
                 plugIn	= (RenderPlugIn) Class.forName( className ).newInstance();
-//				plugIn.init( root, doc );
                 plugIn.init( app.getUserPrefs().node( PrefsUtil.NODE_PLUGINS ).node(
                     className.substring( className.lastIndexOf( '.' ) + 1 )));
                 success	= true;

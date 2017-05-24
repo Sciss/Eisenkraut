@@ -2258,9 +2258,6 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
         public void actionPerformed(ActionEvent e) {
             FilterDialog filterDlg = (FilterDialog) app.getComponent(Main.COMP_FILTER);
 
-//            System.out.println("MOD -- " + e.getModifiers());
-//            System.out.println("SRC -- " + e.getSource());
-
             if (filterDlg == null) {
                 filterDlg = new FilterDialog();
             }
