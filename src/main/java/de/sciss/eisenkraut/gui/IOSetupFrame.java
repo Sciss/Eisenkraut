@@ -7,8 +7,8 @@
  *  This software is published under the GNU General Public License v3+
  *
  *
- *	For further information, please contact Hanns Holger Rutz at
- *	contact@sciss.de
+ *  For further information, please contact Hanns Holger Rutz at
+ *  contact@sciss.de
  */
 
 package de.sciss.eisenkraut.gui;
@@ -61,22 +61,22 @@ public class IOSetupFrame extends AppWindow {
     private static class Tab {
         public Tab() {}
 
-        final List<RoutingConfig>	collConfig		= new ArrayList<RoutingConfig>();
-        final Set<String> 			setConfigID		= new HashSet<String>();
-        final Set<String> 			setConfigName	= new HashSet<String>();
-        final Set<String> 			setDirtyConfig	= new HashSet<String>();
+        final List<RoutingConfig> collConfig = new ArrayList<RoutingConfig>();
+
+        final Set<String> setConfigID       = new HashSet<String>();
+        final Set<String> setConfigName     = new HashSet<String>();
+        final Set<String> setDirtyConfig    = new HashSet<String>();
     }
 
     private static final int NUM_TABS = 2;
     private final Tab[] tabs = new Tab[] { new Tab(), new Tab() };
 
-    private final Preferences		audioPrefs;
-    private final int[]			audioHwChannels	= new int[ NUM_TABS ];
+    private final Preferences audioPrefs;
+    private final int[] audioHwChannels = new int[NUM_TABS];
 
-    private static final String[]	staticColNames	= { "ioConfig", "ioNumChannels", "ioStartAngle" };
-    private static final int[]		staticColWidths	= { 160, 54, 54 };
-    private static final int		MAPPING_WIDTH	= 48; // 40; // 36;
-//	private static final Font		fnt				= GraphicsUtil.smallGUIFont;
+    private static final String[] staticColNames = {"ioConfig", "ioNumChannels", "ioStartAngle"};
+    private static final int[] staticColWidths = {160, 54, 54};
+    private static final int MAPPING_WIDTH = 48; // 40; // 36;
 
     private static final int[] pntMapNormGradPixLight = {
             0xFFF4F4F4, 0xFFF1F1F1, 0xFFEEEEEE, 0xFFECECEC,
@@ -90,7 +90,7 @@ public class IOSetupFrame extends AppWindow {
             0xFF5F5F5F, 0xFF636363, 0xFF676767, 0xFF6B6B6B,
             0xFF707070, 0xFF737373, 0xFF797979 };
 
-    private static final int	pntMapSize			= 15;
+    private static final int pntMapSize = 15;
 
     private static final int[] pntMapSelGradPixLight = {
             0xFFD8DBE0, 0xFFCAD0D5, 0xFFC2C9CE, 0xFFBEC4CB,
@@ -111,11 +111,9 @@ public class IOSetupFrame extends AppWindow {
     private static final DataFlavor mapFlavor = new DataFlavor(MapTransferable.class, "io_mapping");
     private static final DataFlavor[] mapFlavors = {mapFlavor};
 
-    private static final String[] KEY_INFOTEXT		= { "ioInputInfo", "ioOutputInfo" };
-    private static final String[] KEY_DEFAULTNAME	= { "ioDefaultInName", "ioDefaultOutName" };
-    private static final String[] KEY_PREFSNODE		= { PrefsUtil.NODE_INPUTCONFIGS, PrefsUtil.NODE_OUTPUTCONFIGS };
-
-//	private final Paint pntMapEmpty;
+    private static final String[] KEY_INFOTEXT      = {"ioInputInfo", "ioOutputInfo"};
+    private static final String[] KEY_DEFAULTNAME   = {"ioDefaultInName", "ioDefaultOutName"};
+    private static final String[] KEY_PREFSNODE     = {PrefsUtil.NODE_INPUTCONFIGS, PrefsUtil.NODE_OUTPUTCONFIGS};
 
     static {
         BufferedImage img;
@@ -137,39 +135,40 @@ public class IOSetupFrame extends AppWindow {
     /**
      *  Creates a new i/o setup frame
      */
-	public IOSetupFrame() {
-		super(SUPPORT);
+    public IOSetupFrame() {
+        super(SUPPORT);
 
-		setTitle(getResourceString("frameIOSetup"));
+        setTitle(getResourceString("frameIOSetup"));
 
-        final Container					cp			= getContentPane();
-        final Application				app			= AbstractApplication.getApplication();
-        final Box						buttonPanel;
-        final JTabbedPane				ggTabPane;
-        final String					abCfgID;
-        final AudioBoxConfig			abCfg;
+        final Container     cp  = getContentPane();
+        final Application   app = AbstractApplication.getApplication();
+
+        final Box buttonPanel;
+        final JTabbedPane ggTabPane;
+        final String abCfgID;
+        final AudioBoxConfig abCfg;
 
         final boolean isDark = UIManager.getBoolean("dark-skin");
         pntMapNormal    = isDark ? pntMapNormDark : pntMapNormLight;
-        pntMapSelected  = isDark ? pntMapSelDark  : pntMapSelLight;
+        pntMapSelected  = isDark ? pntMapSelDark : pntMapSelLight;
 
-		audioPrefs 	= app.getUserPrefs().node(PrefsUtil.NODE_AUDIO);
-		abCfgID 	= audioPrefs.get(PrefsUtil.KEY_AUDIOBOX, AudioBoxConfig.ID_DEFAULT);
-		abCfg 		= new AudioBoxConfig(audioPrefs.node(PrefsUtil.NODE_AUDIOBOXES).node(abCfgID));
+        audioPrefs  = app.getUserPrefs().node(PrefsUtil.NODE_AUDIO);
+        abCfgID     = audioPrefs.get(PrefsUtil.KEY_AUDIOBOX, AudioBoxConfig.ID_DEFAULT);
+        abCfg       = new AudioBoxConfig(audioPrefs.node(PrefsUtil.NODE_AUDIOBOXES).node(abCfgID));
 
-        audioHwChannels[0]	= abCfg.numInputChannels;
-        audioHwChannels[1]	= abCfg.numOutputChannels;
+        audioHwChannels[0] = abCfg.numInputChannels;
+        audioHwChannels[1] = abCfg.numOutputChannels;
 
-        ggTabPane			= new JTabbedPane();
+        ggTabPane = new JTabbedPane();
         ggTabPane.putClientProperty("styleId", "attached");
 
         // ---------- tabs ----------
 
-		for (int i = 0; i < NUM_TABS; i++) {    // input + output tabs
-			fromPrefs(i);
-			ggTabPane.addTab(app.getResourceString(i == 0 ? "labelInputs" : "labelOutputs"), null,
-					createTab(i), null);
-		}
+        for (int i = 0; i < NUM_TABS; i++) {    // input + output tabs
+            fromPrefs(i);
+            ggTabPane.addTab(app.getResourceString(i == 0 ? "labelInputs" : "labelOutputs"), null,
+                    createTab(i), null);
+        }
 
         // ---------- generic gadgets ----------
 
@@ -183,16 +182,16 @@ public class IOSetupFrame extends AppWindow {
             public void actionPerformed(ActionEvent e) {
                 final ControlRoomFrame f;
 
-				for (int i = 0; i < NUM_TABS; i++) {
-					if (!toPrefs(i)) return;
-				}
-				disposeAndClose();
+                for (int i = 0; i < NUM_TABS; i++) {
+                    if (!toPrefs(i)) return;
+                }
+                disposeAndClose();
 // XXX ControlRoomFrame cannot rely on prefs since childAdded is
 // never fired (probably bug in java or spi)
-				f = (ControlRoomFrame) app.getComponent(Main.COMP_CTRLROOM);
-				if (f != null) f.refillIOConfigs();
-			}
-		});
+                f = (ControlRoomFrame) app.getComponent(Main.COMP_CTRLROOM);
+                if (f != null) f.refillIOConfigs();
+            }
+        });
         buttonPanel.add(ggOk);
         final JButton ggCancel = new JButton(app.getResourceString("buttonCancel"));
         buttonPanel.add(ggCancel);
@@ -226,20 +225,20 @@ public class IOSetupFrame extends AppWindow {
     }
 
     private JComponent createTab(final int id) {
-        final JPanel				tab;
-        final LayoutManager			lay;
-        final JTable				table;
-        final AbstractTableModel	tm;
-        final SortedTableModel		stm;
-        final JTableHeader			th;
-        final TableCellRenderer		tcr;
-        final JScrollPane			scroll;
-        final JTextArea				lbTextArea;
-        final Box					b;
-        final AbstractButton		ggPlus, ggMinus;
+        final JPanel                tab;
+        final LayoutManager         lay;
+        final JTable                table;
+        final AbstractTableModel    tm;
+        final SortedTableModel      stm;
+        final JTableHeader          th;
+        final TableCellRenderer     tcr;
+        final JScrollPane           scroll;
+        final JTextArea             lbTextArea;
+        final Box                   b;
+        final AbstractButton        ggPlus, ggMinus;
 
-        tab			= new JPanel();
-        lay			= new BorderLayout();
+        tab = new JPanel();
+        lay = new BorderLayout();
         tab.setLayout(lay);
 
         lbTextArea = new JTextArea(getResourceString(KEY_INFOTEXT[id]));
@@ -284,12 +283,9 @@ public class IOSetupFrame extends AppWindow {
         ggMinus.setEnabled(false);
         ggPlus.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-//				int row = table.getSelectedRow() + table.getSelectedRowCount();
-//				if( row <= 0 ) row = collConfigs[ ID ].size();
                 final int modelIndex = t.collConfig.size();
                 final int viewIndex;
                 final RoutingConfig cfg = createUniqueConfig(id);
-//				collConfigs[ ID ].add( row, cfg );
                 t.collConfig.add(cfg);
                 t.setConfigID.add(cfg.id);
                 t.setConfigName.add(cfg.name);
@@ -302,8 +298,8 @@ public class IOSetupFrame extends AppWindow {
         ggMinus.addActionListener( new ActionListener() {
             public void actionPerformed( ActionEvent e )
             {
-                final int firstRow	= Math.max( 0, table.getSelectedRow() );
-                final int lastRow	= Math.min( table.getRowCount(), firstRow + table.getSelectedRowCount() ) - 1;
+                final int firstRow = Math.max(0, table.getSelectedRow());
+                final int lastRow = Math.min(table.getRowCount(), firstRow + table.getSelectedRowCount()) - 1;
                 RoutingConfig cfg;
                 final int[] modelIndices;
 
@@ -320,10 +316,8 @@ public class IOSetupFrame extends AppWindow {
                         // never remove the id during one editing session,
                         // because that will confuse the prefs listeners
                         // and the setDirtyConfigs approach
-//						setConfigIDs[ id ].remove( cfg.id );
                         t.setDirtyConfig.add(cfg.id);
                     }
-//					tm.fireTableRowsDeleted( firstRow, lastRow );
                     tm.fireTableDataChanged();
                 }
             }
@@ -357,10 +351,10 @@ public class IOSetupFrame extends AppWindow {
         t.setConfigName.clear();
         t.setConfigID.clear();
 
-        final Preferences	ocPrefs		= audioPrefs.node( KEY_PREFSNODE[ id ]);
-        final String[]		arrayNames;
-        RoutingConfig		cfg;
-        Preferences			cfgPrefs;
+        final Preferences ocPrefs = audioPrefs.node(KEY_PREFSNODE[id]);
+        final String[] arrayNames;
+        RoutingConfig cfg;
+        Preferences cfgPrefs;
 
         try {
             arrayNames = ocPrefs.childrenNames();
@@ -386,19 +380,20 @@ public class IOSetupFrame extends AppWindow {
     }
 
     private boolean toPrefs(int id) {
-        final Preferences	ocPrefs = audioPrefs.node(KEY_PREFSNODE[id]);
-        RoutingConfig		cfg;
-        Preferences			cfgPrefs;
-        String				cfgID;
+        final Preferences ocPrefs = audioPrefs.node(KEY_PREFSNODE[id]);
+
+        RoutingConfig cfg;
+        Preferences cfgPrefs;
+        String cfgID;
 
         final Tab t = tabs[id];
 
         try {
-            for( int i = 0; i < t.collConfig.size(); i++ ) {
+            for (int i = 0; i < t.collConfig.size(); i++) {
                 cfg = t.collConfig.get(i);
-                if( t.setDirtyConfig.remove(cfg.id)) {
-                    cfgPrefs	= ocPrefs.node( cfg.id );
-                    cfg.toPrefs( cfgPrefs );
+                if (t.setDirtyConfig.remove(cfg.id)) {
+                    cfgPrefs = ocPrefs.node(cfg.id);
+                    cfg.toPrefs(cfgPrefs);
                 }
             }
 
@@ -409,9 +404,9 @@ public class IOSetupFrame extends AppWindow {
             }
 
             ocPrefs.flush();
-        }
-        catch( BackingStoreException e1 ) {
-            BasicWindowHandler.showErrorDialog( getWindow(), e1, getResourceString( "errSavePrefs" ));
+
+        } catch (BackingStoreException e1) {
+            BasicWindowHandler.showErrorDialog(getWindow(), e1, getResourceString("errSavePrefs"));
             return false;
         }
 
@@ -435,9 +430,10 @@ public class IOSetupFrame extends AppWindow {
     }
 
     private void setColumnRenderersAndWidths(JTable table, SortedTableModel stm, TableCellRenderer tcr) {
-        final TableColumnModel	tcm	= table.getColumnModel();
-        TableColumn				col;
-        int						i;
+        final TableColumnModel tcm = table.getColumnModel();
+
+        TableColumn col;
+        int i;
 
         for (i = 0; i < staticColNames.length; i++) {
             col = tcm.getColumn(i);
@@ -463,81 +459,79 @@ public class IOSetupFrame extends AppWindow {
     private class MapTransferHandler extends TransferHandler {
         private final int id;
 
-        MapTransferHandler(int id)
-        {
-            this.id	= id;
+        MapTransferHandler(int id) {
+            this.id = id;
         }
 
         /**
          * Overridden to import a MapTransferable if it is available.
          */
         public boolean importData(JComponent c, Transferable trans) {
-            MapTransferable			mt;
-            final JTable			table	= (JTable) c;
-            final SortedTableModel	stm		= (SortedTableModel) table.getModel();
-            final int				row		= table.getSelectedRow();
-            final int				mapCh	= table.getSelectedColumn() - staticColNames.length;
-            final int				modelIndex;
-            RoutingConfig			cfg;
-            int						temp;
+            MapTransferable mt;
+            final JTable            table   = (JTable) c;
+            final SortedTableModel  stm     = (SortedTableModel) table.getModel();
+            final int               row     = table.getSelectedRow();
+            final int               mapCh   = table.getSelectedColumn() - staticColNames.length;
+            final int modelIndex;
+            RoutingConfig cfg;
+            int temp;
 
             final Tab t = tabs[id];
 
             try {
-                if( mapCh >= 0 && (row < table.getRowCount()) && trans.isDataFlavorSupported( mapFlavor )) {
-                    modelIndex	= stm.getModelIndex( row );
-                    cfg			= t.collConfig.get(modelIndex);
-                    mt			= (MapTransferable) trans.getTransferData( mapFlavor );
+                if (mapCh >= 0 && (row < table.getRowCount()) && trans.isDataFlavorSupported(mapFlavor)) {
+                    modelIndex = stm.getModelIndex(row);
+                    cfg = t.collConfig.get(modelIndex);
+                    mt = (MapTransferable) trans.getTransferData(mapFlavor);
                     // only allowed within same config
-                    if( mt.cfg == cfg ) {
-//System.err.println( "original mapping : "+(mt.idx+1)+"->"+(mt.cfg.mapping[ mt.idx ]+1)+"; new target " +(mapCh+1));
-                        for( int i = 0; i < cfg.numChannels; i++ ) {
+                    if (mt.cfg == cfg) {
+                        for (int i = 0; i < cfg.numChannels; i++) {
                             // dragged onto already mapped spot
                             if (cfg.mapping[i] == mapCh) {
-                                if( i == mt.idx ) return false; // source == target, no action
-                                temp					= cfg.mapping[ mt.idx ];
-                                cfg.mapping[ mt.idx ]	= mapCh;
-                                cfg.mapping[ i ]		= temp;	// simply swapped for now
-                                ((AbstractTableModel) stm.getTableModel()).fireTableRowsUpdated( modelIndex, modelIndex );
+                                if (i == mt.idx) return false; // source == target, no action
+                                temp = cfg.mapping[mt.idx];
+                                cfg.mapping[mt.idx] = mapCh;
+                                cfg.mapping[i] = temp;    // simply swapped for now
+                                ((AbstractTableModel) stm.getTableModel()).fireTableRowsUpdated(modelIndex, modelIndex);
                                 return true;
                             }
                         }
                         // dragged onto empty spot
-                        cfg.mapping[ mt.idx ] = mapCh;
+                        cfg.mapping[mt.idx] = mapCh;
                         t.setDirtyConfig.add(cfg.id);
-                        ((AbstractTableModel) stm.getTableModel()).fireTableRowsUpdated( modelIndex, modelIndex );
+                        ((AbstractTableModel) stm.getTableModel()).fireTableRowsUpdated(modelIndex, modelIndex);
                         return true;
                     }
                 }
+            } catch (UnsupportedFlavorException e1) {
+                e1.printStackTrace();
+            } catch (IOException e2) {
+                e2.printStackTrace();
             }
-            catch( UnsupportedFlavorException e1 ) { e1.printStackTrace(); }
-            catch( IOException e2 ) { e2.printStackTrace(); }
 
             return false;
         }
 
-        public int getSourceActions( JComponent c )
-        {
+        public int getSourceActions(JComponent c) {
             return MOVE;
         }
 
-        protected Transferable createTransferable( JComponent c )
-        {
-            final JTable			table	= (JTable) c;
-            final SortedTableModel	stm		= (SortedTableModel) table.getModel();
-            final int				row		= table.getSelectedRow();
-            final int				mapCh	= table.getSelectedColumn() - staticColNames.length;
-            final int				modelIndex;
-            RoutingConfig			cfg;
+        protected Transferable createTransferable(JComponent c) {
+            final JTable            table   = (JTable) c;
+            final SortedTableModel  stm     = (SortedTableModel) table.getModel();
+            final int               row     = table.getSelectedRow();
+            final int               mapCh   = table.getSelectedColumn() - staticColNames.length;
+            final int modelIndex;
+            RoutingConfig cfg;
 
             final Tab t = tabs[id];
 
-            if( mapCh >= 0 && (row < table.getRowCount()) ) {
-                modelIndex	= stm.getModelIndex( row );
-                cfg			= t.collConfig.get(modelIndex);
-                for( int i = 0; i < cfg.numChannels; i++ ) {
-                    if( cfg.mapping[ i ] == mapCh ) {
-                        return new MapTransferable( cfg, i );
+            if (mapCh >= 0 && (row < table.getRowCount())) {
+                modelIndex = stm.getModelIndex(row);
+                cfg = t.collConfig.get(modelIndex);
+                for (int i = 0; i < cfg.numChannels; i++) {
+                    if (cfg.mapping[i] == mapCh) {
+                        return new MapTransferable(cfg, i);
                     }
                 }
             }
@@ -545,7 +539,6 @@ public class IOSetupFrame extends AppWindow {
         }
 
         protected void exportDone(JComponent source, Transferable data, int action) {
-            //			System.err.println( "exportDone. Action == "+action );
         }
 
         public boolean canImport(JComponent c, DataFlavor[] flavors) {
@@ -707,82 +700,81 @@ public class IOSetupFrame extends AppWindow {
 
             if( (row > t.collConfig.size()) || (value == null) ) return;
 
-            final RoutingConfig cfg				= t.collConfig.get(row);
-            final int			oldChannels		= cfg.numChannels;
-            int[]				newMapping;
-            String				name;
-            RoutingConfig		newCfg			= null;
-            int					newChannels;
-            float				newStartAngle;
+            final RoutingConfig cfg         = t.collConfig.get(row);
+            final int           oldChannels = cfg.numChannels;
 
-            switch( col ) {
-            case 0:
-                name = value.toString();
-                if( (name.length() > 0) &&
-                    !t.setConfigName.contains(name)) {
+            int[] newMapping;
+            String name;
+            RoutingConfig newCfg = null;
+            int newChannels;
+            float newStartAngle;
 
-                    newCfg = new RoutingConfig( cfg.id, name, cfg.mapping, cfg.startAngle );
-                }
-                break;
+            switch (col) {
+                case 0:
+                    name = value.toString();
+                    if ((name.length() > 0) &&
+                            !t.setConfigName.contains(name)) {
 
-            case 1:
-                if( value instanceof Number ) {
-                    newChannels = Math.max( 0, ((Number) value).intValue() );
-                } else if( value instanceof String ) {
-                    try {
-                        newChannels = Math.max( 0, Integer.parseInt( value.toString() ));
+                        newCfg = new RoutingConfig(cfg.id, name, cfg.mapping, cfg.startAngle);
                     }
-                    catch( NumberFormatException e1 ) {
-                        break;
-                    }
-                } else {
-                    assert false : value;
                     break;
-                }
-                if( newChannels < oldChannels ) {
-                    newMapping = new int[ newChannels ];
-                    System.arraycopy( cfg.mapping, 0, newMapping, 0, newChannels );
-                } else if( newChannels > oldChannels ) {
-                    newMapping = new int[ newChannels ];
-                    System.arraycopy( cfg.mapping, 0, newMapping, 0, oldChannels );
-                    for( int i = oldChannels, minCh = 0; i < newChannels; i++ ) {
-                        chanLp:
-                        for( int ch = minCh; true; ch++ ) {
-                            for( int j = 0; j < i; j++ ) {
-                                if( newMapping[ j ] == ch ) continue chanLp;
-                            }
-                            newMapping[ i ] = ch;
-                            minCh = ch + 1;
+
+                case 1:
+                    if (value instanceof Number) {
+                        newChannels = Math.max(0, ((Number) value).intValue());
+                    } else if (value instanceof String) {
+                        try {
+                            newChannels = Math.max(0, Integer.parseInt(value.toString()));
+                        } catch (NumberFormatException e1) {
                             break;
                         }
-                    }
-                } else break;
-
-                newCfg = new RoutingConfig( cfg.id, cfg.name, newMapping, cfg.startAngle );
-                break;
-
-            case 2:
-                if( value instanceof Number ) {
-                    newStartAngle = Math.max( -360f, Math.min( 360f, ((Number) value).floatValue() ));
-                } else if( value instanceof String ) {
-                    try {
-                        newStartAngle = Math.max( -360f, Math.min( 360f, Float.parseFloat( value.toString() )));
-                    }
-                    catch( NumberFormatException e1 ) {
+                    } else {
+                        assert false : value;
                         break;
                     }
-                } else {
-                    assert false : value;
-                    break;
-                }
-                if( newStartAngle != cfg.startAngle ) {
-                    newCfg = new RoutingConfig( cfg.id, cfg.name, cfg.mapping, newStartAngle );
-                }
-                break;
+                    if (newChannels < oldChannels) {
+                        newMapping = new int[newChannels];
+                        System.arraycopy(cfg.mapping, 0, newMapping, 0, newChannels);
+                    } else if (newChannels > oldChannels) {
+                        newMapping = new int[newChannels];
+                        System.arraycopy(cfg.mapping, 0, newMapping, 0, oldChannels);
+                        for (int i = oldChannels, minCh = 0; i < newChannels; i++) {
+                            chanLp:
+                            for (int ch = minCh; true; ch++) {
+                                for (int j = 0; j < i; j++) {
+                                    if (newMapping[j] == ch) continue chanLp;
+                                }
+                                newMapping[i] = ch;
+                                minCh = ch + 1;
+                                break;
+                            }
+                        }
+                    } else break;
 
-            default:
-                // set by changing numChannels and drag+drop
-                break;
+                    newCfg = new RoutingConfig(cfg.id, cfg.name, newMapping, cfg.startAngle);
+                    break;
+
+                case 2:
+                    if (value instanceof Number) {
+                        newStartAngle = Math.max(-360f, Math.min(360f, ((Number) value).floatValue()));
+                    } else if (value instanceof String) {
+                        try {
+                            newStartAngle = Math.max(-360f, Math.min(360f, Float.parseFloat(value.toString())));
+                        } catch (NumberFormatException e1) {
+                            break;
+                        }
+                    } else {
+                        assert false : value;
+                        break;
+                    }
+                    if (newStartAngle != cfg.startAngle) {
+                        newCfg = new RoutingConfig(cfg.id, cfg.name, cfg.mapping, newStartAngle);
+                    }
+                    break;
+
+                default:
+                    // set by changing numChannels and drag+drop
+                    break;
             }
 
             if (newCfg != null) {

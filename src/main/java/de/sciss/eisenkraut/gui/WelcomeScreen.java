@@ -7,8 +7,8 @@
  *  This software is published under the GNU General Public License v3+
  *
  *
- *	For further information, please contact Hanns Holger Rutz at
- *	contact@sciss.de
+ *  For further information, please contact Hanns Holger Rutz at
+ *  contact@sciss.de
  */
 
 package de.sciss.eisenkraut.gui;
@@ -36,12 +36,12 @@ import java.net.URI;
  */
 @SuppressWarnings("serial")
 public class WelcomeScreen
-extends JFrame
-implements HyperlinkListener
-{
-    private final JEditorPane		ggContent;
-    protected final JButton			ggClose;
-    protected final WelcomeScreen	welcome		= this;
+        extends JFrame
+        implements HyperlinkListener {
+
+    private final JEditorPane ggContent;
+    protected final JButton ggClose;
+    protected final WelcomeScreen welcome = this;
 
     private static final String htmlWelcome1 =
         "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\" \"http://www.w3.org/TR/REC-html40/loose.dtd\">"+
@@ -75,14 +75,14 @@ implements HyperlinkListener
      *  is in the debug package because it's likely
      *  to change in a future version.
      *
-     *  @param  root	application root
+     *  @param  root    application root
      */
     public WelcomeScreen( final Main root )
     {
         super( "Welcome to " + root.getName() );
 
         final Container cp = getContentPane();
-        String			img = "";
+        String          img = "";
 
         try {
             img = "<IMG SRC=\"" + new File( new File( "help" ), "application.png" ).getAbsoluteFile().toURI().toURL() +

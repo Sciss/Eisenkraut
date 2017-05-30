@@ -7,8 +7,8 @@
  *  This software is published under the GNU General Public License v3+
  *
  *
- *	For further information, please contact Hanns Holger Rutz at
- *	contact@sciss.de
+ *  For further information, please contact Hanns Holger Rutz at
+ *  contact@sciss.de
  */
  
 package de.sciss.eisenkraut.gui;
@@ -31,32 +31,32 @@ public class WaveformView
         extends JComponent
         implements Disposable {
 
-    private int					fullChannels;
+    private int fullChannels;
 
-    private Insets				insets			= new Insets( 0, 0, 0, 0 );
-    private int					vGap			= 1;
+    private Insets insets = new Insets(0, 0, 0, 0);
+    private int vGap = 1;
 
-    private Rectangle			r				= new Rectangle();
+    private Rectangle r = new Rectangle();
 
-    private static final Paint	pntNull			= new Color(0x7F, 0x7F, 0x00, 0xC0);
-    private static final Stroke	strkNull		= new BasicStroke(1.0f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_BEVEL,
-                                                    1.0f, new float[]{4.0f, 4.0f}, 0.0f);
+    private static final Paint pntNull = new Color(0x7F, 0x7F, 0x00, 0xC0);
+    private static final Stroke strkNull = new BasicStroke(1.0f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_BEVEL,
+            1.0f, new float[]{4.0f, 4.0f}, 0.0f);
 
-    private int verticalScale   = PrefsUtil.VSCALE_AMP_LIN;
-    private float	ampLinMin   = -1.0f;	// minimum vector value
-    private float	ampLinMax   = 1.0f;		// maximum vector value
-    private float	ampLogMin   = -60f;
-    private float	ampLogMax   = 0f;
-    private float	freqMin	    = 27.5f;
-    private float	freqMax	    = 20000f;
-    private boolean nullLine    = false;
+    private int     verticalScale   = PrefsUtil.VSCALE_AMP_LIN;
+    private float   ampLinMin       = -1.0f;    // minimum vector value
+    private float   ampLinMax       = 1.0f;     // maximum vector value
+    private float   ampLogMin       = -60f;
+    private float   ampLogMax       = 0f;
+    private float   freqMin         = 27.5f;
+    private float   freqMax         = 20000f;
+    private boolean nullLine        = false;
 
-    private final Session		doc;
-    private Span				viewSpan		= new Span();
+    private Span viewSpan = new Span();
+    private final Session doc;
 
-    private DecimationInfo		info			= null; // most recent one!
+    private DecimationInfo info = null; // most recent one!
 
-    private final ComponentHost	host;
+    private final ComponentHost host;
 
     public WaveformView(Session doc) {
         this(doc, null);
@@ -67,12 +67,8 @@ public class WaveformView
 
         this.host = host;
 
-        final AudioTrail at	= doc.getAudioTrail();
-        fullChannels		= at.getChannelNum();
-//        final int[] channelMap = new int[fullChannels];
-//        for (int i = 0; i < fullChannels; i++) {
-//            channelMap[i] = i;
-//        }
+        final AudioTrail at = doc.getAudioTrail();
+        fullChannels = at.getChannelNum();
 
         this.doc = doc;
     }
@@ -102,7 +98,7 @@ public class WaveformView
     /**
      *  Gets the minimum allowed y value
      *
-     *  @return		the minimum specified function value
+     *  @return the minimum specified function value
      */
     public float getAmpLinMin()
     {
@@ -112,7 +108,7 @@ public class WaveformView
     /**
      *  Gets the maximum allowed y value
      *
-     *  @return		the maximum specified function value
+     *  @return the maximum specified function value
      */
     public float getAmpLinMax()
     {
@@ -138,12 +134,12 @@ public class WaveformView
      *  user drawings are limited to these values unless
      *  wrapY is set to true (not yet implemented).
      *
-     *  Warning: the current vector is left untouched,
-     *				even if values lie outside the new
-     *				allowed range.
+     *  Warning:    the current vector is left untouched,
+     *              even if values lie outside the new
+     *              allowed range.
      *
-     *  @param  min		new minimum y value
-     *  @param  max		new maximum y value
+     *  @param  min     new minimum y value
+     *  @param  max     new maximum y value
      */
     public void setAmpLinMinMax(float min, float max) {
         if ((this.ampLinMin != min) || (this.ampLinMax != max)) {
@@ -191,15 +187,15 @@ public class WaveformView
     }
 
     /**
-     *	Synchronization:	this uses and alters one internal rectangle object,
-     *						be sure to not use this rectangle outside the swing thread,
-     *						otherwise make a copy. do not modify the returned rectangle
+     *  Synchronization:    this uses and alters one internal rectangle object,
+     *                      be sure to not use this rectangle outside the swing thread,
+     *                      otherwise make a copy. do not modify the returned rectangle
      */
     public Rectangle rectForChannel(int ch) {
-        final int ht	= getHeight() - (insets.top + insets.bottom);
-        final int temp	= ht * ch / fullChannels;
-        final int y		= insets.top + temp;
-        final int h		= (ht * (ch + 1) / fullChannels) - temp - vGap;
+        final int ht    = getHeight() - (insets.top + insets.bottom);
+        final int temp  = ht * ch / fullChannels;
+        final int y     = insets.top + temp;
+        final int h     = (ht * (ch + 1) / fullChannels) - temp - vGap;
 
         r.setBounds(insets.left, y, getWidth() - (insets.left + insets.right), h);
 
@@ -207,10 +203,10 @@ public class WaveformView
     }
 
     public int channelForPoint(Point p) {
-        final int	py	= p.y - insets.top;
-        final int	ht	= getHeight();
-        int			y1	= 0;
-        int			y2;
+        final int py = p.y - insets.top;
+        final int ht = getHeight();
+        int y1 = 0;
+        int y2;
 
         for( int ch = 0; ch < fullChannels; ch++ ) {
             y2 = ht * (ch + 1) / fullChannels;
@@ -270,9 +266,9 @@ public class WaveformView
         final DecimatedWaveTrail dt = doc.getDecimatedWaveTrail();
         if (dt == null) return;
 
-        final int	w	= getWidth();
-        Rectangle	cr;
-        int			y;
+        final int w = getWidth();
+        Rectangle cr;
+        int y;
 
         info = dt.getBestSubsample( new Span( viewSpan.start, viewSpan.stop + 1 ), w );
         dt.drawWaveform( info, this, g2 );

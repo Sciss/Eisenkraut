@@ -7,8 +7,8 @@
  *  This software is published under the GNU General Public License v3+
  *
  *
- *	For further information, please contact Hanns Holger Rutz at
- *	contact@sciss.de
+ *  For further information, please contact Hanns Holger Rutz at
+ *  contact@sciss.de
  */
 
 package de.sciss.eisenkraut.gui;
@@ -41,218 +41,211 @@ import de.sciss.common.AppWindow;
 import de.sciss.util.Disposable;
 
 public class AudioTrackPanorama implements Disposable {
-	private final AudioTrack					t;
-	private final ActionListener				actionListener;
-	private final SessionCollection.Listener	scListener;
-	private final PreferenceChangeListener		prefListener;
-	private final Preferences					audioPrefs;
-	private final SessionCollection				tracks;
+    private final AudioTrack                    t;
+    private final ActionListener                actionListener;
+    private final SessionCollection.Listener    scListener;
+    private final PreferenceChangeListener      prefListener;
+    private final Preferences                   audioPrefs;
+    private final SessionCollection             tracks;
 
-	protected PanoramaPanel						pan				= null;
-	private AppWindow							palette			= null;
-	private JPopupMenu							popup			= null;
-	
-	private boolean								listening		= false;
+    protected PanoramaPanel                     pan         = null;
+    private AppWindow                           palette     = null;
+    private JPopupMenu                          popup       = null;
 
-	public AudioTrackPanorama( final AudioTrack t, SessionCollection tracks )
-	{
-		final Application	app			= AbstractApplication.getApplication();
-		
-		audioPrefs	= app.getUserPrefs().node( PrefsUtil.NODE_AUDIO );
+    private boolean                             listening   = false;
 
-		this.t		= t;
-		this.tracks	= tracks;
+    public AudioTrackPanorama(final AudioTrack t, SessionCollection tracks) {
+        final Application app = AbstractApplication.getApplication();
 
-		actionListener = new ActionListener() {
-			public void actionPerformed( ActionEvent e )
-			{
-				if( pan != null ) {
-					t.getMap().putValue( AudioTrackPanorama.this, AudioTrack.MAP_KEY_PANAZIMUTH, pan.getAzimuth());
-					t.getMap().putValue( AudioTrackPanorama.this, AudioTrack.MAP_KEY_PANSPREAD, pan.getSpread());
-				}
-			}
-		};
-		
-		scListener = new SessionCollection.Listener() {
-			public void sessionCollectionChanged( SessionCollection.Event e )
-			{
-				if( e.collectionContains( t ) &&
-					(e.getModificationType() == SessionCollection.Event.ACTION_REMOVED) ) {
-					
-					dispose();
-				}
-			}
+        audioPrefs = app.getUserPrefs().node(PrefsUtil.NODE_AUDIO);
 
-			public void sessionObjectMapChanged( SessionCollection.Event e )
-			{
-				if( (e.getSource() != AudioTrackPanorama.this) && (pan != null) && e.collectionContains( t ) &&
-				    (e.setContains( AudioTrack.MAP_KEY_PANAZIMUTH ) || e.setContains( AudioTrack.MAP_KEY_PANSPREAD ))) {
+        this.t      = t;
+        this.tracks = tracks;
 
-					setAzimuthAndSpread();
-				}
-			}
+        actionListener = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (pan != null) {
+                    t.getMap().putValue(AudioTrackPanorama.this, AudioTrack.MAP_KEY_PANAZIMUTH, pan.getAzimuth());
+                    t.getMap().putValue(AudioTrackPanorama.this, AudioTrack.MAP_KEY_PANSPREAD, pan.getSpread());
+                }
+            }
+        };
 
-			public void sessionObjectChanged( SessionCollection.Event e ) { /* empty */ }
-		};
-		
-		prefListener = new PreferenceChangeListener() {
-			public void preferenceChange( PreferenceChangeEvent e )
-			{
-				if( e.getKey().equals( PrefsUtil.KEY_OUTPUTCONFIG )) {
-					createPanPan();
-				}
-			}
-		};
-	}
-	
-	private void createPalette()
-	{
-		if( palette != null ) return;
-		if( popup != null ) destroyPopup();
+        scListener = new SessionCollection.Listener() {
+            public void sessionCollectionChanged(SessionCollection.Event e) {
+                if (e.collectionContains(t) &&
+                        (e.getModificationType() == SessionCollection.Event.ACTION_REMOVED)) {
 
-		final Application	app			= AbstractApplication.getApplication();
-	
-		palette = new AppWindow( AbstractWindow.PALETTE );
-		palette.setTitle( app.getResourceString( "palettePanorama" ) + " : " + t.getName() );
-		createPanPan();
-   		palette.getContentPane().add( CoverGrowBox.create(), BorderLayout.SOUTH );
-		palette.setDefaultCloseOperation( WindowConstants.DO_NOTHING_ON_CLOSE );
-		palette.addListener( new AbstractWindow.Adapter() {
-			public void windowClosing( AbstractWindow.Event e )
-			{
-				dispose();
-			}
-		});
-		palette.init();
-	}
-	
-	private void createPopup( boolean disposeOnMouseRelease )
-	{
-		if( popup != null ) return;
-		if( palette != null ) destroyPalette();
-		
-		popup	= new JPopupMenu();
-		createPanPan();
-		if( disposeOnMouseRelease ) {
-			pan.addMouseListener( new MouseAdapter() {
-				public void mouseReleased( MouseEvent e )
-				{
-					dispose();
-				}
-			});
-		}
-		popup.addPopupMenuListener( new PopupMenuListener() {
-			public void popupMenuCanceled( PopupMenuEvent e )
-			{
-				dispose();
-			}
-			
-			public void popupMenuWillBecomeInvisible( PopupMenuEvent e ) { /* empty */ }
-			public void popupMenuWillBecomeVisible( PopupMenuEvent e ) { /* empty */ }
-		});
-	}
+                    dispose();
+                }
+            }
 
-	public void showPalette() {
-		createPalette();
-		startListening();
-		palette.setVisible(true);
-		palette.toFront();
-	}
+            public void sessionObjectMapChanged(SessionCollection.Event e) {
+                if ((e.getSource() != AudioTrackPanorama.this) && (pan != null) && e.collectionContains(t) &&
+                        (e.setContains(AudioTrack.MAP_KEY_PANAZIMUTH) || e.setContains(AudioTrack.MAP_KEY_PANSPREAD))) {
 
-	public void showPopup(Component invoker, int x, int y, boolean beginDragging) {
-		createPopup(beginDragging);
-		startListening();
-		popup.show(invoker, x, y);
-		if (beginDragging) pan.beginDragging();
-	}
+                    setAzimuthAndSpread();
+                }
+            }
 
-	private void startListening() {
-		if (!listening) {
-			tracks.addListener(scListener);
-			audioPrefs.addPreferenceChangeListener(prefListener);
-			listening = true;
-		}
-	}
+            public void sessionObjectChanged(SessionCollection.Event e) { /* empty */ }
+        };
 
-	private void stopListening() {
-		if (listening) {
-			tracks.removeListener(scListener);
-			audioPrefs.removePreferenceChangeListener(prefListener);
-			listening = false;
-		}
-	}
+        prefListener = new PreferenceChangeListener() {
+            public void preferenceChange(PreferenceChangeEvent e) {
+                if (e.getKey().equals(PrefsUtil.KEY_OUTPUTCONFIG)) {
+                    createPanPan();
+                }
+            }
+        };
+    }
 
-	public void dispose() {
-		stopListening();
-		destroyPalette();
-		destroyPopup();
-		destroyPanPan();
-	}
+    private void createPalette() {
 
-	private void destroyPalette() {
-		if (palette == null) return;
+        if (palette != null) return;
+        if (popup   != null) destroyPopup();
 
-		palette.dispose();
-		palette = null;
-	}
+        final Application app = AbstractApplication.getApplication();
 
-	private void destroyPopup() {
-		if (popup == null) return;
+        palette = new AppWindow(AbstractWindow.PALETTE);
+        palette.setTitle(app.getResourceString("palettePanorama") + " : " + t.getName());
+        createPanPan();
+        palette.getContentPane().add(CoverGrowBox.create(), BorderLayout.SOUTH);
+        palette.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        palette.addListener(new AbstractWindow.Adapter() {
+            public void windowClosing(AbstractWindow.Event e) {
+                dispose();
+            }
+        });
+        palette.init();
+    }
 
-		popup.setVisible(false);
-		popup = null;
-	}
+    private void createPopup(boolean disposeOnMouseRelease) {
 
-	protected void destroyPanPan() {
-		if (pan == null) return;
+        if (popup   != null) return;
+        if (palette != null) destroyPalette();
 
-		pan.getParent().remove(pan);
-		pan.removeActionListener(actionListener);
-		pan = null;
-	}
+        popup = new JPopupMenu();
+        createPanPan();
+        if (disposeOnMouseRelease) {
+            pan.addMouseListener(new MouseAdapter() {
+                public void mouseReleased(MouseEvent e) {
+                    dispose();
+                }
+            });
+        }
+        popup.addPopupMenuListener(new PopupMenuListener() {
+            public void popupMenuCanceled(PopupMenuEvent e) {
+                dispose();
+            }
 
-	protected void createPanPan() {
-		final String		cfgName		= audioPrefs.get( PrefsUtil.KEY_OUTPUTCONFIG, null );
-		RoutingConfig		oCfg;
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) { /* empty */ }
 
-		destroyPanPan();
+            public void popupMenuWillBecomeVisible(PopupMenuEvent e) { /* empty */ }
+        });
+    }
 
-		try {
-			if( cfgName != null && audioPrefs.node( PrefsUtil.NODE_OUTPUTCONFIGS ).nodeExists( cfgName )) {
-				oCfg	= new RoutingConfig( audioPrefs.node( PrefsUtil.NODE_OUTPUTCONFIGS ).node( cfgName ));
-				pan		= new PanoramaPanel( oCfg.numChannels, oCfg.startAngle );
-				setAzimuthAndSpread();
-				pan.addActionListener( actionListener );
-				if( palette != null ) {
-					palette.getContentPane().add( pan, BorderLayout.CENTER );
-					palette.revalidate();
-				} else {
-					popup.add( pan, BorderLayout.CENTER );
-					popup.revalidate();
-				}
-			}
-		} catch (BackingStoreException e1) {
-			System.err.println("Create pan:");
-			e1.printStackTrace();
-		}
-	}
+    public void showPalette() {
+        createPalette();
+        startListening();
+        palette.setVisible(true);
+        palette.toFront();
+    }
 
-	protected void setAzimuthAndSpread() {
-		final double azi, spread;
-		Object o;
+    public void showPopup(Component invoker, int x, int y, boolean beginDragging) {
+        createPopup(beginDragging);
+        startListening();
+        popup.show(invoker, x, y);
+        if (beginDragging) pan.beginDragging();
+    }
 
-		o = t.getMap().getValue(AudioTrack.MAP_KEY_PANAZIMUTH);
-		if ((o != null) && (o instanceof Number)) {
-			azi = ((Number) o).doubleValue();
-		} else {
-			azi = pan.getAzimuth();
-		}
-		o = t.getMap().getValue(AudioTrack.MAP_KEY_PANSPREAD);
-		if ((o != null) && (o instanceof Number)) {
-			spread = ((Number) o).doubleValue();
-		} else {
-			spread = pan.getSpread();
-		}
-		pan.setAzimuthAndSpread(azi, spread);
-	}
+    private void startListening() {
+        if (!listening) {
+            tracks.addListener(scListener);
+            audioPrefs.addPreferenceChangeListener(prefListener);
+            listening = true;
+        }
+    }
+
+    private void stopListening() {
+        if (listening) {
+            tracks.removeListener(scListener);
+            audioPrefs.removePreferenceChangeListener(prefListener);
+            listening = false;
+        }
+    }
+
+    public void dispose() {
+        stopListening();
+        destroyPalette();
+        destroyPopup();
+        destroyPanPan();
+    }
+
+    private void destroyPalette() {
+        if (palette == null) return;
+
+        palette.dispose();
+        palette = null;
+    }
+
+    private void destroyPopup() {
+        if (popup == null) return;
+
+        popup.setVisible(false);
+        popup = null;
+    }
+
+    protected void destroyPanPan() {
+        if (pan == null) return;
+
+        pan.getParent().remove(pan);
+        pan.removeActionListener(actionListener);
+        pan = null;
+    }
+
+    protected void createPanPan() {
+        final String cfgName = audioPrefs.get(PrefsUtil.KEY_OUTPUTCONFIG, null);
+        RoutingConfig oCfg;
+
+        destroyPanPan();
+
+        try {
+            if (cfgName != null && audioPrefs.node(PrefsUtil.NODE_OUTPUTCONFIGS).nodeExists(cfgName)) {
+                oCfg = new RoutingConfig(audioPrefs.node(PrefsUtil.NODE_OUTPUTCONFIGS).node(cfgName));
+                pan = new PanoramaPanel(oCfg.numChannels, oCfg.startAngle);
+                setAzimuthAndSpread();
+                pan.addActionListener(actionListener);
+                if (palette != null) {
+                    palette.getContentPane().add(pan, BorderLayout.CENTER);
+                    palette.revalidate();
+                } else {
+                    popup.add(pan, BorderLayout.CENTER);
+                    popup.revalidate();
+                }
+            }
+        } catch (BackingStoreException e1) {
+            System.err.println("Create pan:");
+            e1.printStackTrace();
+        }
+    }
+
+    protected void setAzimuthAndSpread() {
+        final double azi, spread;
+        Object o;
+
+        o = t.getMap().getValue(AudioTrack.MAP_KEY_PANAZIMUTH);
+        if ((o != null) && (o instanceof Number)) {
+            azi = ((Number) o).doubleValue();
+        } else {
+            azi = pan.getAzimuth();
+        }
+        o = t.getMap().getValue(AudioTrack.MAP_KEY_PANSPREAD);
+        if ((o != null) && (o instanceof Number)) {
+            spread = ((Number) o).doubleValue();
+        } else {
+            spread = pan.getSpread();
+        }
+        pan.setAzimuthAndSpread(azi, spread);
+    }
 }

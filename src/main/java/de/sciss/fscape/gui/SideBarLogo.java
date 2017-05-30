@@ -7,8 +7,8 @@
  *  This software is published under the GNU General Public License v3+
  *
  *
- *	For further information, please contact Hanns Holger Rutz at
- *	contact@sciss.de
+ *  For further information, please contact Hanns Holger Rutz at
+ *  contact@sciss.de
  */
 
 package de.sciss.fscape.gui;
@@ -24,34 +24,31 @@ import javax.swing.JComponent;
 public class SideBarLogo
 extends JComponent
 {
-	private static int			width;
-	private static int			height;
-	private static final Color	colrBg	= new Color( 0x2C, 0x14, 0x21 );
-	private static ImageIcon	icon	= null;
-	
-	public SideBarLogo()
-	{
-		super();
-		
-		if( icon == null ) {
-			icon	= new ImageIcon( getClass().getResource( "fscape.png" ));
-			width	= icon.getIconWidth();
-			height	= icon.getIconHeight();
-		}
+    private static int          width;
+    private static int          height;
+    private static final Color  colrBg  = new Color( 0x2C, 0x14, 0x21 );
+    private static ImageIcon    icon    = null;
 
-		setMinimumSize( new Dimension( width, height ));
-		setPreferredSize( new Dimension( width, getPreferredSize().height ));
-		setMaximumSize( new Dimension( width, getMaximumSize().height ));
-		setOpaque( true );
-		
-	}
-	
-	public void paintComponent( Graphics g )
-	{
-		super.paintComponent( g );
-		
-		g.setColor( colrBg );
-		g.fillRect( 0, 0, getWidth(), getHeight() );
-		icon.paintIcon( this, g, 0, 0 );
-	}
+    public SideBarLogo() {
+        super();
+
+        if (icon == null) {
+            icon    = new ImageIcon(getClass().getResource("fscape.png"));
+            width   = icon.getIconWidth();
+            height  = icon.getIconHeight();
+        }
+
+        setMinimumSize  (new Dimension(width, height));
+        setPreferredSize(new Dimension(width, getPreferredSize().height));
+        setMaximumSize  (new Dimension(width, getMaximumSize().height));
+        setOpaque(true);
+    }
+
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
+        g.setColor(colrBg);
+        g.fillRect(0, 0, getWidth(), getHeight());
+        icon.paintIcon(this, g, 0, 0);
+    }
 }

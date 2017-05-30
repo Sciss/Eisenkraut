@@ -7,38 +7,35 @@
  *  This software is published under the GNU General Public License v3+
  *
  *
- *	For further information, please contact Hanns Holger Rutz at
- *	contact@sciss.de
+ *  For further information, please contact Hanns Holger Rutz at
+ *  contact@sciss.de
  */
 
 package de.sciss.eisenkraut.render;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import de.sciss.io.Span;
 import de.sciss.timebased.MarkerStake;
 import de.sciss.timebased.Stake;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Reverse extends AbstractRenderPlugIn {
 
 	private Span			prTotalSpan;
 	private RenderConsumer	prConsumer;
 
-	public int getMarkerPolicy()
-	{
+	public int getMarkerPolicy() {
 		return POLICY_MODIFY;
 	}
 
-	public int getUnselectedAudioPolicy()
-	{
+	public int getUnselectedAudioPolicy() {
 		return POLICY_MODIFY;
 	}
 
-	public boolean producerBegin( RenderSource source )
-	throws IOException
-	{
+	public boolean producerBegin(RenderSource source)
+			throws IOException {
 		// random read access not necessary any more since the consumer
 		// automatically handles random write access!
 //		source.context.setOption( RenderContext.KEY_PREFBLOCKSIZE, new Integer( BLOCKSIZE ));
@@ -60,8 +57,8 @@ public class Reverse extends AbstractRenderPlugIn {
 			source.markers.clear(this);
 			source.markers.addAll(this, collNew);
 		}
-		
-		return prConsumer.consumerBegin( source );
+
+		return prConsumer.consumerBegin(source);
 	}
 
 	public boolean producerRender(RenderSource source)
@@ -90,15 +87,7 @@ public class Reverse extends AbstractRenderPlugIn {
 		return prConsumer.consumerRender(source);
 	}
 
-	public String getName()
-	{
-		return getResourceString( "plugInReverse" );
+	public String getName() {
+		return getResourceString("plugInReverse");
 	}
-	
-	// ---------- RandomAccessRequester interface ----------
-	
-//	public Span getNextSpan()
-//	{
-//		return prNextSpan;
-//	}
 }

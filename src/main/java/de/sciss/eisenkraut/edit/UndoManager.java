@@ -7,8 +7,8 @@
  *  This software is published under the GNU General Public License v3+
  *
  *
- *	For further information, please contact Hanns Holger Rutz at
- *	contact@sciss.de
+ *  For further information, please contact Hanns Holger Rutz at
+ *  contact@sciss.de
  */
 
 package de.sciss.eisenkraut.edit;
@@ -21,37 +21,37 @@ import de.sciss.eisenkraut.session.Session;
 @SuppressWarnings("serial")
 public class UndoManager extends de.sciss.app.UndoManager {
 
-	public UndoManager(Session doc) {
-		super(doc);
-	}
+    public UndoManager(Session doc) {
+        super(doc);
+    }
 
-	protected AbstractAction createUndoAction() {
-		return new ActionUndoProc();
-	}
+    protected AbstractAction createUndoAction() {
+        return new ActionUndoProc();
+    }
 
-	protected AbstractAction createRedoAction() {
-		return new ActionRedoProc();
-	}
+    protected AbstractAction createRedoAction() {
+        return new ActionRedoProc();
+    }
 
-	@SuppressWarnings("serial")
-	private class ActionUndoProc
-			extends ActionUndo {
-		protected ActionUndoProc() { /* empty */ }
+    @SuppressWarnings("serial")
+    private class ActionUndoProc
+            extends ActionUndo {
+        protected ActionUndoProc() { /* empty */ }
 
-		public void actionPerformed(ActionEvent e) {
-			if (!((Session) getDocument()).checkProcess()) return;
-			super.actionPerformed(e);
-		}
-	}
+        public void actionPerformed(ActionEvent e) {
+            if (!((Session) getDocument()).checkProcess()) return;
+            super.actionPerformed(e);
+        }
+    }
 
-	@SuppressWarnings("serial")
-	private class ActionRedoProc
-			extends ActionRedo {
-		protected ActionRedoProc() { /* empty */ }
+    @SuppressWarnings("serial")
+    private class ActionRedoProc
+            extends ActionRedo {
+        protected ActionRedoProc() { /* empty */ }
 
-		public void actionPerformed(ActionEvent e) {
-			if (!((Session) getDocument()).checkProcess()) return;
-			super.actionPerformed(e);
-		}
-	}
+        public void actionPerformed(ActionEvent e) {
+            if (!((Session) getDocument()).checkProcess()) return;
+            super.actionPerformed(e);
+        }
+    }
 }

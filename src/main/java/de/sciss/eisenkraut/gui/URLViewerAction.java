@@ -7,8 +7,8 @@
  *  This software is published under the GNU General Public License v3+
  *
  *
- *	For further information, please contact Hanns Holger Rutz at
- *	contact@sciss.de
+ *  For further information, please contact Hanns Holger Rutz at
+ *  contact@sciss.de
  */
 
 package de.sciss.eisenkraut.gui;
@@ -24,32 +24,30 @@ import java.net.URI;
 import java.net.URL;
 
 /**
- *	Generic action for bringing up
- *	a html document either in the
- *	help viewer or the default web browser
- *
- *	@author		Hanns Holger Rutz
+ *  Generic action for bringing up
+ *  a html document either in the
+ *  help viewer or the default web browser
  */
-public class URLViewerAction extends MenuAction
-{
+public class URLViewerAction extends MenuAction {
+
     private final URL theURL;
-    private final boolean	openWebBrowser;
+    private final boolean openWebBrowser;
 
     /**
-     * @param	theURL			what file to open ; when using the
-     * 							help viewer, that's the relative help file name
-     *							without .html extension. when using web browser,
-     *							that's the complete URL!
-     * @param text  ...
-     * @param shortcut  ...
-     * @param   openWebBrowser	if true, use the default web browser,
-     *							if false use internal help viewer
+     * @param   theURL          what file to open ; when using the
+     *                          help viewer, that's the relative help file name
+     *                          without .html extension. when using web browser,
+     *                          that's the complete URL!
+     * @param   text  ...
+     * @param   shortcut  ...
+     * @param   openWebBrowser  if true, use the default web browser,
+     *                          if false use internal help viewer
      */
     public URLViewerAction(String text, KeyStroke shortcut, URL theURL, boolean openWebBrowser) {
-        super( text, shortcut );
+        super(text, shortcut);
 
-        this.theURL			= theURL;
-        this.openWebBrowser	= openWebBrowser;
+        this.theURL = theURL;
+        this.openWebBrowser = openWebBrowser;
     }
 
     /**

@@ -7,8 +7,8 @@
  *  This software is published under the GNU General Public License v3+
  *
  *
- *	For further information, please contact Hanns Holger Rutz at
- *	contact@sciss.de
+ *  For further information, please contact Hanns Holger Rutz at
+ *  contact@sciss.de
  */
 
 package de.sciss.eisenkraut.gui;
@@ -21,22 +21,21 @@ import java.awt.*;
 import java.util.Locale;
 
 /**
- *	A GUI component showing a time position.
+ *  A GUI component showing a time position.
  */
 @SuppressWarnings("serial")
 public class TimeLabel
         extends JPanel
         implements Disposable {
 
-    private final TimeFormat 	format;
-    protected String			text;
+    private final TimeFormat format;
+    protected String text;
 
-    protected static final Font	fntMono;
-    protected boolean			dimsKnown		= false;
-    protected int				textWidth, textHeight, textAscent;
+    protected static final Font fntMono;
+    protected boolean dimsKnown = false;
+    protected int textWidth, textHeight, textAscent;
 
     private static final Color colrTimeLight    = new Color(0xF1, 0xFA, 0xCA);
-    // private static final Color colrTimeDark     = new Color(0x2A, 0x3E, 0x52);
     private static final Color colrTimeDark     = new Color(16, 16, 16);
     private static final Color colrFgLight      = Color.black;
     private static final Color colrFgDark       = new Color(220, 220, 200);
@@ -48,11 +47,11 @@ public class TimeLabel
     static {
         final String[] fntNames = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
         if (contains(fntNames, "DejaVu Sans Mono")) {
-			// Linux
+            // Linux
             fntMono = new Font("DejaVu Sans Mono", Font.PLAIN, 12);
-        } else if (contains(fntNames, "Monaco")) {            			// Mac OS
+        } else if (contains(fntNames, "Monaco")) {                        // Mac OS
             fntMono = new Font("Monaco", Font.PLAIN, 11);               // looks bigger than "normal monospaced"
-        } else if (contains(fntNames, "Lucida Sans Unicode")) {        	// Windows XP
+        } else if (contains(fntNames, "Lucida Sans Unicode")) {            // Windows XP
             fntMono = new Font("Lucida Sans Unicode", Font.PLAIN, 12);
         } else {
             fntMono = new Font("Monospaced", Font.PLAIN, 12);
@@ -134,15 +133,15 @@ public class TimeLabel
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
 
-            final Graphics2D	g2	= (Graphics2D) g;
+            final Graphics2D g2 = (Graphics2D) g;
             g2.setFont(fntMono);
-            final FontMetrics	fm	= g2.getFontMetrics();
+            final FontMetrics fm = g2.getFontMetrics();
 
             if (!dimsKnown) {
-                textWidth   = fm.stringWidth("00:00:00.000");
-                textAscent  = fm.getAscent() - 1;
-                textHeight  = fm.getHeight(); // textAscent + fm.getDescent();
-                dimsKnown   = true;
+                textWidth = fm.stringWidth("00:00:00.000");
+                textAscent = fm.getAscent() - 1;
+                textHeight = fm.getHeight(); // textAscent + fm.getDescent();
+                dimsKnown = true;
                 final Dimension d = new Dimension(textWidth, textHeight);
                 setPreferredSize(d);
                 setMinimumSize(d);

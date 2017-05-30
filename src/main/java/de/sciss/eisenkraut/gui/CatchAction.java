@@ -7,8 +7,8 @@
  *  This software is published under the GNU General Public License v3+
  *
  *
- *	For further information, please contact Hanns Holger Rutz at
- *	contact@sciss.de
+ *  For further information, please contact Hanns Holger Rutz at
+ *  contact@sciss.de
  */
 
 package de.sciss.eisenkraut.gui;
@@ -25,10 +25,10 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
 /**
- *	A class implementing the <code>Action</code> interface
- *	which deals with the catch (timeline position) setting. Each instance
- *	generates a toggle button suitable for attaching to a tool bar;
- *	this button reflects the catch preferences settings.
+ *  A class implementing the <code>Action</code> interface
+ *  which deals with the catch (timeline position) setting. Each instance
+ *  generates a toggle button suitable for attaching to a tool bar;
+ *  this button reflects the catch preferences settings.
  */
 @SuppressWarnings("serial")
 public class CatchAction
@@ -39,8 +39,8 @@ public class CatchAction
     private final Preferences prefs;
 
     /**
-     *	Creates a new instance of an action
-     *	that tracks blending changes
+     *  Creates a new instance of an action
+     *  that tracks blending changes
      */
     public CatchAction(Preferences prefs) {
         super();
@@ -53,10 +53,10 @@ public class CatchAction
     }
 
     /**
-     *	Returns the toggle button
-     *	which is connected to this action.
+     *  Returns the toggle button
+     *  which is connected to this action.
      *
-     *	@return	a toggle button which is suitable for tool bar display
+     *  @return a toggle button which is suitable for tool bar display
      */
     public JToggleButton getButton() {
         return b;

@@ -7,8 +7,8 @@
  *  This software is published under the GNU General Public License v3+
  *
  *
- *	For further information, please contact Hanns Holger Rutz at
- *	contact@sciss.de
+ *  For further information, please contact Hanns Holger Rutz at
+ *  contact@sciss.de
  */
 
 package de.sciss.eisenkraut.gui;
@@ -44,20 +44,20 @@ public class MainFrame
         extends AppWindow
         implements de.sciss.jcollider.Constants, ServerListener {
 
-    protected boolean					booted			= false;
+    protected boolean booted = false;
 
-    private final ActionBoot			actionBoot;
+    private final ActionBoot actionBoot;
 
-    private final JLabel				lbStatus1;
-    private final JLabel				lbStatus2;
+    private final JLabel lbStatus1;
+    private final JLabel lbStatus2;
 
-    private final MessageFormat			msgStatus1;
-    private final MessageFormat			msgStatus2;
-    private final Object[]				argsStatus		= new Object[ 5 ];
-    private final String				unknownStatus;
-    private final Box					boxStatus2;
+    private final MessageFormat msgStatus1;
+    private final MessageFormat msgStatus2;
+    private final Object[] argsStatus = new Object[5];
+    private final String unknownStatus;
+    private final Box boxStatus2;
 
-    private final SuperColliderClient	superCollider;
+    private final SuperColliderClient superCollider;
 
     @SuppressWarnings("serial")
     private class TH extends TransferHandler {
@@ -78,8 +78,7 @@ public class MainFrame
                             support.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
                     for (Object f1 : fs) {
                         File f = (File) f1;
-                        // System.out.println(f);
-                        final Application	app	= AbstractApplication.getApplication();
+                        final Application app = AbstractApplication.getApplication();
                         ((BasicApplication) app).getMenuFactory().openDocument(f);
                     }
                     return true;
@@ -126,31 +125,31 @@ public class MainFrame
     public MainFrame() {
         super( REGULAR );
 
-        final Application	app	= AbstractApplication.getApplication();
+        final Application app = AbstractApplication.getApplication();
 
-        superCollider	= SuperColliderClient.getInstance();
+        superCollider = SuperColliderClient.getInstance();
 
-        if( app.getWindowHandler().usesInternalFrames() ) {
-            setTitle( app.getResourceString( "frameMain" ));
-            ((JInternalFrame) getWindow()).setClosable( false );
+        if (app.getWindowHandler().usesInternalFrames()) {
+            setTitle(app.getResourceString("frameMain"));
+            ((JInternalFrame) getWindow()).setClosable(false);
         } else {
-            setTitle( app.getName() + " : " + app.getResourceString( "frameMain" ));
+            setTitle(app.getName() + " : " + app.getResourceString("frameMain"));
         }
 
-        final Container					cp				= getContentPane();
-        final Box						boxStatus1		= Box.createHorizontalBox();
-        final JPanel					bottomPane		= new JPanel( new BorderLayout( 4, 2 ));
-        final JScrollPane				ggScroll;
-        final AbstractWindow.Listener	winListener;
-        final TreeExpanderButton		ggStatusExp;
-//		String[]						cfgNames		= null;
-        final String[]					fntNames;
+        final Container cp          = getContentPane();
+        final Box       boxStatus1  = Box.createHorizontalBox();
+        final JPanel    bottomPane  = new JPanel(new BorderLayout(4, 2));
+
+        final JScrollPane ggScroll;
+        final AbstractWindow.Listener winListener;
+        final TreeExpanderButton ggStatusExp;
+        final String[] fntNames;
 
         LogTextArea lta = new LogTextArea(16, 40, false, null);
-        ggScroll		= lta.placeMeInAPane();
+        ggScroll = lta.placeMeInAPane();
         lta.makeSystemOutput();
 
-        actionBoot  = new ActionBoot();
+        actionBoot = new ActionBoot();
         final JButton ggBoot = new JButton(actionBoot);
         ggBoot.setFocusable(false);    // prevent user from accidentally starting/stopping server
         actionBoot.booted();
@@ -167,10 +166,10 @@ public class MainFrame
         final Dimension dDump2 = ggDumpOSC.getPreferredSize();
         actionDumpOSC.setState(0);
         final Dimension dDump3 = ggDumpOSC.getPreferredSize();
-        dMaxBut.width  = Math.max(dMaxBut.width , Math.max(dDump2.width , Math.max(dDump3.width , Math.max(dBoot1.width , dBoot2.width ))));
-        dMaxBut.height = Math.max(dMaxBut.height, Math.max(dDump2.height, Math.max(dDump3.height, Math.max(dBoot1.height, dBoot2.height))));
-        ggBoot   .setPreferredSize(dMaxBut);
-        ggDumpOSC.setPreferredSize(dMaxBut);
+        dMaxBut.width   = Math.max(dMaxBut.width , Math.max(dDump2.width , Math.max(dDump3.width , Math.max(dBoot1.width , dBoot2.width))));
+        dMaxBut.height  = Math.max(dMaxBut.height, Math.max(dDump2.height, Math.max(dDump3.height, Math.max(dBoot1.height, dBoot2.height))));
+        ggBoot      .setPreferredSize(dMaxBut);
+        ggDumpOSC   .setPreferredSize(dMaxBut);
 
         final boolean isDark = UIManager.getBoolean("dark-skin");
         final Color colrDrop = isDark ? Color.gray : Color.darkGray;
@@ -185,27 +184,26 @@ public class MainFrame
         ggImport.setPreferredSize(importPref);
         ggImport.setMaximumSize  (importPref);
 
-        boxStatus2		= Box.createHorizontalBox();
-        msgStatus1		= new MessageFormat( getResourceString( "ptrnServerStatus1" ), Locale.US );
-        msgStatus2		= new MessageFormat( getResourceString( "ptrnServerStatus2" ), Locale.US );
-        unknownStatus	= getResourceString( "labelServerNotRunning" );
-        lbStatus1		= new JLabel( unknownStatus );
-        lbStatus2		= new JLabel();
+        boxStatus2 = Box.createHorizontalBox();
+        msgStatus1 = new MessageFormat(getResourceString("ptrnServerStatus1"), Locale.US);
+        msgStatus2 = new MessageFormat(getResourceString("ptrnServerStatus2"), Locale.US);
+        unknownStatus = getResourceString("labelServerNotRunning");
+        lbStatus1 = new JLabel(unknownStatus);
+        lbStatus2 = new JLabel();
 
-        ggStatusExp	= new TreeExpanderButton();
-        ggStatusExp.setExpandedToolTip( getResourceString( "buttonExpStatsTT" ));
-        ggStatusExp.setCollapsedToolTip( getResourceString( "buttonCollStatsTT" ));
-        ggStatusExp.addActionListener( new ActionListener() {
-            public void actionPerformed( ActionEvent e )
-            {
-                final Dimension	d	= getSize();
+        ggStatusExp = new TreeExpanderButton();
+        ggStatusExp.setExpandedToolTip(getResourceString("buttonExpStatsTT"));
+        ggStatusExp.setCollapsedToolTip(getResourceString("buttonCollStatsTT"));
+        ggStatusExp.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                final Dimension d = getSize();
 
-                if( ggStatusExp.isExpanded() ) {
-                    boxStatus2.setVisible( true );
-                    setSize( new Dimension( d.width, d.height + boxStatus2.getPreferredSize().height + 2 ));
+                if (ggStatusExp.isExpanded()) {
+                    boxStatus2.setVisible(true);
+                    setSize(new Dimension(d.width, d.height + boxStatus2.getPreferredSize().height + 2));
                 } else {
-                    boxStatus2.setVisible( false );
-                    setSize( new Dimension( d.width, d.height - (boxStatus2.getPreferredSize().height + 2) ));
+                    boxStatus2.setVisible(false);
+                    setSize(new Dimension(d.width, d.height - (boxStatus2.getPreferredSize().height + 2)));
                 }
             }
         });
@@ -298,45 +296,43 @@ public class MainFrame
         return AbstractApplication.getApplication().getResourceString(key);
     }
 
-    private void updateStatus()
-    {
+    private void updateStatus() {
         final Server.Status s = superCollider.getStatus();
-        if( s != null ) {
+        if (s != null) {
             argsStatus[0] = (float) s.sampleRate;
             argsStatus[1] = s.avgCPU;
-            lbStatus1.setText( msgStatus1.format( argsStatus ));
-            if( boxStatus2.isVisible() ) {
-                argsStatus[ 0 ]	= s.numUGens;
-                argsStatus[ 1 ]	= s.numSynths;
-                argsStatus[ 2 ]	= s.numGroups;
-                argsStatus[ 3 ]	= s.numSynthDefs;
-                lbStatus2.setText( msgStatus2.format( argsStatus ));
+            lbStatus1.setText(msgStatus1.format(argsStatus));
+            if (boxStatus2.isVisible()) {
+                argsStatus[0] = s.numUGens;
+                argsStatus[1] = s.numSynths;
+                argsStatus[2] = s.numGroups;
+                argsStatus[3] = s.numSynthDefs;
+                lbStatus2.setText(msgStatus2.format(argsStatus));
             }
         } else {
-            lbStatus1.setText( unknownStatus );
+            lbStatus1.setText(unknownStatus);
         }
     }
 
 // ------------- ServerListener interface -------------
 
-    public void serverAction( ServerEvent e )
-    {
-        switch( e.getID() ) {
-        case ServerEvent.RUNNING:
-            actionBoot.booted();
-            break;
+    public void serverAction(ServerEvent e) {
+        switch (e.getID()) {
+            case ServerEvent.RUNNING:
+                actionBoot.booted();
+                break;
 
-        case ServerEvent.STOPPED:
-            actionBoot.terminated();
-            updateStatus();
-            break;
+            case ServerEvent.STOPPED:
+                actionBoot.terminated();
+                updateStatus();
+                break;
 
-        case ServerEvent.COUNTS:
-            updateStatus();
-            break;
+            case ServerEvent.COUNTS:
+                updateStatus();
+                break;
 
-        default:
-            break;
+            default:
+                break;
         }
     }
 

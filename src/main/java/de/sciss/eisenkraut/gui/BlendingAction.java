@@ -7,8 +7,8 @@
  *  This software is published under the GNU General Public License v3+
  *
  *
- *	For further information, please contact Hanns Holger Rutz at
- *	contact@sciss.de
+ *  For further information, please contact Hanns Holger Rutz at
+ *  contact@sciss.de
  */
 
 package de.sciss.eisenkraut.gui;
@@ -50,74 +50,74 @@ import java.util.prefs.Preferences;
 //import javax.swing.event.ListDataListener;
 
 /**
- *	A class implementing the <code>Action</code> interface
- *	which deals with the blending setting. Each instance
- *	generates a toggle button suitable for attaching to a tool bar;
- *	this button reflects the blending preferences settings and
- *	when alt+pressed will prompt the user to alter the blending settings.
+ *  A class implementing the <code>Action</code> interface
+ *  which deals with the blending setting. Each instance
+ *  generates a toggle button suitable for attaching to a tool bar;
+ *  this button reflects the blending preferences settings and
+ *  when alt+pressed will prompt the user to alter the blending settings.
  *
- *	TODO: gui panels should be destroyed / disposed
- *				because otherwise different BlendingAction instances
- *				for different docs all create their own panels
+ *  TODO: gui panels should be destroyed / disposed
+ *  because otherwise different BlendingAction instances
+ *  for different docs all create their own panels
  *
- *	TODO: should not be a subclass of AbstractAction
+ *  TODO: should not be a subclass of AbstractAction
  *
- *	TODO: close action should be called whenever popup disappears,
- *				and duplicates should be filtered out!
+ *  TODO: close action should be called whenever popup disappears,
+ *  and duplicates should be filtered out!
  */
 @SuppressWarnings("serial")
 public class BlendingAction
         extends AbstractAction {
 
-    public static final int						MAX_RECENTNUM	= 5;
+    public static final int                     MAX_RECENTNUM   = 5;
 
-    public static final String					DEFAULT_NODE	= "blending";
+    public static final String                  DEFAULT_NODE    = "blending";
 
-    private static final String					KEY_ACTIVE		= "active";
-    public static final String					KEY_DURATION	= "duration";
-    private static final String					NODE_RECENT		= "recent";
+    private static final String                 KEY_ACTIVE      = "active";
+    public static final String                  KEY_DURATION    = "duration";
+    private static final String                 NODE_RECENT     = "recent";
 
     private static final Stroke strkActive = new BasicStroke(1.5f);
 
-    protected static final Param				DEFAULT_DUR		=
+    protected static final Param    DEFAULT_DUR =
             new Param(100.0, ParamSpace.TIME | ParamSpace.MILLI | ParamSpace.SECS);
 
-
-    private static PrefComboBoxModel			pcbm			= null;
+    private static PrefComboBoxModel            pcbm    = null;
 
     protected final AbstractButton              b;
-    protected final Preferences					prefs;
-    protected PrefParamField					ggBlendTime;
-    protected CurvePanel						ggCurvePanel;
-    private SpringPanel							ggSettingsPane;
-    private JComponent							bottomPanel;
+    protected final Preferences                 prefs;
+    protected PrefParamField                    ggBlendTime;
+    protected CurvePanel                        ggCurvePanel;
+    private SpringPanel                         ggSettingsPane;
+    private JComponent                          bottomPanel;
 
-    private	static final DefaultUnitTranslator	ut				= new DefaultUnitTranslator();
-    protected static final DefaultUnitViewFactory uvf			= new DefaultUnitViewFactory();
+    private static final DefaultUnitTranslator ut = new DefaultUnitTranslator();
+    protected static final DefaultUnitViewFactory uvf = new DefaultUnitViewFactory();
 
-    private final CurvePanel.Icon				curveIcon;
+    private final CurvePanel.Icon               curveIcon;
 
-    private JPopupMenu							popup			= null;
-    private AppWindow							palette			= null;
+    private JPopupMenu                          popup       = null;
+    private AppWindow                           palette     = null;
 
-    private boolean								active;
+    private boolean                             active;
 
-    private final Timeline						timeline;
+    private final Timeline                      timeline;
 
-    protected final Settings					current;
+    protected final Settings                    current;
 
     private final Color colrFgSel, colrFgNorm;
 
     /**
-     *	Creates a new instance of an action
-     *	that tracks blending changes
+     *  Creates a new instance of an action
+     *  that tracks blending changes
      *
-     *	@param	prefs	node of preferences tree (usually DEFAULT_NODE)
+     *  @param  prefs   node of preferences tree (usually DEFAULT_NODE)
      */
     public BlendingAction(Timeline timeline, Preferences prefs) {
         super();
-        this.prefs		= prefs != null ? prefs : AbstractApplication.getApplication().getUserPrefs().node( DEFAULT_NODE );
-        this.timeline	= timeline;
+
+        this.prefs      = prefs != null ? prefs : AbstractApplication.getApplication().getUserPrefs().node(DEFAULT_NODE);
+        this.timeline   = timeline;
 
         final boolean isDark = GraphicsUtil.isDarkSkin();
 
@@ -153,7 +153,7 @@ public class BlendingAction
             }
         });
 
-        active 	= this.prefs.getBoolean(KEY_ACTIVE, false);
+        active  = this.prefs.getBoolean(KEY_ACTIVE, false);
         current = Settings.fromPrefs(this.prefs);
         updateButton();
     }
@@ -164,11 +164,7 @@ public class BlendingAction
     private void createBlendPan(boolean popped) {
         destroyBlendPan();
 
-        createGadgets( 0 );
-//		final Font fnt = AbstractApplication.getApplication().getGraphicsHandler()
-//			.getFont(GraphicsHandler.FONT_SMALL);
-//		GUIUtil.setDeepFont( ggSettingsPane, fnt );
-//		GUIUtil.setDeepFont( bottomPanel, fnt );
+        createGadgets(0);
         ggBlendTime.setCycling(popped); // cannot open popup menu in another popup menu!
         if (palette != null) {
             palette.getContentPane().add(ggSettingsPane, BorderLayout.CENTER);
@@ -194,46 +190,43 @@ public class BlendingAction
 
     private void createGadgets(int flags) {
         bottomPanel = createBottomPanel(flags);
-        ggSettingsPane	= new SpringPanel( 4, 2, 4, 2 );
-        ut.setLengthAndRate( 0, timeline.getRate() );
-        ggBlendTime		= new PrefParamField( ut );
-        ggBlendTime.addSpace( ParamSpace.spcTimeMillis );
-        ggBlendTime.addSpace( ParamSpace.spcTimeSmps );
-        ggBlendTime.setPreferences( prefs, KEY_DURATION );
-        ggBlendTime.setReadPrefs( false );
+        ggSettingsPane = new SpringPanel(4, 2, 4, 2);
+        ut.setLengthAndRate(0, timeline.getRate());
+        ggBlendTime = new PrefParamField(ut);
+        ggBlendTime.addSpace(ParamSpace.spcTimeMillis);
+        ggBlendTime.addSpace(ParamSpace.spcTimeSmps);
+        ggBlendTime.setPreferences(prefs, KEY_DURATION);
+        ggBlendTime.setReadPrefs(false);
         if (current.duration != null) {
             ggBlendTime.setValueAndSpace(current.duration);
         }
-        ggBlendTime.addListener( new ParamField.Listener() {
-            public void paramSpaceChanged( ParamField.Event e )
-            {
-                paramValueChanged( e );
+        ggBlendTime.addListener(new ParamField.Listener() {
+            public void paramSpaceChanged(ParamField.Event e) {
+                paramValueChanged(e);
             }
 
-            public void paramValueChanged( ParamField.Event e )
-            {
-                if( !e.isAdjusting() ) {
+            public void paramValueChanged(ParamField.Event e) {
+                if (!e.isAdjusting()) {
                     current.duration = ggBlendTime.getValue();
                     updateButtonText();
                 }
             }
         });
 
-        ggCurvePanel	= new CurvePanel( createBasicCurves(), this.prefs );
-        ggCurvePanel.setControlPoints( current.ctrlPt[ 0 ], current.ctrlPt[ 1 ]);
-        ggCurvePanel.setPreferredSize( new Dimension( 162, 162 ));
-        ggCurvePanel.addActionListener( new ActionListener() {
-            public void actionPerformed( ActionEvent e )
-            {
+        ggCurvePanel = new CurvePanel(createBasicCurves(), this.prefs);
+        ggCurvePanel.setControlPoints(current.ctrlPt[0], current.ctrlPt[1]);
+        ggCurvePanel.setPreferredSize(new Dimension(162, 162));
+        ggCurvePanel.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
                 final Point2D[] pt = ggCurvePanel.getControlPoints();
-                current.ctrlPt[ 0 ].setLocation( pt[ 0 ]);
-                current.ctrlPt[ 1 ].setLocation( pt[ 1 ]);
+                current.ctrlPt[0].setLocation(pt[0]);
+                current.ctrlPt[1].setLocation(pt[1]);
                 updateButtonIcon();
             }
         });
 
-        ggSettingsPane.gridAdd( ggBlendTime, 0, 0 );
-        ggSettingsPane.gridAdd( ggCurvePanel, 0, 1 );
+        ggSettingsPane.gridAdd(ggBlendTime, 0, 0);
+        ggSettingsPane.gridAdd(ggCurvePanel, 0, 1);
         ggSettingsPane.makeCompactGrid();
     }
 
@@ -250,7 +243,7 @@ public class BlendingAction
         if (popup != null) return;
         if (palette != null) destroyPalette();
 
-        popup	= new JPopupMenu();
+        popup = new JPopupMenu();
         createBlendPan(true);
         popup.addPopupMenuListener(new PopupMenuListener() {
             public void popupMenuCanceled(PopupMenuEvent e) {
@@ -299,10 +292,10 @@ public class BlendingAction
     }
 
     /**
-     *	Returns the toggle button
-     *	which is connected to this action.
+     *  Returns the toggle button
+     *  which is connected to this action.
      *
-     *	@return	a toggle button which is suitable for tool bar display
+     *  @return a toggle button which is suitable for tool bar display
      */
     public AbstractButton getButton()
     {
@@ -310,11 +303,11 @@ public class BlendingAction
     }
 
     public JComboBox mkComboBox() {
-        final ComboBoxModel		model			= getComboBoxModel();
-        final ComboBoxModel		emptyCBM		= new DefaultComboBoxModel();
+        final ComboBoxModel     model           = getComboBoxModel();
+        final ComboBoxModel     emptyCBM        = new DefaultComboBoxModel();
         final AbstractButton    button          = b;
-        final JComboBox			ggBlend			= new JComboBox(); // ( pcbm );
-        final ListCellRenderer	blendRenderer	= mkComboBoxRenderer(ggBlend.getRenderer());
+        final JComboBox         ggBlend         = new JComboBox(); // ( pcbm );
+        final ListCellRenderer  blendRenderer   = mkComboBoxRenderer(ggBlend.getRenderer());
 
         ggBlend.setEditable(true);
         ggBlend.setEditor(new ComboBoxEditor() {
@@ -335,11 +328,11 @@ public class BlendingAction
             public void addActionListener(ActionListener l) { /* ignore */ }
             public void removeActionListener(ActionListener l) { /* ignore */ }
         });
-        ggBlend.setRenderer( blendRenderer );
-        button.setFocusable( false );
-        ggBlend.setFocusable( false );
-        GUIUtil.constrainSize( ggBlend, 120, 26 );	// 110 XXX (140 for MetalLAF)
-        ggBlend.setOpaque( false );
+        ggBlend.setRenderer(blendRenderer);
+        button.setFocusable(false);
+        ggBlend.setFocusable(false);
+        GUIUtil.constrainSize(ggBlend, 120, 26);    // 110 XXX (140 for MetalLAF)
+        ggBlend.setOpaque(false);
 
         // this is _crucial_ because since pcbm is global
         // and the combo-box registers with it, we have a
@@ -400,11 +393,11 @@ public class BlendingAction
     }
 
     private JComponent createBottomPanel(int flags) {
-        final JPanel	panel;
-        final JButton	ggClose;
+        final JPanel    panel;
+        final JButton   ggClose;
 
-        panel		= new JPanel( new FlowLayout( FlowLayout.TRAILING, 4, 2 ));
-        ggClose		= new JButton( new CloseAction( getResourceString( "buttonClose" )));
+        panel   = new JPanel( new FlowLayout( FlowLayout.TRAILING, 4, 2 ));
+        ggClose = new JButton( new CloseAction( getResourceString( "buttonClose" )));
         GUIUtil.createKeyAction( ggClose, KeyStroke.getKeyStroke( KeyEvent.VK_ESCAPE, 0 ));
         ggClose.setFocusable( false );
         panel.add(ggClose);
@@ -433,7 +426,7 @@ public class BlendingAction
         if (palette != null) return;
         if (popup != null) destroyPopup();
 
-        final Application	app			= AbstractApplication.getApplication();
+        final Application app = AbstractApplication.getApplication();
 
         palette = new AppWindow( AbstractWindow.PALETTE );
         palette.setTitle( app.getResourceString( "inputDlgSetBlendSpan" ));
@@ -492,70 +485,64 @@ public class BlendingAction
     }
 
     /**
-     *	TODO: pre/post position not yet effective (using 0.5 right now)
+     *  TODO: pre/post position not yet effective (using 0.5 right now)
      */
     public BlendContext createBlendContext(long maxLeft, long maxRight) {
         if (!java.awt.EventQueue.isDispatchThread()) throw new IllegalMonitorStateException();
         if (!active) return null;
 
-        final long	blendLen;
-        final Param	p;
+        final long  blendLen;
+        final Param p;
 
         p = current.duration; // Param.fromPrefs( prefs, KEY_DURATION, null );
-        if( p != null ) {
-            ut.setLengthAndRate( 0, timeline.getRate() );
-            blendLen	= (long) (ut.translate( p, ParamSpace.spcTimeSmps ).val + 0.5);
-            if( maxLeft + maxRight > blendLen ) {
-                maxLeft	= (long) (maxLeft * (double) blendLen / (maxLeft + maxRight) + 0.5 );
-                maxRight= blendLen - maxLeft;
+        if (p != null) {
+            ut.setLengthAndRate(0, timeline.getRate());
+            blendLen = (long) (ut.translate(p, ParamSpace.spcTimeSmps).val + 0.5);
+            if (maxLeft + maxRight > blendLen) {
+                maxLeft = (long) (maxLeft * (double) blendLen / (maxLeft + maxRight) + 0.5);
+                maxRight = blendLen - maxLeft;
             }
         }
-        return new BlendContext( maxLeft, maxRight, CurvePanel.getControlPoints( prefs ) );
+        return new BlendContext(maxLeft, maxRight, CurvePanel.getControlPoints(prefs));
     }
 
-    private static class Settings
-    {
-        protected Param				duration;
-        protected final Point2D[]	ctrlPt	= new Point2D[] { new Point2D.Double(), new Point2D.Double() };
+    private static class Settings {
+
+        protected Param duration;
+        protected final Point2D[] ctrlPt = new Point2D[]{new Point2D.Double(), new Point2D.Double()};
 
         private Settings() { /* empty */ }
 
-        private Settings( Settings orig )
-        {
-            setFrom( orig );
+        private Settings(Settings orig) {
+            setFrom(orig);
         }
 
-        protected void setFrom( Settings orig )
-        {
+        protected void setFrom(Settings orig) {
             duration = orig.duration;
-            ctrlPt[ 0 ].setLocation( orig.ctrlPt[ 0 ]);
-            ctrlPt[ 1 ].setLocation( orig.ctrlPt[ 1 ]);
+            ctrlPt[0].setLocation(orig.ctrlPt[0]);
+            ctrlPt[1].setLocation(orig.ctrlPt[1]);
         }
 
-        protected static Settings fromPrefs( Preferences node )
-        {
+        protected static Settings fromPrefs(Preferences node) {
             final Settings s = new Settings();
-            s.duration = Param.fromPrefs( node, KEY_DURATION, DEFAULT_DUR );
-            final Point2D[] pt = CurvePanel.getControlPoints( node );
-            s.ctrlPt[ 0 ].setLocation( pt[ 0 ]);
-            s.ctrlPt[ 1 ].setLocation( pt[ 1 ]);
+            s.duration = Param.fromPrefs(node, KEY_DURATION, DEFAULT_DUR);
+            final Point2D[] pt = CurvePanel.getControlPoints(node);
+            s.ctrlPt[0].setLocation(pt[0]);
+            s.ctrlPt[1].setLocation(pt[1]);
             return s;
         }
 
-        protected Settings duplicate()
-        {
-            return new Settings( this );
+        protected Settings duplicate() {
+            return new Settings(this);
         }
 
-        protected void toPrefs( Preferences node )
-        {
-            node.put( KEY_DURATION, duration.toString() );
-            CurvePanel.toPrefs( ctrlPt, node );
+        protected void toPrefs(Preferences node) {
+            node.put(KEY_DURATION, duration.toString());
+            CurvePanel.toPrefs(ctrlPt, node);
         }
 
-        public String toString()
-        {
-            return String.valueOf( duration.val );
+        public String toString() {
+            return String.valueOf(duration.val);
         }
     }
 
@@ -564,7 +551,6 @@ public class BlendingAction
             extends JLabel
             implements ListCellRenderer {
 
-//        private final Color bgNorm, bgSel, fgNorm, fgSel;
         final CurvePanel.Icon curveIcon;
 
         private final ListCellRenderer peer;
@@ -572,12 +558,7 @@ public class BlendingAction
         protected BlendCBRenderer(ListCellRenderer peer) {
             super();
             this.peer = peer;
-//            setOpaque(true);
-//            bgNorm      = UIManager.getColor("List.background");
-//            bgSel       = UIManager.getColor("List.selectionBackground");
-//            fgNorm      = UIManager.getColor("List.foreground");
-//            fgSel       = UIManager.getColor("List.selectionForeground");
-            curveIcon   = new CurvePanel.Icon(createBasicCurves());
+            curveIcon = new CurvePanel.Icon(createBasicCurves());
             setIcon(curveIcon);
             setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
         }
@@ -585,10 +566,10 @@ public class BlendingAction
         public Component getListCellRendererComponent(
                 JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 
-            final Settings s	= (Settings) value;
-            final Object   view	= uvf.createView(s.duration.unit);
+            final Settings s = (Settings) value;
+            final Object view = uvf.createView(s.duration.unit);
 
-            final String    txt = String.valueOf((int) s.duration.val) + " " + view.toString();
+            final String txt = String.valueOf((int) s.duration.val) + " " + view.toString();
             final Component res = peer.getListCellRendererComponent(list, txt /* value */, index, isSelected, cellHasFocus);
 
             curveIcon.update(s.ctrlPt[0], s.ctrlPt[1]);
@@ -596,14 +577,6 @@ public class BlendingAction
                 ((JLabel) res).setIcon(curveIcon);
             }
 
-//            if (view instanceof Icon) {
-//                // XXX hmmm. should use composite icon
-//            } else {
-//                setText(String.valueOf((int) s.duration.val) + " " + view.toString());
-//            }
-//            setBackground(isSelected ? bgSel : bgNorm);
-//            setForeground(isSelected ? fgSel : fgNorm);
-//            return this;
             return res;
         }
     }

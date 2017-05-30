@@ -7,8 +7,8 @@
  *  This software is published under the GNU General Public License v3+
  *
  *
- *	For further information, please contact Hanns Holger Rutz at
- *	contact@sciss.de
+ *  For further information, please contact Hanns Holger Rutz at
+ *  contact@sciss.de
  */
 
 package de.sciss.eisenkraut.gui;
@@ -22,7 +22,7 @@ import java.awt.geom.RectangularShape;
 import java.awt.geom.RoundRectangle2D;
 
 /**
- *	A border looking like aqua's search-field border
+ *  A border looking like aqua's search-field border
  */
 @SuppressWarnings("serial")
 public class RoundedBorder extends AbstractBorder {
@@ -41,13 +41,13 @@ public class RoundedBorder extends AbstractBorder {
     private static final Stroke strkOutline = new BasicStroke(1.0f);
     private static final Stroke strkInline  = new BasicStroke(2.0f);
 
-    private Color	colrBg		= Color.white;
-    private Paint	pntInline, pntOutlineT, pntOutlineB;
+    private Color colrBg = Color.white;
+    private Paint pntInline, pntOutlineT, pntOutlineB;
 
-    private Shape	shpBg, shpInline, shpOutline;
+    private Shape shpBg, shpInline, shpOutline;
 
-    private int		recentWidth		= -1;
-    private int		recentHeight	= -1;
+    private int recentWidth  = -1;
+    private int recentHeight = -1;
 
     public RoundedBorder() {
         super();
@@ -80,26 +80,26 @@ public class RoundedBorder extends AbstractBorder {
 
         g2.translate(x, y);
 
-        if( (width != recentWidth) || (height != recentHeight) ) {
-            if( height != recentHeight ) {
-                final int hh	= height >> 1;
-                pntOutlineT     = new GradientPaint(0, 0 , colrDark  , 0, hh        , colrClearD);
-                pntOutlineB     = new GradientPaint(0, hh, colrClearL, 0, height - 2, colrLight);
-                pntInline       = new GradientPaint(0, 0 , colrDark2 , 0, hh        , colrClearD);
+        if ((width != recentWidth) || (height != recentHeight)) {
+            if (height != recentHeight) {
+                final int hh = height >> 1;
+                pntOutlineT = new GradientPaint(0, 0, colrDark, 0, hh, colrClearD);
+                pntOutlineB = new GradientPaint(0, hh, colrClearL, 0, height - 2, colrLight);
+                pntInline   = new GradientPaint(0, 0, colrDark2, 0, hh, colrClearD);
             }
 
-            final RectangularShape	r	= new RoundRectangle2D.Float(0.5f, 0.5f, width - 1, height - 1, diameter, diameter);
-            final RectangularShape	r2	= new RoundRectangle2D.Float(1.0f, 1.0f, width - 2, height - 2, diameter, diameter);
-            final Area				a	= new Area(r);
-            a.subtract( new Area( new Rectangle2D.Float( insets.left, insets.top,
-                width - insets.left - insets.right, height - insets.top - insets.bottom )));
+            final RectangularShape r = new RoundRectangle2D.Float(0.5f, 0.5f, width - 1, height - 1, diameter, diameter);
+            final RectangularShape r2 = new RoundRectangle2D.Float(1.0f, 1.0f, width - 2, height - 2, diameter, diameter);
+            final Area a = new Area(r);
+            a.subtract(new Area(new Rectangle2D.Float(insets.left, insets.top,
+                    width - insets.left - insets.right, height - insets.top - insets.bottom)));
 
-            shpOutline		= strkOutline.createStrokedShape(r2);
-            shpInline		= strkInline .createStrokedShape(r2);
-            shpBg			= a;
+            shpOutline  = strkOutline.createStrokedShape(r2);
+            shpInline   = strkInline.createStrokedShape(r2);
+            shpBg       = a;
 
-            recentWidth		= width;
-            recentHeight	= height;
+            recentWidth     = width;
+            recentHeight    = height;
         }
 
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING  , RenderingHints.VALUE_ANTIALIAS_ON);

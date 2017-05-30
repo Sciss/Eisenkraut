@@ -7,8 +7,8 @@
  *  This software is published under the GNU General Public License v3+
  *
  *
- *	For further information, please contact Hanns Holger Rutz at
- *	contact@sciss.de
+ *  For further information, please contact Hanns Holger Rutz at
+ *  contact@sciss.de
  */
 
 package de.sciss.eisenkraut.gui;
@@ -31,30 +31,29 @@ import java.awt.image.BufferedImage;
  *  This is a helper class containing utility static functions
  *  and public objects for common graphics operations
  *
- *	TODO: the tool buttons on non-macos look-and-feel are far to wide
+ *  TODO: the tool buttons on non-macos look-and-feel are far to wide
  */
-public class GraphicsUtil
-{
+public class GraphicsUtil {
     /**
      *  Tool icon ID: transport play
      */
-    public static final int ICON_PLAY		= 0;
+    public static final int ICON_PLAY       = 0;
     /**
      *  Tool icon ID: transport stop
      */
-    public static final int ICON_STOP		= 1;
+    public static final int ICON_STOP       = 1;
     /**
      *  Tool icon ID: transport loop
      */
-    public static final int ICON_LOOP		= 2;
+    public static final int ICON_LOOP       = 2;
     /**
      *  Tool icon ID: transport rewind
      */
-    public static final int ICON_REWIND		= 3;
+    public static final int ICON_REWIND     = 3;
     /**
      *  Tool icon ID: transport fast forward
      */
-    public static final int ICON_FASTFORWARD= 4;
+    public static final int ICON_FASTFORWARD = 4;
     /**
      *  Tool icon ID: open file chooser
      */
@@ -62,71 +61,71 @@ public class GraphicsUtil
     /**
      *  Tool icon ID: pointer tool
      */
-    public static final int ICON_POINTER	= 6;
+    public static final int ICON_POINTER    = 6;
     /**
      *  Tool icon ID: line tool
      */
-    public static final int ICON_LINE		= 7;
+    public static final int ICON_LINE       = 7;
     /**
      *  Tool icon ID: bezier tool
      */
-    public static final int ICON_CURVE		= 8;
+    public static final int ICON_CURVE      = 8;
     /**
      *  Tool icon ID: freehand tool
      */
-    public static final int ICON_PENCIL		= 9;
+    public static final int ICON_PENCIL     = 9;
     /**
      *  Tool icon ID: arc tool
      */
-    public static final int ICON_ARC		= 10;
+    public static final int ICON_ARC        = 10;
     /**
      *  Tool icon ID: tuning fork tool
      */
-    public static final int ICON_FORK		= 11;
+    public static final int ICON_FORK       = 11;
     /**
      *  Tool icon ID: tuning magnifying glass
      */
-    public static final int ICON_ZOOM		= 12;
+    public static final int ICON_ZOOM       = 12;
     /**
      *  Tool icon ID: catch (follow) timeline postion
      */
-    public static final int ICON_CATCH		= 13;
+    public static final int ICON_CATCH      = 13;
     /**
      *  Tool icon ID: realtime plug-in (supercollider)
      */
-    public static final int ICON_REALTIME	= 15;
+    public static final int ICON_REALTIME   = 15;
     /**
      *  Tool icon ID: solo button for session objects
      */
-    public static final int ICON_SOLO		= 16;
+    public static final int ICON_SOLO       = 16;
     /**
      *  Tool icon ID: mute button for session objects
      */
-    public static final int ICON_MUTE		= 18;
+    public static final int ICON_MUTE       = 18;
     /**
      *  Tool icon ID: trajectory blending
      */
-    public static final int ICON_BLENDING	= 19;
+    public static final int ICON_BLENDING   = 19;
     /**
      *  Tool icon ID: preroll blending (not used)
      */
-    public static final int ICON_PREEXTRA	= 20;
+    public static final int ICON_PREEXTRA   = 20;
     /**
      *  Tool icon ID: postroll blending (not used)
      */
-    public static final int ICON_POSTEXTRA	= 21;
+    public static final int ICON_POSTEXTRA  = 21;
     /**
      *  Tool icon ID: insert mode
      */
-    public static final int ICON_INSERTMODE	= 22;
+    public static final int ICON_INSERTMODE = 22;
     /**
      *  Tool icon ID: replace mode
      */
-    public static final int ICON_OVERWRITEMODE	= 23;
+    public static final int ICON_OVERWRITEMODE = 23;
     /**
      *  Tool icon ID: mix mode
      */
-    public static final int ICON_MIXMODE	= 24;
+    public static final int ICON_MIXMODE    = 24;
 
     /**
      *  Blue translucent colour
@@ -183,22 +182,22 @@ public class GraphicsUtil
      *  Yellow translucent colour
      *  for consistent style in optional adjustment objects
      */
-    public static final Color		colrAdjusting   = new Color(0xFF, 0xFF, 0x00, 0x2F);
+    public static final Color colrAdjusting = new Color(0xFF, 0xFF, 0x00, 0x2F);
     /**
      *  Default font for GUI elements.
      *
      *  TODO: this is rather small and could be
-     *			user adjustable in a future version.
+     *  user adjustable in a future version.
      */
-    public static final Font		smallGUIFont	= new Font( "Helvetica", Font.PLAIN, 10 );
+    public static final Font smallGUIFont = new Font("Helvetica", Font.PLAIN, 10);
 
     /**
      *  MacOS X Aqua style bar gradient with a size of 15 pixels
      *
      *  TODO:   this should look different on Windows and Linux
-     *			depending on their VM's chrome.
+     *          depending on their VM's chrome.
      *
-     *  @see	de.sciss.eisenkraut.timeline.TimelineAxis
+     *  @see    de.sciss.eisenkraut.timeline.TimelineAxis
      */
     public static Paint pntBarGradient() {
         return isDarkSkin() ? pntBarGradientDark : pntBarGradientLight;
@@ -213,9 +212,9 @@ public class GraphicsUtil
      *  named ICON_... (e.g. <code>ICON_PLAY</code> for the transport
      *  play icon).
      *
-     *  @see	#createToolIcons( int )
+     *  @see    #createToolIcons( int )
      */
-    protected static final TiledImage  imgToolIcons	= new TiledImage( GraphicsUtil.class.getResource( "toolicons.png" ), 16, 16 );
+    protected static final TiledImage imgToolIcons = new TiledImage(GraphicsUtil.class.getResource("toolicons.png"), 16, 16);
 
     private static final int[] pntBarGradPixLight = {
             0xFFB8B8B8, 0xFFC0C0C0, 0xFFC8C8C8, 0xFFD3D3D3,
@@ -257,12 +256,12 @@ public class GraphicsUtil
      *  the <code>setToolIcons</code> method.
      *
      *  @param  id  ID corresponding to the index in
-     *				the tool icon tiled image, e.g.
-     *				<code>ICON_PLAY</code> or <code>ICON_LINE</code>.
-     *  @return		four <code>Icon</code> objects for
-     *				different gadget states.
+     *              the tool icon tiled image, e.g.
+     *              <code>ICON_PLAY</code> or <code>ICON_LINE</code>.
+     *  @return     four <code>Icon</code> objects for
+     *              different gadget states.
      *
-     *  @see	#setToolIcons( AbstractButton, Icon[] )
+     *  @see    #setToolIcons( AbstractButton, Icon[] )
      */
     public static Icon[] createToolIcons(int id) {
         final Shape shp;
@@ -857,12 +856,12 @@ public class GraphicsUtil
      *  <code>AbstractButton</code> (<code>JButton</code>
      *  or <code>JToggleButton</code>).
      *
-     *  @param  b		the button whose icons are to be set
+     *  @param  b       the button whose icons are to be set
      *  @param  icons   four <code>Icon</code> objects for
-     *					different gadget states, such as
-     *					created by the <code>createToolIcons</code> method.
+     *                  different gadget states, such as
+     *                  created by the <code>createToolIcons</code> method.
      *
-     *  @see	#createToolIcons( int )
+     *  @see    #createToolIcons( int )
      */
     public static void setToolIcons( AbstractButton b, Icon[] icons )
     {
@@ -877,9 +876,9 @@ public class GraphicsUtil
      *  Calculates the length of line.
      *
      *  @param  ln  the <code>Line2D</code> shape whose
-     *				length is to be calculated
-     *  @return		the length as given by the distance
-     *				of the start point to the end point*
+     *              length is to be calculated
+     *  @return     the length as given by the distance
+     *              of the start point to the end point*
      */
     public static double getLineLength(Line2D ln) {
         return (Point2D.distance(ln.getX1(), ln.getY1(), ln.getX2(), ln.getY2()));
@@ -893,21 +892,21 @@ public class GraphicsUtil
      *
      *  @param  pt  point lying somewhere next to or on the line.
      *  @param  ln  line onto which the pt should be projected
-     *  @return		the given point projected onto the line
+     *  @return     the given point projected onto the line
      */
-    public static Point2D projectPointOntoLine( Point2D pt, Line2D ln )
-    {
-        double  dx			= ln.getX2() - ln.getX1();
-        double  dy			= ln.getY2() - ln.getY1();
-        double  lineLenSq   = dx*dx + dy*dy;
-        double  d1;
+    public static Point2D projectPointOntoLine(Point2D pt, Line2D ln) {
 
-        if( lineLenSq == 0.0 ) {
-            return( new Point2D.Double( ln.getX1(), ln.getY1() ));
+        double dx = ln.getX2() - ln.getX1();
+        double dy = ln.getY2() - ln.getY1();
+        double lineLenSq = dx * dx + dy * dy;
+        double d1;
+
+        if (lineLenSq == 0.0) {
+            return (new Point2D.Double(ln.getX1(), ln.getY1()));
         } else {
-            d1 = ( (pt.getX() - ln.getX1()) * dx +
-                   (pt.getY() - ln.getY1()) * dy ) / lineLenSq;
-            return( new Point2D.Double( ln.getX1() + d1 * dx, ln.getY1() + d1 * dy ));
+            d1 = ((pt.getX() - ln.getX1()) * dx +
+                    (pt.getY() - ln.getY1()) * dy) / lineLenSq;
+            return (new Point2D.Double(ln.getX1() + d1 * dx, ln.getY1() + d1 * dy));
         }
     }
 }

@@ -7,8 +7,8 @@
  *  This software is published under the GNU General Public License v3+
  *
  *
- *	For further information, please contact Hanns Holger Rutz at
- *	contact@sciss.de
+ *  For further information, please contact Hanns Holger Rutz at
+ *  contact@sciss.de
  */
 
 package de.sciss.eisenkraut.session;
@@ -2271,37 +2271,34 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
             extends MenuAction {
         private String plugInClassName = null;
 
-        protected ActionProcessAgain()
-        {
+        protected ActionProcessAgain() {
             super();
-            setEnabled( false );
+            setEnabled(false);
         }
 
-        public void actionPerformed( ActionEvent e )
-        {
-            if( plugInClassName == null ) return;
+        public void actionPerformed(ActionEvent e) {
+            if (plugInClassName == null) return;
 
-            FilterDialog filterDlg = (FilterDialog) app.getComponent( Main.COMP_FILTER );
+            FilterDialog filterDlg = (FilterDialog) app.getComponent(Main.COMP_FILTER);
 
-            if( filterDlg == null ) {
+            if (filterDlg == null) {
                 filterDlg = new FilterDialog();
             }
-            filterDlg.process( plugInClassName, doc, false, true );
+            filterDlg.process(plugInClassName, doc, false, true);
         }
 
-        protected void setPlugIn( RenderPlugIn plugIn )
-        {
-            if( plugIn == null ) {
-                if( isEnabled() ) {
-                    setEnabled( false );
-                    putValue( NAME, getResourceString( "menuProcessAgain" ));
+        protected void setPlugIn(RenderPlugIn plugIn) {
+            if (plugIn == null) {
+                if (isEnabled()) {
+                    setEnabled(false);
+                    putValue(NAME, getResourceString("menuProcessAgain"));
                 }
                 plugInClassName = null;
             } else {
-                if( !isEnabled() ) {
-                    setEnabled( true );
+                if (!isEnabled()) {
+                    setEnabled(true);
                 }
-                putValue( NAME, getResourceString( "menuProcessAgain" ) + " : " + plugIn.getName() );
+                putValue(NAME, getResourceString("menuProcessAgain") + " : " + plugIn.getName());
                 plugInClassName = plugIn.getClass().getName();
             }
         }
@@ -2315,14 +2312,13 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
         /**
          *  Brings up the Audio-Info-Box
          */
-        public void actionPerformed( ActionEvent e )
-        {
-            AudioFileInfoPalette infoBox = (AudioFileInfoPalette) app.getComponent( Main.COMP_AUDIOINFO );
+        public void actionPerformed(ActionEvent e) {
+            AudioFileInfoPalette infoBox = (AudioFileInfoPalette) app.getComponent(Main.COMP_AUDIOINFO);
 
-            if( infoBox == null ) {
+            if (infoBox == null) {
                 infoBox = new AudioFileInfoPalette();
             }
-            infoBox.setVisible( true );
+            infoBox.setVisible(true);
             infoBox.toFront();
         }
     }

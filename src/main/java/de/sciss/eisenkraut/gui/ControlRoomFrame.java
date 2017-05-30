@@ -7,8 +7,8 @@
  *  This software is published under the GNU General Public License v3+
  *
  *
- *	For further information, please contact Hanns Holger Rutz at
- *	contact@sciss.de
+ *  For further information, please contact Hanns Holger Rutz at
+ *  contact@sciss.de
  */
 
 package de.sciss.eisenkraut.gui;
@@ -60,78 +60,76 @@ import java.util.prefs.Preferences;
 //import de.sciss.eisenkraut.math.MathUtil;
 
 /**
- *	TODO: could use an explicit GroupAnySync for lmm, which would go into SuperColliderClient
- *				so sc-client whould be able to pause master synths according to the sync
+ *  TODO: could use an explicit GroupAnySync for lmm, which would go into SuperColliderClient
+ *  so sc-client whould be able to pause master synths according to the sync
  */
 public class ControlRoomFrame
-extends AppWindow
-implements	DynamicListening, Constants, ServerListener, SuperColliderClient.Listener,
-            DocumentListener // , TransportListener, MeterListener
-{
-    private final PrefComboBox			ggOutputConfig;
-    private final PrefComboBox			ggAudioBox;
-    private final Preferences			audioPrefs;
+        extends AppWindow
+        implements DynamicListening, Constants, ServerListener, SuperColliderClient.Listener,
+        DocumentListener {
 
-    protected final SuperColliderClient	superCollider;
-    private Group						grpMeters;
-    private final PeakMeterPanel		pmg;
+    private final PrefComboBox          ggOutputConfig;
+    private final PrefComboBox          ggAudioBox;
+    private final Preferences           audioPrefs;
 
-    private RoutingConfig				oCfg;
+    protected final SuperColliderClient superCollider;
+    private Group                       grpMeters;
+    private final PeakMeterPanel        pmg;
 
-    private final SpringPanel			b1;
-    protected final VolumeFader			ggVolume;
+    private RoutingConfig               oCfg;
 
-    private final Map<Session, SuperColliderPlayer> mapPlayers = new HashMap<Session, SuperColliderPlayer>();	// key = Session, value = SuperColliderPlayer
-    private final PeakMeterManager		lmm;
+    private final SpringPanel           b1;
+    protected final VolumeFader         ggVolume;
 
-    private final ActionListener		audioBoxListener;
-    private boolean						isListening			= false;
+    private final Map<Session, SuperColliderPlayer> mapPlayers = new HashMap<Session, SuperColliderPlayer>();   // key = Session, value = SuperColliderPlayer
+    private final PeakMeterManager      lmm;
 
-    public ControlRoomFrame()
-    {
-        super( PALETTE );
+    private final ActionListener        audioBoxListener;
+    private boolean                     isListening     = false;
+
+    public ControlRoomFrame() {
+        super(PALETTE);
 
         final Application app = AbstractApplication.getApplication();
 
-        superCollider		= SuperColliderClient.getInstance();
-        lmm					= new PeakMeterManager( superCollider.getMeterManager() );
+        superCollider = SuperColliderClient.getInstance();
+        lmm = new PeakMeterManager(superCollider.getMeterManager());
 
         setTitle( app.getResourceString( "paletteCtrlRoom" ));
         setResizable( false );
 
-        final Container			cp				= getContentPane();
-        final JPanel			b2				= new JPanel( new BorderLayout() ); // Box.createHorizontalBox();
-        audioPrefs								= app.getUserPrefs().node( PrefsUtil.NODE_AUDIO );
-        final Object			comboProto		= "XXXXXXXX";
+        final Container cp      = getContentPane();
+        final JPanel    b2      = new JPanel(new BorderLayout()); // Box.createHorizontalBox();
+        audioPrefs              = app.getUserPrefs().node(PrefsUtil.NODE_AUDIO);
+        final Object comboProto = "XXXXXXXX";
 
-        b1				= new SpringPanel(2, 4, 2, 4);
+        b1 = new SpringPanel(2, 4, 2, 4);
         lmm.setDynamicComponent(b1);
-        ggVolume		= new VolumeFader();
-        ggOutputConfig	= new PrefComboBox();
-        ggOutputConfig.putClientProperty( "JComboBox.isSquare", Boolean.TRUE );
-        ggAudioBox		= new PrefComboBox();
-        ggAudioBox.putClientProperty( "JComboBox.isSquare", Boolean.TRUE );
-        ggOutputConfig.setPrototypeDisplayValue( comboProto );
-        ggAudioBox.setPrototypeDisplayValue( comboProto );
+        ggVolume = new VolumeFader();
+        ggOutputConfig = new PrefComboBox();
+        ggOutputConfig.putClientProperty("JComboBox.isSquare", Boolean.TRUE);
+        ggAudioBox = new PrefComboBox();
+        ggAudioBox.putClientProperty("JComboBox.isSquare", Boolean.TRUE);
+        ggOutputConfig.setPrototypeDisplayValue(comboProto);
+        ggAudioBox.setPrototypeDisplayValue(comboProto);
         refillConfigs();
-        ggOutputConfig.setPreferences( audioPrefs, PrefsUtil.KEY_OUTPUTCONFIG );
-        ggAudioBox.setPreferences( audioPrefs, PrefsUtil.KEY_AUDIOBOX );
+        ggOutputConfig.setPreferences(audioPrefs, PrefsUtil.KEY_OUTPUTCONFIG);
+        ggAudioBox.setPreferences(audioPrefs, PrefsUtil.KEY_AUDIOBOX);
         audioBoxListener = new ActionListener() {
-            public void actionPerformed( ActionEvent e )
-            {
+            public void actionPerformed(ActionEvent e) {
                 final Server server = superCollider.getServer();
-                if( (server != null) && server.isRunning() ) {
-                    final JOptionPane op = new JOptionPane( getResourceString( "optionDlgAudioBoxReboot" ), JOptionPane.QUESTION_MESSAGE, JOptionPane.YES_NO_OPTION );
-                    if( BasicWindowHandler.showDialog( op, getWindow(), null ) == 0 ) {
+                if ((server != null) && server.isRunning()) {
+                    final JOptionPane op = new JOptionPane(getResourceString("optionDlgAudioBoxReboot"), JOptionPane.QUESTION_MESSAGE, JOptionPane.YES_NO_OPTION);
+                    if (BasicWindowHandler.showDialog(op, getWindow(), null) == 0) {
                         superCollider.reboot();
                     }
                 }
             }
         };
 
-        ggVolume.addChangeListener( new ChangeListener() {
-            public void stateChanged( ChangeEvent e ) {
-                superCollider.setVolume( ControlRoomFrame.this, ggVolume.getVolumeLinear() );
+        ggVolume.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                superCollider.setVolume(ControlRoomFrame.this, ggVolume.getVolumeLinear());
             }
         });
 
@@ -149,8 +147,8 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
         oCfg = superCollider.getOutputConfig();
         rebuildMeters();
 
-		b2.add(pmg, BorderLayout.WEST);
-		b2.add(ggVolume, BorderLayout.EAST);
+        b2.add(pmg, BorderLayout.WEST);
+        b2.add(ggVolume, BorderLayout.EAST);
 
         b1.gridAdd(ggLimiter, 0, 0, -1, 1);
         b1.gridAdd(b2, 0, 1, -1, 1);
@@ -159,8 +157,6 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
         b1.makeCompactGrid();
 
         cp.add(b1, BorderLayout.CENTER);
-
-//		AbstractWindowHandler.setDeepFont( b1 );
 
         // ---- listeners -----
 
@@ -175,9 +171,9 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
             }
         });
 
-//		DISPOSE_ON_CLOSE doesn't work: the BasicFrame doesn't catch
-//		the visible preferences. instead we hide and then dispose the window!
-//		setDefaultCloseOperation( WindowConstants.DISPOSE_ON_CLOSE );
+//  DISPOSE_ON_CLOSE doesn't work: the BasicFrame doesn't catch
+//  the visible preferences. instead we hide and then dispose the window!
+//  setDefaultCloseOperation( WindowConstants.DISPOSE_ON_CLOSE );
 
         updateVolume();
 
@@ -222,77 +218,72 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
         ggVolume.setVolumeLinear( superCollider.getVolume() );
     }
 
-    private void startMeters()
-    {
-        final Server				s			= superCollider.getServer();
-        final ServerOptions			so			= superCollider.getServerOptions();
-        final int					numOutputBusChannels;
-        final int[]					channels;
-        final Group					mg			= superCollider.getMasterGroup();
+    private void startMeters() {
 
-        if( (s == null) || (oCfg == null) || (mg == null) ) return;
+        final Server        s   = superCollider.getServer();
+        final ServerOptions so  = superCollider.getServerOptions();
+        final int           numOutputBusChannels;
+        final int[]         channels;
+        final Group         mg  = superCollider.getMasterGroup();
 
-        channels				= new int[ oCfg.mapping.length ];
-        numOutputBusChannels	= so.getNumOutputBusChannels();
-        for( int ch = 0; ch < channels.length; ch++ ) {
-            if( oCfg.mapping[ ch ] < numOutputBusChannels ) {
-                channels[ ch ] = oCfg.mapping[ ch ];
+        if ((s == null) || (oCfg == null) || (mg == null)) return;
+
+        channels = new int[oCfg.mapping.length];
+        numOutputBusChannels = so.getNumOutputBusChannels();
+        for (int ch = 0; ch < channels.length; ch++) {
+            if (oCfg.mapping[ch] < numOutputBusChannels) {
+                channels[ch] = oCfg.mapping[ch];
             } else {
-                channels[ ch ] = -1;
+                channels[ch] = -1;
             }
         }
 
         try {
-            if( grpMeters == null ) {
-                grpMeters = Group.basicNew( s );
+            if (grpMeters == null) {
+                grpMeters = Group.basicNew(s);
                 final OSCBundle bndl = new OSCBundle();
-                bndl.addPacket( grpMeters.addBeforeMsg( mg ));
-                grpMeters.setName( "CtrlRmMeters" );
-                NodeWatcher.newFrom( s ).register( grpMeters );
-                s.sendBundle( bndl );
+                bndl.addPacket(grpMeters.addBeforeMsg(mg));
+                grpMeters.setName("CtrlRmMeters");
+                NodeWatcher.newFrom(s).register(grpMeters);
+                s.sendBundle(bndl);
             }
-            lmm.setGroup( grpMeters );
-            lmm.setInputs( s, channels );
-        }
-        catch( IOException e1 ) {
-            printError( "startMeters", e1 );
+            lmm.setGroup(grpMeters);
+            lmm.setInputs(s, channels);
+        } catch (IOException e1) {
+            printError("startMeters", e1);
         }
     }
 
-    private void stopMeters()
-    {
+    private void stopMeters() {
         lmm.clearInputs();
     }
 
-    private static void printError( String name, Throwable t )
-    {
-        System.err.println( name + " : " + t.getClass().getName() + " : " + t.getLocalizedMessage() );
+    private static void printError(String name, Throwable t) {
+        System.err.println(name + " : " + t.getClass().getName() + " : " + t.getLocalizedMessage());
     }
 
-    private void rebuildMeters()
-    {
-        oCfg	= superCollider.getOutputConfig();
+    private void rebuildMeters() {
+        oCfg = superCollider.getOutputConfig();
 
-        if( oCfg != null ) {
-            pmg.setNumChannels( oCfg.numChannels );
+        if (oCfg != null) {
+            pmg.setNumChannels(oCfg.numChannels);
         } else {
-            pmg.setNumChannels( 0 );
+            pmg.setNumChannels(0);
         }
 
         b1.makeCompactGrid();
         pack();
 
-        lmm.setView( pmg );
+        lmm.setView(pmg);
     }
 
-    // @synchronization	must be in event thread
-    private void registerTaskSyncs()
-    {
-        if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
+    // @synchronization must be in event thread
+    private void registerTaskSyncs() {
+        if (!EventQueue.isDispatchThread()) throw new IllegalMonitorStateException();
 
-        final DocumentHandler	dh			= AbstractApplication.getApplication().getDocumentHandler();
-        Document				doc;
-        SuperColliderPlayer		p;
+        final DocumentHandler dh = AbstractApplication.getApplication().getDocumentHandler();
+        Document doc;
+        SuperColliderPlayer p;
 
         lmm.clearTaskSyncs();
 
@@ -309,10 +300,9 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
         }
     }
 
-    // @synchronization	must be in event thread
-    private void unregisterTaskSyncs()
-    {
-        if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
+    // @synchronization must be in event thread
+    private void unregisterTaskSyncs() {
+        if (!EventQueue.isDispatchThread()) throw new IllegalMonitorStateException();
 
         lmm.clearTaskSyncs();
 
@@ -321,22 +311,21 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
 
 // ------------- ServerListener interface -------------
 
-    public void serverAction( ServerEvent e )
-    {
-        switch( e.getID() ) {
-        case ServerEvent.STOPPED:
-            grpMeters = null;
-            stopMeters();
-            unregisterTaskSyncs();
-            break;
+    public void serverAction(ServerEvent e) {
+        switch (e.getID()) {
+            case ServerEvent.STOPPED:
+                grpMeters = null;
+                stopMeters();
+                unregisterTaskSyncs();
+                break;
 
-        case ServerEvent.RUNNING:
-            registerTaskSyncs();
-            startMeters();
-            break;
+            case ServerEvent.RUNNING:
+                registerTaskSyncs();
+                startMeters();
+                break;
 
-        default:
-            break;
+            default:
+                break;
         }
     }
 
@@ -364,14 +353,13 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
 
 // ---------------- DocumentListener interface ---------------- 
 
-    public void documentAdded( de.sciss.app.DocumentEvent e )
-    {
-        if( e.getDocument() instanceof Session ) {
-            final Session				doc = (Session) e.getDocument();
-            final SuperColliderPlayer	p	= superCollider.getPlayerForDocument( doc );
-            if( (p != null) && !mapPlayers.containsKey( doc )) {
-                lmm.addTaskSync( p.getOutputSync() );
-                mapPlayers.put( doc, p );
+    public void documentAdded(de.sciss.app.DocumentEvent e) {
+        if (e.getDocument() instanceof Session) {
+            final Session doc = (Session) e.getDocument();
+            final SuperColliderPlayer p = superCollider.getPlayerForDocument(doc);
+            if ((p != null) && !mapPlayers.containsKey(doc)) {
+                lmm.addTaskSync(p.getOutputSync());
+                mapPlayers.put(doc, p);
             }
         }
     }
@@ -413,25 +401,23 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
         superCollider.removeServerListener( this );
     }
 
-    private void refillConfigs()
-    {
+    private void refillConfigs() {
         refillIOConfigs();
         refillAudioBoxes();
     }
 
-    public void refillIOConfigs()
-    {
-        final Preferences	childPrefs;
-        final String[]		cfgIDs;
-        final Set<StringItem> cfgItems;
+    public void refillIOConfigs() {
+        final Preferences       childPrefs;
+        final String[]          cfgIDs;
+        final Set<StringItem>   cfgItems;
 
         try {
-            if( isListening ) {
+            if (isListening) {
                 ggOutputConfig.stopListening();
             }
-            childPrefs	= audioPrefs.node( PrefsUtil.NODE_OUTPUTCONFIGS );
-            cfgIDs		= childPrefs.childrenNames();
-            cfgItems	= new TreeSet<StringItem>( StringItem.valueComparator );
+            childPrefs = audioPrefs.node(PrefsUtil.NODE_OUTPUTCONFIGS);
+            cfgIDs = childPrefs.childrenNames();
+            cfgItems = new TreeSet<StringItem>(StringItem.valueComparator);
             for (String cfgID : cfgIDs) {
                 cfgItems.add(new StringItem(cfgID, childPrefs.node(cfgID).get(RoutingConfig.KEY_NAME, cfgID)));
             }
@@ -439,22 +425,20 @@ implements	DynamicListening, Constants, ServerListener, SuperColliderClient.List
             for (StringItem cfgItem : cfgItems) {
                 ggOutputConfig.addItem(cfgItem);
             }
-        }
-        catch( BackingStoreException e1 ) {
-            System.err.println( e1.getClass().getName() + " : " + e1.getLocalizedMessage() );
-        }
-        finally {
-            if( isListening ) {
+        } catch (BackingStoreException e1) {
+            System.err.println(e1.getClass().getName() + " : " + e1.getLocalizedMessage());
+        } finally {
+            if (isListening) {
                 ggOutputConfig.startListening();
             }
         }
     }
 
     public void refillAudioBoxes() {
-        final Preferences	childPrefs;
-        final String[]		cfgIDs;
-        final Set<StringItem> cfgItems;
-        Preferences			childPrefs2;
+        final Preferences       childPrefs;
+        final String[]          cfgIDs;
+        final Set<StringItem>   cfgItems;
+        Preferences             childPrefs2;
 
         try {
             if (isListening) {

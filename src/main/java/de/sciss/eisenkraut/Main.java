@@ -7,8 +7,8 @@
  *  This software is published under the GNU General Public License v3+
  *
  *
- *	For further information, please contact Hanns Holger Rutz at
- *	contact@sciss.de
+ *  For further information, please contact Hanns Holger Rutz at
+ *  contact@sciss.de
  */
 
 package de.sciss.eisenkraut;
@@ -71,7 +71,7 @@ public class Main
         extends BasicApplication
         implements OSCRouter {
 
-    private static final String APP_NAME	= "Eisenkraut";
+    private static final String APP_NAME    = "Eisenkraut";
 
     /*
      *  Current version of the application. This is stored
@@ -79,98 +79,98 @@ public class Main
      *
      *  @todo   should be saved in the session file as well
      */
-    private static final double APP_VERSION		= 1.3;
+    private static final double APP_VERSION     = 1.3;
 
     /**
      *  Enables / disables event dispatching debugging
      */
-//	public static final boolean DEBUG_EVENTS	= false;
+//  public static final boolean DEBUG_EVENTS    = false;
 
     /*
      *  The MacOS file creator string.
      */
-    private static final String					CREATOR			= "EisK";
+    private static final String     CREATOR         = "EisK";
 
     /**
      *  Value for add/getComponent(): the preferences frame
      *
-     *  @see	#getComponent( Object )
+     *  @see    #getComponent( Object )
      */
-    public static final Object					COMP_PREFS		= PrefsFrame.class.getName();
+    public static final Object      COMP_PREFS      = PrefsFrame.class.getName();
     /**
      *  Value for add/getComponent(): the observer palette
      *
-     *  @see	#getComponent( Object )
+     *  @see    #getComponent( Object )
      */
-    public static final Object					COMP_OBSERVER	= ObserverPalette.class.getName();
+    public static final Object      COMP_OBSERVER   = ObserverPalette.class.getName();
     /**
      *  Value for add/getComponent(): input/output setup
      *
-     *  @see	#getComponent( Object )
+     *  @see    #getComponent( Object )
      */
-    public static final Object					COMP_IOSETUP	= IOSetupFrame.class.getName();
+    public static final Object      COMP_IOSETUP    = IOSetupFrame.class.getName();
     /**
      *  Value for add/getComponent(): the filter-process dialog
      *
-     *  @see	#getComponent( Object )
+     *  @see    #getComponent( Object )
      */
-    public static final Object					COMP_FILTER		= FilterDialog.class.getName();
+    public static final Object      COMP_FILTER     = FilterDialog.class.getName();
 
     /**
      *  Value for add/getComponent(): the main log frame
      *
-     *  @see	#getComponent( Object )
+     *  @see    #getComponent( Object )
      */
-    public static final Object					COMP_MAIN		= MainFrame.class.getName();
+    public static final Object      COMP_MAIN       = MainFrame.class.getName();
     /**
      *  Value for add/getComponent(): the control room frame
      *
-     *  @see	#getComponent( Object )
-     *  @see	de.sciss.eisenkraut.gui.ControlRoomFrame
+     *  @see    #getComponent( Object )
+     *  @see    de.sciss.eisenkraut.gui.ControlRoomFrame
      */
-    public static final Object					COMP_CTRLROOM	= ControlRoomFrame.class.getName();
+    public static final Object      COMP_CTRLROOM   = ControlRoomFrame.class.getName();
     /**
      *  Value for add/getComponent(): the online help display frame
      *
-     *  @see	#getComponent( Object )
+     *  @see    #getComponent( Object )
      */
-    public static final Object					COMP_HELP  		= HelpFrame.class.getName();
+    public static final Object      COMP_HELP       = HelpFrame.class.getName();
 
     /**
      *  Value for add/getComponent(): audio file header information
      *
-     *  @see	#getComponent( Object )
+     *  @see    #getComponent( Object )
      */
-    public static final Object					COMP_AUDIOINFO	= AudioFileInfoPalette.class.getName();
+    public static final Object      COMP_AUDIOINFO  = AudioFileInfoPalette.class.getName();
 
-    private final OSCRouterWrapper				osc;
-    private static final String					OSC_MAIN		= "main";
+    private final OSCRouterWrapper  osc;
+    private static final String     OSC_MAIN    = "main";
 
-    private final ProcessingThread.Listener		quitAfterSaveListener;
+    private final ProcessingThread.Listener quitAfterSaveListener;
 
-    public final static boolean	isMac		= System.getProperty("os.name").contains("Mac OS");
-    public final static boolean	isWindows	= System.getProperty("os.name").contains("Windows");
-    public final static boolean	isLinux		= !(isMac || isWindows);	// Well...
+    public final static boolean isMac       = System.getProperty("os.name").contains("Mac OS");
+    public final static boolean isWindows   = System.getProperty("os.name").contains("Windows");
+    public final static boolean isLinux     = !(isMac || isWindows);    // Well...
 
     /**
-     *	The arguments may contain the following options:
-     *	<UL>
-     *	<LI>-laf &lt;screenName&gt; &lt;className&gt; : set the default look-and-feel</LI>
-     *	</UL>
+     *  The arguments may contain the following options:
+     *  <UL>
+     *  <LI>-laf &lt;screenName&gt; &lt;className&gt; : set the default look-and-feel</LI>
+     *  </UL>
      *
-     *	All other arguments not starting with a hyphen are considered to be paths to documents
-     *	that will be opened after launch.
+     *  All other arguments not starting with a hyphen are considered to be paths to documents
+     *  that will be opened after launch.
      */
     public Main(String[] args) {
         super(Main.class, APP_NAME);
 
-        final List<String>			warnings;
-        final Preferences			prefs			= getUserPrefs();
-        final double				prefsVersion;
-        final MainFrame				mainFrame;
-        final OSCRoot				oscServer;
-        final SuperColliderClient	superCollider;
-        List<String> openDoc			= null;
+        final List<String>          warnings;
+        final Preferences           prefs   = getUserPrefs();
+        final double                prefsVersion;
+        final MainFrame             mainFrame;
+        final OSCRoot               oscServer;
+        final SuperColliderClient   superCollider;
+        List<String> openDoc = null;
 
         // ---- init prefs ----
 
@@ -230,14 +230,14 @@ public class Main
             System.err.println("Could not set look-and-feel: " + e.getClass().getSimpleName() + " - " + e.getMessage());
         }
 
-//		JFrame.setDefaultLookAndFeelDecorated( true );
+//      JFrame.setDefaultLookAndFeelDecorated( true );
 
         // ---- init infrastructure ----
         // warning : sequence is crucial
-//		oscServer			= new OSCRoot( prefs.node( OSCRoot.DEFAULT_NODE ), 0x4549 );
-        osc					= new OSCRouterWrapper( oscServer, this );
-        final CacheManager cache = new PrefCacheManager( prefs.node( PrefCacheManager.DEFAULT_NODE ));
-        superCollider		= new SuperColliderClient();
+//      oscServer           = new OSCRoot( prefs.node( OSCRoot.DEFAULT_NODE ), 0x4549 );
+        osc                 = new OSCRouterWrapper(oscServer, this);
+        final CacheManager cache = new PrefCacheManager(prefs.node(PrefCacheManager.DEFAULT_NODE));
+        superCollider       = new SuperColliderClient();
 
         init();
 
@@ -264,10 +264,10 @@ public class Main
 
         // ---- component views ----
 
-        mainFrame		= new MainFrame();
+        mainFrame = new MainFrame();
         ((BasicWindowHandler) getWindowHandler()).setDefaultBorrower( mainFrame );
-        final AppWindow ctrlRoom	= new ControlRoomFrame();
-        final AppWindow observer	= new ObserverPalette();
+        final AppWindow ctrlRoom    = new ControlRoomFrame();
+        final AppWindow observer    = new ObserverPalette();
 
         // means no preferences found, so
         // do some more default initializations
@@ -293,7 +293,7 @@ public class Main
             superCollider.boot();
         }
 
-//		de.sciss.gui.MultiStateButton.makeTestFrame( javax.swing.SwingConstants.CENTER, javax.swing.SwingConstants.CENTER );
+//      de.sciss.gui.MultiStateButton.makeTestFrame( javax.swing.SwingConstants.CENTER, javax.swing.SwingConstants.CENTER );
 
         if (openDoc != null) {
             for (String anOpenDoc : openDoc) {
@@ -351,7 +351,7 @@ public class Main
      *  static initializations and then creates
      *  an instance of <code>Main</code>.
      *
-     *  @param  args	are not parsed.
+     *  @param  args    are not parsed.
      */
     public static void main(final String args[]) {
         // --- run the main application ---

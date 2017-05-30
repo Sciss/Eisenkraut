@@ -7,8 +7,8 @@
  *  This software is published under the GNU General Public License v3+
  *
  *
- *	For further information, please contact Hanns Holger Rutz at
- *	contact@sciss.de
+ *  For further information, please contact Hanns Holger Rutz at
+ *  contact@sciss.de
  */
 
 package de.sciss.eisenkraut.edit;
@@ -22,47 +22,47 @@ import de.sciss.app.AbstractCompoundEdit;
  */
 @SuppressWarnings("serial")
 public class BasicCompoundEdit
-		extends AbstractCompoundEdit {
-	private boolean significant = true;
+        extends AbstractCompoundEdit {
+    private boolean significant = true;
 
-	/**
-	 *  Creates a <code>CompoundEdit</code> object, whose Undo/Redo
-	 *  actions are synchronized.
-	 */
-	public BasicCompoundEdit() {
-		super();
-	}
+    /**
+     *  Creates a <code>CompoundEdit</code> object, whose Undo/Redo
+     *  actions are synchronized.
+     */
+    public BasicCompoundEdit() {
+        super();
+    }
 
-	/**
-	 * Creates a <code>CompoundEdit</code> object with a given name, whose Undo/Redo
-	 * actions are synchronized.
-	 *
-	 * @param    presentationName    text describing the compound edit
-	 */
-	public BasicCompoundEdit(String presentationName) {
-		super(presentationName);
-	}
+    /**
+     * Creates a <code>CompoundEdit</code> object with a given name, whose Undo/Redo
+     * actions are synchronized.
+     *
+     * @param    presentationName    text describing the compound edit
+     */
+    public BasicCompoundEdit(String presentationName) {
+        super(presentationName);
+    }
 
-	public boolean isSignificant() {
-		return significant && super.isSignificant();
-	}
+    public boolean isSignificant() {
+        return significant && super.isSignificant();
+    }
 
-	public void setSignificant(boolean b) {
-		significant = b;
-	}
+    public void setSignificant(boolean b) {
+        significant = b;
+    }
 
-	/**
-	 * Does nothing
-	 */
-	protected void undoDone() { /* empty */ }
+    /**
+     * Does nothing
+     */
+    protected void undoDone() { /* empty */ }
 
-	/**
-	 * Does nothing
-	 */
-	protected void redoDone() { /* empty */ }
+    /**
+     * Does nothing
+     */
+    protected void redoDone() { /* empty */ }
 
-	/**
-	 * Does nothing
-	 */
-	protected void cancelDone() { /* empty */ }
+    /**
+     * Does nothing
+     */
+    protected void cancelDone() { /* empty */ }
 }

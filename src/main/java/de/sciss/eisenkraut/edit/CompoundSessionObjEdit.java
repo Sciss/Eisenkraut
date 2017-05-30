@@ -7,8 +7,8 @@
  *  This software is published under the GNU General Public License v3+
  *
  *
- *	For further information, please contact Hanns Holger Rutz at
- *	contact@sciss.de
+ *  For further information, please contact Hanns Holger Rutz at
+ *  contact@sciss.de
  */
 
 package de.sciss.eisenkraut.edit;
@@ -32,77 +32,77 @@ import de.sciss.app.AbstractCompoundEdit;
 @SuppressWarnings("serial")
 public class CompoundSessionObjEdit extends AbstractCompoundEdit {
 
-	private Object					source;
-	private final List<SessionObject> collSessionObjects;
-	private final int				ownerModType;
-	private final Object			ownerModParam, ownerUndoParam;
+    private Object                      source;
+    private final List<SessionObject>   collSessionObjects;
+    private final int                   ownerModType;
+    private final Object                ownerModParam, ownerUndoParam;
 
-	/**
-	 *  Creates a <code>CompoundEdit</code> objekt, whose Undo/Redo
-	 *  actions are synchronized. When the edit gets finished
-	 *  by calling the <code>end</code> method, the
-	 *  <code>transmitterCollection.modifiedAll</code> method is called,
-	 *  thus dispatching a <code>transmitterCollectionEvent</code>.
-	 *
-	 *  @param  source				Event-Source for <code>doc.transmitterCollection.modified</code>.
-	 *								Gets discarded upon undo / redo invocation.
-	 *  @param  collSessionObjects	list of transmitters to be edited.
-	 *	@param	ownerModType		XXX
-	 *	@param	ownerModParam		XXX
-	 *	@param	ownerUndoParam		XXX
-	 *  @param representationName	...
-	 *
-	 *  @see	de.sciss.eisenkraut.session.SessionCollection
-	 *  @see	de.sciss.eisenkraut.session.SessionCollection.Event
-	 */
-	public CompoundSessionObjEdit(Object source, List<SessionObject> collSessionObjects,
-								  int ownerModType, Object ownerModParam,
-								  Object ownerUndoParam, String representationName) {
-		super(representationName);
+    /**
+     *  Creates a <code>CompoundEdit</code> objekt, whose Undo/Redo
+     *  actions are synchronized. When the edit gets finished
+     *  by calling the <code>end</code> method, the
+     *  <code>transmitterCollection.modifiedAll</code> method is called,
+     *  thus dispatching a <code>transmitterCollectionEvent</code>.
+     *
+     *  @param  source              Event-Source for <code>doc.transmitterCollection.modified</code>.
+     *                              Gets discarded upon undo / redo invocation.
+     *  @param  collSessionObjects  list of transmitters to be edited.
+     *  @param  ownerModType        XXX
+     *  @param  ownerModParam       XXX
+     *  @param  ownerUndoParam      XXX
+     *  @param  representationName   ...
+     *
+     *  @see    de.sciss.eisenkraut.session.SessionCollection
+     *  @see    de.sciss.eisenkraut.session.SessionCollection.Event
+     */
+    public CompoundSessionObjEdit(Object source, List<SessionObject> collSessionObjects,
+                                  int ownerModType, Object ownerModParam,
+                                  Object ownerUndoParam, String representationName) {
+        super(representationName);
 
-		this.source 			= source;
-		this.collSessionObjects = new ArrayList<SessionObject>(collSessionObjects);
-		this.ownerModType 		= ownerModType;
-		this.ownerModParam 		= ownerModParam;
-		this.ownerUndoParam 	= ownerUndoParam;
-	}
+        this.source             = source;
+        this.collSessionObjects = new ArrayList<SessionObject>(collSessionObjects);
+        this.ownerModType       = ownerModType;
+        this.ownerModParam      = ownerModParam;
+        this.ownerUndoParam     = ownerUndoParam;
+    }
 
-	/**
-	 * calls <code>doc.transmitterCollection.modifiedAll</code>.
-	 * The original edit source is discarded.
-	 */
-	protected void undoDone() {
-		int i;
+    /**
+     * calls <code>doc.transmitterCollection.modifiedAll</code>.
+     * The original edit source is discarded.
+     */
+    protected void undoDone() {
+        int i;
 
-		for (i = 0; i < collSessionObjects.size(); i++) {
-			(collSessionObjects.get(i)).getMap().dispatchOwnerModification(
-					source, ownerModType, ownerUndoParam);
-		}
-	}
+        for (i = 0; i < collSessionObjects.size(); i++) {
+            (collSessionObjects.get(i)).getMap().dispatchOwnerModification(
+                    source, ownerModType, ownerUndoParam);
+        }
+    }
 
-	/**
-	 * calls <code>doc.transmitterCollection.modifiedAll</code>.
-	 * The original edit source is discarded.
-	 */
-	protected void redoDone() {
-		int i;
+    /**
+     * calls <code>doc.transmitterCollection.modifiedAll</code>.
+     * The original edit source is discarded.
+     */
+    protected void redoDone() {
+        int i;
 
-		for (i = 0; i < collSessionObjects.size(); i++) {
-			(collSessionObjects.get(i)).getMap().dispatchOwnerModification(
-					source, ownerModType, ownerModParam);
-		}
-	}
+        for (i = 0; i < collSessionObjects.size(); i++) {
+            (collSessionObjects.get(i)).getMap().dispatchOwnerModification(
+                    source, ownerModType, ownerModParam);
+        }
+    }
 
-	protected void cancelDone() { /* empty */ }
-	
-	/**
-	 *  Finishes the compound edit and calls
-	 *  <code>doc.transmitterCollection.modifiedAll</code>
-	 *  using the source provided in the constructor.
-	 */
-	public void end() {
-		super.end();
-		redoDone();
-		source = this;
-	}
+    protected void cancelDone() { /* empty */ }
+
+    /**
+     *  Finishes the compound edit and calls
+     *  <code>doc.transmitterCollection.modifiedAll</code>
+     *  using the source provided in the constructor.
+     */
+    public void end() {
+        super.end();
+        redoDone();
+        source = this;
+    }
 }

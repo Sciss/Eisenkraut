@@ -7,8 +7,8 @@
  *  This software is published under the GNU General Public License v3+
  *
  *
- *	For further information, please contact Hanns Holger Rutz at
- *	contact@sciss.de
+ *  For further information, please contact Hanns Holger Rutz at
+ *  contact@sciss.de
  */
 
 package de.sciss.eisenkraut.gui;
@@ -21,11 +21,10 @@ import java.awt.event.ActionEvent;
 
 @SuppressWarnings("serial")
 public class EditModeAction
-extends AbstractAction
-{
-    private final JToggleButton[]	b;
-    private final ButtonGroup		bg;
-    private final Session			doc;
+        extends AbstractAction {
+    private final JToggleButton[] b;
+    private final ButtonGroup bg;
+    private final Session doc;
 
     /**
      */

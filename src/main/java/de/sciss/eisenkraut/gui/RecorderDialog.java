@@ -7,8 +7,8 @@
  *  This software is published under the GNU General Public License v3+
  *
  *
- *	For further information, please contact Hanns Holger Rutz at
- *	contact@sciss.de
+ *  For further information, please contact Hanns Holger Rutz at
+ *  contact@sciss.de
  */
 
 package de.sciss.eisenkraut.gui;
@@ -75,108 +75,114 @@ import java.util.prefs.Preferences;
 
 @SuppressWarnings("serial")
 public class RecorderDialog
-		extends JDialog
-		implements Constants, ServerListener, NodeListener, OSCRouter,
-		PreferenceChangeListener {
+        extends JDialog
+        implements Constants, ServerListener, NodeListener, OSCRouter,
+        PreferenceChangeListener {
 
-	private static final int DISKBUF_SIZE		= 32768;	// buffer size in frames
-    private static final String NODE_CONF		= PrefsUtil.NODE_INPUTCONFIGS;
+    private static final int DISKBUF_SIZE = 32768;    // buffer size in frames
+    private static final String NODE_CONF = PrefsUtil.NODE_INPUTCONFIGS;
 
-    private static final String KEY_CONFIG		= "config";
+    private static final String KEY_CONFIG = "config";
 
-    private final Preferences				audioPrefs;
-    private final Preferences				classPrefs;
-    private final PrefComboBox				ggRecordConfig;
+    private final Preferences audioPrefs;
+    private final Preferences classPrefs;
+    private final PrefComboBox ggRecordConfig;
 
-    private RoutingConfig					rCfg;
-    protected final Server					server;
-    protected final SuperColliderPlayer		player;
+    private RoutingConfig rCfg;
+    protected final Server server;
+    protected final SuperColliderPlayer player;
 
-    protected final ActionRecord			actionRecord;
-    private final ActionStop				actionStop;
-    private final ActionAbort				actionAbort;
-    private final ActionClose				actionClose;
-    protected Context						ct					= null;
-    private final javax.swing.Timer			meterTimer;
-    protected NodeWatcher					nw;
-    protected final TimeoutTimer			timeoutTimer		= new TimeoutTimer( 4000 );
-    private final RecLenTimer				recLenTimer;
-    protected boolean						isRecording			= false;
+    protected final ActionRecord    actionRecord;
+    private final   ActionStop      actionStop;
+    private final   ActionAbort     actionAbort;
+    private final   ActionClose     actionClose;
 
-    protected final DocumentFrame			docFrame;
-    private final int						numChannels;
-    protected final String					encodingString;
+    protected Context ct = null;
 
-    private File							result				= null;
-    private boolean							stopCommit			= false;	// true to close dlg after stop
+    private final javax.swing.Timer meterTimer;
 
-    private final SuperColliderClient		superCollider;
+    protected NodeWatcher nw;
 
-    protected boolean						clipped				= false;
-    protected final JLabel					lbPeak;
-	private final Color                     colrPeakNorm;
+    protected final TimeoutTimer timeoutTimer = new TimeoutTimer(4000);
 
-    private static final String				OSC_RECORDER		= "recorder";
-    private final OSCRouterWrapper			osc;
+    private final RecLenTimer recLenTimer;
 
-    private final MutableLong				recFrames			= new MutableLong( 0 );
-    private final JToggleButton				ggMonitoring;
-    private final ActionPeakReset			actionPeakReset;
+    protected boolean isRecording = false;
+
+    protected final DocumentFrame docFrame;
+    private final int numChannels;
+    protected final String encodingString;
+
+    private File result = null;
+    private boolean stopCommit = false;    // true to close dlg after stop
+
+    private final SuperColliderClient superCollider;
+
+    protected boolean clipped = false;
+    protected final JLabel lbPeak;
+    private final Color colrPeakNorm;
+
+    private static final String OSC_RECORDER = "recorder";
+    private final OSCRouterWrapper osc;
+
+    private final MutableLong recFrames = new MutableLong(0);
+    private final JToggleButton ggMonitoring;
+    private final ActionPeakReset actionPeakReset;
 
     /**
-     *	@throws	IOException	if the server isn't running or no valid input routing config exists
+     *  @throws IOException if the server isn't running or no valid input routing config exists
      */
-	public RecorderDialog(Session doc)
-			throws IOException {
-		super(((doc.getFrame() != null) && (doc.getFrame().getWindow() instanceof Frame)) ? (Frame) doc.getFrame().getWindow() : null,
-				AbstractApplication.getApplication().getResourceString("dlgRecorder"),
-				true); // modal
+    public RecorderDialog(Session doc)
+            throws IOException {
+        super(((doc.getFrame() != null) && (doc.getFrame().getWindow() instanceof Frame)) ? (Frame) doc.getFrame().getWindow() : null,
+                AbstractApplication.getApplication().getResourceString("dlgRecorder"),
+                true); // modal
 
-		setResizable(false);
+        setResizable(false);
 
-        docFrame		= doc.getFrame();
-        superCollider	= SuperColliderClient.getInstance();
-        numChannels		= doc.getAudioTrail().getChannelNum();
+        docFrame        = doc.getFrame();
+        superCollider   = SuperColliderClient.getInstance();
+        numChannels     = doc.getAudioTrail().getChannelNum();
 
         doc.getTransport().stop();
 
-        final Application			app				= AbstractApplication.getApplication();
-        final SpringPanel			recPane;
-        final Container				cp				= getContentPane();
-        final JPanel				butPane;
-        final WindowAdapter			winListener;
-        final String				className		= getClass().getName();
-        final AudioFileDescr		displayAFD		= doc.getDisplayDescr();
-        final JButton				ggPeakReset;
-        // final JToolBar				tbMonitoring;
-        final TimeLabel				lbTime;
-        final MessageFormat			frmtPeak		= new MessageFormat( getResourceString( "msgPeak" ), Locale.US ); // XXX Locale.US
-        final Object[]				peakArgs		= new Object[1];
-        final JRootPane				rp				= getRootPane();
-        final InputMap				imap			= rp.getInputMap( JComponent.WHEN_IN_FOCUSED_WINDOW );
-        final ActionMap				amap			= rp.getActionMap();
-        final JButton				ggAbort, ggRecord, ggStop, ggClose;
-        final int					myMeta			= BasicMenuFactory.MENU_SHORTCUT == InputEvent.CTRL_MASK ?
-            InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK : BasicMenuFactory.MENU_SHORTCUT;	// META on Mac, CTRL+SHIFT on PC
+        final Application   app         = AbstractApplication.getApplication();
+        final Container     cp          = getContentPane();
+        final String        className   = getClass().getName();
+        final AudioFileDescr displayAFD = doc.getDisplayDescr();
+        final MessageFormat frmtPeak    = new MessageFormat(getResourceString("msgPeak"), Locale.US); // XXX Locale.US
+        final JRootPane     rp          = getRootPane();
+        final InputMap      imap        = rp.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        final ActionMap     amap        = rp.getActionMap();
+
+        final SpringPanel recPane;
+        final JPanel butPane;
+        final WindowAdapter winListener;
+        final JButton ggPeakReset;
+        final TimeLabel lbTime;
+        final Object[] peakArgs = new Object[1];
+        final JButton ggAbort, ggRecord, ggStop, ggClose;
+
+        final int myMeta = BasicMenuFactory.MENU_SHORTCUT == InputEvent.CTRL_MASK ?
+                InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK : BasicMenuFactory.MENU_SHORTCUT;    // META on Mac, CTRL+SHIFT on PC
 
         // use same encoding as parent document
         encodingString = (displayAFD.sampleFormat == AudioFileDescr.FORMAT_INT ? "int" : "float") +
-                         String.valueOf( displayAFD.bitsPerSample );
-//encodingString = "float32";
+                String.valueOf(displayAFD.bitsPerSample);
 
-        audioPrefs	= app.getUserPrefs().node( PrefsUtil.NODE_AUDIO );
-        classPrefs	= app.getUserPrefs().node( className.substring( className.lastIndexOf( '.' ) + 1 ));
+        audioPrefs = app.getUserPrefs().node(PrefsUtil.NODE_AUDIO);
+        classPrefs = app.getUserPrefs().node(className.substring(className.lastIndexOf('.') + 1));
 
-        recPane         = new SpringPanel(4, 2, 4, 2);
-        ggRecordConfig	= new PrefComboBox();
+        recPane = new SpringPanel(4, 2, 4, 2);
+        ggRecordConfig = new PrefComboBox();
         ggRecordConfig.setFocusable(false);
-        lbPeak			= new JLabel();
-        colrPeakNorm    = lbPeak.getForeground();
-        actionPeakReset	= new ActionPeakReset();
-        ggPeakReset		= new JButton(actionPeakReset);
-        ggPeakReset.setFocusable( false );
-        lbTime			= new TimeLabel();
-        ggMonitoring	= new JToggleButton( new ActionMonitoring() );
+        lbPeak = new JLabel();
+        colrPeakNorm = lbPeak.getForeground();
+        actionPeakReset = new ActionPeakReset();
+        ggPeakReset = new JButton(actionPeakReset);
+        ggPeakReset.setFocusable(false);
+        lbTime = new TimeLabel();
+        ggMonitoring = new JToggleButton(new ActionMonitoring());
         ggMonitoring.setFocusable(false);
         recPane.gridAdd(lbTime, 1, 0, /* -2 */ -1, 1);
         recPane.gridAdd(new JLabel(getResourceString("labelRecInputs"), SwingConstants.RIGHT), 0, 1);
@@ -192,30 +198,30 @@ public class RecorderDialog
 
         recPane.makeCompactGrid();
 
-        butPane				= new JPanel(); // new FlowLayout( FlowLayout.TRAILING ));
+        butPane = new JPanel(); // new FlowLayout( FlowLayout.TRAILING ));
         butPane.setLayout(new BoxLayout(butPane, BoxLayout.X_AXIS));
-        actionRecord		= new ActionRecord();
-        actionStop			= new ActionStop();
-        actionAbort			= new ActionAbort();
-        actionClose			= new ActionClose();
-        butPane.add( new HelpButton( "RecorderDialog" ));
-        butPane.add( Box.createHorizontalGlue() );
-        ggAbort				= new JButton( actionAbort );
-        ggAbort.setFocusable( false );
-        butPane.add( ggAbort );
-        ggRecord			= new JButton( actionRecord );
-        ggRecord.setFocusable( false );
-        butPane.add( ggRecord );
-        ggStop				= new JButton( actionStop );
-        ggStop.setFocusable( false );
-        butPane.add( ggStop );
-        ggClose				= new JButton( actionClose );
-        ggClose.setFocusable( false );
-        butPane.add( ggClose );
-        butPane.add( CoverGrowBox.create() );
+        actionRecord = new ActionRecord();
+        actionStop = new ActionStop();
+        actionAbort = new ActionAbort();
+        actionClose = new ActionClose();
+        butPane.add(new HelpButton("RecorderDialog"));
+        butPane.add(Box.createHorizontalGlue());
+        ggAbort = new JButton(actionAbort);
+        ggAbort.setFocusable(false);
+        butPane.add(ggAbort);
+        ggRecord = new JButton(actionRecord);
+        ggRecord.setFocusable(false);
+        butPane.add(ggRecord);
+        ggStop = new JButton(actionStop);
+        ggStop.setFocusable(false);
+        butPane.add(ggStop);
+        ggClose = new JButton(actionClose);
+        ggClose.setFocusable(false);
+        butPane.add(ggClose);
+        butPane.add(CoverGrowBox.create());
 
-        cp.add( recPane, BorderLayout.NORTH );
-        cp.add( butPane, BorderLayout.SOUTH );
+        cp.add(recPane, BorderLayout.NORTH);
+        cp.add(butPane, BorderLayout.SOUTH);
 
         meterTimer = new Timer(100, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -232,71 +238,65 @@ public class RecorderDialog
 
         recLenTimer = new RecLenTimer(lbTime, recFrames, doc.timeline.getRate());
 
-        setDefaultCloseOperation( DO_NOTHING_ON_CLOSE );
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 
-        server	= superCollider.getServer();
-        player	= superCollider.getPlayerForDocument( doc );
+        server = superCollider.getServer();
+        player = superCollider.getPlayerForDocument(doc);
 
-        if( (server == null) || (player == null) || !server.isRunning() ) {
-            throw new IOException( getResourceString( "errServerNotRunning" ));
+        if ((server == null) || (player == null) || !server.isRunning()) {
+            throw new IOException(getResourceString("errServerNotRunning"));
         }
 
-        osc	= new OSCRouterWrapper( doc, this );
+        osc = new OSCRouterWrapper(doc, this);
 
         // ---- listeners -----
 
         winListener = new WindowAdapter() {
-            public void windowClosing( WindowEvent e ) {
-                if( !isRecording ) {
+            public void windowClosing(WindowEvent e) {
+                if (!isRecording) {
                     disposeRecorder();
                 }
             }
         };
-        addWindowListener( winListener );
+        addWindowListener(winListener);
 
-        superCollider.addServerListener( this );
-//		player.addMeterListener( this );
-//		player.setMetering( true );
+        superCollider.addServerListener(this);
 
-        nw		= superCollider.getNodeWatcher();
-        nw.addListener( this );
+        nw = superCollider.getNodeWatcher();
+        nw.addListener(this);
 
         // ---- keyboard shortcuts ----
-        imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_R, myMeta ), "record" );	// VK_SPACE doesn't work (WHY?)
-//		amap.put( "record", actionRecord );
-        amap.put( "record", new DoClickAction( ggRecord ));
-        imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_PERIOD, myMeta ), "abort" );
-//		amap.put( "abort", actionAbort );
-        amap.put( "abort", new DoClickAction( ggAbort ));
-        imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_ENTER, myMeta ), "stop" );
-//		amap.put( "stop", actionStop );
-        amap.put( "stop", new DoClickAction( ggStop ));
-        imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_ESCAPE, 0 ), "close" );
-        amap.put( "close", actionClose );
+        imap.put(KeyStroke.getKeyStroke(KeyEvent.VK_R, myMeta), "record");    // VK_SPACE doesn't work (WHY?)
+        amap.put("record", new DoClickAction(ggRecord));
+        imap.put(KeyStroke.getKeyStroke(KeyEvent.VK_PERIOD, myMeta), "abort");
+        amap.put("abort", new DoClickAction(ggAbort));
+        imap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, myMeta), "stop");
+        amap.put("stop", new DoClickAction(ggStop));
+        imap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "close");
+        amap.put("close", actionClose);
 
         docFrame.setForceMeters( true );
         player.setActiveInput( true );
         meterTimer.start();
 
-GUIUtil.setInitialDialogFocus( rp );	// necessary to get keyboard shortcuts working
+        GUIUtil.setInitialDialogFocus(rp);    // necessary to get keyboard shortcuts working
 
-        new DynamicAncestorAdapter( new DynamicPrefChangeManager( classPrefs, new String[] { KEY_CONFIG },
-                this )).addTo( getRootPane() );
+        new DynamicAncestorAdapter(new DynamicPrefChangeManager(classPrefs, new String[]{KEY_CONFIG},
+                this)).addTo(getRootPane());
 
         pack();
-        setLocationRelativeTo( getOwner() );
-        setVisible( true );
-//		init( root );
+        setLocationRelativeTo(getOwner());
+        setVisible(true);
     }
 
-    private boolean createDefs( int numInputChannels )
-    throws IOException
-    {
-        final Control		ctrlI	= Control.ir( new String[] { "i_aInBs", "i_aOtBf" }, new float[] { 0f, 0f });
-        final GraphElem		graph;
-        final SynthDef		def;
+    private boolean createDefs(int numInputChannels)
+            throws IOException {
 
-        if( numInputChannels > 0) {
+        final Control ctrlI = Control.ir(new String[]{"i_aInBs", "i_aOtBf"}, new float[]{0f, 0f});
+        final GraphElem graph;
+        final SynthDef def;
+
+        if (numInputChannels > 0) {
             final GraphElem in = UGen.ar("In", numInputChannels, ctrlI.getChannel("i_aInBs"));
             graph = UGen.ar("DiskOut", ctrlI.getChannel("i_aOtBf"), in);
         } else {
@@ -312,156 +312,101 @@ GUIUtil.setInitialDialogFocus( rp );	// necessary to get keyboard shortcuts work
         return result;
     }
 
-    private void createRecordConfig()
-    {
-        final String cfgName	= classPrefs.get( KEY_CONFIG, null );
+    private void createRecordConfig() {
+        final String cfgName = classPrefs.get(KEY_CONFIG, null);
 
-        RoutingConfig newRCfg	= null;
+        RoutingConfig newRCfg = null;
 
         try {
-            if( cfgName != null && audioPrefs.node( NODE_CONF ).nodeExists( cfgName )) {
-                newRCfg	= new RoutingConfig( audioPrefs.node( NODE_CONF ).node( cfgName ));
+            if (cfgName != null && audioPrefs.node(NODE_CONF).nodeExists(cfgName)) {
+                newRCfg = new RoutingConfig(audioPrefs.node(NODE_CONF).node(cfgName));
             }
-        }
-        catch( BackingStoreException e1 ) {
-            printError( "createRecordConfig", e1 );
+        } catch (BackingStoreException e1) {
+            printError("createRecordConfig", e1);
         }
 
-        if( (newRCfg != null) && (newRCfg.numChannels == numChannels) ) {
-            rCfg	= newRCfg;
-            actionRecord.setEnabled( true );
+        if ((newRCfg != null) && (newRCfg.numChannels == numChannels)) {
+            rCfg = newRCfg;
+            actionRecord.setEnabled(true);
         } else {
-            rCfg	= null;
-            actionRecord.setEnabled( false );
+            rCfg = null;
+            actionRecord.setEnabled(false);
         }
         rebuildSynths();
     }
 
-    private void disposeAll()
-    {
-//		meterTimer.stop();
-//		meterPanel.removeAll();
-//		synchronized( collMeters ) {
-//			collMeters.clear();
-//		}
-//		meterPanel.revalidate();
+    private void disposeAll() {
         disposeContext();
     }
 
-    private void rebuildSynths()
-    {
-//		Synth		synth;
-//		LevelMeter	meter;
-        final int	chanOff;
+    private void rebuildSynths() {
+        final int chanOff;
 
         try {
             disposeAll();
 
-            if( rCfg == null ) return;
+            if (rCfg == null) return;
 
-            ct		= new Context( rCfg.numChannels, player.getInputBus() );
-            chanOff	= server.getOptions().getNumOutputBusChannels();
+            ct = new Context(rCfg.numChannels, player.getInputBus());
+            chanOff = server.getOptions().getNumOutputBusChannels();
 
-            createDefs( rCfg.numChannels );
+            createDefs(rCfg.numChannels);
 
-            final OSCBundle	bndl	= new OSCBundle( 0.0 );
+            final OSCBundle bndl = new OSCBundle(0.0);
 
-            for( int ch = 0; ch < rCfg.numChannels; ch++ ) {
-                bndl.addPacket( ct.synthsRoute[ ch ].newMsg( ct.grpRoot, new String[] {
-                    "i_aInBs",		              "i_aOtBs"       }, new float[] {
-                    rCfg.mapping[ ch ] + chanOff, ct.busInternal.getIndex() + ch }, kAddToHead ));
-                nw.register( ct.synthsRoute[ ch ]);
-//				bndl.addPacket( ct.synthsMeter[ ch ].newMsg( ct.grpRoot, new String[] {
-//					"i_aInBus",					   "i_kOutBus" }, new float[] {
-//					ct.busInternal.getIndex() + ch, ct.busMeter.getIndex() + (ch << 1) }, kAddToTail ));
-//				nw.register( ct.synthsMeter[ ch ]);
-//				meter = new LevelMeter( LevelMeter.HORIZONTAL );
-////				meter.setHoldDuration( -1 );
-////meter.setRMSPainted( false );
-//				synchronized( collMeters ) {
-//					collMeters.add( meter );
-//				}
-//				meterPanel.add( meter );
+            for (int ch = 0; ch < rCfg.numChannels; ch++) {
+                bndl.addPacket(ct.synthsRoute[ch].newMsg(ct.grpRoot, new String[]{
+                        "i_aInBs", "i_aOtBs"}, new float[]{
+                        rCfg.mapping[ch] + chanOff, ct.busInternal.getIndex() + ch}, kAddToHead));
+                nw.register(ct.synthsRoute[ch]);
             }
-//pack();
-//			meterPanel.revalidate();
 
-            server.sendBundle( bndl );
-            if( !server.sync( 4.0f )) {
+            server.sendBundle(bndl);
+            if (!server.sync(4.0f)) {
                 printTimeOutMsg();
             }
 
-//			ct.cSetNResp.add();
-//			meterTimer.start();
-        }
-        catch( IOException e1 ) {
-            printError( "rebuildSynths", e1 );
+        } catch (IOException e1) {
+            printError("rebuildSynths", e1);
         }
     }
 
-    private void printTimeOutMsg()
-    {
-        Server.getPrintStream().println( AbstractApplication.getApplication().getResourceString( "errOSCTimeOut" ));
+    private void printTimeOutMsg() {
+        Server.getPrintStream().println(AbstractApplication.getApplication().getResourceString("errOSCTimeOut"));
     }
 
-    protected void disposeRecorder()
-    {
+    protected void disposeRecorder() {
         osc.remove();
         meterTimer.stop();
-        docFrame.setForceMeters( false );
-        setVisible( false );
-//		player.setMetering( false );
-        player.setActiveInput( false );
-        player.setActiveOutput( false );
-//		player.removeMeterListener( this );
-        superCollider.removeServerListener( this );
+        docFrame.setForceMeters(false);
+        setVisible(false);
+        player.setActiveInput(false);
+        player.setActiveOutput(false);
+        superCollider.removeServerListener(this);
         disposeAll();
-//		root.jitter.removeListener( this );
-        dispose();	// JFrame / JDialog
-//		root.addComponent( Main.COMP_RECORDER, null );
+        dispose();    // JFrame / JDialog
     }
 
-    private void disposeContext()
-    {
-        if( ct != null ) {
+    private void disposeContext() {
+        if (ct != null) {
             try {
                 ct.dispose();
-            }
-            catch( IOException e1 ) {
-                printError( "disposeContext", e1 );
+            } catch (IOException e1) {
+                printError("disposeContext", e1);
             }
             ct = null;
         }
     }
 
-//	private void refillConfigs()
-//	{
-//		RoutingConfig rCfg;
-//	
-//		try {
-//			final String[] cfgNames = audioPrefs.node( NODE_CONF ).childrenNames();
-//			ggRecordConfig.removeAllItems();
-//			for( int i = 0; i < cfgNames.length; i++ ) {
-//				rCfg	= new RoutingConfig( audioPrefs.node( NODE_CONF ).node( cfgNames[ i ]));
-//				if( rCfg.numChannels == numChannels ) {
-//					ggRecordConfig.addItem( cfgNames[ i ]);
-//				}
-//			}
-//		}
-//		catch( BackingStoreException e1 ) {
-//			printError( "refillConfigs", e1 );
-//		}
-//	}
 
-    public void refillConfigs()
-    {
-        final Preferences	childPrefs;
-        final String[]		cfgIDs;
-        Preferences			cfgPrefs;
+    public void refillConfigs() {
+        final Preferences childPrefs;
+        final String[] cfgIDs;
+        Preferences cfgPrefs;
 
         try {
-            childPrefs	= audioPrefs.node( NODE_CONF );
-            cfgIDs		= childPrefs.childrenNames();
+            childPrefs = audioPrefs.node(NODE_CONF);
+            cfgIDs = childPrefs.childrenNames();
             ggRecordConfig.removeAllItems();
             for (String cfgID : cfgIDs) {
                 cfgPrefs = childPrefs.node(cfgID);
@@ -469,91 +414,40 @@ GUIUtil.setInitialDialogFocus( rp );	// necessary to get keyboard shortcuts work
                     ggRecordConfig.addItem(new StringItem(cfgID, cfgPrefs.get(RoutingConfig.KEY_NAME, cfgID)));
                 }
             }
+        } catch (BackingStoreException e1) {
+            System.err.println(e1.getClass().getName() + " : " + e1.getLocalizedMessage());
         }
-        catch( BackingStoreException e1 ) {
-            System.err.println( e1.getClass().getName() + " : " + e1.getLocalizedMessage() );
-        }
     }
 
-    protected static void printError( String name, Throwable t )
-    {
-        System.err.println( name + " : " + t.getClass().getName() + " : " + t.getLocalizedMessage() );
+    protected static void printError(String name, Throwable t) {
+        System.err.println(name + " : " + t.getClass().getName() + " : " + t.getLocalizedMessage());
     }
 
-    protected String getResourceString( String key )
-    {
-        return AbstractApplication.getApplication().getResourceString( key );
+    protected String getResourceString(String key) {
+        return AbstractApplication.getApplication().getResourceString(key);
     }
 
-//	private void serverStarted()
-//	{
-////		try {
-//			createRecordConfig();
-////		}
-////		catch( IOException e1 ) {
-////			printError( "Recorder synth init", e1 );
-////		}
-//	}
-
-//	private void serverStopped()
-//	{
-//		disposeAll();
-//	
-////		LevelMeter meter;
-////	
-////		synchronized( collMeters ) {
-////			for( int i = 0; i < collMeters.size(); i++ ) {
-////				meter = (LevelMeter) collMeters.get( i );
-////				meter.setPeakAndRMS( 0.0f, 0.0f );
-////				meter.clearHold();
-////			}
-////		}
-////		
-//		actionRecord.setEnabled( false );
-//		actionStop.setEnabled( false );
-//		actionAbort.setEnabled( false );
-//		actionClose.setEnabled( true );
-//	}
-
-    protected void stopRecording( boolean commit )
-    {
+    protected void stopRecording(boolean commit) {
         recLenTimer.stop();
 
-        if( (server == null) || !server.isRunning() || (ct == null) ) return;
+        if ((server == null) || !server.isRunning() || (ct == null)) return;
 
         final OSCBundle bndl = new OSCBundle();
 
         try {
-            bndl.addPacket( ct.synthDiskOut.freeMsg() );
-            bndl.addPacket( ct.bufDisk.closeMsg() );
-            stopCommit	= commit;
-            server.sendBundle( bndl );
+            bndl.addPacket(ct.synthDiskOut.freeMsg());
+            bndl.addPacket(ct.bufDisk.closeMsg());
+            stopCommit = commit;
+            server.sendBundle(bndl);
             timeoutTimer.stop();
-            timeoutTimer.setMessage( "Failed to stop recording synth" );
-            timeoutTimer.setActions( new Action[] { actionStop, actionAbort, actionClose });
+            timeoutTimer.setMessage("Failed to stop recording synth");
+            timeoutTimer.setActions(new Action[]{actionStop, actionAbort, actionClose});
             timeoutTimer.start();
-            timeoutTimer.enable( false );
-        }
-        catch( IOException e1 ) {
-            printError( getResourceString( "buttonStop" ), e1 );
+            timeoutTimer.enable(false);
+        } catch (IOException e1) {
+            printError(getResourceString("buttonStop"), e1);
         }
     }
-
-// ---------------- MeterListener interface ---------------- 
-
-//	public void meterUpdate( float[] peakRMSPairs )
-//	{
-//		boolean changed = false;
-//	
-//		for( int i = 0; i < peakRMSPairs.length; i += 2 ) {
-//			if( peakRMSPairs[ i ] > maxPeak ) {
-//				maxPeak = peakRMSPairs[ i ];
-//				changed = true;
-//			}
-//		}
-//		
-//		if( changed ) EventQueue.invokeLater( runPeakUpdate );
-//	}
 
     // ------------- OSCRouter interface -------------
 
@@ -604,25 +498,14 @@ GUIUtil.setInitialDialogFocus( rp );	// necessary to get keyboard shortcuts work
 
 // ------------- ServerListener interface -------------
 
-    public void serverAction( ServerEvent e )
-    {
-//		if( server == null ) return;
+    public void serverAction(ServerEvent e) {
+        switch (e.getID()) {
+            case ServerEvent.STOPPED:
+                disposeRecorder();
+                break;
 
-        switch( e.getID() ) {
-        case ServerEvent.STOPPED:
-//			serverStopped();
-disposeRecorder();
-            break;
-
-//		case ServerEvent.RUNNING:	// XXX sync
-//			server	= e.getServer();
-//			nw		= root.superCollider.getNodeWatcher();
-//			nw.addListener( this );
-//			serverStarted();
-//			break;
-
-        default:
-            break;
+            default:
+                break;
         }
     }
 
@@ -635,167 +518,128 @@ disposeRecorder();
 
 // ------------- NodeListener interface -------------
 
-    public void nodeAction( NodeEvent e )
-    {
-//System.err.println("A" );
-        if( (ct == null) || (e.getNode() != ct.synthDiskOut) ) return;
-//System.err.println("B" );
+    public void nodeAction(NodeEvent e) {
+        if ((ct == null) || (e.getNode() != ct.synthDiskOut)) return;
 
-        switch( e.getID() ) {
-        case NodeEvent.GO:
-//System.err.println("C" );
-            isRecording		= true;
-            timeoutTimer.stop();
-            actionStop.setEnabled( true );
-            actionAbort.setEnabled( true );
-            actionClose.setEnabled( false );
-            recLenTimer.restart();
-            break;
+        switch (e.getID()) {
+            case NodeEvent.GO:
+                isRecording = true;
+                timeoutTimer.stop();
+                actionStop.setEnabled(true);
+                actionAbort.setEnabled(true);
+                actionClose.setEnabled(false);
+                recLenTimer.restart();
+                break;
 
-        case NodeEvent.END:
-            isRecording	= false;
-            timeoutTimer.stop();
-            recLenTimer.stop();
-            actionRecord.setEnabled( true );
-            actionClose.setEnabled( true );
-            if( ct != null ) {
-                if( stopCommit ) {
-                    result = ct.recFile;
-                    ct.forgetFile( true );
-                    disposeRecorder();
-                } else {
-                    try {
-                        ct.recreateFile();
-                    }
-                    catch( IOException e1 ) {
-                        BasicWindowHandler.showErrorDialog( RecorderDialog.this, e1, getTitle() );
+            case NodeEvent.END:
+                isRecording = false;
+                timeoutTimer.stop();
+                recLenTimer.stop();
+                actionRecord.setEnabled(true);
+                actionClose.setEnabled(true);
+                if (ct != null) {
+                    if (stopCommit) {
+                        result = ct.recFile;
+                        ct.forgetFile(true);
+                        disposeRecorder();
+                    } else {
+                        try {
+                            ct.recreateFile();
+                        } catch (IOException e1) {
+                            BasicWindowHandler.showErrorDialog(RecorderDialog.this, e1, getTitle());
+                        }
                     }
                 }
-            }
-            break;
+                break;
 
-        default:
-            break;
+            default:
+                break;
         }
     }
 
 // ------------- internal classes -------------
 
-    private class Context
-    {
-//		private OSCResponderNode	cSetNResp	= null;
-        protected Group				grpRoot		= null;
-        protected final Synth		synthDiskOut;	// one multi-channel disk out synth
-        protected final Synth[]		synthsRoute;	// for each config channel one route
-//		private final Synth[]		synthsMeter;	// for each config channel a meter control
-        protected Buffer			bufDisk		= null;
-        protected Bus				busInternal	= null;		// reference from SuperColliderPlayer!
-//		private Bus					busMeter	= null;		// control rate, two channels per channel
+    private class Context {
+        protected Group grpRoot = null;
+        protected final Synth synthDiskOut;    // one multi-channel disk out synth
+        protected final Synth[] synthsRoute;    // for each config channel one route
+        protected Buffer bufDisk = null;
+        protected Bus busInternal = null;        // reference from SuperColliderPlayer!
 
-//		private final OSCMessage	meterBangMsg;	// /c_getn for the meter values
-
-        protected File				recFile		= null;
+        protected File recFile = null;
 
         /*
-         *	@throws	IOException	if the server ran out of busses
-         *						or buffers
+         *  @throws IOException if the server ran out of busses or buffers
          */
-        protected Context( int numConfigChannels, Bus busInternal )
-        throws IOException
-        {
-this.busInternal = busInternal;
+        protected Context(int numConfigChannels, Bus busInternal)
+                throws IOException {
+            this.busInternal = busInternal;
 
             try {
-//				this.numInputChannels	= numInputChannels;
-                synthDiskOut			= Synth.basicNew( "eisk-rec" + numConfigChannels, server );
-                synthsRoute				= new Synth[ numConfigChannels ];
-//				synthsMeter				= new Synth[ numConfigChannels ];
-                for( int i = 0; i < numConfigChannels; i++ ) {
-                    synthsRoute[ i ]	= Synth.basicNew( "eisk-route", server );
-//					synthsMeter[ i ]	= Synth.basicNew( "eisen-recmeter", server );
+                synthDiskOut = Synth.basicNew("eisk-rec" + numConfigChannels, server);
+                synthsRoute = new Synth[numConfigChannels];
+                for (int i = 0; i < numConfigChannels; i++) {
+                    synthsRoute[i] = Synth.basicNew("eisk-route", server);
                 }
-//				bufDisk					= new Buffer( server, DISKBUF_SIZE, numConfigChannels );
-                bufDisk					= Buffer.alloc( server, DISKBUF_SIZE, numConfigChannels );
-//				busInternal				= Bus.audio( server, numConfigChannels );
-//				busMeter				= Bus.control( server, numConfigChannels << 1 );
+                bufDisk = Buffer.alloc(server, DISKBUF_SIZE, numConfigChannels);
 
-//				if( (bufDisk == null) || (busInternal == null) || (busMeter == null) ) {
                 if( (bufDisk == null) || (busInternal == null) ) {
                     throw new IOException( "Server ran out of buffers or busses!" );
                 }
 
-//				meterBangMsg			= new OSCMessage( "/c_getn", new Object[] {
-//					new Integer( busMeter.getIndex() ), new Integer( busMeter.getNumChannels() )});
-//
-//				cSetNResp				= new OSCResponderNode( server.getAddr(), "/c_setn", cSetNRespBody );
-
                 // the group is added to the *head* coz we want to be able to write
                 // to the player's input bus (to see the meters, to allow monitoring)
-                grpRoot					= new Group( server.getDefaultGroup(), kAddToHead );
-                grpRoot.setName( "Recorder" );
-                nw.register( grpRoot );
+                grpRoot = new Group(server.getDefaultGroup(), kAddToHead);
+                grpRoot.setName("Recorder");
+                nw.register(grpRoot);
 
-                recFile					= IOUtil.createTempFile();
-            }
-            catch( IOException e1 ) {
+                recFile = IOUtil.createTempFile();
+
+            } catch (IOException e1) {
                 dispose();
                 throw e1;
             }
         }
 
-        protected void forgetFile( boolean keep )
-        {
-            if( (recFile != null) && !keep ) {
-                if( !recFile.delete() ) {
-                    System.err.println( "Couldn't delete temp file " + recFile.getAbsolutePath() );
+        protected void forgetFile(boolean keep) {
+            if ((recFile != null) && !keep) {
+                if (!recFile.delete()) {
+                    System.err.println("Couldn't delete temp file " + recFile.getAbsolutePath());
                 }
             }
             recFile = null;
         }
 
         protected void recreateFile()
-        throws IOException
-        {
-            forgetFile( false );
-            recFile	= IOUtil.createTempFile();
+                throws IOException {
+
+            forgetFile(false);
+            recFile = IOUtil.createTempFile();
         }
 
         protected void dispose()
-        throws IOException
-        {
+                throws IOException {
             IOException e11 = null;
 
-            forgetFile( false );
+            forgetFile(false);
 
-//			if( cSetNResp != null ) {
-//				try {
-//					cSetNResp.remove();
-//					cSetNResp = null;
-//				}
-//				catch( IOException e1 ) {
-//					e11 = e1;
-//				}
-//			}
-            if( (bufDisk != null) && bufDisk.getServer().isRunning() ) {
+            if ((bufDisk != null) && bufDisk.getServer().isRunning()) {
                 try {
                     bufDisk.free();
-                }
-                catch( IOException e1 ) {
+                } catch (IOException e1) {
                     e11 = e1;
                 }
             }
-//			if( busInternal != null ) busInternal.free();
-//			busPan.free();
-//			if( busMeter != null ) busMeter.free();
-            if( (grpRoot != null) && grpRoot.getServer().isRunning() ) grpRoot.free();
-            if( e11 != null ) throw e11;
+
+            if ((grpRoot != null) && grpRoot.getServer().isRunning()) grpRoot.free();
+            if (e11 != null) throw e11;
         }
     }
 
-	@SuppressWarnings("serial")
-	private class ActionPeakReset
-			extends AbstractAction {
-		protected ActionPeakReset()
+    @SuppressWarnings("serial")
+    private class ActionPeakReset
+            extends AbstractAction {
+        protected ActionPeakReset()
         {
             super( getResourceString( "buttonReset" ));
         }
@@ -805,12 +649,13 @@ this.busInternal = busInternal;
             perform();
         }
 
-		protected void perform() {
-			docFrame.clearMeterHold();
-			lbPeak.setForeground(colrPeakNorm);
-			clipped = false;
-		}
-	}
+
+        protected void perform() {
+            docFrame.clearMeterHold();
+            lbPeak.setForeground(colrPeakNorm);
+            clipped = false;
+        }
+    }
 
     @SuppressWarnings("serial")
     private class ActionMonitoring
@@ -850,87 +695,68 @@ this.busInternal = busInternal;
                 }
             }
 
-            final OSCBundle		bndl	= new OSCBundle();
-            final OSCMessage	msgWrite;
+            final OSCBundle bndl = new OSCBundle();
+            final OSCMessage msgWrite;
 
             try {
-//				server.dumpOutgoingOSC( kDumpBoth );
-                bndl.addPacket( ct.bufDisk.closeMsg() );
-//				msgWrite = ct.bufDisk.writeMsg( ct.recFile.getAbsolutePath(), "aiff",
-//								affp.getEncodingString(), 0, 0, true );
-                msgWrite = ct.bufDisk.writeMsg( ct.recFile.getAbsolutePath(), "aiff",
-                                encodingString, 0, 0, true );
-                bndl.addPacket( msgWrite );
-                if( server.sendBundleSync( bndl, msgWrite.getName(), 4 )) {
-                    nw.register( ct.synthDiskOut );
+                bndl.addPacket(ct.bufDisk.closeMsg());
+                msgWrite = ct.bufDisk.writeMsg(ct.recFile.getAbsolutePath(), "aiff",
+                        encodingString, 0, 0, true);
+                bndl.addPacket(msgWrite);
+                if (server.sendBundleSync(bndl, msgWrite.getName(), 4)) {
+                    nw.register(ct.synthDiskOut);
 
-//System.out.println( "HERE" );
-//try { Thread.sleep( 3000 ); } catch( InterruptedException e1 ) { /* ... */ }
-//System.out.println( "---2" );
-
-                    server.sendMsg( ct.synthDiskOut.newMsg( ct.grpRoot, new String[] { "i_aInBs", "i_aOtBf" },
-                                new float[] { ct.busInternal.getIndex(), ct.bufDisk.getBufNum() }, kAddToTail ));
+                    server.sendMsg(ct.synthDiskOut.newMsg(ct.grpRoot, new String[]{"i_aInBs", "i_aOtBf"},
+                            new float[]{ct.busInternal.getIndex(), ct.bufDisk.getBufNum()}, kAddToTail));
                     timeoutTimer.stop();
-                    timeoutTimer.setMessage( "Failed to initialize recording synth" );
-                    timeoutTimer.setActions( new Action[] { actionRecord });
+                    timeoutTimer.setMessage("Failed to initialize recording synth");
+                    timeoutTimer.setActions(new Action[]{actionRecord});
                     timeoutTimer.start();
-                    timeoutTimer.enable( false );
+                    timeoutTimer.enable(false);
                 } else {
-                    System.err.println( "Failed to initialize recording buffer" );
+                    System.err.println("Failed to initialize recording buffer");
                 }
-            }
-            catch( IOException e1 ) {
-                printError( getValue( NAME ).toString(), e1 );
+            } catch (IOException e1) {
+                printError(getValue(NAME).toString(), e1);
             }
         }
     }
 
     @SuppressWarnings("serial")
     private class ActionStop
-    extends AbstractAction
-    {
-        protected ActionStop()
-        {
-            super( getResourceString( "buttonStop" ));
-            setEnabled( false );
+            extends AbstractAction {
+        protected ActionStop() {
+            super(getResourceString("buttonStop"));
+            setEnabled(false);
         }
 
-        public void actionPerformed( ActionEvent e )
-        {
-            stopRecording( true );
+        public void actionPerformed(ActionEvent e) {
+            stopRecording(true);
         }
     }
 
     @SuppressWarnings("serial")
     private class ActionAbort
-    extends AbstractAction
-    {
-        protected ActionAbort()
-        {
-            super( getResourceString( "buttonAbort" ));
-            setEnabled( false );
-//			putValue( ACCELERATOR_KEY, KeyStroke.getKeyStroke( KeyEvent.VK_PERIOD, KeyEvent.META_MASK ));
+            extends AbstractAction {
+        protected ActionAbort() {
+            super(getResourceString("buttonAbort"));
+            setEnabled(false);
         }
 
-        public void actionPerformed( ActionEvent e )
-        {
-            stopRecording( false );
+        public void actionPerformed(ActionEvent e) {
+            stopRecording(false);
         }
     }
 
     @SuppressWarnings("serial")
     private class ActionClose
-    extends AbstractAction
-    {
-        protected ActionClose()
-        {
-            super( getResourceString( "buttonClose" ));
-//			putValue( ACCELERATOR_KEY, KeyStroke.getKeyStroke( KeyEvent.VK_ESCAPE, 0 ));
+            extends AbstractAction {
+        protected ActionClose() {
+            super(getResourceString("buttonClose"));
         }
 
-        public void actionPerformed( ActionEvent e )
-        {
-            if( !isRecording ) {
+        public void actionPerformed(ActionEvent e) {
+            if (!isRecording) {
                 disposeRecorder();
             }
         }
@@ -938,37 +764,31 @@ this.busInternal = busInternal;
 
     @SuppressWarnings("serial")
     private static class TimeoutTimer
-    extends javax.swing.Timer
-    implements ActionListener
-    {
-        private String		errorMsg;
-        private Action[]	actions;
+            extends javax.swing.Timer
+            implements ActionListener {
+        private String errorMsg;
+        private Action[] actions;
 
-        protected TimeoutTimer( int timeOutMillis )
-        {
-            super( timeOutMillis, null );
-            addActionListener( this );
-            setRepeats( false );
+        protected TimeoutTimer(int timeOutMillis) {
+            super(timeOutMillis, null);
+            addActionListener(this);
+            setRepeats(false);
         }
 
-        protected void setMessage( String errorMsg )
-        {
+        protected void setMessage(String errorMsg) {
             this.errorMsg = errorMsg;
         }
 
-        protected void setActions( Action[] actions )
-        {
-            this.actions	= actions;
+        protected void setActions(Action[] actions) {
+            this.actions = actions;
         }
 
-        public void actionPerformed( ActionEvent e )
-        {
-            System.err.println( errorMsg );
-            enable( true );
+        public void actionPerformed(ActionEvent e) {
+            System.err.println(errorMsg);
+            enable(true);
         }
 
-        protected void enable( boolean onOff )
-        {
+        protected void enable(boolean onOff) {
             for (Action action : actions) {
                 action.setEnabled(onOff);
             }
