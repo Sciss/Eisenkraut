@@ -2,7 +2,7 @@
  *  MenuFactory.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2016 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2017 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
@@ -791,6 +791,7 @@ public class MenuFactory
             if (aboutBox == null) {
                 final AboutBox res = new AboutBox();
                 res.setCreditsPreferredSize(new Dimension(300, 150));
+                res.setBuildVersion(Main.VERSION_STRING);
                 res.pack();
                 aboutBox = res;
             }

@@ -2,7 +2,7 @@
  *  InterleavedAudioStake.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2016 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2017 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
@@ -171,6 +171,12 @@ public class InterleavedAudioStake
     public void flush()
             throws IOException {
         synchronized (f) {
+            // this is important because AudioTrail will otherwise assume
+            // that the next available file span overlaps with the current one!
+            // (https://github.com/Sciss/Eisenkraut/issues/7)
+            if (f.getFramePosition() != fileSpan.getStop()) {
+                f.seekFrame(fileSpan.getStop());
+            }
             f.flush();
         }
     }

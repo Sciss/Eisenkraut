@@ -1,5 +1,10 @@
 # change history
 
+## v1.3.2 (may 2017)
+
+ - fixes region list bugs with 'reverse' process
+ - fixes region list bugs with empty selection rendering
+
 ## v1.3.0 (apr 2016)
 
  - adds dark-skin option (in preferences)

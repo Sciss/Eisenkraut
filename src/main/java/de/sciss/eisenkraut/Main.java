@@ -2,7 +2,7 @@
  *  Main.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2016 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2017 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
@@ -80,6 +80,8 @@ public class Main
      *  @todo   should be saved in the session file as well
      */
     private static final double APP_VERSION     = 1.3;
+
+    public static final String VERSION_STRING   = "1.3.2";
 
     /**
      *  Enables / disables event dispatching debugging

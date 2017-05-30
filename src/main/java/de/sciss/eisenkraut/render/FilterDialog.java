@@ -2,7 +2,7 @@
  *  FilterDialog.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2016 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2017 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU General Public License v3+
  *
@@ -317,9 +317,9 @@ public class FilterDialog
      */
     public boolean consumerRender(RenderSource source)
             throws IOException {
-        final ConsumerContext		consc   = (ConsumerContext) source.context.getOption(KEY_CONSC);
-        final AudioTrail			at		= consc.doc.getAudioTrail();
-        final boolean				preFade, postFade;
+        final ConsumerContext       consc   = (ConsumerContext) source.context.getOption(KEY_CONSC);
+        final AudioTrail            at      = consc.doc.getAudioTrail();
+        final boolean               preFade, postFade;
 
 // UUU
 //		if( consc.bs == null ) {
@@ -432,23 +432,23 @@ public class FilterDialog
 
         if ((context == null) || (plugIn == null) || !doc.checkProcess()) return;
 
-        final ConsumerContext	consc;
-        final Flag				hasSelectedAudio	= new Flag(false);
-        final RenderSource		source;
-        final List<Track.Info> tis					= context.getTrackInfo();
-        final int				inTrnsLen, outTrnsLen;
-        final int				minBlockSize, maxBlockSize, prefBlockSize;
-        final Set<Object>		newOptions;
-        final RandomAccessRequester rar;
-        final long				pasteLength, preMaxLen, postMaxLen;
-        final Span				span;
-//		final int				numClipChannels		= 0;
-        boolean					hasSelectedMarkers	= false;
-        Object					value;
+        final Flag hasSelectedAudio = new Flag(false);
+        final List<Track.Info> tis  = context.getTrackInfo();
+        boolean hasSelectedMarkers  = false;
 
-        consc			= new ConsumerContext();
-        consc.plugIn	= plugIn;
-        consc.doc		= doc;
+        final ConsumerContext consc;
+        final RenderSource source;
+        final int inTrnsLen, outTrnsLen;
+        final int minBlockSize, maxBlockSize, prefBlockSize;
+        final Set<Object> newOptions;
+        final RandomAccessRequester rar;
+        final long pasteLength, preMaxLen, postMaxLen;
+        final Span span;
+        Object value;
+
+        consc           = new ConsumerContext();
+        consc.plugIn    = plugIn;
+        consc.doc       = doc;
         context.setOption(KEY_CONSC, consc);
 
         source = new RenderSource(context);
@@ -635,25 +635,20 @@ public class FilterDialog
     public int processRun(ProcessingThread proc)
         throws IOException {
 
-        final RenderContext				rc					= (RenderContext) proc.getClientArg("context");
-//		final List						tis					= (List) pt.getClientArg( "tis" );
-        final ConsumerContext			consc				= (ConsumerContext) rc.getOption(KEY_CONSC);
-        final RenderSource				source				= (RenderSource) proc.getClientArg("source");
-        final AudioTrail				at					= consc.doc.getAudioTrail();
+        final RenderContext         rc              = (RenderContext)   proc.getClientArg("context");
+        final ConsumerContext       consc           = (ConsumerContext) rc.getOption(KEY_CONSC);
+        final RenderSource          source          = (RenderSource)    proc.getClientArg("source");
+        final AudioTrail            at              = consc.doc.getAudioTrail();
 
-        final int						inTrnsLen			= (Integer) proc.getClientArg("inTrnsLen");
-        final RandomAccessRequester		rar					= (RandomAccessRequester) proc.getClientArg("rar");
-        final boolean					randomAccess		= rar != null;
-        int								readLen, writeLen;
-//		Span							span;
-        long							readOffset, remainingRead;
-//		String							className;
-        boolean							consStarted			= false;
-        boolean							consFinished		= false;
+        final int                   inTrnsLen       = (Integer) proc.getClientArg("inTrnsLen");
+        final RandomAccessRequester rar             = (RandomAccessRequester) proc.getClientArg("rar");
+        final boolean               randomAccess    = rar != null;
 
-        // --- clipboard related ---
-//		Span							clipSpan			= null;
-//		long							clipShift			= 0;
+        boolean consStarted     = false;
+        boolean consFinished    = false;
+
+        int readLen, writeLen;
+        long readOffset, remainingRead;
 
         // --- resampling related ---
         final int						inOff				= 0;
