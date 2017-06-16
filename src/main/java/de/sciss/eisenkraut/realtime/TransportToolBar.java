@@ -113,8 +113,8 @@ public class TransportToolBar
         ggRewind.addChangeListener(new CueListener(ggRewind, -100));
         ActionCue actionRwdOn = new ActionCue(ggRewind, true);
         ActionCue actionRwdOff = new ActionCue(ggRewind, false);
-        actionRwdOn.setPair(actionRwdOff);
-        actionRwdOff.setPair(actionRwdOn);
+//        actionRwdOn.setPair(actionRwdOff);
+//        actionRwdOff.setPair(actionRwdOn);
         iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_OPEN_BRACKET, 0, false), "startrwd");
         aMap.put("startrwd", actionRwdOn);
         iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_OPEN_BRACKET, 0, true), "stoprwd");
@@ -142,8 +142,8 @@ public class TransportToolBar
         iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_CLOSE_BRACKET, 0, false), "startfwd");
         ActionCue actionFwdOn  = new ActionCue( ggFFwd, true );
         ActionCue actionFwdOff = new ActionCue( ggFFwd, false );
-        actionFwdOn .setPair(actionFwdOff);
-        actionFwdOff.setPair(actionFwdOn);
+//        actionFwdOn .setPair(actionFwdOff);
+//        actionFwdOff.setPair(actionFwdOn);
         aMap.put("startfwd", actionFwdOn);
         iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_CLOSE_BRACKET, 0, true), "stopfwd");
         aMap.put("stopfwd", actionFwdOff);
@@ -419,29 +419,29 @@ msgPane.add( ggCurrent );
 
         private final boolean			onOff;
         private final AbstractButton	b;
-        private final Timer             t;
-        private ActionCue pair;
-        private long lastWhen = 0L;
+//        private final Timer             t;
+//        private ActionCue pair;
+//        private long lastWhen = 0L;
 
-        public void setPair(ActionCue p) {
-            pair = p;
-        }
+//        public void setPair(ActionCue p) {
+//            pair = p;
+//        }
 
-        public long getLastWhen() {
-            if (!onOff) t.stop();
-            return lastWhen;
-        }
+//        public long getLastWhen() {
+//            if (!onOff) t.stop();
+//            return lastWhen;
+//        }
 
         protected ActionCue(AbstractButton b, boolean onOff) {
             this.onOff = onOff;
             this.b = b;
-
-            if (onOff) t = null;
-            else t = new javax.swing.Timer(5, new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    perform();
-                }
-            });
+//
+//            if (onOff) t = null;
+//            else t = new javax.swing.Timer(5, new ActionListener() {
+//                public void actionPerformed(ActionEvent e) {
+//                    perform();
+//                }
+//            });
         }
 
         private void perform() {
@@ -451,13 +451,13 @@ msgPane.add( ggCurrent );
         }
 
         public void actionPerformed(ActionEvent e) {
-            lastWhen = e.getWhen();
-            if (onOff) {
-                if (pair.getLastWhen() == lastWhen) return;  // Linux repeat bullshit
+//            lastWhen = e.getWhen();
+//            if (onOff) {
+//                if (pair.getLastWhen() == lastWhen) return;  // Linux repeat bullshit
                 perform();
-            } else {
-                t.restart();
-            }
+//            } else {
+//                t.restart();
+//            }
         }
     } // class actionCueClass
 
