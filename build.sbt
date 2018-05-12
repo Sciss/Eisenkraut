@@ -8,7 +8,7 @@ lazy val authorEMail  = "contact@sciss.de"
 
 lazy val basicJavaOpts = Seq("-source", "1.6")
 
-lazy val projectVersion   = "1.3.3"
+lazy val projectVersion   = "1.3.4-SNAPSHOT"
 
 lazy val jcolliderVersion = "1.0.0"
 lazy val scissLibVersion  = "1.1.1"
@@ -24,7 +24,7 @@ lazy val commonSettings = Seq(
   licenses         := Seq("GPL v3+" -> url("http://www.gnu.org/licenses/gpl-3.0.txt")),
   javacOptions    ++= basicJavaOpts ++ Seq("-encoding", "utf8", "-target", "1.6"),
   javacOptions in (Compile, doc) := basicJavaOpts,  // doesn't eat `-encoding`
-  scalaVersion     := "2.12.2", // not used
+  scalaVersion     := "2.12.6", // not used
   autoScalaLibrary := false,
   crossPaths       := false,
   mainClass        := Some("de.sciss.eisenkraut.Main"),
@@ -67,7 +67,7 @@ lazy val publishSettings = Seq(
 // ---- packaging ----
 
 lazy val assemblySettings = Seq(
-  test            in assembly := (),
+  test            in assembly := {},
   target          in assembly := baseDirectory.value,
   assemblyJarName in assembly := s"${name.value}.jar"
 )
@@ -128,7 +128,7 @@ lazy val pkgDebianSettings: Seq[sbt.Def.Setting[_]] = Seq(
   }
 )
 
-lazy val root = Project(id = baseNameL, base = file("."))
+lazy val root = project.withId(baseNameL).in(file("."))
   .enablePlugins(JavaAppPackaging, DebianPlugin)
   .settings(commonSettings)
   .settings(assemblySettings)

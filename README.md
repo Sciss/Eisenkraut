@@ -9,7 +9,7 @@
 
 Eisenkraut is a standalone, cross-platform audio file editor using the SuperCollider 3 server application.
 
-Eisenkraut is (C)opyright 2004&ndash;2017 by Hanns Holger Rutz. All rights reserved. It is released under the [GNU General Public License](http://github.com/Sciss/Eisenkraut/blob/master/licenses/Eisenkraut-License.txt).
+Eisenkraut is (C)opyright 2004&ndash;2018 by Hanns Holger Rutz. All rights reserved. It is released under the [GNU General Public License](http://github.com/Sciss/Eisenkraut/blob/master/licenses/Eisenkraut-License.txt).
 
 To contact the author, send an email to `contact at sciss.de`. For project status, API and current version visit [github.com/Sciss/Eisenkraut](http://github.com/Sciss/Eisenkraut).
 
@@ -36,9 +36,7 @@ Also note that, by default, the audio server is not automatically booted, so you
 
 ## building from source
 
-Eisenkraut can be build from source with [sbt](http://www.scala-sbt.org/#install) version 0.13. It requires Java 1.6.
-
-If you do not have or wish to install sbt on your system, a shortcut is to use the provided Unix (OS X and Linux) script `sbt` which comes in the main folder. It may be invoked as `./sbt` and will automatically download the correct `sbt-launch.jar` version and place it in the main Eisenkraut directory, the first time it is executed. 
+Eisenkraut can be build from source with [sbt](http://www.scala-sbt.org/#install).
 
  - to compile: `sbt compile`
  - to package: `sbt package`

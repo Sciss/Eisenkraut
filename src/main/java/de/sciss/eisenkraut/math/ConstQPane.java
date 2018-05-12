@@ -68,7 +68,7 @@ public class ConstQPane
 		});
 		ggBandsPerOct	= new PrefParamField();
 //		ggBandsPerOct.setSpace( NumberSpace.createIntSpace( 1, 96 ));
-		ggBandsPerOct.addSpace( new ParamSpace( 1, 96, 1, 0, 0, 24 ));
+		ggBandsPerOct.addSpace( new ParamSpace( 1, 768, 1, 0, 0, 24 ));
 		ggBandsPerOct.setPreferences( prefs, ConstQ.KEY_BANDSPEROCT );
 		ggMaxTimeRes	= new PrefParamField();
 		ggMaxTimeRes.addSpace( spcTime );
