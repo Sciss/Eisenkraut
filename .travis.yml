@@ -5,4 +5,3 @@ scala:
 
 jdk:
   - oraclejdk8
-  - openjdk7
