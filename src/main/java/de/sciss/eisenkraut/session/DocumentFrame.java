@@ -654,9 +654,11 @@ public class DocumentFrame
         aMap.put("incvmax", actionIncVertMax);
         iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, InputEvent.CTRL_MASK), "decvmax");
         aMap.put("decvmax", actionDecVertMax);
-        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, InputEvent.CTRL_MASK | InputEvent.ALT_MASK), "incvmin");
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, InputEvent.CTRL_MASK | InputEvent.ALT_MASK  ), "incvmin");
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK), "incvmin");
         aMap.put("incvmin", actionIncVertMin);
-        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, InputEvent.CTRL_MASK | InputEvent.ALT_MASK), "decvmin");
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP  , InputEvent.CTRL_MASK | InputEvent.ALT_MASK  ), "decvmin");
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP  , InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK), "decvmin");
         aMap.put("decvmin", actionDecVertMin);
         iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.CTRL_MASK), "inch");
         iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_OPEN_BRACKET, BasicMenuFactory.MENU_SHORTCUT), "inch");
