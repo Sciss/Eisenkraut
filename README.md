@@ -18,7 +18,7 @@ Please consider supporting this project through Liberapay (see badge above) – 
 
 ## downloading
 
-A binary version of Eisenkraut for all platforms is provided through [GitHub Releases](https://github.com/Sciss/Eisenkraut/releases/latest).
+A binary version of Eisenkraut for all platforms is provided through [archive.org](https://archive.org/details/eisenkraut) and [GitHub Releases](https://github.com/Sciss/Eisenkraut/releases/latest).
 You need a Java runtime for Eisenkraut. Type `java -version` in a terminal to find out whether you have Java installed. Otherwise look at
 https://adoptopenjdk.net/ for ways of installing OpenJDK on your operating system. Furthermore, you need SuperCollider, the installation of
 which is described in the next section.
