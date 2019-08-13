@@ -10,7 +10,7 @@
 
 Eisenkraut is a standalone, cross-platform audio file editor using the SuperCollider 3 server application.
 
-Eisenkraut is (C)opyright 2004&ndash;2018 by Hanns Holger Rutz. All rights reserved. It is released under the [GNU General Public License](http://github.com/Sciss/Eisenkraut/blob/master/licenses/Eisenkraut-License.txt).
+Eisenkraut is (C)opyright 2004&ndash;2019 by Hanns Holger Rutz. All rights reserved. It is released under the [GNU General Public License](http://github.com/Sciss/Eisenkraut/blob/master/licenses/Eisenkraut-License.txt).
 
 To contact the author, send an email to `contact at sciss.de`. For project status, API and current version visit [github.com/Sciss/Eisenkraut](http://github.com/Sciss/Eisenkraut).
 
@@ -19,6 +19,9 @@ Please consider supporting this project through Liberapay (see badge above) – 
 ## downloading
 
 A binary version of Eisenkraut for all platforms is provided through [GitHub Releases](https://github.com/Sciss/Eisenkraut/releases/latest).
+You need a Java runtime for Eisenkraut. Type `java -version` in a terminal to find out whether you have Java installed. Otherwise look at
+https://adoptopenjdk.net/ for ways of installing OpenJDK on your operating system. Furthermore, you need SuperCollider, the installation of
+which is described in the next section.
 
 ## setting up and running
 
@@ -26,8 +29,7 @@ A binary version of Eisenkraut for all platforms is provided through [GitHub Rel
 
 ### installing supercollider
 
-Eisenkraut uses the [SuperCollider](https://supercollider.github.io/) server as the audio playback engine. You need to install a recent SuperCollider 3 version to run this software. The recommended version of SuperCollider is 3.8.0.
-__Warning:__ The version 3.6.6 of SuperCollider is defect, in particular the multi-channel support for streaming sound-files is broken.
+Eisenkraut uses the [SuperCollider](https://supercollider.github.io/) server as the audio playback engine. You need to install a recent SuperCollider 3 version to run this software. The recommended version of SuperCollider is 3.10.x, but things back to 3.7.x should work fine.
 
 ### starting eisenkraut
 
@@ -47,6 +49,9 @@ Eisenkraut can be build from source with [sbt](http://www.scala-sbt.org/#install
  - to make a standalone jar: `sbt assembly`
  
 The release bundles are produced with tasks `universal:packageBin` and `debian:packageBin`.
+
+__Note:__ Some jerk (really) descided to change the API of `javax.swing.tree.TreeNode` in a non-backwards compatible fashion. The project currently requries JDK 8 to compile, as JDK 11 contains this
+breakage. We may decide in the future to move on to JDK 11 or 12.
 
 ## source code distribution
 
