@@ -6,14 +6,14 @@ lazy val baseNameL    = baseName.toLowerCase
 lazy val authorName   = "Hanns Holger Rutz"
 lazy val authorEMail  = "contact@sciss.de"
 
-lazy val basicJavaOpts = Seq("-source", "1.6")
+lazy val basicJavaOpts = Seq("-source", "1.8")
 
-lazy val projectVersion   = "1.3.5"
+lazy val projectVersion   = "1.3.6-SNAPSHOT"
 
 lazy val jcolliderVersion = "1.0.0"
 lazy val scissLibVersion  = "1.1.1"
-lazy val subminVersion    = "0.2.5"
-lazy val weblafVersion    = "2.1.5"
+lazy val subminVersion    = "0.3.2"
+lazy val weblafVersion    = "2.2.0"
 
 lazy val commonSettings = Seq(
   name             := "Eisenkraut",
@@ -22,7 +22,7 @@ lazy val commonSettings = Seq(
   description      := "A multi-channel and hi-res capable audio file editor",
   homepage         := Some(url("https://github.com/Sciss/Eisenkraut")),
   licenses         := Seq("GPL v3+" -> url("http://www.gnu.org/licenses/gpl-3.0.txt")),
-  javacOptions    ++= basicJavaOpts ++ Seq("-encoding", "utf8", "-target", "1.6"),
+  javacOptions    ++= basicJavaOpts ++ Seq("-encoding", "utf8", "-target", "1.8"),
   javacOptions in (Compile, doc) := basicJavaOpts,  // doesn't eat `-encoding`
   scalaVersion     := "2.12.6", // not used
   autoScalaLibrary := false,
