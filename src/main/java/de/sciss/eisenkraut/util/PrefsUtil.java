@@ -406,13 +406,20 @@ public class PrefsUtil {
 
             } else if (Main.isLinux) {
                 final String[] dirs = execDirs();
+                final boolean useDirs;
                 f = findFile("nautilus", dirs);
                 if (f == null) {
                     f = findFile("xdg-open", dirs);
+                    useDirs = true;
+                } else {
+                    useDirs = false;
                 }
                 if (f != null) {
                     final String cmd = f.getAbsolutePath();
-                    putDontOverwrite(mainPrefs, KEY_REVEAL_FILE, cmd.contains(" ") ? "'" + cmd + "'" : cmd);
+                    final boolean escape = cmd.contains(" ") || useDirs;
+                    final String cmd1 = escape ? "'" + cmd + "'" : cmd;
+                    final String cmd2 = useDirs ? cmd1 + " '%d'" : cmd1;
+                    putDontOverwrite(mainPrefs, KEY_REVEAL_FILE, cmd2);
                 }
             } else {
                 // todo: Windows - no idea

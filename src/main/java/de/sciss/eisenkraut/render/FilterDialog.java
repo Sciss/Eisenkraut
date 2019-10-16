@@ -21,6 +21,7 @@ import de.sciss.common.BasicWindowHandler;
 import de.sciss.common.ProcessingThread;
 import de.sciss.eisenkraut.Main;
 import de.sciss.eisenkraut.edit.BasicCompoundEdit;
+import de.sciss.eisenkraut.gui.MenuFactory;
 import de.sciss.eisenkraut.io.AudioStake;
 import de.sciss.eisenkraut.io.AudioTrail;
 import de.sciss.eisenkraut.io.BlendContext;
@@ -40,6 +41,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Set;
 
@@ -130,7 +132,11 @@ public class FilterDialog
 
             // display settings
             if (!guiCreated) createGUI();
-            ggHelp.setHelpFile(plugInClassName); // .substring(plugInClassName.lastIndexOf('.') + 1));
+            try {
+                ggHelp.setHelpFileURL(MenuFactory.helpFile(plugInClassName)); // .substring(plugInClassName.lastIndexOf('.') + 1));
+            } catch (MalformedURLException e) {
+                // ignore
+            }
             view = plugIn.getSettingsView(context);
             ggSettingsPane.setViewportView(view);
             pack();

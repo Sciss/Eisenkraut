@@ -66,6 +66,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.prefs.BackingStoreException;
@@ -204,7 +205,11 @@ public class RecorderDialog
         actionStop = new ActionStop();
         actionAbort = new ActionAbort();
         actionClose = new ActionClose();
-        butPane.add(new HelpButton("RecorderDialog"));
+        try {
+            butPane.add(new HelpButton(MenuFactory.helpFile("RecorderDialog")));
+        } catch (MalformedURLException e) {
+            // ignore
+        }
         butPane.add(Box.createHorizontalGlue());
         ggAbort = new JButton(actionAbort);
         ggAbort.setFocusable(false);

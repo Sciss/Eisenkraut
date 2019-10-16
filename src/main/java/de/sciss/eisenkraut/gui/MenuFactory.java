@@ -102,6 +102,11 @@ public class MenuFactory
         installDir = (base != null) ? base : new File("").getAbsoluteFile();
     }
 
+    public static URL helpFile(String name) throws MalformedURLException {
+        final URL url = new File(new File(installDir, "help"), name + ".html").toURI().toURL();
+        return url;
+    }
+
     /**
      *  The constructor is called only once by
      *  the <code>Main</code> class and will create a prototype
@@ -307,14 +312,14 @@ public class MenuFactory
         // on mac os x. KeyEvent.VK_QUESTION_MARK doesn't exist, plus apple's vm ignore german keyboard layout, therefore the
         // the question mark becomes a minus. however it's wrongly displayed in the menu...
         try {
-            final URL urlManual = new File(new File(installDir, "help"), "index.html").toURI().toURL();
+            final URL urlManual = helpFile("index");
             mg.add(new MenuItem("manual", new URLViewerAction(getResourceString("menuHelpManual"),
                     KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, MENU_SHORTCUT + InputEvent.SHIFT_MASK), urlManual /* "index" */, false)));
         } catch (MalformedURLException e) {
             // nada
         }
         try {
-            final URL urlShortcuts = new File(new File(installDir, "help"), "Shortcuts.html").toURI().toURL();
+            final URL urlShortcuts = helpFile("Shortcuts");
             mg.add(new MenuItem("shortcuts", new URLViewerAction(getResourceString("menuHelpShortcuts"), null, urlShortcuts, false)));
         } catch (MalformedURLException e) {
             // nada

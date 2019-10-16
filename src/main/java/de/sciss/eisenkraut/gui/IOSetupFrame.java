@@ -43,6 +43,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -175,7 +176,11 @@ public class IOSetupFrame extends AppWindow {
         buttonPanel = Box.createHorizontalBox(); // new JPanel( new FlowLayout( FlowLayout.RIGHT, 4, 4 ));
 //        pntMapEmpty = buttonPanel.getBackground();
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 2, 0));
-        buttonPanel.add(new HelpButton("IOSetup"));
+        try {
+            buttonPanel.add(new HelpButton(MenuFactory.helpFile("IOSetup")));
+        } catch (MalformedURLException e) {
+            // ignore
+        }
         buttonPanel.add(Box.createHorizontalGlue());
         final JButton ggOk = new JButton(app.getResourceString("buttonOk"));
         ggOk.addActionListener(new ActionListener() {

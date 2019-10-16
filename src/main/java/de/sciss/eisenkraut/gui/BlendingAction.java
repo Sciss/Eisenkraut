@@ -41,6 +41,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Point2D;
+import java.net.MalformedURLException;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -401,7 +402,11 @@ public class BlendingAction
         GUIUtil.createKeyAction( ggClose, KeyStroke.getKeyStroke( KeyEvent.VK_ESCAPE, 0 ));
         ggClose.setFocusable( false );
         panel.add(ggClose);
-        panel.add(new HelpButton("Blending"));
+        try {
+            panel.add(new HelpButton(MenuFactory.helpFile("Blending")));
+        } catch (MalformedURLException e) {
+            // nothing
+        }
         panel.add(CoverGrowBox.create());
 
         return panel;

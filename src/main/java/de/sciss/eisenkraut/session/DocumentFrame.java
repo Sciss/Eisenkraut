@@ -398,7 +398,8 @@ public class DocumentFrame
         pOverlay.setComponentB(pProgress);
         box.add(pOverlay);
 
-        box.add(Box.createHorizontalStrut(4));
+//        box.add(Box.createHorizontalStrut(4));
+        box.add(Box.createHorizontalGlue());
         box.add(lbSRC);
         box.add(CoverGrowBox.create(2, 0));
 

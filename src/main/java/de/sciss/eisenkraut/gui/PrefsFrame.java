@@ -61,6 +61,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -531,7 +532,11 @@ public class PrefsFrame
         tabWrap = new JPanel(new BorderLayout());
         tabWrap.add(tab, BorderLayout.NORTH);
         p = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        p.add(new HelpButton(key));
+        try {
+            p.add(new HelpButton(MenuFactory.helpFile(key)));
+        } catch (MalformedURLException e) {
+            // ignore
+        }
         tabWrap.add(p, BorderLayout.SOUTH);
         ggTabPane.addTab(getResourceString(key), null, tabWrap, null);
     }
