@@ -89,19 +89,19 @@ public class DecimatedWaveTrail
         decimChannels	= fullChannels * modelChannels;
         this.model		= model;
 
-        SUBNUM			= decimations.length; // the first 'subsample' is actually fullrate
-        this.decimHelps	= new DecimationHelp[ SUBNUM ];
-        for( int i = 0; i < SUBNUM; i++ ) {
+        SUB_NUM = decimations.length; // the first 'subsample' is actually fullrate
+        this.decimHelps	= new DecimationHelp[SUB_NUM];
+        for(int i = 0; i < SUB_NUM; i++ ) {
             this.decimHelps[ i ] = new DecimationHelp( fullScale.getRate(), decimations[ i ] );
         }
-        MAXSHIFT		= decimations[ SUBNUM - 1 ];
-        MAXCOARSE		= 1 << MAXSHIFT;
-        MAXMASK			= -MAXCOARSE;
-        MAXCEILADD		= MAXCOARSE - 1;
+        MAX_SHIFT = decimations[ SUB_NUM - 1 ];
+        MAX_COARSE = 1 << MAX_SHIFT;
+        MAX_MASK = -MAX_COARSE;
+        MAX_CEIL_ADD = MAX_COARSE - 1;
 
-        tmpBufSize		= Math.max( 4096, MAXCOARSE << 1 );
+        tmpBufSize		= Math.max( 4096, MAX_COARSE << 1 );
         // tmpBuf = new float[channels][tmpBufSize];
-        tmpBufSize2		= SUBNUM > 0 ? Math.max( 4096, tmpBufSize >> decimations[ 0 ]) : tmpBufSize;
+        tmpBufSize2		= SUB_NUM > 0 ? Math.max( 4096, tmpBufSize >> decimations[ 0 ]) : tmpBufSize;
         // System.err.print( "tmpBufSize2 : "+tmpBufSize2 );
         // tmpBuf2 = new float[modelChannels * channels][tmpBufSize2];
 
@@ -268,7 +268,7 @@ public class DecimatedWaveTrail
                 : tmpBufSize2 << info.shift);
 //		final int				polySize		= view.isLogarithmic() ?
 //			((int) info.sublength + 2) : ((int) (info.sublength << 1));
-        final int				polySize		= (int) (info.sublength << 1);
+        final int				polySize		= (int) (info.subLength << 1);
         final AffineTransform	atOrig			= g2.getTransform();
         final Shape				clipOrig		= g2.getClip();
 
@@ -314,7 +314,7 @@ public class DecimatedWaveTrail
 
                 while( totalLength > 0 ) {
                     fullLen		= Math.min( maxLen, totalLength );
-                    chunkLen	= (int) (fromPCM ? fullLen : decimHelps[ info.idx ].fullrateToSubsample( fullLen ));
+                    chunkLen	= (int) (fromPCM ? fullLen : decimHelps[ info.idx ].fullRateToSubsample( fullLen ));
                     decimLen	= chunkLen / info.inlineDecim;
                     chunkLen	= decimLen * info.inlineDecim;
                     fullLen		= (long) chunkLen << info.shift;
@@ -357,7 +357,7 @@ public class DecimatedWaveTrail
                         for( int ch = 0; ch < fullChannels; ch++ ) {
                             sPeakP				= tmpBuf[ ch ];
                             r					= view.rectForChannel( ch );
-                            scaleX				= 4 * r.width / (float) (info.sublength - 1);
+                            scaleX				= 4 * r.width / (float) (info.subLength - 1);
                             scaleY				= r.height * deltaYN;
                             offX				= scaleX * off[ ch ];
                             sampleAndHold[ch]	= scaleX > 16;
@@ -450,8 +450,8 @@ public class DecimatedWaveTrail
         int						idx, inlineDecim;
 
         subLength = fullLength;
-        for( idx = 0; idx < SUBNUM; idx++ ) {
-            n = decimHelps[ idx ].fullrateToSubsample( fullLength );
+        for(idx = 0; idx < SUB_NUM; idx++ ) {
+            n = decimHelps[ idx ].fullRateToSubsample( fullLength );
             if( n < minLen ) break;
             subLength = n;
         }
@@ -489,12 +489,11 @@ public class DecimatedWaveTrail
      * @throws IOException
      *             if a read error occurs
      * @see #getBestSubsample( Span, int )
-     * @see DecimationInfo#sublength
+     * @see DecimationInfo#subLength
      */
-    public boolean readFrame( int sub, long pos, int ch, float[] data )
-    throws IOException
-    {
-        synchronized( bufSync ) {
+    public boolean readFrame(int sub, long pos, int ch, float[] data)
+            throws IOException {
+        synchronized (bufSync) {
             createBuffers();
 
             final int				idx	= indexOf( pos, true );
@@ -617,11 +616,11 @@ public class DecimatedWaveTrail
         if( cacheReadAS == null ) {
             // cacheWriteAS = fullScale.openCacheForWrite( model,
             // decimHelps[ 0 ].fullrateToSubsample( union.getLength() ));
-            cacheWriteAS = openCacheForWrite( model, (fullrateLen + MAXCEILADD) & MAXMASK );
-            numFullBuf	= (int) (fullrateLen >> MAXSHIFT);
+            cacheWriteAS = openCacheForWrite( model, (fullrateLen + MAX_CEIL_ADD) & MAX_MASK);
+            numFullBuf	= (int) (fullrateLen >> MAX_SHIFT);
         } else {
             // cached files always have integer fullBufs!
-            numFullBuf	= (int) ((fullrateLen + MAXCEILADD) >> MAXSHIFT);
+            numFullBuf	= (int) ((fullrateLen + MAX_CEIL_ADD) >> MAX_SHIFT);
             cacheWriteAS = null;
         }
 
@@ -651,11 +650,11 @@ Thread.currentThread().setPriority( pri - 2 );
                 long				nextTime			= System.currentTimeMillis() + UPDATE_PERIOD;
 
                 if( cacheReadAS != null ) {
-                    pos = decimHelps[ 0 ].fullrateToSubsample( extSpan.getStart() );
+                    pos = decimHelps[ 0 ].fullRateToSubsample( extSpan.getStart() );
                 } else {
                     pos = extSpan.getStart();
                 }
-                minCoarse = MAXCOARSE >> decimHelps[ 0 ].shift;
+                minCoarse = MAX_COARSE >> decimHelps[ 0 ].shift;
 
                 try {
                     for( int i = 0; (i < numFullBuf) && keepAsyncRunning; i++ ) {
@@ -668,15 +667,15 @@ Thread.currentThread().setPriority( pri - 2 );
                                 subsampleWrite2( tmpBuf2, das, minCoarse );
                                 pos += minCoarse;
                             } else {
-                                tag2 = new Span(pos, pos + MAXCOARSE);
+                                tag2 = new Span(pos, pos + MAX_COARSE);
                                 // fullScale.readFrames( tmpBuf, 0, tag2, ce );
                                 fullScale.readFrames(tmpBuf, 0, tag2, null);
                                 // for( int k = 0; k < tmpBuf.length; k++ ) {
                                 // for( int j = 0; j < MAXCOARSE; j++ ) {
                                 // tmpBuf[ k ][ j ] = 0.125f; }}
-                                subsampleWrite( tmpBuf, tmpBuf2, das, MAXCOARSE,
+                                subsampleWrite( tmpBuf, tmpBuf2, das, MAX_COARSE,
                                                 cacheWriteAS, framesWrittenCache );
-                                pos += MAXCOARSE;
+                                pos += MAX_COARSE;
                                 framesWrittenCache += minCoarse;
                             }
                             // framesWritten += MAXCOARSE;
@@ -701,11 +700,11 @@ Thread.currentThread().setPriority( pri - 2 );
                                 fullScale.readFrames( tmpBuf, 0, tag2, null );
                                 for( int ch = 0; ch < fullChannels; ch++ ) {
                                     f1 = tmpBuf[ch][len - 1];
-                                    for( int i = len; i < MAXCOARSE; i++ ) {
+                                    for(int i = len; i < MAX_COARSE; i++ ) {
                                         tmpBuf[ch][i] = f1;
                                     }
                                 }
-                                subsampleWrite( tmpBuf, tmpBuf2, das, MAXCOARSE,
+                                subsampleWrite( tmpBuf, tmpBuf2, das, MAX_COARSE,
                                                 cacheWriteAS, framesWrittenCache );
                                 // pos += MAXCOARSE;
                                 // framesWrittenCache += minCoarse;
@@ -778,18 +777,18 @@ Thread.currentThread().setPriority( pri - 2 );
         fullrateStop = Math.min( extSpan.stop, fullScale.editGetSpan( ce ).stop );
         fullrateLen = fullrateStop - extSpan.start;
         progWeight = 1.0 / fullrateLen;
-        numFullBuf = (int) (fullrateLen >> MAXSHIFT);
+        numFullBuf = (int) (fullrateLen >> MAX_SHIFT);
 
         synchronized( bufSync ) {
             flushProgression();
             createBuffers();
 
             for( int i = 0; i < numFullBuf; i++ ) {
-                tag2 = new Span( pos, pos + MAXCOARSE );
+                tag2 = new Span( pos, pos + MAX_COARSE);
                 fullScale.readFrames( tmpBuf, 0, tag2, ce );
-                subsampleWrite( tmpBuf, tmpBuf2, das, MAXCOARSE, null, 0 );
-                pos += MAXCOARSE;
-                framesWritten += MAXCOARSE;
+                subsampleWrite( tmpBuf, tmpBuf2, das, MAX_COARSE, null, 0 );
+                pos += MAX_COARSE;
+                framesWritten += MAX_COARSE;
 
                 setProgression( framesWritten, progWeight );
             }
@@ -800,13 +799,13 @@ Thread.currentThread().setPriority( pri - 2 );
                 fullScale.readFrames( tmpBuf, 0, tag2, ce );
                 for( int ch = 0; ch < fullChannels; ch++ ) {
                     f1 = tmpBuf[ ch ][ len - 1 ];
-                    for( int i = len; i < MAXCOARSE; i++ ) {
+                    for(int i = len; i < MAX_COARSE; i++ ) {
                         tmpBuf[ ch ][ i ] = f1;
                     }
                 }
-                subsampleWrite( tmpBuf, tmpBuf2, das, MAXCOARSE, null, 0 );
+                subsampleWrite( tmpBuf, tmpBuf2, das, MAX_COARSE, null, 0 );
                 // pos += MAXCOARSE;
-                framesWritten += MAXCOARSE;
+                framesWritten += MAX_COARSE;
 
                 setProgression( framesWritten, progWeight );
             }
@@ -860,7 +859,7 @@ Thread.currentThread().setPriority( pri - 2 );
                 cacheAFs[ i ] = AudioFile.openAsRead( f[ i ]);
                 cacheAFs[ i ].readAppCode();
                 afd = cacheAFs[ i ].getDescr();
-                final long expected = ((audioFiles[ i ].getFrameNum() + MAXCEILADD) & MAXMASK) >> decimHelps[ 0 ].shift;
+                final long expected = ((audioFiles[ i ].getFrameNum() + MAX_CEIL_ADD) & MAX_MASK) >> decimHelps[ 0 ].shift;
                 // System.out.println( "expected " + expected+ "; cacheF " +
                 // cacheAFs[ i ].getFile().getAbsolutePath() );
                 if( expected != afd.length ) {
@@ -981,7 +980,7 @@ Thread.currentThread().setPriority( pri - 2 );
     {
         int decim;
 
-        if( SUBNUM < 1 ) return;
+        if( SUB_NUM < 1 ) return;
 
         decim = decimHelps[ 0 ].shift;
         // calculate first decimation from fullrate PCM
@@ -1004,7 +1003,7 @@ Thread.currentThread().setPriority( pri - 2 );
         int decim;
 
         // calculate remaining decimations from preceding ones
-        for( int i = 1; i < SUBNUM; i++ ) {
+        for(int i = 1; i < SUB_NUM; i++ ) {
             decim = decimHelps[ i ].shift - decimHelps[ i - 1 ].shift;
             len >>= decim;
             // framesWritten >>= decim;
@@ -1198,7 +1197,7 @@ System.out.println( "warning: HalfPeakRMSDecimator : not checked" );
             sRMSP	= tmpBuf2[ ch2++ ];
             sRMSN	= tmpBuf2[ ch2 ];
 
-            scaleX	= 4 * r.width / (float) (info.sublength - 1);
+            scaleX	= 4 * r.width / (float) (info.subLength - 1);
             scaleY	= r.height * deltaYN;
             offX	= scaleX * off;
 
@@ -1406,7 +1405,7 @@ System.out.println( "warning: HalfPeakRMSDecimator : not checked" );
             sPeakP	= tmpBuf2[ ch2++ ];
             sPeakN	= tmpBuf2[ ch2++ ];
             sRMSP	= tmpBuf2[ ch2 ];
-            scaleX	= 4 * r.width / (float) (info.sublength - 1);
+            scaleX	= 4 * r.width / (float) (info.subLength - 1);
             scaleY	= r.height * deltaYN;
             offX	= scaleX * off;
 
@@ -1458,7 +1457,7 @@ System.out.println( "warning: HalfPeakRMSDecimator : not checked" );
             sPeakP	= tmpBuf2[ ch2++ ];
             sPeakN	= tmpBuf2[ ch2++ ];
             sRMSP	= tmpBuf2[ ch2 ];
-            scaleX	= 4 * r.width / (float) (info.sublength - 1);
+            scaleX	= 4 * r.width / (float) (info.subLength - 1);
             scaleY	= r.height * deltaYN;
             offX	= scaleX * off;
 

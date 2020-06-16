@@ -38,7 +38,7 @@ public class CompoundSessionObjEdit extends AbstractCompoundEdit {
     private final Object                ownerModParam, ownerUndoParam;
 
     /**
-     *  Creates a <code>CompoundEdit</code> objekt, whose Undo/Redo
+     *  Creates a <code>CompoundEdit</code> object, whose Undo/Redo
      *  actions are synchronized. When the edit gets finished
      *  by calling the <code>end</code> method, the
      *  <code>transmitterCollection.modifiedAll</code> method is called,

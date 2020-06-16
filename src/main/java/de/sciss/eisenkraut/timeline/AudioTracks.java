@@ -28,78 +28,78 @@ import de.sciss.timebased.Trail;
 import de.sciss.util.Flag;
 
 public class AudioTracks
-		extends SessionCollection
-		implements OSCRouter {
+        extends SessionCollection
+        implements OSCRouter {
 
-	private static final String OSC_AUDIO = "audio";
+    private static final String OSC_AUDIO = "audio";
 
-	private final OSCRouterWrapper	osc;
-	private final Session			doc;
+    private final OSCRouterWrapper	osc;
+    private final Session			doc;
 
-	private AudioTrail				trail;
+    private AudioTrail				trail;
 
-	public AudioTracks( Session doc )
-	{
-		super();
+    public AudioTracks( Session doc )
+    {
+        super();
 
-		this.doc	= doc;
-		osc			= new OSCRouterWrapper( doc, this );
-	}
-	
-	public void setTrail( AudioTrail t )
-	{
-		trail	= t;
-	}
+        this.doc	= doc;
+        osc			= new OSCRouterWrapper( doc, this );
+    }
 
-	public Trail getTrail()
-	{
-		return trail;
-	}
+    public void setTrail( AudioTrail t )
+    {
+        trail	= t;
+    }
 
-	public boolean isSelected(AudioTrack t) {
-		return doc.selectedTracks.contains(t);
-	}
+    public Trail getTrail()
+    {
+        return trail;
+    }
 
-	public static boolean checkSyncedAudio(List<Track.Info> tis, boolean changesTimeline, ProcessingThread context, Flag hasSelectedAudio) {
-		hasSelectedAudio.set(false);
+    public boolean isSelected(AudioTrack t) {
+        return doc.selectedTracks.contains(t);
+    }
 
-		for (Track.Info ti : tis) {
-			if (changesTimeline && !ti.getChannelSync()) {
-				if (context != null)
-					context.setException(new IllegalStateException(AbstractApplication.getApplication().getResourceString("errAudioWillLooseSync")));
-				return false;
-			}
-			if ((ti.trail instanceof AudioTrail) && ti.selected) {
-				hasSelectedAudio.set(true);
-			}
-		}
-		return true;
-	}
+    public static boolean checkSyncedAudio(List<Track.Info> tis, boolean changesTimeline, ProcessingThread context, Flag hasSelectedAudio) {
+        hasSelectedAudio.set(false);
 
-	// ------------- OSCRouter interface -------------
-	
-	public String oscGetPathComponent()
-	{
-		return OSC_AUDIO;
-	}
+        for (Track.Info ti : tis) {
+            if (changesTimeline && !ti.getChannelSync()) {
+                if (context != null)
+                    context.setException(new IllegalStateException(AbstractApplication.getApplication().getResourceString("errAudioWillLooseSync")));
+                return false;
+            }
+            if ((ti.trail instanceof AudioTrail) && ti.selected) {
+                hasSelectedAudio.set(true);
+            }
+        }
+        return true;
+    }
 
-	public void oscRoute( RoutedOSCMessage rom )
-	{
-		osc.oscRoute( rom );
-	}
-	
-	public void oscAddRouter( OSCRouter subRouter )
-	{
-		osc.oscAddRouter( subRouter );
-	}
+    // ------------- OSCRouter interface -------------
 
-	public void oscRemoveRouter( OSCRouter subRouter )
-	{
-		osc.oscRemoveRouter( subRouter );
-	}
+    public String oscGetPathComponent()
+    {
+        return OSC_AUDIO;
+    }
 
-	public Object oscQuery_count()
-	{
-		return size();
-	}
+    public void oscRoute( RoutedOSCMessage rom )
+    {
+        osc.oscRoute( rom );
+    }
+
+    public void oscAddRouter( OSCRouter subRouter )
+    {
+        osc.oscAddRouter( subRouter );
+    }
+
+    public void oscRemoveRouter( OSCRouter subRouter )
+    {
+        osc.oscRemoveRouter( subRouter );
+    }
+
+    public Object oscQuery_count()
+    {
+        return size();
+    }
 }

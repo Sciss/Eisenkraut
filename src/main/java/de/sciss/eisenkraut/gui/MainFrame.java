@@ -60,7 +60,7 @@ public class MainFrame
     private final SuperColliderClient superCollider;
 
     @SuppressWarnings("serial")
-    private class TH extends TransferHandler {
+    private static class TH extends TransferHandler {
         TH() {
             super();
         }
@@ -371,7 +371,7 @@ public class MainFrame
 
         private int state = 0;
 
-        private String[] labels = { "labelDumpOff", "labelDumpText", "labelDumpHex" };
+        private final String[] labels = { "labelDumpOff", "labelDumpText", "labelDumpHex" };
 
         public void setState(int state) {
             this.state = state;

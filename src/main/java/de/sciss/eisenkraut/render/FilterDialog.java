@@ -205,7 +205,7 @@ public class FilterDialog
         final Span span0 = doc.timeline.getSelectionSpan();
         final Span span = !span0.isEmpty() ? span0 : new Span(0L, doc.timeline.getLength());
         return new RenderContext(this, this,
-                Track.getInfos(doc.selectedTracks.getAll(), doc.tracks.getAll()), span, doc.timeline.getRate());
+                Track.getInfo(doc.selectedTracks.getAll(), doc.tracks.getAll()), span, doc.timeline.getRate());
     }
 
 // ---------------- concrete methods ---------------- 
@@ -484,26 +484,26 @@ public class FilterDialog
 //			consStarted			= true;
 //			remainingRead		= context.getTimeSpan().getLength();
             newOptions			= context.getModifiedOptions();
-            if (newOptions.contains(RenderContext.KEY_MINBLOCKSIZE)) {
-                value = context.getOption(RenderContext.KEY_MINBLOCKSIZE);
+            if (newOptions.contains(RenderContext.KEY_MIN_BLOCK_SIZE)) {
+                value = context.getOption(RenderContext.KEY_MIN_BLOCK_SIZE);
                 minBlockSize = (Integer) value;
             } else {
                 minBlockSize = 1;
             }
-            if (newOptions.contains(RenderContext.KEY_MAXBLOCKSIZE)) {
-                value = context.getOption(RenderContext.KEY_MAXBLOCKSIZE);
+            if (newOptions.contains(RenderContext.KEY_MAX_BLOCK_SIZE)) {
+                value = context.getOption(RenderContext.KEY_MAX_BLOCK_SIZE);
                 maxBlockSize = (Integer) value;
             } else {
                 maxBlockSize = 0x7FFFFF;
             }
-            if (newOptions.contains(RenderContext.KEY_PREFBLOCKSIZE)) {
-                value = context.getOption(RenderContext.KEY_PREFBLOCKSIZE);
+            if (newOptions.contains(RenderContext.KEY_PREF_BLOCK_SIZE)) {
+                value = context.getOption(RenderContext.KEY_PREF_BLOCK_SIZE);
                 prefBlockSize = (Integer) value;
             } else {
                 prefBlockSize = Math.max(minBlockSize, Math.min(maxBlockSize, 1024));
             }
-            if (newOptions.contains(RenderContext.KEY_RANDOMACCESS)) {
-                rar = (RandomAccessRequester) context.getOption(RenderContext.KEY_RANDOMACCESS);
+            if (newOptions.contains(RenderContext.KEY_RANDOM_ACCESS)) {
+                rar = (RandomAccessRequester) context.getOption(RenderContext.KEY_RANDOM_ACCESS);
 //				randomAccess	= true;
             } else {
                 rar = null;

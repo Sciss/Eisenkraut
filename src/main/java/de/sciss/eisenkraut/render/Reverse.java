@@ -38,11 +38,11 @@ public class Reverse extends AbstractRenderPlugIn {
             throws IOException {
         // random read access not necessary any more since the consumer
         // automatically handles random write access!
-//		source.context.setOption( RenderContext.KEY_PREFBLOCKSIZE, new Integer( BLOCKSIZE ));
-//		source.context.setOption( RenderContext.KEY_RANDOMACCESS, this );
+//		source.context.setOption( RenderContext.KEY_PREF_BLOCK_SIZE, new Integer( BLOCK_SIZE ));
+//		source.context.setOption( RenderContext.KEY_RANDOM_ACCESS, this );
         prTotalSpan	= source.context.getTimeSpan();
         // request last block
-//		prNextSpan	= new Span( Math.max( prTotalSpan.start, prTotalSpan.stop - BLOCKSIZE ), prTotalSpan.stop );
+//		prNextSpan	= new Span( Math.max( prTotalSpan.start, prTotalSpan.stop - BLOCK_SIZE ), prTotalSpan.stop );
         prConsumer	= source.context.getConsumer();
 
         // flip markers at once

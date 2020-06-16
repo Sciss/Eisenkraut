@@ -28,7 +28,7 @@ import de.sciss.gui.TopPainter;
 
 /**
  *  This class describes a generic GUI tool
- *  that can be aquired and dismissed by
+ *  that can be acquired and dismissed by
  *  a <code>Component</code>.
  */
 public abstract class AbstractTool
@@ -54,7 +54,7 @@ public abstract class AbstractTool
      *                                      this tool will operate.
      *  @throws IllegalArgumentException    if the passed <code>Component</code>
      *                                      is <code>null</code>
-     *  @throws IllegalStateException       if the tool was aquired before.
+     *  @throws IllegalStateException       if the tool was acquired before.
      */
     public void toolAcquired(Component c) {
         if (comp != null) throw new IllegalStateException();
@@ -90,7 +90,7 @@ public abstract class AbstractTool
      *                                      is <code>null</code> or if the
      *                                      tool was attached to a different
      *                                      component.
-     *  @throws IllegalStateException       if the tool was not aquired before.
+     *  @throws IllegalStateException       if the tool was not acquired before.
      */
     public void toolDismissed(Component c) {
 

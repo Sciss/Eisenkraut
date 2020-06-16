@@ -65,8 +65,8 @@ public class AudioTrackPanorama implements Disposable {
         actionListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (pan != null) {
-                    t.getMap().putValue(AudioTrackPanorama.this, AudioTrack.MAP_KEY_PANAZIMUTH, pan.getAzimuth());
-                    t.getMap().putValue(AudioTrackPanorama.this, AudioTrack.MAP_KEY_PANSPREAD, pan.getSpread());
+                    t.getMap().putValue(AudioTrackPanorama.this, AudioTrack.MAP_KEY_PAN_AZIMUTH, pan.getAzimuth());
+                    t.getMap().putValue(AudioTrackPanorama.this, AudioTrack.MAP_KEY_PAN_SPREAD, pan.getSpread());
                 }
             }
         };
@@ -82,7 +82,7 @@ public class AudioTrackPanorama implements Disposable {
 
             public void sessionObjectMapChanged(SessionCollection.Event e) {
                 if ((e.getSource() != AudioTrackPanorama.this) && (pan != null) && e.collectionContains(t) &&
-                        (e.setContains(AudioTrack.MAP_KEY_PANAZIMUTH) || e.setContains(AudioTrack.MAP_KEY_PANSPREAD))) {
+                        (e.setContains(AudioTrack.MAP_KEY_PAN_AZIMUTH) || e.setContains(AudioTrack.MAP_KEY_PAN_SPREAD))) {
 
                     setAzimuthAndSpread();
                 }
@@ -234,14 +234,14 @@ public class AudioTrackPanorama implements Disposable {
         final double azi, spread;
         Object o;
 
-        o = t.getMap().getValue(AudioTrack.MAP_KEY_PANAZIMUTH);
-        if ((o != null) && (o instanceof Number)) {
+        o = t.getMap().getValue(AudioTrack.MAP_KEY_PAN_AZIMUTH);
+        if ((o instanceof Number)) {
             azi = ((Number) o).doubleValue();
         } else {
             azi = pan.getAzimuth();
         }
-        o = t.getMap().getValue(AudioTrack.MAP_KEY_PANSPREAD);
-        if ((o != null) && (o instanceof Number)) {
+        o = t.getMap().getValue(AudioTrack.MAP_KEY_PAN_SPREAD);
+        if ((o instanceof Number)) {
             spread = ((Number) o).doubleValue();
         } else {
             spread = pan.getSpread();

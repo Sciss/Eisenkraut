@@ -1,5 +1,5 @@
 /*
- *  CrossfadePanel.java
+ *  CrossFadePanel.java
  *  Eisenkraut
  *
  *  Copyright (c) 2004-2017 Hanns Holger Rutz. All rights reserved.
@@ -23,7 +23,7 @@ import javax.swing.JComponent;
 import javax.swing.OverlayLayout;
 
 @SuppressWarnings("serial")
-public class CrossfadePanel
+public class CrossFadePanel
         extends JComponent
         implements ActionListener {
 
@@ -35,7 +35,7 @@ public class CrossfadePanel
     private float       fadeWeight;
     private final javax.swing.Timer timer;
 
-    public CrossfadePanel() {
+    public CrossFadePanel() {
         super();
 
         setLayout(new OverlayLayout(this));
@@ -62,7 +62,7 @@ public class CrossfadePanel
     }
 
     /**
-     *  Instantly update crossfade.
+     *  Instantly update cross-fade.
      *
      *  @param  fade                        value between 0 (component A only) and 1 (component B only)
      *  @throws IllegalArgumentException    if fade less than 0 or fade greater than 1
@@ -94,7 +94,7 @@ public class CrossfadePanel
     }
 
     /**
-     *  Performs an animated crossfade.
+     *  Performs an animated cross-fade.
      *
      *  @param  target                      target value between 0 (component A only) and 1 (component B only)
      *  @param  initialDelay                milliseconds to wait before the fade starts

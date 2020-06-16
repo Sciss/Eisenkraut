@@ -28,7 +28,7 @@ import de.sciss.eisenkraut.edit.BasicCompoundEdit;
 import de.sciss.eisenkraut.edit.TimelineVisualEdit;
 import de.sciss.eisenkraut.gui.AbstractTool;
 import de.sciss.eisenkraut.gui.AudioFileInfoPalette;
-import de.sciss.eisenkraut.gui.CrossfadePanel;
+import de.sciss.eisenkraut.gui.CrossFadePanel;
 import de.sciss.eisenkraut.gui.GraphicsUtil;
 import de.sciss.eisenkraut.gui.MenuFactory;
 import de.sciss.eisenkraut.gui.ObserverPalette;
@@ -238,7 +238,7 @@ public class DocumentFrame
 
     private final JLabel /* JTextField */ ggAudioFileDescr;
     private final ProgressPanel				pProgress;
-    private final CrossfadePanel			pOverlay;
+    private final CrossFadePanel pOverlay;
 
     private final boolean					internalFrames;
 
@@ -393,7 +393,7 @@ public class DocumentFrame
         box.add(Box.createHorizontalStrut(4));
 
         pProgress			= new ProgressPanel();
-        pOverlay			= new CrossfadePanel();
+        pOverlay			= new CrossFadePanel();
         pOverlay.setComponentA(ggAudioFileDescr);
         pOverlay.setComponentB(pProgress);
         box.add(pOverlay);
@@ -1942,7 +1942,7 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
          */
         public void actionPerformed( ActionEvent e )
         {
-            final List<Track.Info>	infos = Track.getInfos( doc.selectedTracks.getAll(), doc.tracks.getAll() );
+            final List<Track.Info>	infos = Track.getInfo( doc.selectedTracks.getAll(), doc.tracks.getAll() );
             boolean		saveMarkers	= true;
             int[] 		channelMap	= null;
             if( selection ) {

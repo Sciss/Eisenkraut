@@ -171,9 +171,9 @@ public class Needlehole
 //System.err.println( "winsizeH "+prWinSizeH+"; winsize "+prWinSize+"; prInBufSize "+prInBufSize+"; prOutBufSize "+prOutBufSize );
 
         // cannot have other buffer sizes than this
-        source.context.setOption( RenderContext.KEY_MINBLOCKSIZE, outBufSizeI );
-        source.context.setOption( RenderContext.KEY_PREFBLOCKSIZE, outBufSizeI );
-        source.context.setOption( RenderContext.KEY_MAXBLOCKSIZE, outBufSizeI );
+        source.context.setOption( RenderContext.KEY_MIN_BLOCK_SIZE, outBufSizeI );
+        source.context.setOption( RenderContext.KEY_PREF_BLOCK_SIZE, outBufSizeI );
+        source.context.setOption( RenderContext.KEY_MAX_BLOCK_SIZE, outBufSizeI );
 
         if( filterType.equals( FILTER_MEDIAN )) {
             prFilter	= new MedianFilter( prWinSize, source.numAudioChannels );
@@ -206,7 +206,7 @@ public class Needlehole
 
         if( prNormalize ) {
             prMaxAmp	= 0.0f;
-            source.context.setOption( RenderContext.KEY_RANDOMACCESS, this );
+            source.context.setOption( RenderContext.KEY_RANDOM_ACCESS, this );
             prNextSpan	= new Span( prTotalSpan.start, Math.min( prTotalSpan.start + prOutBufSize,
                                     prTotalSpan.stop ));
 //System.err.println( "initial span "+prNextSpan.start + " ... " +prNextSpan.stop );

@@ -23,7 +23,7 @@ package de.sciss.eisenkraut.gui;
 public interface ToolActionListener {
     /**
      * Notifies the listener that
-     * a tool changed occured.
+     * a tool changed occurred.
      *
      * @param e the event describing
      *          the tool switch

@@ -35,7 +35,7 @@ import de.sciss.eisenkraut.session.SessionObject;
 public class EditSetSessionObjects extends BasicUndoableEdit {
 
     private Object                      source;
-    private final SessionCollection     quoi;
+    private final SessionCollection     coll;
     private final List<SessionObject>   oldSelection;
     private final List<SessionObject>   newSelection;
 
@@ -48,16 +48,16 @@ public class EditSetSessionObjects extends BasicUndoableEdit {
      * @param collNewSelection the new collection of sessionObjects
      *                         which form the new selection. the
      *                         previous selection is discarded.
-     * @param    quoi                XXX
+     * @param    coll                XXX
      * @see    de.sciss.eisenkraut.session.SessionCollection
      * @see    de.sciss.eisenkraut.session.SessionCollection.Event
      */
-    public EditSetSessionObjects(Object source, SessionCollection quoi,
+    public EditSetSessionObjects(Object source, SessionCollection coll,
                                  List<SessionObject> collNewSelection) {
         super();
         this.source     = source;
-        this.quoi       = quoi;
-        oldSelection    = quoi.getAll();
+        this.coll = coll;
+        oldSelection    = coll.getAll();
         newSelection    = new ArrayList<SessionObject>(collNewSelection);
     }
 
@@ -70,8 +70,8 @@ public class EditSetSessionObjects extends BasicUndoableEdit {
     }
 
     public PerformableEdit perform() {
-        quoi.clear(source);
-        quoi.addAll(source, newSelection);
+        coll.clear(source);
+        coll.addAll(source, newSelection);
         source = this;
         return this;
     }
@@ -83,8 +83,8 @@ public class EditSetSessionObjects extends BasicUndoableEdit {
      */
     public void undo() {
         super.undo();
-        quoi.clear(source);
-        quoi.addAll(source, oldSelection);
+        coll.clear(source);
+        coll.addAll(source, oldSelection);
     }
 
     /**
@@ -93,7 +93,7 @@ public class EditSetSessionObjects extends BasicUndoableEdit {
      * which means, that, since a new <code>SessionObjectCollectionEvent</code>
      * is dispatched, even the original object
      * causing the edit will not know the details
-     * of the action, hence thorougly look
+     * of the action, hence thoroughly look
      * and adapt itself to the new edit.
      */
     public void redo() {

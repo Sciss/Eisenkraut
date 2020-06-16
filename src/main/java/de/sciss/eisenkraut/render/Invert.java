@@ -16,20 +16,20 @@ package de.sciss.eisenkraut.render;
 import java.io.IOException;
 
 public class Invert
-		extends AbstractRenderPlugIn {
+        extends AbstractRenderPlugIn {
 
-	public boolean producerRender(RenderSource source)
-			throws IOException {
-		for (int ch = 0; ch < source.numAudioChannels; ch++) {
-			if (!source.audioTrackMap[ch]) continue;
-			for (int i = 0, j = source.audioBlockBufOff; i < source.audioBlockBufLen; i++, j++) {
-				source.audioBlockBuf[ch][j] *= -1;
-			}
-		}
-		return super.producerRender(source);
-	}
+    public boolean producerRender(RenderSource source)
+            throws IOException {
+        for (int ch = 0; ch < source.numAudioChannels; ch++) {
+            if (!source.audioTrackMap[ch]) continue;
+            for (int i = 0, j = source.audioBlockBufOff; i < source.audioBlockBufLen; i++, j++) {
+                source.audioBlockBuf[ch][j] *= -1;
+            }
+        }
+        return super.producerRender(source);
+    }
 
-	public String getName() {
-		return getResourceString("plugInInvert");
-	}
+    public String getName() {
+        return getResourceString("plugInInvert");
+    }
 }

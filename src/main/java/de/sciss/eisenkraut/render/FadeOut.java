@@ -17,13 +17,13 @@ package de.sciss.eisenkraut.render;
 public class FadeOut
 extends FadePlugIn
 {
-	public FadeOut()
-	{
-		super( false );
-	}
+    public FadeOut()
+    {
+        super( false );
+    }
 
-	public String getName()
-	{
-		return getResourceString( "plugInFadeOut" );
-	}
+    public String getName()
+    {
+        return getResourceString( "plugInFadeOut" );
+    }
 }

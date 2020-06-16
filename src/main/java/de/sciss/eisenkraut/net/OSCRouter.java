@@ -14,11 +14,11 @@
 package de.sciss.eisenkraut.net;
 
 public interface OSCRouter {
-	public String oscGetPathComponent();
+    public String oscGetPathComponent();
 
-	public void oscRoute(RoutedOSCMessage rom);
+    public void oscRoute(RoutedOSCMessage rom);
 
-	public void oscAddRouter(OSCRouter subRouter);
+    public void oscAddRouter(OSCRouter subRouter);
 
-	public void oscRemoveRouter(OSCRouter subRouter);
+    public void oscRemoveRouter(OSCRouter subRouter);
 }

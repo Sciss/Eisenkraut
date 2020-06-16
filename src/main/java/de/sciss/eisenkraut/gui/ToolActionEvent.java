@@ -41,7 +41,7 @@ public class ToolActionEvent
      *
      *  @param  source      who originated the action
      *  @param  id          <code>CHANGED</code>
-     *  @param  when        system time when the event occured
+     *  @param  when        system time when the event occurred
      *  @param  toolAction  the new ToolAction to which was switched
      */
     public ToolActionEvent(Object source, int id, long when, ToolAction toolAction) {

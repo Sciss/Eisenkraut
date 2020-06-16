@@ -24,19 +24,19 @@ import de.sciss.io.Span;
 import de.sciss.util.Disposable;
 
 public interface Stake
-		extends Disposable, TreeNode {
-	public Span getSpan();
+        extends Disposable, TreeNode {
+    public Span getSpan();
 
-	public Stake duplicate();
+    public Stake duplicate();
 
-	public void dispose();
+    public void dispose();
 
-	public Stake replaceStart(long newStart);
+    public Stake replaceStart(long newStart);
 
-	public Stake replaceStop(long newStop);
+    public Stake replaceStop(long newStop);
 
-	public Stake shiftVirtual(long delta);
+    public Stake shiftVirtual(long delta);
 
-	// like MutableTreeNode
-	public void setTrail(Trail t);
+    // like MutableTreeNode
+    public void setTrail(Trail t);
 }

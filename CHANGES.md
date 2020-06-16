@@ -143,7 +143,7 @@
 ## v0.2 (may 2005)
 
  - fixes problems with clicks between edited regions.
- - duplicates some new features of meloncillo, e.g. improved transport, improved timeline tools, solo+mute. master-volume slider.
+ - duplicates some new features of meloncillo, e.g. improved transport, improved timeline tools, solo+mute. main-volume slider.
 
 ## v0.1 (mar 2005)
 

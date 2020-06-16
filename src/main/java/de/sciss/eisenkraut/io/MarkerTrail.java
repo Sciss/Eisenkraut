@@ -29,76 +29,76 @@ import de.sciss.timebased.Stake;
  *	unlike in practically all other classes.
  */
 public class MarkerTrail
-		extends BasicTrail {
+        extends BasicTrail {
 
-	public MarkerTrail() {
-		super();
-	}
+    public MarkerTrail() {
+        super();
+    }
 
-	protected BasicTrail createEmptyCopy() {
-		return new MarkerTrail();
-	}
+    protected BasicTrail createEmptyCopy() {
+        return new MarkerTrail();
+    }
 
-	public int getDefaultTouchMode()
-	{
-		return TOUCH_NONE;
-	}
-	
-	public int indexOf( long pos )
-	{
-		return indexOf( pos, true );
-	}
+    public int getDefaultTouchMode()
+    {
+        return TOUCH_NONE;
+    }
 
-	public MarkerStake get( int idx )
-	{
-		return (MarkerStake) get( idx, true );
-	}
+    public int indexOf( long pos )
+    {
+        return indexOf( pos, true );
+    }
 
-	// clears list and copies all markers from afd
-	public void copyFromAudioFile(AudioFileDescr afd)
-			throws IOException {
+    public MarkerStake get( int idx )
+    {
+        return (MarkerStake) get( idx, true );
+    }
 
-		final List<Stake> markStakes;
-		final List<?> marks;
-		final int removed;
-		Marker mark;
+    // clears list and copies all markers from afd
+    public void copyFromAudioFile(AudioFileDescr afd)
+            throws IOException {
 
-		marks = (List<?>) afd.getProperty(AudioFileDescr.KEY_MARKERS);
+        final List<Stake> markStakes;
+        final List<?> marks;
+        final int removed;
+        Marker mark;
 
-		if ((marks != null) && !marks.isEmpty()) {
-			markStakes = new ArrayList<Stake>(marks.size());
-			for (Object mark1 : marks) {
-				mark = (Marker) mark1;
-				if (mark.pos >= 0 && mark.pos <= afd.length) {
-					markStakes.add(new MarkerStake(mark));
-				}
-			}
+        marks = (List<?>) afd.getProperty(AudioFileDescr.KEY_MARKERS);
 
-			if (!markStakes.isEmpty()) addAll(null, markStakes);
-			
-			removed = marks.size() - markStakes.size();
-			
-			if( removed > 0 ) {
-				System.err.println( "Warning: removed " + removed + " illegal marker positions!" );
-			}
-		}
-		
-		setRate( afd.rate );
-	}
+        if ((marks != null) && !marks.isEmpty()) {
+            markStakes = new ArrayList<Stake>(marks.size());
+            for (Object mark1 : marks) {
+                mark = (Marker) mark1;
+                if (mark.pos >= 0 && mark.pos <= afd.length) {
+                    markStakes.add(new MarkerStake(mark));
+                }
+            }
 
-	// copies all markers to afd
-	public void copyToAudioFile( AudioFileDescr afd )
-	{
-		afd.setProperty( AudioFileDescr.KEY_MARKERS, getAll( true ));
-	}
+            if (!markStakes.isEmpty()) addAll(null, markStakes);
 
-	// copies markers in given range to afd (shifts marker positions)
-	public void copyToAudioFile( AudioFileDescr afd, Span span )
-	{
-		if( (span.start == 0) && (span.stop > this.getSpan().stop) ) {
-			copyToAudioFile( afd );	// more efficient
-		} else {
-			afd.setProperty( AudioFileDescr.KEY_MARKERS, getCutRange(span, true, TOUCH_NONE, -span.start));
-		}
-	}
+            removed = marks.size() - markStakes.size();
+
+            if( removed > 0 ) {
+                System.err.println( "Warning: removed " + removed + " illegal marker positions!" );
+            }
+        }
+
+        setRate( afd.rate );
+    }
+
+    // copies all markers to afd
+    public void copyToAudioFile( AudioFileDescr afd )
+    {
+        afd.setProperty( AudioFileDescr.KEY_MARKERS, getAll( true ));
+    }
+
+    // copies markers in given range to afd (shifts marker positions)
+    public void copyToAudioFile( AudioFileDescr afd, Span span )
+    {
+        if( (span.start == 0) && (span.stop > this.getSpan().stop) ) {
+            copyToAudioFile( afd );	// more efficient
+        } else {
+            afd.setProperty( AudioFileDescr.KEY_MARKERS, getCutRange(span, true, TOUCH_NONE, -span.start));
+        }
+    }
 }

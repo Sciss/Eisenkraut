@@ -20,18 +20,18 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 
 public abstract class AbstractFlagsPanel extends JPanel {
-    public static final int FLAGS_SOLO			= 0x01;
-    public static final int FLAGS_MUTE			= 0x02;
-    public static final int FLAGS_SOLOSAFE		= 0x04;
-    public static final int FLAGS_VIRTUALMUTE	= 0x08;
+    public static final int FLAGS_SOLO          = 0x01;
+    public static final int FLAGS_MUTE          = 0x02;
+    public static final int FLAGS_SOLO_SAFE     = 0x04;
+    public static final int FLAGS_VIRTUAL_MUTE  = 0x08;
 
     private final FlagAction actionSolo, actionMute;
 
     public AbstractFlagsPanel() {
         super(new FlowLayout(FlowLayout.RIGHT, 0, 0));
 
-        actionSolo = new FlagAction(GraphicsUtil.ICON_SOLO, FLAGS_SOLO, FLAGS_SOLOSAFE);
-        actionMute = new FlagAction(GraphicsUtil.ICON_MUTE, FLAGS_MUTE, FLAGS_VIRTUALMUTE);
+        actionSolo = new FlagAction(GraphicsUtil.ICON_SOLO, FLAGS_SOLO, FLAGS_SOLO_SAFE);
+        actionMute = new FlagAction(GraphicsUtil.ICON_MUTE, FLAGS_MUTE, FLAGS_VIRTUAL_MUTE);
 
         add(actionSolo.getButton());
         add(actionMute.getButton());
@@ -46,20 +46,19 @@ public abstract class AbstractFlagsPanel extends JPanel {
     protected abstract void broadcastFlags( int mask, boolean set );
     protected abstract boolean isAny( int mask, boolean set );
 
-// ---------------- interne Klassen ---------------- 
+// ---------------- internal classes ----------------
 
-    private abstract class TriStateAction
+    private abstract static class TriStateAction
             extends AbstractAction {
 
         private final	Icon			normalState, thirdState;
         private final	AbstractButton	ab;
         private boolean					isNormal	= true;
-        private final	Icon[] icons;
 
         protected TriStateAction(int iconID, int normalID, int thirdID) {
             super();
 
-            icons = GraphicsUtil.createToolIcons(iconID);
+            Icon[] icons = GraphicsUtil.createToolIcons(iconID);
             ab = new JToggleButton(this);
             ab.putClientProperty("styleId", "icon-hover");
             ab.setBorderPainted(false);

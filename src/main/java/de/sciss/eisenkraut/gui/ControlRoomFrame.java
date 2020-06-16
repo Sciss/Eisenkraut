@@ -61,7 +61,7 @@ import java.util.prefs.Preferences;
 
 /**
  *  TODO: could use an explicit GroupAnySync for lmm, which would go into SuperColliderClient
- *  so sc-client whould be able to pause master synths according to the sync
+ *  so sc-client would be able to pause main synths according to the sync
  */
 public class ControlRoomFrame
         extends AppWindow
@@ -224,7 +224,7 @@ public class ControlRoomFrame
         final ServerOptions so  = superCollider.getServerOptions();
         final int           numOutputBusChannels;
         final int[]         channels;
-        final Group         mg  = superCollider.getMasterGroup();
+        final Group         mg  = superCollider.getMainGroup();
 
         if ((s == null) || (oCfg == null) || (mg == null)) return;
 
@@ -329,7 +329,7 @@ public class ControlRoomFrame
         }
     }
 
-// ------------- SuperCollderClient.Listener interface -------------
+// ------------- SuperColliderClient.Listener interface -------------
 
     public void clientAction( SuperColliderClient.Event e )
     {

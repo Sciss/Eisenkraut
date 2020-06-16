@@ -21,26 +21,26 @@ import javax.swing.JComponent;
 
 @SuppressWarnings("serial")
 public class SideBarLogo extends JComponent {
-	private static int			width;
-	private static int			height;
-	private static ImageIcon	icon	= null;
+    private static int			width;
+    private static int			height;
+    private static ImageIcon	icon	= null;
 
-	public SideBarLogo() {
-		super();
+    public SideBarLogo() {
+        super();
 
-		if (icon == null) {
-			icon   = new ImageIcon(getClass().getResource("SCcubeLogo.png"));
-			width  = icon.getIconWidth();
-			height = icon.getIconHeight();
-		}
+        if (icon == null) {
+            icon   = new ImageIcon(getClass().getResource("SCcubeLogo.png"));
+            width  = icon.getIconWidth();
+            height = icon.getIconHeight();
+        }
 
-		setMinimumSize  (new Dimension(width, height));
-		setPreferredSize(new Dimension(width, getPreferredSize().height));
-		setMaximumSize  (new Dimension(width, getMaximumSize  ().height));
-	}
+        setMinimumSize  (new Dimension(width, height));
+        setPreferredSize(new Dimension(width, getPreferredSize().height));
+        setMaximumSize  (new Dimension(width, getMaximumSize  ().height));
+    }
 
-	public void paintComponent(Graphics g) {
-		super.paintComponent(g);
-		icon.paintIcon(this, g, 0, 0);
-	}
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        icon.paintIcon(this, g, 0, 0);
+    }
 }

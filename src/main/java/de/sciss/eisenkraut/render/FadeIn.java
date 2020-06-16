@@ -17,13 +17,13 @@ package de.sciss.eisenkraut.render;
 public class FadeIn
 extends FadePlugIn
 {
-	public FadeIn()
-	{
-		super( true );
-	}
+    public FadeIn()
+    {
+        super( true );
+    }
 
-	public String getName()
-	{
-		return getResourceString( "plugInFadeIn" );
-	}
+    public String getName()
+    {
+        return getResourceString( "plugInFadeIn" );
+    }
 }

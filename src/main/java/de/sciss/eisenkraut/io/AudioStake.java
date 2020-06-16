@@ -30,85 +30,85 @@ import java.util.List;
  *  @see		de.sciss.io.Span
  */
 public abstract class AudioStake
-		extends BasicStake {
+        extends BasicStake {
 
-	private static final boolean			DEBUG				= false;
+    private static final boolean			DEBUG				= false;
 
-	private boolean							disposed			= false;
-	
-	private static final List<AudioStake> allStakes			= new ArrayList<AudioStake>();
-	
-	private StackTraceElement[]				debugTrace;
+    private boolean							disposed			= false;
 
-	protected AudioStake(Span span) {
-		super(span);
-		if (DEBUG) {
-			allStakes.add(this);
-			debugTrace = new Throwable().getStackTrace();
-		}
-	}
+    private static final List<AudioStake> allStakes			= new ArrayList<AudioStake>();
 
-	public void dispose() {
-		disposed = true;
-		if (DEBUG) allStakes.remove(this);
-		super.dispose();
-	}
+    private StackTraceElement[]				debugTrace;
 
-	public static void debugCheckDisposal() {
-		if (DEBUG) {
-			System.err.println("======= There are " + allStakes.size() + " un-disposed stakes. ======= dump:");
-			for (AudioStake allStake : allStakes) {
-				allStake.debugDump();
-			}
-		} else {
-			System.err.println("AudioStake.debugCheckDisposal() : not possible (set DEBUG to true!)");
-		}
-	}
-	
-	// in anlehnung an InterleavedStreamFile
-	public abstract int readFrames( float[][] data, int dataOffset, Span readSpan ) throws IOException;
-	// XXX writeSpan should be replaced by framesWritten internally for simplicity
-	public abstract int writeFrames( float[][] data, int dataOffset, Span writeSpan ) throws IOException;
-	public abstract long copyFrames( InterleavedStreamFile target, Span readSpan ) throws IOException;
-	public abstract int getChannelNum();
-	public abstract void flush() throws IOException;
-	public abstract void addBufferReadMessages( OSCBundle bndl, Span s, Buffer[] bufs, int bufOff );
+    protected AudioStake(Span span) {
+        super(span);
+        if (DEBUG) {
+            allStakes.add(this);
+            debugTrace = new Throwable().getStackTrace();
+        }
+    }
 
-	public abstract void debugDump();
-	
-	public abstract void close() throws IOException;
-	public abstract void cleanUp();
-	
-	public abstract void addToCache( CacheManager cm );
-	
-	protected void debugDumpBasics()
-	{
-		System.err.print( "Span " + span.getStart() + " ... " + span.getStop() + "; disposed ? " + disposed );
-		if( (debugTrace != null) && (debugTrace.length > 2) ) {
-			System.err.println( "; created : " );
-			for( int i = 2; i < debugTrace.length; i++ ) {
-				System.err.println( "  " + debugTrace[ i ]);
-			}
-		}
-	}
-	
-	public static Action getDebugDumpAction()
-	{
-		return new ActionDebugDump();
-	}
+    public void dispose() {
+        disposed = true;
+        if (DEBUG) allStakes.remove(this);
+        super.dispose();
+    }
 
-	@SuppressWarnings("serial")
-	private static class ActionDebugDump
-			extends AbstractAction {
-		protected ActionDebugDump()
-		{
-			super( "Dump Undisposed Audio Stakes" );
-		}
+    public static void debugCheckDisposal() {
+        if (DEBUG) {
+            System.err.println("======= There are " + allStakes.size() + " un-disposed stakes. ======= dump:");
+            for (AudioStake allStake : allStakes) {
+                allStake.debugDump();
+            }
+        } else {
+            System.err.println("AudioStake.debugCheckDisposal() : not possible (set DEBUG to true!)");
+        }
+    }
 
-		public void actionPerformed( ActionEvent e )
-		{
-			debugCheckDisposal();
-		}
-	}
-	
+    // similar to InterleavedStreamFile
+    public abstract int readFrames( float[][] data, int dataOffset, Span readSpan ) throws IOException;
+    // XXX writeSpan should be replaced by framesWritten internally for simplicity
+    public abstract int writeFrames( float[][] data, int dataOffset, Span writeSpan ) throws IOException;
+    public abstract long copyFrames( InterleavedStreamFile target, Span readSpan ) throws IOException;
+    public abstract int getChannelNum();
+    public abstract void flush() throws IOException;
+    public abstract void addBufferReadMessages( OSCBundle bndl, Span s, Buffer[] bufs, int bufOff );
+
+    public abstract void debugDump();
+
+    public abstract void close() throws IOException;
+    public abstract void cleanUp();
+
+    public abstract void addToCache( CacheManager cm );
+
+    protected void debugDumpBasics()
+    {
+        System.err.print( "Span " + span.getStart() + " ... " + span.getStop() + "; disposed ? " + disposed );
+        if( (debugTrace != null) && (debugTrace.length > 2) ) {
+            System.err.println( "; created : " );
+            for( int i = 2; i < debugTrace.length; i++ ) {
+                System.err.println( "  " + debugTrace[ i ]);
+            }
+        }
+    }
+
+    public static Action getDebugDumpAction()
+    {
+        return new ActionDebugDump();
+    }
+
+    @SuppressWarnings("serial")
+    private static class ActionDebugDump
+            extends AbstractAction {
+        protected ActionDebugDump()
+        {
+            super( "Dump Undisposed Audio Stakes" );
+        }
+
+        public void actionPerformed( ActionEvent e )
+        {
+            debugCheckDisposal();
+        }
+    }
+
 } // class AudioStake

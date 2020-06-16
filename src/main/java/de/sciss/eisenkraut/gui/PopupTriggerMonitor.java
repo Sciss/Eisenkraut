@@ -30,7 +30,7 @@ public class PopupTriggerMonitor
     private static final int DEFAULT_DELAY = 300;
 
     private JPopupMenu pop = null;
-    private float relx, rely;
+    private float relX, relY;
     private List<Listener> collListeners = null;        // lazy creation
 
     private final Component c;
@@ -68,10 +68,10 @@ public class PopupTriggerMonitor
         setPopupMenu(pop, 0f, 1f);
     }
 
-    public void setPopupMenu(JPopupMenu pop, float relx, float rely) {
+    public void setPopupMenu(JPopupMenu pop, float relX, float relY) {
         this.pop = pop;
-        this.relx = relx;
-        this.rely = rely;
+        this.relX = relX;
+        this.relY = relY;
     }
 
     public JPopupMenu getPopupMenu()
@@ -125,7 +125,7 @@ public class PopupTriggerMonitor
     private void dispatchTrigger() {
         validPress = false;
 
-        if (pop != null) pop.show(c, (int) (c.getWidth() * relx), (int) (c.getHeight() * rely));
+        if (pop != null) pop.show(c, (int) (c.getWidth() * relX), (int) (c.getHeight() * relY));
 
         synchronized (sync) {
             if (collListeners != null) {

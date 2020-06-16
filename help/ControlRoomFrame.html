@@ -8,14 +8,20 @@
 <body>
 <h1>Control Room Palette</h1>
 <p>
-The control room window is like the master or control room section of a mixing console. There is no separate master (main) and control room bus in eisenkraut, so their meaning is interchangeable.
+The control room window is like the main or control room section of a mixing console. There is no separate main
+and control room bus in Eisenkraut, so their meaning is interchangeable.
 </P>
 <IMG SRC="ControlRoom.png" ALT="Screenshot of the Control Room window">
 <P>
 </P>
 <h2>Output Configuration</h2>
 <P>
-Eisenkraut maintains a set of output configurations which allow you to switch between different set-ups. An output configuration is a mapping from logical master bus channels to physical sound card channels. For example, you might have a stereo configuration that goes to the first two sound card channels, but you might also occasionally need a stereo configuration that plays on your sound card channels 2 and 4. The output configuration also contains panorama information. Configurations can be created and edited in the <A HREF="IOSetup.html">I/O Setup window</A>.
+Eisenkraut maintains a set of output configurations which allow you to switch between different set-ups.
+An output configuration is a mapping from logical main bus channels to physical sound card channels.
+For example, you might have a stereo configuration that goes to the first two sound card channels,
+but you might also occasionally need a stereo configuration that plays on your sound card channels 2 and 4.
+The output configuration also contains panorama information. Configurations can be created and edited in
+the <A HREF="IOSetup.html">I/O Setup window</A>.
 </P>
 <P>
 All configurations created in the I/O setup appear in this combo box, and you can switch configuration by clicking on the triangle on the right side of the box and choosing the desired configuration from the list.
@@ -36,7 +42,9 @@ The limiter is based on SuperCollider's <code>Limiter</code> UGen and it thus co
 </P>
 <H2>Meters</H2>
 <P>
-Eisenkraut provides high precision master bus meters which indicate peak-hold, instantaneous peak, and RMS energy for each channel. The meter is currently fixed to reflect pre-fader levels, a future version might offer a switch to monitor post-fader signal level.
+Eisenkraut provides high precision main bus meters which indicate peak-hold, instantaneous peak, and RMS energy
+for each channel. The meter is currently fixed to reflect pre-fader levels, a future version might offer a switch
+to monitor post-fader signal level.
 </P><P>
 The monitored range is 0&nbsp;dBFS down to -60&nbsp;dBFS. The peak hold time is 2.5&nbsp;seconds. Peak hold and instantaneous peak are calculated from the rectified signal. They fall from 0&nbsp;dBFS to -20&nbsp;dBFS in 1.5&nbsp; seconds, and below fall speed is 40&nbsp;dB per 2.5&nbsp;seconds. The same fall speed is used for the RMS value which is calculated by passing the rectified signal through a first-order lowpass filter whose -60&nbsp;dB point is reached after 100&nbsp;ms.
 </P>

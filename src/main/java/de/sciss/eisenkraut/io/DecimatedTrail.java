@@ -35,13 +35,13 @@ import java.util.List;
 
 public abstract class DecimatedTrail extends BasicTrail {
 
-    protected static final boolean	DEBUG					= false;
+    protected static final boolean DEBUG = false;
 
-    protected int					SUBNUM;
-    protected int					MAXSHIFT;
-    protected int					MAXCOARSE;
-    protected long					MAXMASK;
-    protected int					MAXCEILADD;
+    protected int   SUB_NUM;
+    protected int   MAX_SHIFT;
+    protected int   MAX_COARSE;
+    protected long  MAX_MASK;
+    protected int   MAX_CEIL_ADD;
 
     public static final int			MODEL_PCM				= 0;
     public static final int			MODEL_HALFWAVE_PEAKRMS	= 1;
@@ -84,6 +84,7 @@ public abstract class DecimatedTrail extends BasicTrail {
     protected final List<Span> drawBusyList			= new ArrayList<Span>();
 
     protected Thread				threadAsync				= null;
+
     protected AudioFile[]			tempFAsync				= null; // lazy
     protected volatile boolean		keepAsyncRunning		= false;
 
@@ -117,7 +118,7 @@ public abstract class DecimatedTrail extends BasicTrail {
     public final int getDefaultTouchMode() { return TOUCH_SPLIT; }
     public final int getChannelNum() { return decimChannels; }
     public final int getNumModelChannels() { return modelChannels; }
-    public final int getNumDecimations() { return SUBNUM; }
+    public final int getNumDecimations() { return SUB_NUM; }
     public final int getModel() { return model; }
 
     public abstract DecimationInfo getBestSubsample( Span tag, int minLen );
@@ -183,12 +184,12 @@ public abstract class DecimatedTrail extends BasicTrail {
 
         if (!Thread.holdsLock(fileSync)) throw new IllegalMonitorStateException();
 
-        final long floorStart = span.start & MAXMASK;
-        final long ceilStop = (span.stop + MAXCEILADD) & MAXMASK;
+        final long floorStart = span.start & MAX_MASK;
+        final long ceilStop = (span.stop + MAX_CEIL_ADD) & MAX_MASK;
         final Span extSpan = (floorStart == span.start) && (ceilStop == span.stop) ? span : new Span(floorStart,
                 ceilStop);
-        final Span[] fileSpans = new Span[SUBNUM];
-        final Span[] biasedSpans = new Span[SUBNUM];
+        final Span[] fileSpans = new Span[SUB_NUM];
+        final Span[] biasedSpans = new Span[SUB_NUM];
         long fileStart;
         long fileStop;
 
@@ -196,7 +197,7 @@ public abstract class DecimatedTrail extends BasicTrail {
             tempF = createTempFiles(); // XXX sync
         }
         synchronized (tempF) {
-            for (int i = 0; i < SUBNUM; i++) {
+            for (int i = 0; i < SUB_NUM; i++) {
                 fileStart = tempF[i].getFrameNum();
                 fileStop = fileStart + (extSpan.getLength() >> decimHelps[i].shift);
                 tempF[i].setFrameNum(fileStop);
@@ -212,12 +213,12 @@ public abstract class DecimatedTrail extends BasicTrail {
             throws IOException {
         if (!Thread.holdsLock(fileSync)) throw new IllegalMonitorStateException();
 
-        final long floorStart	= span.start & MAXMASK;
-        final long ceilStop		= (span.stop + MAXCEILADD) & MAXMASK;
+        final long floorStart	= span.start & MAX_MASK;
+        final long ceilStop		= (span.stop + MAX_CEIL_ADD) & MAX_MASK;
         final Span extSpan		= (floorStart == span.start) && (ceilStop == span.stop) ?
                                     span : new Span( floorStart, ceilStop );
-        final Span[] fileSpans	= new Span[ SUBNUM ];
-        final Span[] biasedSpans = new Span[ SUBNUM ];
+        final Span[] fileSpans	= new Span[SUB_NUM];
+        final Span[] biasedSpans = new Span[SUB_NUM];
         long fileStart;
         long fileStop;
 
@@ -226,7 +227,7 @@ public abstract class DecimatedTrail extends BasicTrail {
             tempFAsync = createTempFiles();
         }
         synchronized (tempFAsync) {
-            for (int i = 0; i < SUBNUM; i++) {
+            for (int i = 0; i < SUB_NUM; i++) {
                 fileStart = tempFAsync[i].getFrameNum();
                 fileStop = fileStart + (extSpan.getLength() >> decimHelps[i].shift);
                 tempFAsync[i].setFrameNum(fileStop);
@@ -242,7 +243,7 @@ public abstract class DecimatedTrail extends BasicTrail {
     {
         // simply use an AIFC file with float format as temp file
         final AudioFileDescr proto	= new AudioFileDescr();
-        final AudioFile[] tempFiles	= new AudioFile[ SUBNUM ];
+        final AudioFile[] tempFiles	= new AudioFile[SUB_NUM];
         AudioFileDescr afd;
         proto.type					= AudioFileDescr.TYPE_AIFF;
         proto.channels				= decimChannels;
@@ -251,7 +252,7 @@ public abstract class DecimatedTrail extends BasicTrail {
         // proto.bitsPerSample = 8;
         // proto.sampleFormat = AudioFileDescr.FORMAT_INT;
         try {
-            for( int i = 0; i < SUBNUM; i++ ) {
+            for(int i = 0; i < SUB_NUM; i++ ) {
                 afd				= new AudioFileDescr( proto );
                 afd.file		= IOUtil.createTempFile();
                 afd.rate		= decimHelps[ i ].rate;
@@ -259,7 +260,7 @@ public abstract class DecimatedTrail extends BasicTrail {
             }
             return tempFiles;
         } catch( IOException e1 ) {
-            for( int i = 0; i < SUBNUM; i++ ) {
+            for(int i = 0; i < SUB_NUM; i++ ) {
                 if( tempFiles[ i ] != null ) tempFiles[ i ].cleanUp();
             }
             throw e1;

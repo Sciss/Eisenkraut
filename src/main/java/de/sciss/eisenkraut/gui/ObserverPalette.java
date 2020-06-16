@@ -58,7 +58,7 @@ public class ObserverPalette
 
     private Session doc = null;
 
-    private JLabel[] lbCursorInfo;
+    private final JLabel[] lbCursorInfo;
     private final ParamField ggTimelineStart, ggTimelineStop, ggTimelineLen;
     private final DefaultUnitTranslator timeTrans;
     private final JTabbedPane ggTabPane;

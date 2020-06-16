@@ -8,12 +8,12 @@ lazy val authorEMail  = "contact@sciss.de"
 
 lazy val basicJavaOpts = Seq("-source", "1.8")
 
-lazy val projectVersion   = "1.3.6"
+lazy val projectVersion   = "1.4.0-SNAPSHOT"
 
 lazy val jcolliderVersion = "1.0.0"
 lazy val scissLibVersion  = "1.1.2"
-lazy val subminVersion    = "0.3.3"
-lazy val weblafVersion    = "2.2.1"
+lazy val subminVersion    = "0.3.4"
+lazy val weblafVersion    = "1.2.11"
 
 lazy val commonSettings = Seq(
   name             := "Eisenkraut",
@@ -32,7 +32,8 @@ lazy val commonSettings = Seq(
     "de.sciss" %  "jcollider" % jcolliderVersion,
     "de.sciss" %  "scisslib"  % scissLibVersion,
     "de.sciss" %  "submin"    % subminVersion,
-    "de.sciss" %  "weblaf"    % weblafVersion
+    "com.weblookandfeel" % "weblaf-core"  % weblafVersion,
+    "com.weblookandfeel" % "weblaf-ui"    % weblafVersion
   )
 )
 

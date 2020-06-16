@@ -25,93 +25,93 @@ import de.sciss.io.Span;
 
 @SuppressWarnings("serial")
 public class MarkerStake
-		extends Marker
-		implements Stake {
+        extends Marker
+        implements Stake {
 
-	private final Span	span;
-	private Trail		t		= null;
+    private final Span	span;
+    private Trail		t		= null;
 
-	public MarkerStake( long pos, String name )
-	{
-		super( pos, name );
-		span = new Span( pos, pos );
-	}
-	
-	public MarkerStake( Marker orig )
-	{
-		super( orig );
-		span = new Span( pos, pos );
-	}
-	
-	public Stake duplicate()
-	{
-		return new MarkerStake( this );
-	}
+    public MarkerStake( long pos, String name )
+    {
+        super( pos, name );
+        span = new Span( pos, pos );
+    }
 
-	public Span	getSpan()
-	{
-		return span;
-	}
-	
-	public void dispose()
-	{
-		t	= null;
-	}
-	
-	public Stake replaceStart( long newStart )
-	{
-		return new MarkerStake( newStart, name );
-	}
-	
-	public Stake replaceStop( long newStop )
-	{
-		return new MarkerStake( newStop, name );
-	}
-	
-	public Stake shiftVirtual( long delta )
-	{
-		return new MarkerStake( pos + delta, name );
-	}
+    public MarkerStake( Marker orig )
+    {
+        super( orig );
+        span = new Span( pos, pos );
+    }
 
-	public void setTrail( Trail t )
-	{
-		this.t	= t;
-	}
+    public Stake duplicate()
+    {
+        return new MarkerStake( this );
+    }
+
+    public Span	getSpan()
+    {
+        return span;
+    }
+
+    public void dispose()
+    {
+        t	= null;
+    }
+
+    public Stake replaceStart( long newStart )
+    {
+        return new MarkerStake( newStart, name );
+    }
+
+    public Stake replaceStop( long newStop )
+    {
+        return new MarkerStake( newStop, name );
+    }
+
+    public Stake shiftVirtual( long delta )
+    {
+        return new MarkerStake( pos + delta, name );
+    }
+
+    public void setTrail( Trail t )
+    {
+        this.t	= t;
+    }
 
 // ---------------- TreeNode interface ---------------- 
 
-	public TreeNode getChildAt( int childIndex )
-	{
-		return null;
-	}
-	
-	public int getChildCount()
-	{
-		return 0;
-	}
-	
-	public TreeNode getParent()
-	{
-		return t;
-	}
-	
-	public int getIndex( TreeNode node )
-	{
-		return -1;
-	}
-	
-	public boolean getAllowsChildren()
-	{
-		return false;
-	}
-	
-	public boolean isLeaf()
-	{
-		return true;
-	}
-	
-	public Enumeration<?> children()
-	{
-		return null;
-	}
+    public TreeNode getChildAt( int childIndex )
+    {
+        return null;
+    }
+
+    public int getChildCount()
+    {
+        return 0;
+    }
+
+    public TreeNode getParent()
+    {
+        return t;
+    }
+
+    public int getIndex( TreeNode node )
+    {
+        return -1;
+    }
+
+    public boolean getAllowsChildren()
+    {
+        return false;
+    }
+
+    public boolean isLeaf()
+    {
+        return true;
+    }
+
+    public Enumeration<?> children()
+    {
+        return null;
+    }
 }

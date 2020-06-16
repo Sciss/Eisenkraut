@@ -32,58 +32,58 @@ import de.sciss.io.Span;
  */
 public class DecimationInfo
 {
-	/**
-	 *  Internal index for MultirateTrackEditor
-	 */
-	public final int	idx;
-	protected final int	shift;
-	protected final int	inlineDecim;
-	/**
-	 *  Time span (in full-rate frames) covered by this subsample
-	 */
-	public final Span	span;
-	/**
-	 *  Length (rounded) of the time span decimated through sub-sampling
-	 */
-	public final long	sublength;
-	public final int	model;
-	public final int	channels;
+    /**
+     *  Internal index for MultirateTrackEditor
+     */
+    public final int	idx;
+    protected final int	shift;
+    protected final int	inlineDecim;
+    /**
+     *  Time span (in full-rate frames) covered by this subsample
+     */
+    public final Span	span;
+    /**
+     *  Length (rounded) of the time span decimated through sub-sampling
+     */
+    public final long	subLength;
+    public final int	model;
+    public final int	channels;
 
-	/**
-	 *  Creates a new <code>DecimationInfo</code>
-	 *  data structure with the given decimation.
-	 *
-	 *  @param  idx			internal index for <code>MultirateTrackEditor</code>
-	 *  @param  span		the originally covered time span
-	 *  @param  sublength   the translated span length in decimated
-	 *						frames (rounded to integer)
-	 */
-	protected DecimationInfo( Span span, long sublength, int channels,
-							  int idx, int shift, int inlineDecim, int model )
-	{
-		this.span			= span;
-		this.sublength		= sublength;
-		this.channels		= channels;
-		this.idx			= idx;
-		this.shift			= shift;
-		this.inlineDecim	= inlineDecim;
-		this.model			= model;
-	}
+    /**
+     *  Creates a new <code>DecimationInfo</code>
+     *  data structure with the given decimation.
+     *
+     *  @param  idx			internal index for <code>MultirateTrackEditor</code>
+     *  @param  span		the originally covered time span
+     *  @param  subLength   the translated span length in decimated
+     *						frames (rounded to integer)
+     */
+    protected DecimationInfo(Span span, long subLength, int channels,
+                             int idx, int shift, int inlineDecim, int model )
+    {
+        this.span			= span;
+        this.subLength = subLength;
+        this.channels		= channels;
+        this.idx			= idx;
+        this.shift			= shift;
+        this.inlineDecim	= inlineDecim;
+        this.model			= model;
+    }
 
-	/**
-	 *  Returns the decimation
-	 *  rate factor.
-	 *
-	 *  @return the factor by which the full rate is decimated,
-	 *			that is, <code>decimatedRate = fullRate / returnedFactor</code>
-	 */
-	public int getDecimationFactor()
-	{
-		return( (1<<shift) * inlineDecim );
-	}
-	
-	public long getTotalLength()
-	{
-		return( (sublength * inlineDecim) << shift );
-	}
+    /**
+     *  Returns the decimation
+     *  rate factor.
+     *
+     *  @return the factor by which the full rate is decimated,
+     *			that is, <code>decimatedRate = fullRate / returnedFactor</code>
+     */
+    public int getDecimationFactor()
+    {
+        return( (1<<shift) * inlineDecim );
+    }
+
+    public long getTotalLength()
+    {
+        return( (subLength * inlineDecim) << shift );
+    }
 }

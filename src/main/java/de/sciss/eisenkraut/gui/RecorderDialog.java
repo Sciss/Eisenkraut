@@ -504,13 +504,8 @@ public class RecorderDialog
 // ------------- ServerListener interface -------------
 
     public void serverAction(ServerEvent e) {
-        switch (e.getID()) {
-            case ServerEvent.STOPPED:
-                disposeRecorder();
-                break;
-
-            default:
-                break;
+        if (e.getID() == ServerEvent.STOPPED) {
+            disposeRecorder();
         }
     }
 
@@ -565,7 +560,7 @@ public class RecorderDialog
 // ------------- internal classes -------------
 
     private class Context {
-        protected Group grpRoot = null;
+        protected Group grpRoot;
         protected final Synth synthDiskOut;    // one multi-channel disk out synth
         protected final Synth[] synthsRoute;    // for each config channel one route
         protected Buffer bufDisk = null;

@@ -31,12 +31,12 @@ public class WaveformView
         extends JComponent
         implements Disposable {
 
-    private int fullChannels;
+    private final int fullChannels;
 
-    private Insets insets = new Insets(0, 0, 0, 0);
-    private int vGap = 1;
+    private final Insets insets = new Insets(0, 0, 0, 0);
+    private final int vGap = 1;
 
-    private Rectangle r = new Rectangle();
+    private final Rectangle r = new Rectangle();
 
     private static final Paint pntNull = new Color(0x7F, 0x7F, 0x00, 0xC0);
     private static final Stroke strkNull = new BasicStroke(1.0f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_BEVEL,

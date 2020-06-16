@@ -1,7 +1,7 @@
 in AudioTrail
 	Method analogous to the paste method, but with audio not being copied (except for the blend span)
 
-Control room : Master Levels optionally Post/ Pre switchable
+Control room : Main Levels optionally Post/ Pre switchable
 
 Pencil tool
 
@@ -16,7 +16,7 @@ DocumentFrame default size (esp. ignore collapsed!)
 
 Autom. Scrolling when making timeline selection beyond window bounds
 
-keyboard short cut for increasing/decreasing master volume
+keyboard short cut for increasing/decreasing main volume
 
 solo + mute buttons without pressed state (instantaneously on/off)
 

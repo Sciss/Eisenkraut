@@ -13,63 +13,59 @@
 
 package de.sciss.eisenkraut.net;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import de.sciss.net.OSCBundle;
 import de.sciss.util.Disposable;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class GroupSync
-		implements Disposable {
-	private final List<Slave> collSlaves = new ArrayList<Slave>();
-	protected boolean active = false;
+        implements Disposable {
+    private final List<Child> collChildren = new ArrayList<Child>();
+    protected boolean active = false;
 
-	public GroupSync() {
-		 /* empty */
-	}
+    public GroupSync() {
+        /* empty */
+    }
 
-	public void addSlave(Slave s) {
-		collSlaves.add(s);
-	}
+    public void addChild(Child s) {
+        collChildren.add(s);
+    }
 
-	public void removeSlave(Slave s) {
-		collSlaves.remove(s);
-	}
-	
-	public boolean isActive()
-	{
-		return active;
-	}
-	
-	public void activate( OSCBundle bndl )
-	{
-		active = true;
-		for (Slave collSlave : collSlaves) {
-			collSlave.groupActivate(bndl);
-		}
-	}
-	
-	public void deactivate( OSCBundle bndl )
-	{
-		active = false;
-		for (Slave collSlave : collSlaves) {
-			collSlave.groupDeactivate(bndl);
-		}
-	}
-	
-	// -------------- Disposable interface --------------
+    public void removeChild(Child s) {
+        collChildren.remove(s);
+    }
 
-	public void dispose()
-	{
-		collSlaves.clear();
-		active = false;
-	}
+    public boolean isActive() {
+        return active;
+    }
 
-	// -------------- internal interfaces --------------
-	
-	public static interface Slave
-	{
-		public void groupActivate( OSCBundle bndl );
-		public void groupDeactivate( OSCBundle bndl );
-	}
+    public void activate(OSCBundle bndl) {
+        active = true;
+        for (Child collChild : collChildren) {
+            collChild.groupActivate(bndl);
+        }
+    }
+
+    public void deactivate(OSCBundle bndl) {
+        active = false;
+        for (Child collChild : collChildren) {
+            collChild.groupDeactivate(bndl);
+        }
+    }
+
+    // -------------- Disposable interface --------------
+
+    public void dispose() {
+        collChildren.clear();
+        active = false;
+    }
+
+    // -------------- internal interfaces --------------
+
+    public static interface Child {
+        public void groupActivate(OSCBundle bndl);
+
+        public void groupDeactivate(OSCBundle bndl);
+    }
 }

@@ -39,7 +39,6 @@ public class WelcomeScreen
         extends JFrame
         implements HyperlinkListener {
 
-    private final JEditorPane ggContent;
     protected final JButton ggClose;
     protected final WelcomeScreen welcome = this;
 
@@ -91,11 +90,11 @@ public class WelcomeScreen
 
         System.err.println( img );
 
-        ggContent = new JEditorPane( "text/html", htmlWelcome1 + img + "</td><td><H1>Welcome to " +
-            root.getName() + "</H1>" + htmlWelcome2 );
+        JEditorPane ggContent = new JEditorPane("text/html", htmlWelcome1 + img + "</td><td><H1>Welcome to " +
+                root.getName() + "</H1>" + htmlWelcome2);
         ggContent.setEditable( false );
         ggContent.addHyperlinkListener( this );
-        cp.add( ggContent, BorderLayout.CENTER );
+        cp.add(ggContent, BorderLayout.CENTER );
         final Action closeAction = new AbstractAction( "- Close -" ) {
             public void actionPerformed( ActionEvent e )
             {

@@ -28,7 +28,7 @@ import java.util.prefs.Preferences;
 
 /**
  *  This class describes a generic GUI tool
- *  that can be aquired and dismissed by
+ *  that can be acquired and dismissed by
  *  a <code>Component</code>.
  */
 @SuppressWarnings("serial")
@@ -93,7 +93,7 @@ public class CurvePanel extends JComponent {
         setBorder(BorderFactory.createEmptyBorder(insets.top, insets.left, insets.bottom, insets.right));
 
         MouseInputAdapter mia = new MouseInputAdapter() {
-            private boolean didThemDragga = false;
+            private boolean didDrag = false;
 
             public void mousePressed(MouseEvent e) {
                 Point2D mousePt = getVirtualMousePos(e);
@@ -110,9 +110,9 @@ public class CurvePanel extends JComponent {
             public void mouseReleased(MouseEvent e) {
                 dragPt = null;
                 repaint();
-                if (didThemDragga) {
+                if (didDrag) {
                     dispatchAction();
-                    didThemDragga = false;
+                    didDrag = false;
                 }
             }
 
@@ -131,7 +131,7 @@ public class CurvePanel extends JComponent {
             }
 
             private void processDrag(Point2D mousePt, boolean snap) {
-                didThemDragga = true;
+                didDrag = true;
                 if (snap) {
                     if (Math.abs(mousePt.getX() - 0.5) < 0.1) mousePt.setLocation(0.5, mousePt.getY());
                     if (Math.abs(mousePt.getY() - 0.5) < 0.1) mousePt.setLocation(mousePt.getX(), 0.5);

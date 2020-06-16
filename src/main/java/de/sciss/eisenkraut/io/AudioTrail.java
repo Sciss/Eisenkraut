@@ -55,307 +55,306 @@ import de.sciss.timebased.Stake;
  *  by 4219 frames, thus maintaining low RAM and CPU consumption.
  */
 public class AudioTrail
-		extends BasicTrail {
+        extends BasicTrail {
 
-	// default buffer size (frames per channel)
-	private static final int		BUFSIZE				= 8192;
-	// for chunks greater or equal than this use a dedicated SilentAudioStake instead of writing zeros to regular AudioStake
-	private static final int 		MIN_SILENT_SIZE 	= 65536;
+    // default buffer size (frames per channel)
+    private static final int BUF_SIZE = 8192;
+    // for chunks greater or equal than this use a dedicated SilentAudioStake instead of writing zeros to regular AudioStake
+    private static final int 		MIN_SILENT_SIZE 	= 65536;
 
-	private final int[][]			channelMaps;
-	private final int				numChannels;
-	private final boolean			singleFile;
+    private final int[][]			channelMaps;
+    private final int				numChannels;
+    private final boolean			singleFile;
     private AudioFile[]				tempF				= null;
 
-	private final AudioFile[]		audioFiles;
+    private final AudioFile[]		audioFiles;
 
-	private int						numDepDec			= 0;
+    private int						numDepDec			= 0;
 
 
-	public static AudioTrail newFrom(AudioFile af)
-			throws IOException {
+    public static AudioTrail newFrom(AudioFile af)
+            throws IOException {
 
-		final AudioFileDescr	afd			= af.getDescr();
-		final int[][]			channelMaps = new int[1][afd.channels];
-		final AudioTrail		at;
-		final Span				span		= new Span(0, afd.length);
+        final AudioFileDescr	afd			= af.getDescr();
+        final int[][]			channelMaps = new int[1][afd.channels];
+        final AudioTrail		at;
+        final Span				span		= new Span(0, afd.length);
 
-		for (int i = 0; i < afd.channels; i++) {
-			channelMaps[0][i] = i;
-		}
+        for (int i = 0; i < afd.channels; i++) {
+            channelMaps[0][i] = i;
+        }
 
-		at = new AudioTrail(channelMaps, afd.rate, new AudioFile[]{af});
-		at.add(null, new InterleavedAudioStake(span, af, span));
-		return at;
-	}
+        at = new AudioTrail(channelMaps, afd.rate, new AudioFile[]{af});
+        at.add(null, new InterleavedAudioStake(span, af, span));
+        return at;
+    }
 
-	public static AudioTrail newFrom(AudioFile[] afs)
-			throws IOException {
+    public static AudioTrail newFrom(AudioFile[] afs)
+            throws IOException {
 
-		if (afs.length == 1) return newFrom(afs[0]);
-		if (afs.length == 0) throw new IllegalArgumentException("Need at least one audio file");
+        if (afs.length == 1) return newFrom(afs[0]);
+        if (afs.length == 0) throw new IllegalArgumentException("Need at least one audio file");
 
-		final long			length;
-		final double		rate;
-		AudioFileDescr		afd;
-		final int[][]		channelMaps;
-		final Span			span;
-		final AudioTrail	at;
-		final Span[]		fileSpans	= new Span[afs.length];
+        final long			length;
+        final double		rate;
+        AudioFileDescr		afd;
+        final int[][]		channelMaps;
+        final Span			span;
+        final AudioTrail	at;
+        final Span[]		fileSpans	= new Span[afs.length];
 
-		afd			= afs[0].getDescr();
-		length		= afd.length;
-		rate		= afd.rate;
-		span		= new Span(0, length);
-		channelMaps	= new int[afs.length][];
-		for (int i = 0; i < afs.length; i++) {
-			afd = afs[i].getDescr();
-			if ((afd.length != length) || (afd.rate != rate)) {
-				throw new IllegalArgumentException("Invalid mixing of lengths and rates");
-			}
-			channelMaps[i] = new int[afd.channels];
-			for (int j = 0; j < channelMaps[i].length; j++) {
-				channelMaps[i][j] = j;
-			}
-			fileSpans[i] = span;
-		}
+        afd			= afs[0].getDescr();
+        length		= afd.length;
+        rate		= afd.rate;
+        span		= new Span(0, length);
+        channelMaps	= new int[afs.length][];
+        for (int i = 0; i < afs.length; i++) {
+            afd = afs[i].getDescr();
+            if ((afd.length != length) || (afd.rate != rate)) {
+                throw new IllegalArgumentException("Invalid mixing of lengths and rates");
+            }
+            channelMaps[i] = new int[afd.channels];
+            for (int j = 0; j < channelMaps[i].length; j++) {
+                channelMaps[i][j] = j;
+            }
+            fileSpans[i] = span;
+        }
 
-		at = new AudioTrail(channelMaps, rate, afs);
-		at.add(null, new MultiMappedAudioStake(span, afs, fileSpans, channelMaps));
-		return at;
-	}
+        at = new AudioTrail(channelMaps, rate, afs);
+        at.add(null, new MultiMappedAudioStake(span, afs, fileSpans, channelMaps));
+        return at;
+    }
 
-	public static AudioTrail newFrom(AudioFileDescr afd) {
+    public static AudioTrail newFrom(AudioFileDescr afd) {
 
-		final int[][] channelMaps = new int[1][afd.channels];
+        final int[][] channelMaps = new int[1][afd.channels];
 
-		for (int i = 0; i < afd.channels; i++) {
-			channelMaps[0][i] = i;
-		}
-		return new AudioTrail(channelMaps, afd.rate, new AudioFile[1]);
-	}
+        for (int i = 0; i < afd.channels; i++) {
+            channelMaps[0][i] = i;
+        }
+        return new AudioTrail(channelMaps, afd.rate, new AudioFile[1]);
+    }
 
-	protected BasicTrail createEmptyCopy() {
-		return new AudioTrail(this.channelMaps, this.getRate(), new AudioFile[0]);
-	}
+    protected BasicTrail createEmptyCopy() {
+        return new AudioTrail(this.channelMaps, this.getRate(), new AudioFile[0]);
+    }
 
-	private AudioTrail(int[][] channelMaps, double rate, AudioFile[] audioFiles) {
-		super();
+    private AudioTrail(int[][] channelMaps, double rate, AudioFile[] audioFiles) {
+        super();
 
-		this.audioFiles		= audioFiles;
-		this.channelMaps	= channelMaps;
-		singleFile			= channelMaps.length == 1;
+        this.audioFiles		= audioFiles;
+        this.channelMaps	= channelMaps;
+        singleFile			= channelMaps.length == 1;
 
-		int numCh			= 0;
-		for (int[] channelMap : channelMaps) {
-			numCh += channelMap.length;
-		}
-		this.numChannels	= numCh;
-		setRate(rate);
-	}
+        int numCh			= 0;
+        for (int[] channelMap : channelMaps) {
+            numCh += channelMap.length;
+        }
+        this.numChannels	= numCh;
+        setRate(rate);
+    }
 
-	protected AudioFile[] getAudioFiles() {
-		return audioFiles;
-	}
+    protected AudioFile[] getAudioFiles() {
+        return audioFiles;
+    }
 
-	public void closeAll()
-			throws IOException {
+    public void closeAll()
+            throws IOException {
 
-		for (AudioFile audioFile : audioFiles) {
-			if (audioFile != null) audioFile.close();
-		}
-	}
+        for (AudioFile audioFile : audioFiles) {
+            if (audioFile != null) audioFile.close();
+        }
+    }
 
-	public void exchange(AudioFile af)
-			throws IOException {
+    public void exchange(AudioFile af) {
 
-		if (audioFiles.length != 1) throw new IllegalStateException();
+        if (audioFiles.length != 1) throw new IllegalStateException();
 
-		final AudioFileDescr	afd			= af.getDescr();
-		final Span				span		= new Span(0, afd.length);
+        final AudioFileDescr	afd			= af.getDescr();
+        final Span				span		= new Span(0, afd.length);
 
-		if (afd.channels != channelMaps[0].length) throw new IllegalStateException();
+        if (afd.channels != channelMaps[0].length) throw new IllegalStateException();
 
-		clearIgnoreDependants();
-		deleteTempFiles();
-		addIgnoreDependants(new InterleavedAudioStake(span, af, span));
-	}
+        clearIgnoreDependants();
+        deleteTempFiles();
+        addIgnoreDependants(new InterleavedAudioStake(span, af, span));
+    }
 
-	public void exchange(AudioFile[] afs)
-			throws IOException {
+    public void exchange(AudioFile[] afs)
+            throws IOException {
 
-		if (afs.length == 1) {
-			exchange(afs[0]);
-			return;
-		}
+        if (afs.length == 1) {
+            exchange(afs[0]);
+            return;
+        }
 
-		if (audioFiles.length != afs.length) throw new IllegalStateException();
+        if (audioFiles.length != afs.length) throw new IllegalStateException();
 
-		final long			length;
-		final double		rate;
-		AudioFileDescr		afd;
-		final Span			span;
-		final Span[]		fileSpans	= new Span[afs.length];
+        final long			length;
+        final double		rate;
+        AudioFileDescr		afd;
+        final Span			span;
+        final Span[]		fileSpans	= new Span[afs.length];
 
-		afd			= afs[0].getDescr();
-		length		= afd.length;
-		rate		= afd.rate;
-		span		= new Span(0, length);
-		for (int i = 0; i < afs.length; i++) {
-			afd = afs[i].getDescr();
-			if (afd.channels != channelMaps[i].length) throw new IllegalStateException();
-			if ((afd.length != length) || (afd.rate != rate)) {
-				throw new IllegalArgumentException("Invalid mixing of lengths and rates");
-			}
-			fileSpans[i] = span;
-		}
+        afd			= afs[0].getDescr();
+        length		= afd.length;
+        rate		= afd.rate;
+        span		= new Span(0, length);
+        for (int i = 0; i < afs.length; i++) {
+            afd = afs[i].getDescr();
+            if (afd.channels != channelMaps[i].length) throw new IllegalStateException();
+            if ((afd.length != length) || (afd.rate != rate)) {
+                throw new IllegalArgumentException("Invalid mixing of lengths and rates");
+            }
+            fileSpans[i] = span;
+        }
 
-		clearIgnoreDependants();
-		deleteTempFiles();
-		addIgnoreDependants(new MultiMappedAudioStake(span, afs, fileSpans, channelMaps));
-	}
+        clearIgnoreDependants();
+        deleteTempFiles();
+        addIgnoreDependants(new MultiMappedAudioStake(span, afs, fileSpans, channelMaps));
+    }
 
-	public void dispose() {
-		// call this first because dependants might rely on open audio files!
-		super.dispose();
-		for (AudioFile audioFile : audioFiles) {
-			if (audioFile != null) audioFile.cleanUp();
-		}
-		deleteTempFiles();
-	}
+    public void dispose() {
+        // call this first because dependants might rely on open audio files!
+        super.dispose();
+        for (AudioFile audioFile : audioFiles) {
+            if (audioFile != null) audioFile.cleanUp();
+        }
+        deleteTempFiles();
+    }
 
-	public int getDefaultTouchMode() {
-		return TOUCH_SPLIT;
-	}
+    public int getDefaultTouchMode() {
+        return TOUCH_SPLIT;
+    }
 
-	public int[][] getChannelMaps() {
-		return channelMaps;
-	}
+    public int[][] getChannelMaps() {
+        return channelMaps;
+    }
 
-	public int getChannelNum() {
-		return numChannels;
-	}
+    public int getChannelNum() {
+        return numChannels;
+    }
 
-	public void debugDump() {
-		AudioStake stake;
+    public void debugDump() {
+        AudioStake stake;
 
-		for (int i = 0; i < getNumStakes(); i++) {
-			stake = (AudioStake) get(i, true);
-			stake.debugDump();
-		}
-		AudioStake.debugCheckDisposal();
-	}
+        for (int i = 0; i < getNumStakes(); i++) {
+            stake = (AudioStake) get(i, true);
+            stake.debugDump();
+        }
+        AudioStake.debugCheckDisposal();
+    }
 
-	public AudioStake allocSilent(Span span) {
-		return new SilentAudioStake(span, numChannels);
-	}
+    public AudioStake allocSilent(Span span) {
+        return new SilentAudioStake(span, numChannels);
+    }
 
-	public synchronized AudioStake alloc(Span span)
-			throws IOException {
+    public synchronized AudioStake alloc(Span span)
+            throws IOException {
 
-		long fileStart;
-		long fileStop;
-		final Span[] fileSpans = new Span[channelMaps.length];
+        long fileStart;
+        long fileStop;
+        final Span[] fileSpans = new Span[channelMaps.length];
 
-		// synchronized because this method is synchronized
-		// and no other method calls createTempFiles() !
+        // synchronized because this method is synchronized
+        // and no other method calls createTempFiles() !
 //		synchronized( this ) {
-		if (tempF == null) {
-			createTempFiles();
-		}
+        if (tempF == null) {
+            createTempFiles();
+        }
 //		}
 
-		// synchronized( tempF ) {
-		for (int i = 0; i < tempF.length; i++) {
-			fileStart = tempF[i].getFrameNum();
-			fileStop = fileStart + span.getLength();
-			tempF[i].setFrameNum(fileStop);
-			fileSpans[i] = new Span(fileStart, fileStop);
-		}
-		// }
+        // synchronized( tempF ) {
+        for (int i = 0; i < tempF.length; i++) {
+            fileStart = tempF[i].getFrameNum();
+            fileStop = fileStart + span.getLength();
+            tempF[i].setFrameNum(fileStop);
+            fileSpans[i] = new Span(fileStart, fileStop);
+        }
+        // }
 
-		if (singleFile) {
-			return new InterleavedAudioStake(span, tempF[0], fileSpans[0]);
-		} else {
-			return new MultiMappedAudioStake(span, tempF, fileSpans, channelMaps);
-		}
-	}
+        if (singleFile) {
+            return new InterleavedAudioStake(span, tempF[0], fileSpans[0]);
+        } else {
+            return new MultiMappedAudioStake(span, tempF, fileSpans, channelMaps);
+        }
+    }
 
-	public void addBufferReadMessages(OSCBundle bndl, Span[] readSpans, Buffer[] bufs, int bufOff) {
-		final List<Stake> coll	= editGetCollByStart(null);
-		final int		num		= coll.size();
-		AudioStake		stake;
-		int				chunkLen;
-		Span			subSpan, readSpan;
-		int				len		= 0;
-		int				idx;
+    public void addBufferReadMessages(OSCBundle bndl, Span[] readSpans, Buffer[] bufs, int bufOff) {
+        final List<Stake> coll	= editGetCollByStart(null);
+        final int		num		= coll.size();
+        AudioStake		stake;
+        int				chunkLen;
+        Span			subSpan, readSpan;
+        int				len		= 0;
+        int				idx;
 
-		for (Span readSpan1 : readSpans) {
-			readSpan = readSpan1;
-			idx = indexOf(readSpan.start, true);
-			if (idx < 0) idx = Math.max(0, -(idx + 2));
-			len += (int) readSpan.getLength();
+        for (Span readSpan1 : readSpans) {
+            readSpan = readSpan1;
+            idx = indexOf(readSpan.start, true);
+            if (idx < 0) idx = Math.max(0, -(idx + 2));
+            len += (int) readSpan.getLength();
 
-			while ((len > 0) && (idx < num)) {
-				stake = (AudioStake) coll.get(idx);
-				subSpan = new Span(Math.max(stake.getSpan().start, readSpan.start),
-						Math.min(stake.getSpan().stop, readSpan.stop));
-				chunkLen = (int) subSpan.getLength();
-				if (chunkLen > 0) {
-					stake.addBufferReadMessages(bndl, subSpan, bufs, bufOff);
-					bufOff += chunkLen;
-					len -= chunkLen;
-				}
-				idx++;
-			}
-		}
-		if( len > 0 ) {
-			for (Buffer buf : bufs) {
-				bndl.addPacket(buf.fillMsg(
-						bufOff * buf.getNumChannels(), len * buf.getNumChannels(), 0.0f));
-			}
-		}
-	}
+            while ((len > 0) && (idx < num)) {
+                stake = (AudioStake) coll.get(idx);
+                subSpan = new Span(Math.max(stake.getSpan().start, readSpan.start),
+                        Math.min(stake.getSpan().stop, readSpan.stop));
+                chunkLen = (int) subSpan.getLength();
+                if (chunkLen > 0) {
+                    stake.addBufferReadMessages(bndl, subSpan, bufs, bufOff);
+                    bufOff += chunkLen;
+                    len -= chunkLen;
+                }
+                idx++;
+            }
+        }
+        if( len > 0 ) {
+            for (Buffer buf : bufs) {
+                bndl.addPacket(buf.fillMsg(
+                        bufOff * buf.getNumChannels(), len * buf.getNumChannels(), 0.0f));
+            }
+        }
+    }
 
-	public static final int MODE_INSERT		= Session.EDIT_INSERT;
-	public static final int MODE_OVERWRITE	= Session.EDIT_OVERWRITE;
-	public static final int MODE_MIX		= Session.EDIT_MIX;
+    public static final int MODE_INSERT		= Session.EDIT_INSERT;
+    public static final int MODE_OVERWRITE	= Session.EDIT_OVERWRITE;
+    public static final int MODE_MIX		= Session.EDIT_MIX;
 
-	/**
-	 *	Note: when mode == MODE_INSERT, the caller should have called editInsert on this
-	 *	trail before, this is NOT done by this method; this method simply calls editAdd
-	 *	with the newly synthesized stake!
-	 *
-	 *	TODO: this method should somehow be part of BasicTrail
-	 *	TODO: this method has become too complex and should be split up
-	 *
-	 *	@param	srcTrail	the trail to read from (null allowed, which means no source tracks)
-	 *	@param	copySpan	re source!
-	 *	@param	insertPos	such that copySpan.start becomes insertPos in the target
-	 *	@param	mode		either MODE_INSERT, MODE_OVERWRITE or MODE_MIX
-	 *	@param	trackMap	array of length this.getNumChannels(), where each element is the
-	 *						source channel idx mapping to the target channel whose idx is the array idx
-	 *						; so to copy channels 0 and 2 of a four channel source to a target stereo trail,
-	 *						trackMap would be [ 0, 2 ] for example. A mono to stereo would be [ 0, 0 ].
-	 *						index -1 indicates bypass (for MODE_INSERT or clearUnused filled with zeroes)
-	 */
-	public boolean copyRangeFrom(AudioTrail srcTrail, Span copySpan, long insertPos, int mode,
-								 Object source, AbstractCompoundEdit ce, int[] trackMap, BlendContext bcPre, BlendContext bcPost)
-			throws IOException {
+    /**
+     *	Note: when mode == MODE_INSERT, the caller should have called editInsert on this
+     *	trail before, this is NOT done by this method; this method simply calls editAdd
+     *	with the newly synthesized stake!
+     *
+     *	TODO: this method should somehow be part of BasicTrail
+     *	TODO: this method has become too complex and should be split up
+     *
+     *	@param	srcTrail	the trail to read from (null allowed, which means no source tracks)
+     *	@param	copySpan	re source!
+     *	@param	insertPos	such that copySpan.start becomes insertPos in the target
+     *	@param	mode		either MODE_INSERT, MODE_OVERWRITE or MODE_MIX
+     *	@param	trackMap	array of length this.getNumChannels(), where each element is the
+     *						source channel idx mapping to the target channel whose idx is the array idx
+     *						; so to copy channels 0 and 2 of a four channel source to a target stereo trail,
+     *						trackMap would be [ 0, 2 ] for example. A mono to stereo would be [ 0, 0 ].
+     *						index -1 indicates bypass (for MODE_INSERT or clearUnused filled with zeroes)
+     */
+    public boolean copyRangeFrom(AudioTrail srcTrail, Span copySpan, long insertPos, int mode,
+                                 Object source, AbstractCompoundEdit ce, int[] trackMap, BlendContext bcPre, BlendContext bcPost)
+            throws IOException {
 
-		if (trackMap.length != this.getChannelNum()) {
-			throw new IllegalArgumentException("trackMap : " + Arrays.toString(trackMap));
-		}
-		if (trackMap.length == 0) return true;
+        if (trackMap.length != this.getChannelNum()) {
+            throw new IllegalArgumentException("trackMap : " + Arrays.toString(trackMap));
+        }
+        if (trackMap.length == 0) return true;
 
-		final boolean			hasBlend	= (bcPre != null) && (bcPre.getLen() > 0) || (bcPost != null) && (bcPost.getLen() > 0);
-		final AudioStake		writeStake;
+        final boolean			hasBlend	= (bcPre != null) && (bcPre.getLen() > 0) || (bcPost != null) && (bcPost.getLen() > 0);
+        final AudioStake		writeStake;
 //		final boolean			result;
-		final long				len			= copySpan.getLength();
-		final int				bufLen		= (int) Math.min( len, BUFSIZE );
-		final double			progWeight	= 1.0 / len;
+        final long				len			= copySpan.getLength();
+        final int				bufLen		= (int) Math.min( len, BUF_SIZE);
+        final double			progWeight	= 1.0 / len;
 
-		// throws IOException
+        // throws IOException
         writeStake = alloc(new Span(insertPos, insertPos + len));
 
         try {
@@ -400,10 +399,10 @@ public class AudioTrail
         }
     }
 
-	private static void setProgression(long len, double progWeight)
-			throws ProcessingThread.CancelledException {
-		ProcessingThread.update((float) (len * progWeight));
-	}
+    private static void setProgression(long len, double progWeight)
+            throws ProcessingThread.CancelledException {
+        ProcessingThread.update((float) (len * progWeight));
+    }
 
     private static void flushProgression() {
         ProcessingThread.flushProgression();
@@ -415,11 +414,11 @@ public class AudioTrail
 
         final float[][]			srcBuf			= new float[srcTrail == null ? 0 : srcTrail.getChannelNum()][];
         final float[][]			mappedSrcBuf	= new float[this.getChannelNum()][];
-		float[]					empty			= null;
-		boolean					srcUsed			= false;
-		int						chunkLen;
-		Span					chunkSpan;
-		long					newSrcStart, newInsPos;
+        float[]					empty			= null;
+        boolean					srcUsed			= false;
+        int						chunkLen;
+        Span					chunkSpan;
+        long					newSrcStart, newInsPos;
 
         for (int i = 0; i < trackMap.length; i++) {
             if (trackMap[i] >= 0) {
@@ -453,17 +452,17 @@ public class AudioTrail
         writeStake.flush();
     }
 
-	private void mixRangeFrom(AudioTrail srcTrail, long srcStart, AudioStake writeStake, long insertPos, long len,
-							  int bufLen, int[] trackMap, double progWeight)
-			throws IOException, InterruptedException {
+    private void mixRangeFrom(AudioTrail srcTrail, long srcStart, AudioStake writeStake, long insertPos, long len,
+                              int bufLen, int[] trackMap, double progWeight)
+            throws IOException, InterruptedException {
 
-		final float[][]			srcBuf			= new float[srcTrail == null ? 0 : srcTrail.getChannelNum()][];
+        final float[][]			srcBuf			= new float[srcTrail == null ? 0 : srcTrail.getChannelNum()][];
         final float[][]			outBuf			= new float[this.getChannelNum()][bufLen];
         final float[][]			mappedSrcBuf	= new float[this.getChannelNum()][];
         boolean					srcUsed			= false;
-		int						chunkLen;
-		Span					chunkSpan;
-		long					newSrcStart, newInsPos;
+        int						chunkLen;
+        Span					chunkSpan;
+        long					newSrcStart, newInsPos;
 
         for (int i = 0; i < trackMap.length; i++) {
             if (trackMap[i] >= 0) {
@@ -508,10 +507,10 @@ public class AudioTrail
         final float[][]			outBuf			= new float[this.getChannelNum()][];
         final float[][]			thisBuf			= new float[this.getChannelNum()][];
         boolean					srcUsed			= false;
-		boolean					thisUsed		= false;
-		int						chunkLen;
-		Span					chunkSpan;
-		long					newSrcStart, newInsPos;
+        boolean					thisUsed		= false;
+        int						chunkLen;
+        Span					chunkSpan;
+        long					newSrcStart, newInsPos;
 
         for (int i = 0; i < trackMap.length; i++) {
             if (trackMap[i] >= 0) {
@@ -556,35 +555,35 @@ public class AudioTrail
         final float[][]			srcBuf			= new float[srcTrail == null ? 0 : srcTrail.getChannelNum()][];
         final float[][]			mappedSrcBuf	= new float[this.getChannelNum()][];
 //		final long				blendLen		= bc.getLen();
-		final long				preLen			= bcPre  == null ? 0L : bcPre .getLen();
-		final long				postLen			= bcPost == null ? 0L : bcPost.getLen();
-		final float[][]			mixBuf			= new float[this.getChannelNum()][bufLen];
+        final long				preLen			= bcPre  == null ? 0L : bcPre .getLen();
+        final long				postLen			= bcPost == null ? 0L : bcPost.getLen();
+        final float[][]			mixBuf			= new float[this.getChannelNum()][bufLen];
         final float[][]			srcFadeBuf		= new float[this.getChannelNum()][];
         final long				fadeOutOffset	= insertPos - len;
-		float[]					empty			= null;
-		boolean					srcUsed			= false;
-		boolean					writeMix		= false;
-		int						chunkLen, chunkLen2, deltaChunk;
-		int						cpToMixStart	= 0;
-		int						cpToMixStop		= bufLen;
-		Span					chunkSpan, chunkSpan2;
+        float[]					empty			= null;
+        boolean					srcUsed			= false;
+        boolean					writeMix		= false;
+        int						chunkLen, chunkLen2, deltaChunk;
+        int						cpToMixStart	= 0;
+        int						cpToMixStop		= bufLen;
+        Span					chunkSpan, chunkSpan2;
 
-		// for each chunk there are two scenarios (indicated by the value of writeMix):
-		// 1. we are in a chunk that contains a crossfade.
-		//    in this case, output is found in mixBuf by reading in mixBuf from this
-		//    trail and applying fades, then mixing (adding) the source trail from mappedSrcBuf.
-		//    it is possible that both fadeIn and fadeOut are contained in one chunk, hence
-		//    the two separate if-blocks below in the main loop and the tracking of the "dry" portion
-		//    using variables cpToMixStart and cpToMixStop. Note that we chose not the opposite
-		//    way of mixing mixBuf to mappedSrcBuf because we might be duplicating source trail
-		//    channels (e.g. paste mono track to stereo file)!
-		// 2. we are in a chunk that does not contain fades.
-		//    in this case, we simply write mappedSrcBuf as output. we have ensured that this
-		//    works by filling unused channels with emptyBuf.
-		//
-		// to properly deal with channel duplication, we have created a separate buffer
-		// srcFadeBuf that prevents the blend context from accidentally fading the
-		// same channel twice
+        // for each chunk there are two scenarios (indicated by the value of writeMix):
+        // 1. we are in a chunk that contains a crossfade.
+        //    in this case, output is found in mixBuf by reading in mixBuf from this
+        //    trail and applying fades, then mixing (adding) the source trail from mappedSrcBuf.
+        //    it is possible that both fadeIn and fadeOut are contained in one chunk, hence
+        //    the two separate if-blocks below in the main loop and the tracking of the "dry" portion
+        //    using variables cpToMixStart and cpToMixStop. Note that we chose not the opposite
+        //    way of mixing mixBuf to mappedSrcBuf because we might be duplicating source trail
+        //    channels (e.g. paste mono track to stereo file)!
+        // 2. we are in a chunk that does not contain fades.
+        //    in this case, we simply write mappedSrcBuf as output. we have ensured that this
+        //    works by filling unused channels with emptyBuf.
+        //
+        // to properly deal with channel duplication, we have created a separate buffer
+        // srcFadeBuf that prevents the blend context from accidentally fading the
+        // same channel twice
 
         for (int i = 0; i < trackMap.length; i++) {
             if (trackMap[i] >= 0) {
@@ -644,7 +643,7 @@ public class AudioTrail
 //framesWritten != len - blendLen;
 //fadeOutPos = origInsertPos - blendLen - (len - blendLen) = origInsertPos - len
 
-			// check if after this chunk we have entered the fadein
+            // check if after this chunk we have entered the fadein
             if (remaining - chunkLen < postLen) {    // fade this in
                 deltaChunk = (int) Math.max(0, remaining - postLen);    // this is the amount of space before the actual fade begins!
                 chunkLen2 = chunkLen - deltaChunk;
@@ -676,7 +675,7 @@ public class AudioTrail
                 writeStake.writeFrames(mappedSrcBuf, 0, chunkSpan);
             }
             framesWritten += chunkLen;
-			remaining	  -= chunkLen;
+            remaining	  -= chunkLen;
 
 //			insertPos	= newInsPos;
 
@@ -692,19 +691,19 @@ public class AudioTrail
         final float[][]			srcBuf			= new float[srcTrail == null ? 0 : srcTrail.getChannelNum()][];
         final float[][]			mappedSrcBuf	= new float[this.getChannelNum()][];
 //		final long				blendLen		= bc.getBlendLen();
-		final long				preLen			= bcPre  == null ? 0L : bcPre .getLen();
-		final long				postLen			= bcPost == null ? 0L : bcPost.getLen();
-		final float[][]			mixBuf			= new float[this.getChannelNum()][bufLen];
+        final long				preLen			= bcPre  == null ? 0L : bcPre .getLen();
+        final long				postLen			= bcPost == null ? 0L : bcPost.getLen();
+        final float[][]			mixBuf			= new float[this.getChannelNum()][bufLen];
         final float[][]			srcFadeBuf		= new float[this.getChannelNum()][];
         boolean					srcUsed			= false;
-		int						chunkLen;
-		Span					chunkSpan, chunkSpan2;
-		long					newSrcStart, newInsPos;
+        int						chunkLen;
+        Span					chunkSpan, chunkSpan2;
+        long					newSrcStart, newInsPos;
 
-		// src trail is read in mapped buffer mappedSrcBuf. this trail is read into buffer mixBuf.
-		// src trail is faded according to srcFadeBuf (which avoid duplicate fading of re-used
-		// channels). non-null channels in mappedSrcBuf are mixed (added) to mixBuf, and mixBuf
-		// is written out.
+        // src trail is read in mapped buffer mappedSrcBuf. this trail is read into buffer mixBuf.
+        // src trail is faded according to srcFadeBuf (which avoid duplicate fading of re-used
+        // channels). non-null channels in mappedSrcBuf are mixed (added) to mixBuf, and mixBuf
+        // is written out.
 
         for (int i = 0; i < trackMap.length; i++) {
             if (trackMap[i] >= 0) {
@@ -751,12 +750,12 @@ public class AudioTrail
                                     int bufLen, int[] trackMap, double progWeight, BlendContext bcPre, BlendContext bcPost)
             throws IOException, InterruptedException {
 
-		final float[][]			srcBuf			= new float[srcTrail == null ? 0 : srcTrail.getChannelNum()][];
+        final float[][]			srcBuf			= new float[srcTrail == null ? 0 : srcTrail.getChannelNum()][];
         final float[][]			mappedSrcBuf	= new float[this.getChannelNum()][];
 //		final long				blendLen		= bc.getBlendLen();
-		final long				preLen			= bcPre  == null ? 0L : bcPre .getLen();
-		final long				postLen			= bcPost == null ? 0L : bcPost.getLen();
-		final float[][]			mixBuf			= new float[this.getChannelNum()][bufLen];
+        final long				preLen			= bcPre  == null ? 0L : bcPre .getLen();
+        final long				postLen			= bcPost == null ? 0L : bcPost.getLen();
+        final float[][]			mixBuf			= new float[this.getChannelNum()][bufLen];
         final float[][]			srcFadeBuf		= new float[this.getChannelNum()][];
         final float[][]			thisDryBuf		= new float[this.getChannelNum()][];
         final float[][]			thisFadeBuf		= new float[this.getChannelNum()][];
@@ -764,27 +763,27 @@ public class AudioTrail
         boolean					srcUsed			= false;
 //		boolean					thisFadeUsed	= false;
 //		boolean					thisDryUsed		= false;
-		int						chunkLen, chunkLen2, deltaChunk;
-		int						clrMixFadeStart = 0;
-		int						clrMixFadeStop	= bufLen;
-		Span					chunkSpan; // , chunkSpan2;
-		long					newSrcStart, newInsPos, fadeOff;
-		boolean					xFadeBegin, xFadeEnd, xFade;
+        int						chunkLen, chunkLen2, deltaChunk;
+        int						clrMixFadeStart = 0;
+        int						clrMixFadeStop	= bufLen;
+        Span					chunkSpan; // , chunkSpan2;
+        long					newSrcStart, newInsPos, fadeOff;
+        boolean					xFadeBegin, xFadeEnd, xFade;
 
-		// for each chunk there are two scenarios (indicated by the value of xFade):
-		// 1. we are in a chunk that contains a crossfade.
-		//    in this case, output is found in mixBuf by reading in mixBuf from this
-		//    trail and applying fades to the "wet" parts of this trail (thisFadeBuf),
-		//	  then mixing (adding) the source trail from mappedSrcBuf.
-		// 2. we are in a chunk that does not contain fades.
-		//    in this case, we only read those channels from this trail that are "dry"
-		//	  (not overwritten) as specified in thisDryBuf. we then write a composite
-		//	  buffer compositeBuf which contains either references to channels from the source
-		//	  (mappedSrcBuf) or from this trail (thisDryBuf).
-		//
-		// to properly deal with channel duplication, we have created a separate buffer
-		// srcFadeBuf that prevents the blend context from accidentally fading the
-		// same channel twice
+        // for each chunk there are two scenarios (indicated by the value of xFade):
+        // 1. we are in a chunk that contains a crossfade.
+        //    in this case, output is found in mixBuf by reading in mixBuf from this
+        //    trail and applying fades to the "wet" parts of this trail (thisFadeBuf),
+        //	  then mixing (adding) the source trail from mappedSrcBuf.
+        // 2. we are in a chunk that does not contain fades.
+        //    in this case, we only read those channels from this trail that are "dry"
+        //	  (not overwritten) as specified in thisDryBuf. we then write a composite
+        //	  buffer compositeBuf which contains either references to channels from the source
+        //	  (mappedSrcBuf) or from this trail (thisDryBuf).
+        //
+        // to properly deal with channel duplication, we have created a separate buffer
+        // srcFadeBuf that prevents the blend context from accidentally fading the
+        // same channel twice
 
         for (int i = 0; i < trackMap.length; i++) {
             if (trackMap[i] >= 0) {
@@ -893,27 +892,27 @@ public class AudioTrail
         writeStake.flush();
     }
 
-	private static void add(float[] bufA, int offA, float[] bufB, int offB, int len) {
-		for (int stop = offA + len; offA < stop; ) {
-			bufA[offA++] += bufB[offB++];
-		}
-	}
+    private static void add(float[] bufA, int offA, float[] bufB, int offB, int len) {
+        for (int stop = offA + len; offA < stop; ) {
+            bufA[offA++] += bufB[offB++];
+        }
+    }
 
-	private static void clear(float[] buf, int off, int len) {
-		for (int stop = off + len; off < stop; ) {
-			buf[off++] = 0f;
-		}
-	}
+    private static void clear(float[] buf, int off, int len) {
+        for (int stop = off + len; off < stop; ) {
+            buf[off++] = 0f;
+        }
+    }
 
     private static String getResourceString(String key) {
         return AbstractApplication.getApplication().getResourceString(key);
     }
 
-	public void clearRange(Span clearSpan, int mode, Object source, AbstractCompoundEdit ce, boolean[] trackMap, BlendContext bc)
-			throws IOException {
+    public void clearRange(Span clearSpan, int mode, Object source, AbstractCompoundEdit ce, boolean[] trackMap, BlendContext bc)
+            throws IOException {
 
-		if (trackMap.length != this.getChannelNum()) throw new IllegalArgumentException(Arrays.toString(trackMap));
-		if (trackMap.length == 0) return;
+        if (trackMap.length != this.getChannelNum()) throw new IllegalArgumentException(Arrays.toString(trackMap));
+        if (trackMap.length == 0) return;
 
         switch (mode) {
             case MODE_INSERT:
@@ -934,16 +933,16 @@ public class AudioTrail
         }
     }
 
-	public void removeDependant(BasicTrail sub) {
-		super.removeDependant(sub);
-		if (sub instanceof DecimatedWaveTrail) {
-			numDepDec--;
-		}
-	}
+    public void removeDependant(BasicTrail sub) {
+        super.removeDependant(sub);
+        if (sub instanceof DecimatedWaveTrail) {
+            numDepDec--;
+        }
+    }
 
-	/*
-	 *	contract: trackMap.length > 0
-	 */
+    /*
+     *	contract: trackMap.length > 0
+     */
     private void clearRangeIns(Span clearSpan, int mode, Object source, AbstractCompoundEdit ce, boolean[] trackMap, BlendContext bc)
             throws IOException {
 
@@ -957,26 +956,26 @@ public class AudioTrail
         }
 
         final double		perDecProgRatio	= 0.9;	// this to one decimtrail
-		final double		progRatio		= 1.0 / (1.0 + ((1.0 - perDecProgRatio) / perDecProgRatio) * numDepDec);
-		final double		progWeight		= progRatio / blendLen;
+        final double		progRatio		= 1.0 / (1.0 + ((1.0 - perDecProgRatio) / perDecProgRatio) * numDepDec);
+        final double		progWeight		= progRatio / blendLen;
 
-		final long			left			= bc.getLeftLen();
-		final long			right			= bc.getRightLen();
-		final Span			fadeInSpan		= new Span(clearSpan.stop - left, clearSpan.stop + right);
+        final long			left			= bc.getLeftLen();
+        final long			right			= bc.getRightLen();
+        final Span			fadeInSpan		= new Span(clearSpan.stop - left, clearSpan.stop + right);
         final Span			fadeOutSpan		= new Span(clearSpan.start - left, clearSpan.start + right);
-        final int			bufLen			= (int) Math.min(blendLen, BUFSIZE);
+        final int			bufLen			= (int) Math.min(blendLen, BUF_SIZE);
         final int			numCh			= this.getChannelNum();
-		final float[][]		bufA			= new float[numCh][bufLen];
+        final float[][]		bufA			= new float[numCh][bufLen];
         final float[][]		bufB			= new float[numCh][bufLen];
 
-		AudioStake			writeStake	= null;
-		int					chunkLen;
-		long				n;
-		Span				chunkSpan;
-		boolean				success	= false;
+        AudioStake			writeStake	= null;
+        int					chunkLen;
+        long				n;
+        Span				chunkSpan;
+        boolean				success	= false;
 
-		try {
-			flushProgression();
+        try {
+            flushProgression();
             writeStake = alloc(fadeOutSpan);
 
             for (long framesWritten = 0; framesWritten < blendLen; ) {
@@ -1002,22 +1001,22 @@ public class AudioTrail
         }
 
         this.editAdd(source, writeStake, ce);
-	}
+    }
 
-	/*
-	 *	contract: trackMap.length > 0
-	 *
-	 *	@todo	should be able to blend fadeIn / fadeOut, so maxBlendLen = clearSpan.length not clearSpan.length >> 1
-	 *			; this requires a lot of changes though ;-(
-	 */
+    /*
+     *	contract: trackMap.length > 0
+     *
+     *	@todo	should be able to blend fadeIn / fadeOut, so maxBlendLen = clearSpan.length not clearSpan.length >> 1
+     *			; this requires a lot of changes though ;-(
+     */
     private void clearRangeOvr(Span clearSpan, int mode, Object source, AbstractCompoundEdit ce, boolean[] trackMap, BlendContext bc)
             throws IOException {
 
         final long blendLen = bc == null ? 0L : bc.getLen();
 
         boolean				sync		= true;
-		boolean				success		= false;
-		final boolean		t1			= trackMap[0];
+        boolean				success		= false;
+        final boolean		t1			= trackMap[0];
         for (int i = 1; i < trackMap.length; i++) {
             if (t1 != trackMap[i]) {
                 sync = false;
@@ -1026,7 +1025,7 @@ public class AudioTrail
         }
         // now sync is true if all tracks are selected or all are unselected
 
-		final List<Stake> collStakes	= new ArrayList<Stake>(3);
+        final List<Stake> collStakes	= new ArrayList<Stake>(3);
 
         try {
             if (sync && !t1) return;            // all tracks unselected
@@ -1036,35 +1035,35 @@ public class AudioTrail
 //				return;
 //			}
 
-			final double		perDecProgRatio	= 0.9;	// this to one decimtrail
-			final double		progRatio		= 1.0 / (1.0 + ((1.0 - perDecProgRatio) / perDecProgRatio) * numDepDec);
+            final double		perDecProgRatio	= 0.9;	// this to one decimtrail
+            final double		progRatio		= 1.0 / (1.0 + ((1.0 - perDecProgRatio) / perDecProgRatio) * numDepDec);
 
-			final boolean		hasBlend		= blendLen > 0L;
-			final long			blendLen2		= blendLen << 1;
-			final int			numCh			= this.getChannelNum();
+            final boolean		hasBlend		= blendLen > 0L;
+            final long			blendLen2		= blendLen << 1;
+            final int			numCh			= this.getChannelNum();
 //			final float[][]		srcBuf			= new float[ numCh ][];
 //			final float[][]		outBuf			= new float[ numCh ][];
 //			final float[][]		mixBuf			= new float[ numCh ][];
-			final float[][]		readWriteBufF	= new float[numCh][];		// reading and writing during fade
-			final float[][]		fadeBuf;									// channels which are faded
-			final float[][]		readBufS;									// reading during middle part
-			final float[][]		writeBufS;									// writing during middle part
-			final Span			silentSpan		= new Span(clearSpan.start + blendLen, clearSpan.stop - blendLen);
+            final float[][]		readWriteBufF	= new float[numCh][];		// reading and writing during fade
+            final float[][]		fadeBuf;									// channels which are faded
+            final float[][]		readBufS;									// reading during middle part
+            final float[][]		writeBufS;									// writing during middle part
+            final Span			silentSpan		= new Span(clearSpan.start + blendLen, clearSpan.stop - blendLen);
             final long			silentLen		= silentSpan.getLength();
-			final int			bufLen			= (int) Math.min(clearSpan.getLength(), BUFSIZE);
+            final int			bufLen			= (int) Math.min(clearSpan.getLength(), BUF_SIZE);
             final boolean		useSilentStake	= sync && (silentLen >= MIN_SILENT_SIZE);
-			final AudioStake	writeStake1, writeStake2, writeStake3;
-			final double		progWeight;
-			float[]				empty		= null;
-			float[]				temp;
-			int					chunkLen;
-			long				n;
-			long				totalFramesWritten	= 0;
-			Span				chunkSpan;
+            final AudioStake	writeStake1, writeStake2, writeStake3;
+            final double		progWeight;
+            float[]				empty		= null;
+            float[]				temp;
+            int					chunkLen;
+            long				n;
+            long				totalFramesWritten	= 0;
+            Span				chunkSpan;
 
-			flushProgression();
+            flushProgression();
 
-			// buffer regarding fade in / out
+            // buffer regarding fade in / out
             if (hasBlend) {
                 fadeBuf = new float[numCh][];
                 for (int i = 0; i < trackMap.length; i++) {
@@ -1075,7 +1074,7 @@ public class AudioTrail
                 fadeBuf = null;
             }
 
-			// buffer regarding middle part
+            // buffer regarding middle part
             if (!useSilentStake) {
                 readBufS = new float[numCh][];
                 writeBufS = new float[numCh][];
@@ -1098,7 +1097,7 @@ public class AudioTrail
                 writeBufS = null;
             }
 
-			// ---- define stakes ----
+            // ---- define stakes ----
             if (useSilentStake) {        // ok, let's put a silent stake in dem middle
                 if (hasBlend) {
                     writeStake1 = alloc(new Span(clearSpan.start, silentSpan.start));
@@ -1116,19 +1115,19 @@ public class AudioTrail
                 }
 
                 final double progRatio2		= 1.0 / (1.0 + numDepDec);  // inf:1 for silentLen
-				final double w				= (double) blendLen2 / (blendLen2 + silentLen); // weight of progRatio versus progRatio2
-				progWeight					= (progRatio*w + progRatio2*(1.0-w)) / blendLen2;
+                final double w				= (double) blendLen2 / (blendLen2 + silentLen); // weight of progRatio versus progRatio2
+                progWeight					= (progRatio*w + progRatio2*(1.0-w)) / blendLen2;
 
-			} else {
-				writeStake2 = alloc(clearSpan);
-				writeStake1	= writeStake2;
-				writeStake3	= writeStake2;
-				collStakes.add(writeStake2);
-				progWeight	= progRatio / (blendLen2 + silentLen);
+            } else {
+                writeStake2 = alloc(clearSpan);
+                writeStake1	= writeStake2;
+                writeStake3	= writeStake2;
+                collStakes.add(writeStake2);
+                progWeight	= progRatio / (blendLen2 + silentLen);
 //				progWeight	= 9.0 / ((blendLen2 + silentLen) * (numDepDec + 9));
-			}
+            }
 
-			// ---- fade out part ----
+            // ---- fade out part ----
             for (long framesWritten = 0; framesWritten < blendLen; ) {
                 chunkLen = (int) Math.min(bufLen, blendLen - framesWritten);
                 n = clearSpan.start + framesWritten;
@@ -1169,7 +1168,7 @@ public class AudioTrail
                 }
             }
 
-			// ---- fade in part ----
+            // ---- fade in part ----
             for (long framesWritten = 0; framesWritten < blendLen; ) {
                 chunkLen = (int) Math.min(bufLen, blendLen - framesWritten);
                 n = silentSpan.stop + framesWritten;
@@ -1199,21 +1198,21 @@ public class AudioTrail
             }
         }
 
-		this.editAddAll(source, collStakes, ce);
-	}
+        this.editAddAll(source, collStakes, ce);
+    }
 
-	public static void readFrames(List<Stake> stakesByStart, float[][] data, int dataOffset, Span readSpan)
-			throws IOException {
+    public static void readFrames(List<Stake> stakesByStart, float[][] data, int dataOffset, Span readSpan)
+            throws IOException {
 
-		final int		num		= stakesByStart.size();
-		int				idx		= Collections.binarySearch(stakesByStart, readSpan.start, startComparator);
-		if( idx < 0 )	idx		= Math.max(0, -(idx + 2));
+        final int		num		= stakesByStart.size();
+        int				idx		= Collections.binarySearch(stakesByStart, readSpan.start, startComparator);
+        if( idx < 0 )	idx		= Math.max(0, -(idx + 2));
 //		int				len		= (int) readSpan.getLength();
-		int				dataStop= (int) readSpan.getLength() + dataOffset;
+        int				dataStop= (int) readSpan.getLength() + dataOffset;
 
-		AudioStake	stake;
-		int			chunkLen;
-		Span		subSpan;
+        AudioStake	stake;
+        int			chunkLen;
+        Span		subSpan;
 
         while ((dataOffset < dataStop) && (idx < num)) {
             stake = (AudioStake) stakesByStart.get(idx);
@@ -1236,32 +1235,32 @@ public class AudioTrail
         }
     }
 
-	protected void readFrames(float[][] data, int dataOffset, Span readSpan, AbstractCompoundEdit ce)
-			throws IOException {
-		AudioTrail.readFrames(editGetCollByStart(ce), data, dataOffset, readSpan);
-	}
+    protected void readFrames(float[][] data, int dataOffset, Span readSpan, AbstractCompoundEdit ce)
+            throws IOException {
+        AudioTrail.readFrames(editGetCollByStart(ce), data, dataOffset, readSpan);
+    }
 
-	public void readFrames(float[][] data, int dataOffset, Span readSpan)
-			throws IOException {
-		readFrames(data, dataOffset, readSpan, null);
-	}
+    public void readFrames(float[][] data, int dataOffset, Span readSpan)
+            throws IOException {
+        readFrames(data, dataOffset, readSpan, null);
+    }
 
-	private void createTempFiles()
-			throws IOException {
+    private void createTempFiles()
+            throws IOException {
 
-		final AudioFileDescr afd	= new AudioFileDescr();
-		afd.type					= AudioFileDescr.TYPE_WAVE64; // TYPE_AIFF
-		afd.rate					= getRate();
-		afd.bitsPerSample			= 32;
-		afd.sampleFormat			= AudioFileDescr.FORMAT_FLOAT;
+        final AudioFileDescr afd	= new AudioFileDescr();
+        afd.type					= AudioFileDescr.TYPE_WAVE64; // TYPE_AIFF
+        afd.rate					= getRate();
+        afd.bitsPerSample			= 32;
+        afd.sampleFormat			= AudioFileDescr.FORMAT_FLOAT;
 
-		if( singleFile ) {
-			afd.channels			= getChannelNum();
-			afd.file				= IOUtil.createTempFile();
-			tempF					= new AudioFile[] { AudioFile.openAsWrite(afd)};
-		} else {
-			AudioFileDescr afd2;
-			final AudioFile[] tempF2 = new AudioFile[channelMaps.length];
+        if( singleFile ) {
+            afd.channels			= getChannelNum();
+            afd.file				= IOUtil.createTempFile();
+            tempF					= new AudioFile[] { AudioFile.openAsWrite(afd)};
+        } else {
+            AudioFileDescr afd2;
+            final AudioFile[] tempF2 = new AudioFile[channelMaps.length];
             for (int i = 0; i < channelMaps.length; i++) {
                 afd2 = new AudioFileDescr(afd);
                 afd2.channels = channelMaps[i].length;
@@ -1271,23 +1270,23 @@ public class AudioTrail
             // real assignment here coz tempF will remain null if error occurs in the loop
             tempF = tempF2;
         }
-	}
+    }
 
-	private void deleteTempFiles() {
-		if (tempF != null) {
-			for (AudioFile aTempF : tempF) {
-				if (aTempF != null) {
-					aTempF.cleanUp();
-					final File af = aTempF.getFile();
-					if (!af.delete()) af.deleteOnExit();
-				}
-			}
-		}
-		tempF = null;
-	}
+    private void deleteTempFiles() {
+        if (tempF != null) {
+            for (AudioFile aTempF : tempF) {
+                if (aTempF != null) {
+                    aTempF.cleanUp();
+                    final File af = aTempF.getFile();
+                    if (!af.delete()) af.deleteOnExit();
+                }
+            }
+        }
+        tempF = null;
+    }
 
-	public void flatten(InterleavedStreamFile f, Span span, int[] channelMap)
-			throws IOException {
+    public void flatten(InterleavedStreamFile f, Span span, int[] channelMap)
+            throws IOException {
 
         final Span       fileSpan   = new Span(f.getFramePosition(), span.getLength());
         final AudioStake stake      = new InterleavedAudioStake(span, f, fileSpan);
@@ -1328,8 +1327,8 @@ public class AudioTrail
 //		}
         if (span.isEmpty()) return;
 
-		final int outChannels = target.getChannelNum();
-		// build or verify channelMap
+        final int outChannels = target.getChannelNum();
+        // build or verify channelMap
         if (channelMap == null) {
             if (outChannels != numChannels) throw new IllegalArgumentException();
             channelMap = new int[outChannels];
@@ -1345,18 +1344,18 @@ public class AudioTrail
 
 //		final ProcessingThread	pt			= ProcessingThread.currentThread();
 //		final float[][]			data		= new float[ numChannels ][ BUFSIZE ];
-		final double			progWeight	= 1.0 / span.getLength();
-		final int				num			= getNumStakes();
-		final float[][]			outBuf		= new float[outChannels][BUFSIZE];
+        final double			progWeight	= 1.0 / span.getLength();
+        final int				num			= getNumStakes();
+        final float[][]			outBuf		= new float[outChannels][BUF_SIZE];
         final float[][]			inBuf		= new float[numChannels][];
 //		int						idx			= Collections.binarySearch( collStakesByStart, new Long( span.start ), startComparator );
-		int						idx			= indexOf(span.start, true);
+        int						idx			= indexOf(span.start, true);
         if( idx < 0 )			idx			= Math.max(0, -(idx + 2));
         long					readOff		= span.start;
-		AudioStake				source;
-		int						chunkLen;
-		Span					sourceSpan, subSpan;
-		long					readStop	= span.start;
+        AudioStake				source;
+        int						chunkLen;
+        Span					sourceSpan, subSpan;
+        long					readStop	= span.start;
 
         for (int i = 0; i < channelMap.length; i++) {
             inBuf[channelMap[i]] = outBuf[i];
@@ -1367,7 +1366,7 @@ public class AudioTrail
             sourceSpan = source.getSpan();
             readStop = Math.min(sourceSpan.stop, span.stop);
             while (readOff < readStop) {
-                chunkLen = (int) Math.min(BUFSIZE, readStop - readOff);
+                chunkLen = (int) Math.min(BUF_SIZE, readStop - readOff);
                 subSpan = new Span(readOff, readOff + chunkLen);
                 source.readFrames(inBuf, 0, subSpan);
                 target.writeFrames(outBuf, 0, subSpan);
@@ -1380,17 +1379,15 @@ public class AudioTrail
         if (readStop < span.stop) {
             System.err.println("WARNING: trying to flatten beyond the trail's stop");
             for (int ch = 0; ch < outBuf.length; ch++) {
-                for (int i = 0; i < outBuf[ch].length; i++) {
-                    outBuf[ch][i] = 0f;
-                }
+                Arrays.fill(outBuf[ch], 0f);
             }
             while (readOff < span.stop) {
-                chunkLen = (int) Math.min(BUFSIZE, span.stop - readOff);
+                chunkLen = (int) Math.min(BUF_SIZE, span.stop - readOff);
                 subSpan = new Span(readOff, readOff + chunkLen);
                 target.writeFrames(outBuf, 0, subSpan);
                 readOff += chunkLen;
                 setProgression(readOff - span.start, progWeight);
             }
         }
-	}
+    }
 } // class AudioTrail

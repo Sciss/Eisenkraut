@@ -59,17 +59,17 @@ public class TrackRowHeader
 
     protected boolean				selected		= false;
 
-	private final Color colrSelected = GraphicsUtil.colrSelection();
-	private static final Color colrUnselected = GraphicsUtil.colrInactiveSelection();
-	private static final Color colrDarken = new Color(0x00, 0x00, 0x00, 0x18);
-	private final Paint pntSelected = new GradientPaint(0, 0, colrSelected,
-			36, 0, new Color(colrSelected.getRGB() & 0xFFFFFF, true));
-	private static final Paint pntUnselected = new GradientPaint(0, 0, colrUnselected,
-			36, 0, new Color(colrUnselected.getRGB() & 0xFFFFFF, true));
-	private static final Paint pntDarken = new GradientPaint(0, 0, colrDarken,
-			36, 0, new Color(colrDarken.getRGB() & 0xFFFFFF, true));
+    private final Color colrSelected = GraphicsUtil.colrSelection();
+    private static final Color colrUnselected = GraphicsUtil.colrInactiveSelection();
+    private static final Color colrDarken = new Color(0x00, 0x00, 0x00, 0x18);
+    private final Paint pntSelected = new GradientPaint(0, 0, colrSelected,
+            36, 0, new Color(colrSelected.getRGB() & 0xFFFFFF, true));
+    private static final Paint pntUnselected = new GradientPaint(0, 0, colrUnselected,
+            36, 0, new Color(colrUnselected.getRGB() & 0xFFFFFF, true));
+    private static final Paint pntDarken = new GradientPaint(0, 0, colrDarken,
+            36, 0, new Color(colrDarken.getRGB() & 0xFFFFFF, true));
 
-	private final MapManager.Listener trackListener;
+    private final MapManager.Listener trackListener;
     private final SessionCollection.Listener selectedTracksListener;
 
     public TrackRowHeader(final Track t, final SessionCollection tracks, final SessionCollection selectedTracks,
@@ -81,22 +81,22 @@ public class TrackRowHeader
         this.selectedTracks	= selectedTracks;
         this.undo			= undo;
 
-		final SpringLayout lay = new SpringLayout();
-		SpringLayout.Constraints cons;
-		setLayout(lay);
+        final SpringLayout lay = new SpringLayout();
+        SpringLayout.Constraints cons;
+        setLayout(lay);
 
-		lbTrackName = new JLabel();
-		lbTrackName.setFont(AbstractApplication.getApplication().getGraphicsHandler().getFont(GraphicsHandler.FONT_SMALL));
-		cons = lay.getConstraints(lbTrackName);
-		cons.setX(Spring.constant(7));
+        lbTrackName = new JLabel();
+        lbTrackName.setFont(AbstractApplication.getApplication().getGraphicsHandler().getFont(GraphicsHandler.FONT_SMALL));
+        cons = lay.getConstraints(lbTrackName);
+        cons.setX(Spring.constant(7));
 
-		cons.setY(Spring.minus(Spring.max(    // min( X, Y ) = -max( -X, -Y )
-				Spring.constant(-4),
-				Spring.minus(Spring.sum(Spring.sum(lay.getConstraint(SpringLayout.SOUTH, this),
-						Spring.minus(lay.getConstraint(SpringLayout.NORTH, this))), Spring.constant(-15))))));
-		add(lbTrackName);
-		// setBorder(BorderFactory.createMatteBorder(0, 0, 0, 2, Color.white));   // top left bottom right
-		setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 2));   // top left bottom right
+        cons.setY(Spring.minus(Spring.max(    // min( X, Y ) = -max( -X, -Y )
+                Spring.constant(-4),
+                Spring.minus(Spring.sum(Spring.sum(lay.getConstraint(SpringLayout.SOUTH, this),
+                        Spring.minus(lay.getConstraint(SpringLayout.NORTH, this))), Spring.constant(-15))))));
+        add(lbTrackName);
+        // setBorder(BorderFactory.createMatteBorder(0, 0, 0, 2, Color.white));   // top left bottom right
+        setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 2));   // top left bottom right
 
         // --- Listener ---
         new DynamicAncestorAdapter(this).addTo(this);

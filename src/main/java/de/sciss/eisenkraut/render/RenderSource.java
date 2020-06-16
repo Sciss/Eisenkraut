@@ -32,66 +32,66 @@ import de.sciss.eisenkraut.timeline.Track;
  *  and trajectory data of a transmitter.
  */
 public class RenderSource {
-	public final int		numAudioChannels;
-	public final boolean[]	audioTrackMap;
-	
-	/**
-	 *  The blockSpan describes the
-	 *  current time span of the provided data
-	 *  in the source rate sense.
-	 *  Thus, blockSpan.getLength() equals
-	 *  blockBufLen
-	 */
-	public Span				blockSpan;
-	/**
-	 */
-	public float[][]		audioBlockBuf;
-	/**
-	 *  Offset to use when reading data
-	 *  from blockBuf
-	 */
-	public int				audioBlockBufOff;
-	/**
-	 *  Length to use when reading data
-	 *  from blockBuf
-	 */
-	public int				audioBlockBufLen;
-	
-	public float[][]		clipboardBuf;	// offset + len identical to blockBufOff/Len !
-	
-	public final RenderContext	context;
-	
-	public Trail			markers;
-	
-	public boolean			validAudio;
-	public boolean			validMarkers;
-	
-	/**
-	 *  Constructs a new RenderSource, where
-	 *  the arrays are pre-allocated for the
-	 *  given number of transmitters and receivers.
-	 *  Note that the final vectors are not
-	 *  initialized, i.e. senseBlockBuf will
-	 *  become new float[numTrns][numRcv][] etc.
-	 *  All request fields are set to false by default.
-	 *
-	 *  @param 	context	...
-	 */
-	public RenderSource(RenderContext context) {
-		this.context = context;
-		
-		final List<Track.Info> trackInfo	= context.getTrackInfo();
-		int				ch			= 0;
-		boolean[]		tm			= null;
+    public final int		numAudioChannels;
+    public final boolean[]	audioTrackMap;
 
-		for (Track.Info ti : trackInfo) {
-			if (ti.trail instanceof AudioTrail) {
-				ch = ti.numChannels;
-				tm = ti.trackMap;
-			}
-		}
-		numAudioChannels	= ch;
-		audioTrackMap		= tm;
-		audioBlockBuf 		= new float[numAudioChannels][];
-	}
+    /**
+     *  The blockSpan describes the
+     *  current time span of the provided data
+     *  in the source rate sense.
+     *  Thus, blockSpan.getLength() equals
+     *  blockBufLen
+     */
+    public Span				blockSpan;
+    /**
+     */
+    public float[][]		audioBlockBuf;
+    /**
+     *  Offset to use when reading data
+     *  from blockBuf
+     */
+    public int				audioBlockBufOff;
+    /**
+     *  Length to use when reading data
+     *  from blockBuf
+     */
+    public int				audioBlockBufLen;
+
+    public float[][]		clipboardBuf;	// offset + len identical to blockBufOff/Len !
+
+    public final RenderContext	context;
+
+    public Trail			markers;
+
+    public boolean			validAudio;
+    public boolean			validMarkers;
+
+    /**
+     *  Constructs a new RenderSource, where
+     *  the arrays are pre-allocated for the
+     *  given number of transmitters and receivers.
+     *  Note that the final vectors are not
+     *  initialized, i.e. senseBlockBuf will
+     *  become new float[numTrns][numRcv][] etc.
+     *  All request fields are set to false by default.
+     *
+     *  @param 	context	...
+     */
+    public RenderSource(RenderContext context) {
+        this.context = context;
+
+        final List<Track.Info> trackInfo	= context.getTrackInfo();
+        int				ch			= 0;
+        boolean[]		tm			= null;
+
+        for (Track.Info ti : trackInfo) {
+            if (ti.trail instanceof AudioTrail) {
+                ch = ti.numChannels;
+                tm = ti.trackMap;
+            }
+        }
+        numAudioChannels	= ch;
+        audioTrackMap		= tm;
+        audioBlockBuf 		= new float[numAudioChannels][];
+    }
 }

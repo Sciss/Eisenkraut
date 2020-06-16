@@ -28,7 +28,7 @@ public class MultiMappedAudioStake extends AudioStake {
     private final Span[]                    fileSpans;
     private final Span[]                    maxFileSpans;
     private final int[][]                   channelMaps;
-    private final float[][][]               mappedDatas;
+    private final float[][][]               mappedData;
     private final int                       numChannels;
 
     private final String[]                  fileNames;
@@ -54,9 +54,9 @@ public class MultiMappedAudioStake extends AudioStake {
         this.fileSpans      = fileSpans;
         this.maxFileSpans   = maxFileSpans;
         this.channelMaps    = channelMaps;
-        mappedDatas         = new float[fs.length][][];
+        mappedData = new float[fs.length][][];
         for (int i = 0; i < fs.length; i++) {
-            mappedDatas[i] = new float[fs[i].getChannelNum()][];
+            mappedData[i] = new float[fs[i].getChannelNum()][];
             numCh += channelMaps[i].length;
         }
         this.numChannels    = numCh;
@@ -160,7 +160,7 @@ public class MultiMappedAudioStake extends AudioStake {
             for (int i = 0, j = 0; i < fs.length; i++) {
                 f           = fs[i];
                 channelMap  = channelMaps[i];
-                mappedData  = mappedDatas[i];
+                mappedData  = this.mappedData[i];
                 fOffset     = fileSpans[i].start + readSpan.start - span.start;
 
                 if ((fOffset < fileSpans[i].start) || ((fOffset + len) > fileSpans[i].stop)) {
@@ -197,7 +197,7 @@ public class MultiMappedAudioStake extends AudioStake {
             for (int i = 0, j = 0; i < fs.length; i++) {
                 f           = fs[i];
                 channelMap  = channelMaps[i];
-                mappedData  = mappedDatas[i];
+                mappedData  = this.mappedData[i];
                 fOffset     = fileSpans[i].start + writeSpan.start - span.start;
 
                 if ((fOffset < fileSpans[i].start) || ((fOffset + len) > fileSpans[i].stop)) {
@@ -238,7 +238,7 @@ public class MultiMappedAudioStake extends AudioStake {
                 for (int i = 0, j = 0; i < fs.length; i++) {
                     f           = fs[i];
                     channelMap  = channelMaps[i];
-                    mappedData  = mappedDatas[i];
+                    mappedData  = this.mappedData[i];
                     fOffset     = fileSpans[i].start + readSpan.start - span.start;
 
                     if ((fOffset < fileSpans[i].start) || ((fOffset + len) > fileSpans[i].stop)) {
@@ -292,9 +292,9 @@ public class MultiMappedAudioStake extends AudioStake {
 
     // synchronization : caller must have sync on fs
     private void clearMappedData() {
-        for (int i = 0; i < mappedDatas.length; i++) {
-            for (int j = 0; j < mappedDatas[i].length; j++) {
-                mappedDatas[i][j] = null;
+        for (int i = 0; i < mappedData.length; i++) {
+            for (int j = 0; j < mappedData[i].length; j++) {
+                mappedData[i][j] = null;
             }
         }
     }

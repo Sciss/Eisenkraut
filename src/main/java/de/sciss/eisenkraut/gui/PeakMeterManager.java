@@ -29,7 +29,7 @@ import de.sciss.eisenkraut.net.MeterManager;
 import de.sciss.gui.PeakMeterView;
 
 public class PeakMeterManager
-        implements PeakMeterView, DynamicListening, GroupSync.Slave {
+        implements PeakMeterView, DynamicListening, GroupSync.Child {
 
     private final MeterManager mm;
     private final DynamicAncestorAdapter daa;
@@ -47,7 +47,7 @@ public class PeakMeterManager
         this.mm = mm;
         daa = new DynamicAncestorAdapter(this);
         anySync = new GroupAnySync();
-        anySync.addSlave(this);
+        anySync.addChild(this);
     }
 
     // ----------------- PeakMeterView interface -----------------
@@ -185,7 +185,7 @@ public class PeakMeterManager
         }
     }
 
-    // -------------- GroupSync.Slave interface --------------
+    // -------------- GroupSync.Child interface --------------
 
     public void groupActivate(OSCBundle bndl) {
         updateTask(bndl);

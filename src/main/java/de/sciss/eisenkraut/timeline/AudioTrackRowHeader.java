@@ -34,32 +34,32 @@ import java.awt.*;
  */
 @SuppressWarnings("serial")
 public class AudioTrackRowHeader
-		extends TrackRowHeader {
+        extends TrackRowHeader {
 
     private final PanoramaButton	pan;
     public static final int			ROW_WIDTH	= 64;
 
-	public AudioTrackRowHeader(final AudioTrack t, final SessionCollection tracks,
-							   final SessionCollection selectedTracks, UndoManager undo) {
-		super(t, tracks, selectedTracks, undo);
+    public AudioTrackRowHeader(final AudioTrack t, final SessionCollection tracks,
+                               final SessionCollection selectedTracks, UndoManager undo) {
+        super(t, tracks, selectedTracks, undo);
 
-		final JPanel		flags;
+        final JPanel		flags;
         final SpringLayout	lay	= (SpringLayout) getLayout();
 
-		pan = new PanoramaButton(t, tracks);
-		flags = new FlagsPanel(t, tracks);
-		add(pan);
-		add(flags);
-		lay.putConstraint(SpringLayout.EAST , flags, -4, SpringLayout.EAST , this);
-		lay.putConstraint(SpringLayout.SOUTH, flags, -8, SpringLayout.SOUTH, this);
-		lay.putConstraint(SpringLayout.EAST , pan  , -3, SpringLayout.EAST , this);
-		lay.putConstraint(SpringLayout.SOUTH, pan  ,  0, SpringLayout.NORTH, flags);
-		setPreferredSize(new Dimension(ROW_WIDTH, 16)); // XXX
-		setMaximumSize(new Dimension(ROW_WIDTH, getMaximumSize().height)); // XXX
+        pan = new PanoramaButton(t, tracks);
+        flags = new FlagsPanel(t, tracks);
+        add(pan);
+        add(flags);
+        lay.putConstraint(SpringLayout.EAST , flags, -4, SpringLayout.EAST , this);
+        lay.putConstraint(SpringLayout.SOUTH, flags, -8, SpringLayout.SOUTH, this);
+        lay.putConstraint(SpringLayout.EAST , pan  , -3, SpringLayout.EAST , this);
+        lay.putConstraint(SpringLayout.SOUTH, pan  ,  0, SpringLayout.NORTH, flags);
+        setPreferredSize(new Dimension(ROW_WIDTH, 16)); // XXX
+        setMaximumSize(new Dimension(ROW_WIDTH, getMaximumSize().height)); // XXX
     }
 
-	public void dispose() {
-		pan.dispose();
-		super.dispose();
-	}
+    public void dispose() {
+        pan.dispose();
+        super.dispose();
+    }
 }

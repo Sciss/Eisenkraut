@@ -57,20 +57,20 @@ public class PanoramaButton
     }
 
     public PanoramaButton(final AudioTrack t, final SessionCollection tracks, final boolean isDark) {
-        super(new PantaRei(isDark ? colrNormalDark   : colrNormalLight  , isDark ? pntCtrlDark : pntCtrlLight),
-              new PantaRei(isDark ? colrPressedDark  : colrPressedLight , isDark ? pntCtrlDark : pntCtrlLight),
-              new PantaRei(isDark ? colrDisabledDark : colrDisabledLight, isDark ? pntCtrlDark : pntCtrlLight));
+        super(new PanIcon(isDark ? colrNormalDark   : colrNormalLight  , isDark ? pntCtrlDark : pntCtrlLight),
+              new PanIcon(isDark ? colrPressedDark  : colrPressedLight , isDark ? pntCtrlDark : pntCtrlLight),
+              new PanIcon(isDark ? colrDisabledDark : colrDisabledLight, isDark ? pntCtrlDark : pntCtrlLight));
 
         this.t = t;
 
-        ((PantaRei) icnNormal  ).setCtrlPoint(ctrlPt);
-        ((PantaRei) icnPressed ).setCtrlPoint(ctrlPt);
-        ((PantaRei) icnDisabled).setCtrlPoint(ctrlPt);
+        ((PanIcon) icnNormal  ).setCtrlPoint(ctrlPt);
+        ((PanIcon) icnPressed ).setCtrlPoint(ctrlPt);
+        ((PanIcon) icnDisabled).setCtrlPoint(ctrlPt);
 
         t.getMap().addListener(new MapManager.Listener() {
             public void mapChanged(MapManager.Event e) {
-                if (e.getPropertyNames().contains(AudioTrack.MAP_KEY_PANAZIMUTH) ||
-                        e.getPropertyNames().contains(AudioTrack.MAP_KEY_PANSPREAD)) {
+                if (e.getPropertyNames().contains(AudioTrack.MAP_KEY_PAN_AZIMUTH) ||
+                        e.getPropertyNames().contains(AudioTrack.MAP_KEY_PAN_SPREAD)) {
 
                     updateButtonState();
                 }
@@ -109,10 +109,10 @@ public class PanoramaButton
 
     protected void updateButtonState() {
         Object o;
-        o = t.getMap().getValue(AudioTrack.MAP_KEY_PANAZIMUTH);
-        double azi = (o != null) && (o instanceof Number) ? ((Number) o).doubleValue() : 0.0;
-        o = t.getMap().getValue(AudioTrack.MAP_KEY_PANSPREAD);
-        double spread = (o != null) && (o instanceof Number) ? ((Number) o).doubleValue() : 2.0;
+        o = t.getMap().getValue(AudioTrack.MAP_KEY_PAN_AZIMUTH);
+        double azi = (o instanceof Number) ? ((Number) o).doubleValue() : 0.0;
+        o = t.getMap().getValue(AudioTrack.MAP_KEY_PAN_SPREAD);
+        double spread = (o instanceof Number) ? ((Number) o).doubleValue() : 2.0;
 
         ctrlPt.setLocation(PanoramaPanel.aziAndSpreadToCtrlPoint(azi, spread));
         ctrlPt.setLocation((ctrlPt.getX() + 1.0) * 14.5, (1.0 - ctrlPt.getY()) * 14.5);
@@ -120,14 +120,14 @@ public class PanoramaButton
         if (isVisible()) repaint();
     }
 
-    private static class PantaRei
+    private static class PanIcon
             implements Icon {
 
         private final Paint pntView;
         private final Paint pntCtrl;
         private Point2D ctrlPt;
 
-        protected PantaRei(Paint pntView, Paint pntCtrl) {
+        protected PanIcon(Paint pntView, Paint pntCtrl) {
             this.pntView = pntView;
             this.pntCtrl = pntCtrl;
         }

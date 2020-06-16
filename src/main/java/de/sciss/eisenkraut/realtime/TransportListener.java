@@ -36,39 +36,39 @@ package de.sciss.eisenkraut.realtime;
  */
 public interface TransportListener
 {
-	/**
-	 *	Invoked when the transport is about to stop.
-	 *
-	 *	@param	pos	the position of the timeline after stopping
-	 */
-	public void transportStop( Transport transport, long pos );
-	/**
-	 *	Invoked when the transport position was altered,
-	 *	for example when setting the timeline position while transport is running.
-	 *
-	 *	@param	pos	the new position of the timeline at which
-	 *			transport will continue to play
-	 */
-	public void transportPosition( Transport transport, long pos, double rate );
-	/**
-	 *	Invoked when the transport is about to start.
-	 *
-	 *	@param	pos	the position of the timeline when starting to play
-	 */
-	public void transportPlay( Transport transport, long pos, double rate );
-	/**
-	 *	Invoked when the transport was running when the
-	 *	application was about to quit. Vital cleanup should
-	 *	be performed in here.
-	 */
-	public void transportQuit( Transport transport );
-	/**
-	 *	Invoked when the looping region was altered,
-	 *	so that calculations relying on the original play position
-	 *	must be carried out anew (typically calls to Transport.foldSpans).
-	 *
-	 *	@param	pos	the adjusted position of the timeline at which
-	 *			transport virtually started to play
-	 */
-	public void transportReadjust( Transport transport, long pos, double rate );
+    /**
+     *	Invoked when the transport is about to stop.
+     *
+     *	@param	pos	the position of the timeline after stopping
+     */
+    public void transportStop( Transport transport, long pos );
+    /**
+     *	Invoked when the transport position was altered,
+     *	for example when setting the timeline position while transport is running.
+     *
+     *	@param	pos	the new position of the timeline at which
+     *			transport will continue to play
+     */
+    public void transportPosition( Transport transport, long pos, double rate );
+    /**
+     *	Invoked when the transport is about to start.
+     *
+     *	@param	pos	the position of the timeline when starting to play
+     */
+    public void transportPlay( Transport transport, long pos, double rate );
+    /**
+     *	Invoked when the transport was running when the
+     *	application was about to quit. Vital cleanup should
+     *	be performed in here.
+     */
+    public void transportQuit( Transport transport );
+    /**
+     *	Invoked when the looping region was altered,
+     *	so that calculations relying on the original play position
+     *	must be carried out anew (typically calls to Transport.foldSpans).
+     *
+     *	@param	pos	the adjusted position of the timeline at which
+     *			transport virtually started to play
+     */
+    public void transportReadjust( Transport transport, long pos, double rate );
 }

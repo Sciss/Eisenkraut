@@ -16,5 +16,5 @@ package de.sciss.eisenkraut.render;
 import de.sciss.io.Span;
 
 public interface RandomAccessRequester {
-	public Span getNextSpan();
+    public Span getNextSpan();
 }
