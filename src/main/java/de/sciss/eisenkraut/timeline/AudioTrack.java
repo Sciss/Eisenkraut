@@ -91,9 +91,8 @@ public class AudioTrack
     }
 
     // shorthand for (FLAGS_MUTE | FLAGS_VIRTUALMUTE) == 0
-    public boolean isAudible()
-    {
-        return( (getFlags() & (FLAGS_MUTE | FLAGS_VIRTUAL_MUTE)) == 0 );
+    public boolean isAudible() {
+        return ((getFlags() & (FLAGS_MUTE | FLAGS_VIRTUAL_MUTE)) == 0);
     }
 
     // ------------- OSCRouter interface -------------
