@@ -13,6 +13,11 @@
 
 package de.sciss.eisenkraut.gui;
 
+import de.sciss.gui.MenuAction;
+import de.sciss.gui.TopPainter;
+
+import javax.swing.JComponent;
+import javax.swing.KeyStroke;
 import java.awt.Component;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
@@ -20,11 +25,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import javax.swing.JComponent;
-import javax.swing.KeyStroke;
-
-import de.sciss.gui.MenuAction;
-import de.sciss.gui.TopPainter;
 
 /**
  *  This class describes a generic GUI tool

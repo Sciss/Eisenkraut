@@ -18,7 +18,7 @@ s = Server.local;
 
 (
 //p = "/Applications/Eisenkraut/synthdefs/"; // folder in which to save the synth defs
-p = "~/Documents/workspace/Eisenkraut/resources/de/sciss/eisenkraut/net/".standardizePath; // folder in which to save the synth defs
+p = "~/Documents/devel/Eisenkraut/src/main/resources/de/sciss/eisenkraut/net/".standardizePath; // folder in which to save the synth defs
 //n = 32; // maximum number of channels for which to generate synth defs
 ~defs = nil;
 
@@ -27,7 +27,7 @@ p = "~/Documents/workspace/Eisenkraut/resources/de/sciss/eisenkraut/net/".standa
 // information synth that
 // reads from a mono audio bus
 // and writes peak and mean-square
-// to two adjectant control busses
+// to two adjacent control busses
 // which can be queried using /b_getn
 ~defs = ~defs.add( SynthDef( "eisk-meter", { arg i_aInBs = 0, i_kOtBs, t_trig;
 	var in, rms, peak;

@@ -31,6 +31,8 @@ import de.sciss.eisenkraut.timeline.TimelineListener;
 import de.sciss.eisenkraut.util.MapManager;
 
 import de.sciss.app.AbstractApplication;
+import de.sciss.jcollider.Constant;
+import de.sciss.jcollider.GraphElemArray;
 import de.sciss.net.OSCBundle;
 import de.sciss.net.OSCListener;
 import de.sciss.net.OSCMessage;
@@ -104,16 +106,16 @@ public class SuperColliderPlayer
 
     private static final float		TIMEOUT			= 2f;
 
-    public SuperColliderPlayer( final Session doc, final Server server, RoutingConfig oCfg )
-    throws IOException
-    {
+    public SuperColliderPlayer(final Session doc, final Server server, RoutingConfig oCfg)
+            throws IOException {
+
         this.server			= server;
         this.doc			= doc;
 
-        final AudioTrail	at			= doc.getAudioTrail();
+        final AudioTrail at = doc.getAudioTrail();
+
         final Runnable		runTrigger;
         final SynthDef[]	defs;
-        OSCBundle			bndl;
 
         transport			= doc.getTransport();
         nw					= NodeWatcher.newFrom( server );
@@ -122,60 +124,59 @@ public class SuperColliderPlayer
         sourceRate			= doc.timeline.getRate();		// XXX sync?
         serverRate			= server.getSampleRate();
 
-        DISKBUF_SIZE		= (Math.max( 44100, (int) sourceRate ) + DISKBUF_PAD) << 1;	// buffer size in frames
+        DISKBUF_SIZE		= (Math.max(44100, (int) sourceRate) + DISKBUF_PAD) << 1;    // buffer size in frames
         DISKBUF_SIZE_H		= DISKBUF_SIZE >> 1;
         DISKBUF_SIZE_HM		= DISKBUF_SIZE_H - DISKBUF_PAD;
 
-        bndl				= new OSCBundle();
-        grpRoot				= Group.basicNew( server );
-        grpRoot.setName( "Root-" + doc.getName() );
-        nw.register( grpRoot );
-        bndl.addPacket( grpRoot.addToHeadMsg( server.getDefaultGroup() ));
-        grpInput			= Group.basicNew( server );
-        grpInput.setName( "Input" );
-        nw.register( grpInput );
-        bndl.addPacket( grpInput.addToTailMsg( grpRoot ));
-        grpOutput			= Group.basicNew( server );
-        grpOutput.setName( "Output" );
-        nw.register( grpOutput );
-        bndl.addPacket( grpOutput.addToTailMsg( grpRoot ));
-        bndl.addPacket( grpOutput.runMsg( false ));
+        final OSCBundle bndl = new OSCBundle();
+        grpRoot = Group.basicNew(server);
+        grpRoot.setName("Root-" + doc.getName());
+        nw.register(grpRoot);
+        bndl.addPacket(grpRoot.addToHeadMsg(server.getDefaultGroup()));
+        grpInput = Group.basicNew(server);
+        grpInput.setName("Input");
+        nw.register(grpInput);
+        bndl.addPacket(grpInput.addToTailMsg(grpRoot));
+        grpOutput = Group.basicNew(server);
+        grpOutput.setName("Output");
+        nw.register(grpOutput);
+        bndl.addPacket(grpOutput.addToTailMsg(grpRoot));
+        bndl.addPacket(grpOutput.runMsg(false));
 
-        server.sendBundle( bndl );
+        server.sendBundle(bndl);
 
-        busPhasor			= Bus.audio( server );
+        busPhasor = Bus.audio(server);
 
-        runTrigger			= new Runnable() {
-            public void run()
-            {
-                final OSCMessage		msg		= trigMsg;	// this way we synchronize the access
-                final int				nodeID	= ((Number) msg.getArg( 0 )).intValue();
-                final int				nextClock, fill, bufOff;
-                final long				pos, start;
-                final OSCBundle			bndl2;
-                final int				even;
-                final Span[]			bufSpans;
+        runTrigger = new Runnable() {
+            public void run() {
+                final OSCMessage msg = trigMsg;    // this way we synchronize the access
+                final int nodeID = ((Number) msg.getArg(0)).intValue();
+                final int nextClock, fill, bufOff;
+                final long pos, start;
+                final OSCBundle bndl2;
+                final int even;
+                final Span[] bufSpans;
                 int						numCh;
 
                 try {
-                    clock		= ((Number) msg.getArg( 2 )).intValue();
-//System.err.println( "clock = " + clock );
-                    nextClock	= clock + 1;
-                    even		= nextClock & 1; // == 0;
-                    bndl2		= new OSCBundle();
+                    clock = ((Number) msg.getArg(2)).intValue();
+                    nextClock = clock + 1;
+                    even = nextClock & 1; // == 0;
+                    bndl2 = new OSCBundle();
 
-                    if( (ct == null) || (ct.synthPhasor == null) || (nodeID != ct.synthPhasor.getNodeID()) ) return;
-                    if( trigNodeID == -1 ) return;	// transport not running anymore
-                        pos		= nextClock * DISKBUF_SIZE_HM - ((1 - even) * DISKBUF_PAD) + playOffset;
-                        start	= Math.max( 0, pos );
-                        fill	= (int) (start - pos);
-                        bufOff	= even * DISKBUF_SIZE_H;
-                        if( fill > 0 ) {
-                            for( int j = 0; j < ct.bufsDisk.length; j++ ) {
-                                numCh = ct.bufsDisk[ j ].getNumChannels();
-                                bndl2.addPacket( ct.bufsDisk[ j ].fillMsg( bufOff * numCh, fill * numCh, 0.0f ));
-                            }
+                    if ((ct == null) || (ct.synthPhasor == null) || (nodeID != ct.synthPhasor.getNodeID())) return;
+                    if (trigNodeID == -1) return;    // transport not running anymore
+
+                    pos = nextClock * DISKBUF_SIZE_HM - ((1 - even) * DISKBUF_PAD) + playOffset;
+                    start = Math.max(0, pos);
+                    fill = (int) (start - pos);
+                    bufOff = even * DISKBUF_SIZE_H;
+                    if (fill > 0) {
+                        for (int j = 0; j < ct.bufsDisk.length; j++) {
+                            numCh = ct.bufsDisk[j].getNumChannels();
+                            bndl2.addPacket(ct.bufsDisk[j].fillMsg(bufOff * numCh, fill * numCh, 0.0f));
                         }
+                    }
                         bufSpans = transport.foldSpans( new Span( start, pos + DISKBUF_SIZE_H ), MIN_LOOP_LEN );
                         doc.getAudioTrail().addBufferReadMessages( bndl2, bufSpans, ct.bufsDisk, bufOff + fill );
 
@@ -201,49 +202,47 @@ for( int k = 0, m = bufOff + fill; k < bufSpans.length; k++ ) {
             }
         };
 
-        trigResp			= new OSCResponderNode( server, "/tr", new OSCListener() {
-            public void messageReceived( OSCMessage msg, SocketAddress sender, long time )
-            {
-                final int	nodeID	= ((Number) msg.getArg( 0 )).intValue();
+        trigResp = new OSCResponderNode(server, "/tr", new OSCListener() {
+            public void messageReceived(OSCMessage msg, SocketAddress sender, long time) {
+                final int nodeID = ((Number) msg.getArg(0)).intValue();
 
-                if( nodeID == trigNodeID ) {
-                    trigMsg	= msg;
-                    EventQueue.invokeLater( runTrigger );
+                if (nodeID == trigNodeID) {
+                    trigMsg = msg;
+                    EventQueue.invokeLater(runTrigger);
                 }
             }
         });
 
-        defs = createInputDefs( channelMaps );
-        if( defs != null ) {
-            bndl	= new OSCBundle();
+        defs = createInputDefs(channelMaps);
+        if (defs != null) {
+            final OSCBundle bndlDefs = new OSCBundle();
             for (SynthDef def : defs) {
-                bndl.addPacket(def.recvMsg());
+                bndlDefs.addPacket(def.recvMsg());
             }
-            if( !server.sync( bndl, TIMEOUT )) {
-                printTimeOutMsg( "defs" );
+            if (!server.sync(bndlDefs, TIMEOUT)) {
+                printTimeOutMsg("defs");
             }
         }
 
         srcFactor	= sourceRate / serverRate;
         updateSRC();
-        setOutputConfig( oCfg );
+        setOutputConfig(oCfg);
 
         syncInput	= new GroupSync();
         syncOutput	= new GroupSync();
 
-        transport.addTransportListener( this );
-        doc.audioTracks.addListener( this );
-        doc.timeline.addTimelineListener( this );
+        transport.addTransportListener  (this);
+        doc.audioTracks.addListener     (this);
+        doc.timeline.addTimelineListener(this);
 
-        osc			= new OSCRouterWrapper( doc, this );
+        osc = new OSCRouterWrapper(doc, this);
     }
 
     private SynthDef[] createInputDefs(int[][] chMaps) {
         final int[] numInCh = new int[chMaps.length];
-        final SynthDef[] defs;
         int numDefs = 0;
 
-    numDefsLp:
+        numDefsLp:
         for (int[] chMap : chMaps) {
             numInCh[numDefs] = chMap.length;
             for (int j = 0; j < numDefs; j++) {
@@ -252,43 +251,67 @@ for( int k = 0, m = bufOff + fill; k < bufSpans.length; k++ ) {
             numDefs++;
         }
 
-        defs = new SynthDef[ numDefs ];
-        for( int i = 0; i < numDefs; i++ ) {
-            final Control		ctrlI	= Control.ir( new String[] { "i_aInBf", "i_aOtBs", "i_aPhBs", "i_intrp" }, new float[] { 0f, 0f, 0f, 1f });
-            final GraphElem		graph;
+        final SynthDef[] defs = new SynthDef[numDefs];
+        for (int i = 0; i < numDefs; i++) {
+            final Control ctrlI = Control.ir(
+                    new String[] { "i_aInBf", "i_aOtBs" , "i_aPhBs" , "i_intrp" },
+                    new float[]  { 0f       , 0f        , 0f        , 1f }
+                    );
+            final GraphElem graph;
 
-            if( numInCh[ i ] > 0 ) {
-                final GraphElem	phase	= UGen.ar( "In", ctrlI.getChannel( "i_aPhBs" ));
-                final GraphElem	bufRd	= UGen.ar( "BufRd", numInCh[ i ], ctrlI.getChannel( "i_aInBf" ), phase, UGen.ir( 0f ), ctrlI.getChannel( "i_intrp" ));
-                graph	= UGen.ar( "Out", ctrlI.getChannel( "i_aOtBs" ), bufRd );
+            if (numInCh[i] > 0) {
+                final GraphElem phase = UGen.ar("In", ctrlI.getChannel("i_aPhBs"));
+                final GraphElem bufRd = UGen.ar("BufRd", numInCh[i], ctrlI.getChannel("i_aInBf"), phase,
+                        UGen.ir(0f), ctrlI.getChannel("i_intrp"));
+                graph = UGen.ar("Out", ctrlI.getChannel("i_aOtBs"), bufRd);
             } else {
-                graph	= ctrlI;
+                graph = ctrlI;
             }
-            defs[ i ]	= new SynthDef( "eisk-input" + numInCh[ i ], graph );
+//            final GraphElem graph = new GraphElemArray(new GraphElem[] {});
+//            final GraphElem graph = UGen.ar("DC", new Constant(0f));
+//            final GraphElem graph = ctrlI;
+
+            defs[i] = new SynthDef("eisk-input" + numInCh[i], graph);
         }
         return defs;
     }
 
     private SynthDef[] createOutputDefs(int numOutputChannels) {
-        final Control		ctrlI	= Control.ir( new String[] { "i_aInBs", "i_aOtBs" }, new float[] { 0f, 0f });
-        final Control		ctrlK	= Control.kr( new String[] { "pos", "width", "orient", "volume" }, new float[] { 0f, 2f, 0f, 1f });
-        final GraphElem		graph;
-        final SynthDef		def;
+        final Control ctrlI = Control.ir(
+                new String[] { "i_aInBs" , "i_aOtBs" },
+                new float[]  { 0f        , 0f }
+                );
+        final Control ctrlK = Control.kr(
+                new String[] { "pos", "width"   , "orient"  , "volume" },
+                new float[]  { 0f   , 2f        , 0f        , 1f }
+                );
+        final GraphElem graph;
 
-        if( numOutputChannels > 0 ) {
-            final GraphElem	in		= UGen.ar( "In", ctrlI.getChannel( "i_aInBs" ));
-            final GraphElem	pan;
-            if( numOutputChannels > 1 ) {
-                pan					= UGen.ar( "PanAz", numOutputChannels, in, ctrlK.getChannel( "pos" ), ctrlK.getChannel( "volume" ),
-                                                                               ctrlK.getChannel( "width" ), ctrlK.getChannel( "orient" ));
+        if (numOutputChannels > 0) {
+            final GraphElem in = UGen.ar("In", ctrlI.getChannel("i_aInBs"));
+            final GraphElem pan;
+            if (numOutputChannels > 1) {
+                pan = UGen.ar("PanAz", numOutputChannels,
+                        in,
+                        ctrlK.getChannel("pos"      ),
+                        ctrlK.getChannel("volume"   ),
+                        ctrlK.getChannel("width"    ),
+                        ctrlK.getChannel("orient"   )
+                );
             } else {
-                pan					= UGen.ar( "*", in, ctrlK.getChannel( "volume" ));
+                pan = UGen.ar("*", in, ctrlK.getChannel("volume"));
             }
-            graph = UGen.ar( "Out", ctrlI.getChannel( "i_aOtBs" ), pan );
+            graph = UGen.ar("Out", ctrlI.getChannel("i_aOtBs"), pan);
         } else {
-            graph = UGen.array( ctrlI, ctrlK );
+            graph = UGen.array(ctrlI, ctrlK);
         }
-        def	= new SynthDef( "eisk-pan" + numOutputChannels, graph );
+
+//        final GraphElem graph = new GraphElemArray(new GraphElem[] {});
+//        final GraphElem graph = UGen.ar("DC", new Constant(0f));
+//        final GraphElem phase = UGen.kr("In", ctrlI.getChannel("i_aInBs"));
+//        final GraphElem graph = UGen.array(ctrlI, phase);
+
+        final SynthDef def = new SynthDef("eisk-pan" + numOutputChannels, graph);
 
         return new SynthDef[] { def };
     }
@@ -312,9 +335,9 @@ for( int k = 0, m = bufOff + fill; k < bufSpans.length; k++ ) {
         } catch (IOException e1) {
             printError("dispose", e1);
         }
-        doc.audioTracks.removeListener(this);
-        doc.timeline.removeTimelineListener(this);
-        transport.removeTransportListener(this);
+        doc.audioTracks.removeListener      (this);
+        doc.timeline.removeTimelineListener (this);
+        transport.removeTransportListener   (this);
     }
 
     private void disposeServerStuff()
@@ -345,46 +368,16 @@ for( int k = 0, m = bufOff + fill; k < bufSpans.length; k++ ) {
         return syncOutput;
     }
 
-//	public Bus getMeterSource()
-//	{
-//		synchronized( this ) {
-//			if( ct != null ) {
-//				return ct.busMeter;
-//			} else {
-//				return null;
-//			}
-//		}
-//	}
-//	
-//	public void setMeterSource( Bus meterInput )
-//	{
-//		final int		numCh;
-//		final OSCBundle	bndl;
-//			
-//		synchronized( this ) {
-//			if( ct != null ) {
-//				numCh		= Math.min( ct.numInputChannels, meterInput.getNumChannels() );
-//				bndl		= new OSCBundle();
-//				ct.busMeter	= meterInput == null ? ct.busInternal : meterInput;
-//				for( int ch = 0; ch < numCh; ch++ ) {
-//					bndl.addPacket( ct.synthsMeter[ ch ].setMsg( "i_aInBus", ct.busMeter.getIndex() + ch ));
-//				}
-//				server.sendBundle( bndl );
-//			}
-//		}
-//	}
-
     // sync : attempts shared on DOOR_TRACKS
 //	public void setOutputConfig( RoutingConfig oCfg, float volume )
-    public void setOutputConfig( RoutingConfig oCfg )
-    {
-        this.oCfg	= oCfg;
+    public void setOutputConfig(RoutingConfig oCfg) {
+        this.oCfg = oCfg;
 //		this.volume	= volume;
 
-        if( server.isRunning() ) {
-            final boolean	wasRunning	= transport.isRunning();
-            final double	rate		= transport.getRateScale();
-            if( wasRunning ) {
+        if (server.isRunning()) {
+            final boolean wasRunning = transport.isRunning();
+            final double rate = transport.getRateScale();
+            if (wasRunning) {
                 transport.stop();
             }
 //			if( !doc.bird.attemptShared( Session.DOOR_TRACKS, 250 )) {
@@ -393,191 +386,112 @@ for( int k = 0, m = bufOff + fill; k < bufSpans.length; k++ ) {
 //			try {
 //				System.out.println( "setOutputConfig : rebuildSynths" );
 
-                rebuildSynths();
+            rebuildSynths();
 //			}
 //			finally {
 //				doc.bird.releaseShared( Session.DOOR_TRACKS );
 //			}
-            if( wasRunning ) {
-                transport.play( rate );
+            if (wasRunning) {
+                transport.play(rate);
             }
         }
     }
 
-//	public void addMeterListener( MeterListener ml )
-//	{
-//		synchronized( collMeterListeners )
-//		{
-//			if( !meterListening && keepMetering ) {
-//				try {
-//					meterListening = true;
-//					grpMeter.run( true );
-//				}
-//				catch( IOException e1 ) {
-//					printError( "Run Meter Group", e1 );
-//				}
-//			}
-//			collMeterListeners.add( ml );
-//		}
-//	}
-//	
-//	public void removeMeterListener( MeterListener ml )
-//	{
-//		synchronized( collMeterListeners )
-//		{
-//			collMeterListeners.remove( ml );
-//			if( meterListening && collMeterListeners.isEmpty() ) {
-//				try {
-//					grpMeter.run( false );
-//					meterListening = false;
-//				}
-//				catch( IOException e1 ) {
-//					printError( "Run Meter Group", e1 );
-//				}
-//			}
-//		}
-//	}
+    public void setActiveInput(boolean onOff) {
+        if (!EventQueue.isDispatchThread()) throw new IllegalMonitorStateException();
 
-    public void setActiveInput( boolean onOff )
-    {
-        if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
-
-        if( onOff != activeInput ) {
+        if (onOff != activeInput) {
             activeInput = onOff;
-            if( transport.isRunning() ) return;
+            if (transport.isRunning()) return;
 
-            if( activeInput ) {
-                syncInput.activate( null );
+            if (activeInput) {
+                syncInput.activate(null);
             } else {
-                syncInput.deactivate( null );
+                syncInput.deactivate(null);
             }
         }
     }
 
-    public void setActiveOutput( boolean onOff )
-    {
-        if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
+    public void setActiveOutput(boolean onOff) {
+        if (!EventQueue.isDispatchThread()) throw new IllegalMonitorStateException();
 
-        if( onOff != activeOutput ) {
+        if (onOff != activeOutput) {
             activeOutput = onOff;
-            if( transport.isRunning() ) return;
+            if (transport.isRunning()) return;
 
             final OSCBundle bndl = new OSCBundle();
-            bndl.addPacket( grpOutput.runMsg( activeOutput ));
-            if( activeOutput ) {
-                syncOutput.activate( bndl );
+            bndl.addPacket(grpOutput.runMsg(activeOutput));
+            if (activeOutput) {
+                syncOutput.activate(bndl);
             } else {
-                syncOutput.deactivate( bndl );
+                syncOutput.deactivate(bndl);
             }
             try {
-                server.sendBundle( bndl );
-            }
-            catch( IOException e1 ) {
-                printError( "Run Output Group", e1 );
+                server.sendBundle(bndl);
+            } catch (IOException e1) {
+                printError("Run Output Group", e1);
             }
         }
     }
 
-//	public void setMetering( boolean onOff )
-//	{
-//		keepMetering = onOff;
-//
-//		try {
-//			synchronized( collMeterListeners ) {
-//				if( onOff ) {	
-//					if( !meterListening && !collMeterListeners.isEmpty() ) {
-//						meterListening = true;
-//						grpMeter.run( true );
-//					}
-//				} else {
-//					if( meterListening && collMeterListeners.isEmpty() ) {
-//						grpMeter.run( false );
-//						meterListening = false;
-//					}
-//				}
-//			}
-//		}
-//		catch( IOException e1 ) {
-//			printError( "Run Meter Group", e1 );
-//		}
-//	}
-//	
-//	/**
-//	 *	@synchronization	must be called in event thread
-//	 */
-//	public void meterBang()
-//	{
-//		if( ct != null ) {
-//			try {
-////				if( meterListening ) server.sendMsg( ct.meterBangMsg );
-//				if( meterListening ) server.sendBundle( ct.meterBangBndl );
-//			}
-//			catch( IOException e1 ) {} // don't print coz the frequency might be high
-//		}
-//	}
-
-    protected static void printError( String name, Throwable t )
-    {
-        System.err.println( name + " : " + t.getClass().getName() + " : " + t.getLocalizedMessage() );
+    protected static void printError(String name, Throwable t) {
+        System.err.println(name + " : " + t.getClass().getName() + " : " + t.getLocalizedMessage());
     }
 
     // note: includes call to addChannelMuteMessages
     // sync: must be called in EventThread
-    private void rebuildSynths()
-    {
-        if( !EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
+    private void rebuildSynths() {
+        if (!EventQueue.isDispatchThread()) throw new IllegalMonitorStateException();
 
 //new Exception().printStackTrace();
 
 //		synchronized( sync ) {
             try {
-                server.sync( TIMEOUT ); // an n_free on a pausing node can crash scsynth otherwise (19-nov-07)
+                server.sync(TIMEOUT); // an n_free on a pausing node can crash scsynth otherwise (19-nov-07)
                 grpRoot.deepFree();
                 disposeServerStuff();
 
-                if( oCfg == null ) return;
+                if (oCfg == null) return;
 
-                ct = new Context( channelMaps, numInputChannels, oCfg.numChannels );
+                ct = new Context(channelMaps, numInputChannels, oCfg.numChannels);
 
-                final float			orient	= -oCfg.startAngle/360 * oCfg.numChannels;
-                final SynthDef[]	defs;
-                OSCBundle			bndl;
+                final float orient = -oCfg.startAngle/360 * oCfg.numChannels;
 
-                defs = createOutputDefs( oCfg.numChannels );
-                if( defs != null ) {
-                    bndl	= new OSCBundle();
+                final SynthDef[] defs = createOutputDefs(oCfg.numChannels);
+                if (defs != null) {
+                    final OSCBundle bndlDefs = new OSCBundle();
                     for (SynthDef def : defs) {
-                        bndl.addPacket(def.recvMsg());
+                        bndlDefs.addPacket(def.recvMsg());
                     }
-                    if( !server.sync( bndl, TIMEOUT )) {
-                        printTimeOutMsg( "defs" );
-                    }
-                }
-
-                bndl	= new OSCBundle();
-                for( int i = 0; i < ct.numFiles; i++ ) {
-                    bndl.addPacket( ct.bufsDisk[ i ].allocMsg() );
-                }
-
-                for( int ch = 0; ch < ct.numInChans; ch++ ) {
-                    bndl.addPacket( ct.synthsPan[ ch ].newMsg( grpOutput, new String[] {
-                        "i_aInBs",					   "i_aOtBs",		     "orient" }, new float[] {
-                        ct.busInternal.getIndex() + ch, ct.busPan.getIndex(), orient  }, kAddToTail ));
-                    nw.register( ct.synthsPan[ ch ]);
-                }
-                for( int ch = 0; ch < oCfg.numChannels; ch++ ) {
-                    if( oCfg.mapping[ ch ] < server.getOptions().getNumOutputBusChannels() ) {
-                        bndl.addPacket( ct.synthsRoute[ ch ].newMsg( grpOutput, new String[] {
-                            "i_aInBs",				   "i_aOtBs"       }, new float[] {
-                            ct.busPan.getIndex() + ch, oCfg.mapping[ ch ]}, kAddToTail ));
-                        nw.register( ct.synthsRoute[ ch ]);
+                    if (!server.sync(bndlDefs, TIMEOUT)) {
+                        printTimeOutMsg("defs");
                     }
                 }
 
-                addChannelPanMessages( bndl );
-                addChannelMuteMessages( bndl );
-                if( !server.sync( bndl, TIMEOUT )) {
-                    printTimeOutMsg( "alloc" );
+                final OSCBundle bndl = new OSCBundle();
+                for (int i = 0; i < ct.numFiles; i++) {
+                    bndl.addPacket(ct.bufsDisk[i].allocMsg());
+                }
+
+                for (int ch = 0; ch < ct.numInChans; ch++) {
+                    bndl.addPacket(ct.synthsPan[ch].newMsg(grpOutput, new String[]{
+                            "i_aInBs", "i_aOtBs", "orient"}, new float[]{
+                            ct.busInternal.getIndex() + ch, ct.busPan.getIndex(), orient}, kAddToTail));
+                    nw.register(ct.synthsPan[ch]);
+                }
+                for (int ch = 0; ch < oCfg.numChannels; ch++) {
+                    if (oCfg.mapping[ch] < server.getOptions().getNumOutputBusChannels()) {
+                        bndl.addPacket(ct.synthsRoute[ch].newMsg(grpOutput, new String[]{
+                                "i_aInBs", "i_aOtBs"}, new float[]{
+                                ct.busPan.getIndex() + ch, oCfg.mapping[ch]}, kAddToTail));
+                        nw.register(ct.synthsRoute[ch]);
+                    }
+                }
+
+                addChannelPanMessages(bndl);
+                addChannelMuteMessages(bndl);
+                if (!server.sync(bndl, TIMEOUT)) {
+                    printTimeOutMsg("alloc");
                 }
                 ct.bufsAllocated = true;
             }
@@ -587,53 +501,23 @@ for( int k = 0, m = bufOff + fill; k < bufSpans.length; k++ ) {
 //		}
     }
 
-//	private void addBufferReadMessages( OSCBundle bndl, Span span, int numFrames, int offset )
-//	{
-//		SampledChunk	ts;
-//		int				len;
-//	
-//		
-//	
-//		for( int i = 0; i <  tl.size(); i++ ) {
-//			ts			= tl.get( i );
-//			len			= (int) Math.min( numFrames, ts.getLength() );
-//			if( len > 0 ) {
-//// MMM
-////				bndl.addPacket( ct.bufDisk.readMsg( ts.f.getFile().getAbsolutePath(), ts.offset, len, offset ));
-//				offset     += len;
-//				numFrames  -= len;
-//			}
-//		}
-//		if( numFrames > 0 ) {	// zero the rest
-//			bndl.addPacket( ct.bufDisk.fillMsg(
-//				offset * ct.bufDisk.getNumChannels(), numFrames * ct.bufDisk.getNumChannels(), 0.0f ));
-//		}
-//	}
-
     // sync : attempts shared on DOOR_TRACKS
-    private void addChannelMuteMessages( OSCBundle bndl )
-    {
+    private void addChannelMuteMessages(OSCBundle bndl) {
 //		Object	o;
-        boolean	audible;
+        boolean audible;
 
-        if( oCfg == null ) return;
+        if (oCfg == null) return;
 
 //		if( !doc.bird.attemptShared( Session.DOOR_TRACKS, 250 )) return;
 //		try {
-            if( doc.audioTracks.size() != ct.numInChans ) {
-                Server.getPrintStream().println( "Input channel mismatch!" );
-                return;
-            }
-            for( int ch = 0; ch < ct.numInChans; ch++ ) {
-//				o = doc.audioTracks.get( ch ).getMap().getValue( SessionObject.MAP_KEY_FLAGS );
-//				if( (o != null) && (o instanceof Number) ) {
-//					muted = (((Number) o).intValue() & (SessionObject.FLAGS_MUTE | SessionObject.FLAGS_VIRTUALMUTE)) != 0;
-//				} else {
-//					muted = false;
-//				}
-                audible = ((AudioTrack) doc.audioTracks.get( ch )).isAudible();
-                bndl.addPacket( ct.synthsPan[ ch ].runMsg( audible ));
-            }
+        if (doc.audioTracks.size() != ct.numInChans) {
+            Server.getPrintStream().println("Input channel mismatch!");
+            return;
+        }
+        for (int ch = 0; ch < ct.numInChans; ch++) {
+            audible = ((AudioTrack) doc.audioTracks.get(ch)).isAudible();
+            bndl.addPacket(ct.synthsPan[ch].runMsg(audible));
+        }
 //		}
 //		finally {
 //			doc.bird.releaseShared( Session.DOOR_TRACKS );
@@ -641,46 +525,45 @@ for( int k = 0, m = bufOff + fill; k < bufSpans.length; k++ ) {
     }
 
     // sync : attempts shared on DOOR_TRACKS
-    private void addChannelPanMessages( OSCBundle bndl )
-    {
-        Object		o;
-        MapManager	map;
-        float		pos, width;
+    private void addChannelPanMessages(OSCBundle bndl) {
+        Object o;
+        MapManager map;
+        float pos, width;
 
-        if( oCfg == null ) return;
+        if (oCfg == null) return;
 
 //		if( !doc.bird.attemptShared( Session.DOOR_TRACKS, 250 )) return;
 //		try {
-            if( doc.audioTracks.size() != ct.numInChans ) {
-                Server.getPrintStream().println( "Input channel mismatch!" );
-                return;
+        if (doc.audioTracks.size() != ct.numInChans) {
+            Server.getPrintStream().println("Input channel mismatch!");
+            return;
+        }
+        for (int ch = 0; ch < ct.numInChans; ch++) {
+            map = doc.audioTracks.get(ch).getMap();
+            o = map.getValue(AudioTrack.MAP_KEY_PAN_AZIMUTH);
+            if ((o instanceof Number)) {
+                pos = ((Number) o).floatValue() / 180;
+                pos = pos < 0.0f ? 2.0f - ((-pos) % 2.0f) : pos % 2.0f;
+            } else {
+                pos = 0.0f;
             }
-            for( int ch = 0; ch < ct.numInChans; ch++ ) {
-                map	= doc.audioTracks.get( ch ).getMap();
-                o	= map.getValue( AudioTrack.MAP_KEY_PAN_AZIMUTH);
-                if((o instanceof Number)) {
-                    pos	= ((Number) o).floatValue() / 180;
-                    pos	= pos < 0.0f ? 2.0f - ((-pos) % 2.0f) : pos % 2.0f;
-                } else {
-                    pos	= 0.0f;
-                }
-                o	= map.getValue( AudioTrack.MAP_KEY_PAN_SPREAD);
-                if((o instanceof Number)) {
-                    width		= ((Number) o).floatValue();
+            o = map.getValue(AudioTrack.MAP_KEY_PAN_SPREAD);
+            if ((o instanceof Number)) {
+                width = ((Number) o).floatValue();
 //System.out.println( "width in : " + width );
-                    if( width <= 0.0f ) {
-                        width	= Math.max( 1.0f, width + 2.0f );
-                    } else {
-                        width	= Math.min( 1.0f, width ) * (oCfg.numChannels - 2) + 2.0f;
-                    }
+                if (width <= 0.0f) {
+                    width = Math.max(1.0f, width + 2.0f);
                 } else {
-                    width	= 2.0f;
+                    width = Math.min(1.0f, width) * (oCfg.numChannels - 2) + 2.0f;
                 }
+            } else {
+                width = 2.0f;
+            }
 //System.out.println( "width out : " + width );
 
-                bndl.addPacket( ct.synthsPan[ ch ].setMsg(
-                    new String[] { "pos", "width" }, new float[] { pos, width }));
-            }
+            bndl.addPacket(ct.synthsPan[ch].setMsg(
+                    new String[]{"pos", "width"}, new float[]{pos, width}));
+        }
 //		}
 //		finally {
 //			doc.bird.releaseShared( Session.DOOR_TRACKS );
@@ -782,21 +665,21 @@ for( int k = 0, m = bufOff + fill; k < bufSpans.length; k++ ) {
         }
 
         try {
-            f				= NRTFile.openAsWrite( new File( rom.msg.getArg( argIdx ).toString() ));
+            f = NRTFile.openAsWrite(new File(rom.msg.getArg(argIdx).toString()));
             argIdx++;
-            audioBusOffset	= ((Number) rom.msg.getArg( argIdx )).intValue();
+            audioBusOffset = ((Number) rom.msg.getArg(argIdx)).intValue();
             argIdx++;
             argIdx++;
-            bufferOffset	= ((Number) rom.msg.getArg( argIdx )).intValue();
+            bufferOffset = ((Number) rom.msg.getArg(argIdx)).intValue();
             argIdx++;
-            nrtServerRate		= ((Number) rom.msg.getArg( argIdx )).doubleValue();
+            nrtServerRate = ((Number) rom.msg.getArg(argIdx)).doubleValue();
 
-            nrtServer			= new Server( "nrt" );
+            nrtServer = new Server("nrt");
 
-            f.write( SuperColliderClient.getInstance().loadDefsMsg() );
+            f.write(SuperColliderClient.getInstance().loadDefsMsg());
 
-            defs			= createInputDefs( ct.chanMaps ); // ct.numInputChannels
-            if( defs != null ) {
+            defs = createInputDefs(ct.chanMaps); // ct.numInputChannels
+            if (defs != null) {
                 for (SynthDef def : defs) {
                     f.write(def.recvMsg());
                 }
@@ -1168,45 +1051,44 @@ if( DEBUG_FOLD ) {
         protected Context(int[][] channelMaps, int numInputChannels, int numConfigOutputs)
                 throws IOException {
 
-            this.chanMaps = channelMaps;
-            numFiles = channelMaps.length;
+            this.chanMaps   = channelMaps;
+            numFiles        = channelMaps.length;
             this.numInChans = numInputChannels;
 
-            synthsBufRd				= new Synth[ numFiles ];
-            synthsPan				= new Synth[ numInputChannels ];
-            for( int i = 0; i < numInputChannels; i++ ) {
-                synthsPan[ i ]		= Synth.basicNew( "eisk-pan" + numConfigOutputs, server );
+            synthsBufRd = new Synth[numFiles];
+            synthsPan   = new Synth[numInputChannels];
+            for (int i = 0; i < numInputChannels; i++) {
+                synthsPan[i] = Synth.basicNew("eisk-pan" + numConfigOutputs, server);
             }
-            synthsRoute				= new Synth[ numConfigOutputs ];
-            for( int i = 0; i < numConfigOutputs; i++ ) {
-                synthsRoute[ i ]	= Synth.basicNew( "eisk-route", server );
-            }
-
-            busInternal				= Bus.audio( server, numInputChannels );
-            busPan					= Bus.audio( server, numConfigOutputs );
-
-            if( (busInternal == null) || (busPan == null) ) {
-                if( busInternal != null ) busInternal.free();
-                if( busPan != null ) busPan.free();
-                throw new IOException( getResourceString("scErrNoBuses"));
+            synthsRoute = new Synth[numConfigOutputs];
+            for (int i = 0; i < numConfigOutputs; i++) {
+                synthsRoute[i] = Synth.basicNew("eisk-route", server);
             }
 
-            bufsDisk				= new Buffer[ numFiles ];
-            for( int i = 0; i < numFiles; i++ ) {
-                bufsDisk[ i ]		= new Buffer( server, DISKBUF_SIZE, channelMaps[ i ].length );
-                if( bufsDisk[ i ] == null ) {
-                    for( int j = 0; j < i; j++ ) bufsDisk[ j ].freeMsg(); // cleans up allocator!
-                    throw new IOException( getResourceString( "scErrNoBuffers" ));
+            busInternal = Bus.audio(server, numInputChannels);
+            busPan      = Bus.audio(server, numConfigOutputs);
+
+            if ((busInternal == null) || (busPan == null)) {
+                if (busInternal != null) busInternal.free();
+                if (busPan != null) busPan.free();
+                throw new IOException(getResourceString("scErrNoBuses"));
+            }
+
+            bufsDisk = new Buffer[numFiles];
+            for (int i = 0; i < numFiles; i++) {
+                bufsDisk[i] = new Buffer(server, DISKBUF_SIZE, channelMaps[i].length);
+                if (bufsDisk[i] == null) {
+                    for (int j = 0; j < i; j++) bufsDisk[j].freeMsg(); // cleans up allocator!
+                    throw new IOException(getResourceString("scErrNoBuffers"));
                 }
             }
         }
 
-        protected void newInputSynths()
-        {
-            for( int i = 0; i < numFiles; i++ ) {
-                synthsBufRd[ i ]	= Synth.basicNew( "eisk-input" + chanMaps[ i ].length, server );
+        protected void newInputSynths() {
+            for (int i = 0; i < numFiles; i++) {
+                synthsBufRd[i] = Synth.basicNew("eisk-input" + chanMaps[i].length, server);
             }
-            synthPhasor	= Synth.basicNew( "eisk-phasor", server );
+            synthPhasor = Synth.basicNew("eisk-phasor", server);
         }
 
         protected void dispose()

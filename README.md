@@ -24,8 +24,8 @@ A binary version of Eisenkraut for all platforms is provided through
 [archive.org](https://archive.org/details/eisenkraut) and
 [GitHub Releases](https://github.com/Sciss/Eisenkraut/releases/latest).
 You need a Java runtime for Eisenkraut. Type `java -version` in a terminal to find out whether you have Java installed.
-Otherwise, look at https://adoptopenjdk.net/ for ways of installing OpenJDK on your operating system. Furthermore, you
-need SuperCollider, the installation of which is described in the next section.
+Otherwise, look at [adoptopenjdk.net](https://adoptopenjdk.net/) for ways of installing OpenJDK on your operating system.
+Furthermore, you need SuperCollider, the installation of which is described in the next section.
 
 ## setting up and running
 
@@ -103,4 +103,4 @@ A lot. Here are some suggestions:
  - Improving SuperCollider interface and classes
  - etc. etc.
 
-In the long-term, Eisenkraut will most likely be integrated with Mellite.
+In the long-term, Eisenkraut will be integrated with Mellite.

@@ -23,8 +23,8 @@ import java.util.EventListener;
  *  @see		TimelineEvent
  */
 public interface TimelineListener
-extends EventListener
-{
+        extends EventListener {
+
     /**
      *  Notifies the listener that
      *  a portion of the timeline was selected or deselected.
@@ -34,7 +34,8 @@ extends EventListener
      *				(<code>getActionObj</code> will
      *				return the new selected span)
      */
-    public void timelineSelected( TimelineEvent e );
+    public void timelineSelected(TimelineEvent e);
+
     /**
      *  Notifies the listener that
      *  the basic timeline properties were modified
@@ -43,7 +44,8 @@ extends EventListener
      *  @param  e   the event describing
      *				the timeline modification
      */
-    public void timelineChanged( TimelineEvent e );
+    public void timelineChanged(TimelineEvent e);
+
     /**
      *  Notifies the listener that
      *  the timeline's playback position was moved.
@@ -59,7 +61,8 @@ extends EventListener
      *  @param  e   the event describing
      *				the timeline positioning
      */
-    public void timelinePositioned( TimelineEvent e );
+    public void timelinePositioned(TimelineEvent e);
+
     /**
      *  Notifies the listener that
      *  a the view of the timeline frame was scrolled
@@ -70,5 +73,5 @@ extends EventListener
      *				(<code>getActionObj</code> will
      *				return the new visible span)
      */
-    public void timelineScrolled( TimelineEvent e );
+    public void timelineScrolled(TimelineEvent e);
 }

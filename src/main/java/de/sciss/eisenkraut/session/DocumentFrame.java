@@ -90,11 +90,46 @@ import de.sciss.io.Span;
 import de.sciss.timebased.Trail;
 import de.sciss.util.Flag;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
+import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.InputMap;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRootPane;
+import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+import javax.swing.TransferHandler;
+import javax.swing.WindowConstants;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoableEdit;
-import java.awt.*;
+import java.awt.BasicStroke;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Stroke;
+import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.StringSelection;
@@ -152,7 +187,7 @@ public class DocumentFrame
     private final JPanel					metersPanel;
     private final List<AudioTrackRowHeader> collChannelHeaders		= new ArrayList<AudioTrackRowHeader>();
     protected final List<Axis> collChannelRulers		= new ArrayList<Axis>();
-    private PeakMeter[]						channelMeters			= new PeakMeter[ 0 ];
+    private PeakMeter[]						channelMeters			= new PeakMeter[0];
 
     private final JLabel					lbSRC;
     protected final TreeExpanderButton		ggTreeExp;
@@ -188,16 +223,17 @@ public class DocumentFrame
 
     private final ShowWindowAction			actionShowWindow;
 
-    private static final String smpPtrn			= "ch.{3} @ {0,number,0}";
-    private static final String timePtrn		= "ch.{3} @ {1,number,integer}:{2,number,00.000}";
-    protected final MessageFormat msgCsr1		= new MessageFormat( timePtrn, Locale.US );
-    protected final MessageFormat msgCsr2PCMFloat = new MessageFormat( "{4,number,0.000} ({5,number,0.00} dBFS)", Locale.US );
-    protected final MessageFormat msgCsr3PCMInt	= new MessageFormat( "= {6,number,0} @ {7,number,integer}-bit int", Locale.US );
-    protected final MessageFormat msgCsr2Peak	= new MessageFormat( "peak {4,number,0.000} ({5,number,0.00} dBFS)", Locale.US );
-    protected final MessageFormat msgCsr3RMS	= new MessageFormat( "eff {6,number,0.000} ({7,number,0.00} dBFS)", Locale.US );
+    private static final String smpPtrn			    = "ch.{3} @ {0,number,0}";
+    private static final String timePtrn		    = "ch.{3} @ {1,number,integer}:{2,number,00.000}";
+    protected final MessageFormat msgCsr1		    = new MessageFormat(timePtrn, Locale.US);
+    protected final MessageFormat msgCsr2PCMFloat   = new MessageFormat("{4,number,0.000} ({5,number,0.00} dBFS)"       , Locale.US);
+    protected final MessageFormat msgCsr3PCMInt	    = new MessageFormat("= {6,number,0} @ {7,number,integer}-bit int"   , Locale.US);
+    protected final MessageFormat msgCsr2Peak	    = new MessageFormat("peak {4,number,0.000} ({5,number,0.00} dBFS)"  , Locale.US);
+    protected final MessageFormat msgCsr3RMS	    = new MessageFormat("eff {6,number,0.000} ({7,number,0.00} dBFS)"   , Locale.US);
+
     protected int					csrInfoBits;
     protected boolean				csrInfoIsInt;
-    protected static final double TWENTYDIVLOG10 = 20 / Math.log( 10 );
+    protected static final double TWENTY_DIV_LOG10 = 20 / Math.log(10);
 
     // --------- former viewport ---------
     // --- painting ---
@@ -208,14 +244,14 @@ public class DocumentFrame
     protected final Color colrZoom				= new Color( 0xA0, 0xA0, 0xA0, 0x7F );
     protected Rectangle	vpRecentRect			= new Rectangle();
     protected int		vpPosition				= -1;
-    private Rectangle   vpPositionRect			= new Rectangle();
+    private final Rectangle   vpPositionRect    = new Rectangle();
     protected final ArrayList<Rectangle> vpSelections		= new ArrayList<Rectangle>();
     protected final ArrayList<Color> vpSelectionColors	= new ArrayList<Color>();
     protected Rectangle	vpSelectionRect			= new Rectangle();
 
     private Rectangle   vpUpdateRect			= new Rectangle();
     protected Rectangle	vpZoomRect				= null;
-    private float[]		vpDash					= { 3.0f, 5.0f };
+    private final float[] vpDash			    = { 3.0f, 5.0f };
     private float		vpScale;
 
     protected final Stroke[] vpZoomStroke = {
@@ -252,7 +288,7 @@ public class DocumentFrame
 
     protected final ComponentBoundsRestrictor cbr;
 
-    private static Point					lastLeftTop		= new Point();
+    private static final Point				lastLeftTop		= new Point();
     private static final String				KEY_TRACKSIZE	= "tracksize";
 
     private int								verticalScale;
@@ -1992,14 +2028,14 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 //			final JOptionPane			dlg;
             final SpringPanel			msgPane;
             final PathField[]			ggPathFields;
-            final int[]					channelsUsed	= new int[ protoType.length ];
+            final int[]					channelsUsed	= new int[protoType.length];
             final JCheckBox				ggOpenAfterSave;
             final String				prefsDirKey		= selectionSettings ? PrefsUtil.KEY_FILESAVESELDIR : PrefsUtil.KEY_FILESAVEDIR;
             final JPanel				p;
             int							filesUsed		= 0;
             File						f; // , f2;
-            String[]					queryOptions	= { getResourceString( "buttonSave" ),
-                                                            getResourceString( "buttonCancel" )};
+            String[]					queryOptions	= { getResourceString("buttonSave"),
+                                                            getResourceString("buttonCancel") };
             int							i, result;
             String						str;
             JLabel						lb;
@@ -2011,16 +2047,16 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 //for( int kkk = 0; kkk < channelMap.length; kkk++ ) System.out.print( (kkk > 0 ? ", " : "") + channelMap[ kkk ]);
 //System.out.println( " ]" );
 
-            msgPane			= new SpringPanel( 4, 2, 4, 2 );
-            ggPathFields	= new PathField[ protoType.length ];
-            affp			= new AudioFileFormatPane( AudioFileFormatPane.FORMAT | AudioFileFormatPane.ENCODING );
-            affp.fromDescr( protoType[0] );
-            lb				= new JLabel( getResourceString( "labelOutputFile" ), RIGHT );
+            msgPane         = new SpringPanel(4, 2, 4, 2);
+            ggPathFields    = new PathField[protoType.length];
+            affp            = new AudioFileFormatPane(AudioFileFormatPane.FORMAT | AudioFileFormatPane.ENCODING);
+            affp.fromDescr(protoType[0]);
+            lb              = new JLabel(getResourceString("labelOutputFile"), RIGHT);
 //			lb.setLabelFor( ggPathField );
-            msgPane.gridAdd( lb, 0, y );
-            for( int j = 0, chanOff = 0; j < protoType.length; chanOff += protoType[ j ].channels, j++, y++ ) {
-                if( channelMap == null ) {
-                    channelsUsed[ j ] = protoType[ j ].channels;
+            msgPane.gridAdd(lb, 0, y);
+            for (int j = 0, chanOff = 0; j < protoType.length; chanOff += protoType[j].channels, j++, y++) {
+                if (channelMap == null) {
+                    channelsUsed[j] = protoType[j].channels;
                 } else {
                     for (int aChannelMap : channelMap) {
                         if ((aChannelMap >= chanOff) && (aChannelMap < chanOff + protoType[j].channels)) {
@@ -2029,31 +2065,31 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
                     }
                 }
 //System.out.println( "channelsUsed[ " + j + " ] = " + channelsUsed[ j ]);
-                if( channelsUsed[ j ] == 0 ) continue;
+                if (channelsUsed[j] == 0) continue;
 
                 filesUsed++;
-                ggPathFields[ j ] = new PathField( PathField.TYPE_OUTPUTFILE, getValue( NAME ).toString() );
-                if( protoType[ j ].file == null ) {
-                    fileName	= getResourceString( "frameUntitled" ) + (ggPathFields.length > 1 ? "-" + (j+1) : "");
-                } else if( asCopySettings || selectionSettings ) {
-                    str	= protoType[ j ].file.getName();
-                    i	= str.lastIndexOf( '.' );
-                    if( i == -1 ) i = str.length();
-                    fileName = str.substring( 0, i ) + (selectionSettings ? getResourceString( "fileDlgCut" ) : " " + getResourceString( "fileDlgCopy" )); // suffix is appended by affp!
+                ggPathFields[j] = new PathField(PathField.TYPE_OUTPUTFILE, getValue(NAME).toString());
+                if (protoType[j].file == null) {
+                    fileName = getResourceString("frameUntitled") + (ggPathFields.length > 1 ? "-" + (j + 1) : "");
+                } else if (asCopySettings || selectionSettings) {
+                    str = protoType[j].file.getName();
+                    i = str.lastIndexOf('.');
+                    if (i == -1) i = str.length();
+                    fileName = str.substring(0, i) + (selectionSettings ? getResourceString("fileDlgCut") : " " + getResourceString("fileDlgCopy")); // suffix is appended by affp!
                 } else {
-                    fileName = protoType[ j ].file.getName();
+                    fileName = protoType[j].file.getName();
                 }
-                dirName = app.getUserPrefs().get( prefsDirKey, protoType[ j ].file == null ? System.getProperty( "user.home" ) : protoType[ j ].file.getParent() );
-                ggPathFields[ j ].setPath( new File( dirName, fileName ));
-                affp.automaticFileSuffix( ggPathFields[ j ] );
-                if( (protoType[ j ].file == null) || asCopySettings || selectionSettings ) {	// create non-existent file name
-                    ggPathFields[ j ].setPath( IOUtil.nonExistentFileVariant( ggPathFields[ j ].getPath(), -1,
-                        selectionSettings ? null : " ", null ));
+                dirName = app.getUserPrefs().get(prefsDirKey, protoType[j].file == null ? System.getProperty("user.home") : protoType[j].file.getParent());
+                ggPathFields[j].setPath(new File(dirName, fileName));
+                affp.automaticFileSuffix(ggPathFields[j]);
+                if ((protoType[j].file == null) || asCopySettings || selectionSettings) {    // create non-existent file name
+                    ggPathFields[j].setPath(IOUtil.nonExistentFileVariant(ggPathFields[j].getPath(), -1,
+                            selectionSettings ? null : " ", null));
                 }
-                ggPathFields[ j ].selectFileName( false );
-                msgPane.gridAdd( ggPathFields[ j ], 1, y );
-                if( !setFocus ) {
-                    GUIUtil.setInitialDialogFocus( ggPathFields[ j ]);
+                ggPathFields[j].selectFileName(false);
+                msgPane.gridAdd(ggPathFields[j], 1, y);
+                if (!setFocus) {
+                    GUIUtil.setInitialDialogFocus(ggPathFields[j]);
                     setFocus = true;
                 }
             }
@@ -2878,10 +2914,9 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
             extends AbstractAction {
         protected ActionDropMarker() { /* empty */ }
 
-        public void actionPerformed( ActionEvent e )
-        {
-            if( markVisible ) {
-                markAxis.addMarker( timelinePos );
+        public void actionPerformed(ActionEvent e) {
+            if (markVisible) {
+                markAxis.addMarker(timelinePos);
             }
         }
     } // class actionDropMarkerClass
@@ -2893,19 +2928,17 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
             extends TransferHandler {
         protected AFRTransferHandler() { /* empty */ }
 
-        public int getSourceActions( JComponent c )
-        {
+        public int getSourceActions(JComponent c) {
             return COPY;
         }
 
-        protected Transferable createTransferable( JComponent c )
-        {
+        protected Transferable createTransferable(JComponent c) {
 //			return new StringSelection( doc.getAudioFileDescr().file.getAbsolutePath() + File.pathSeparator +
 //				doc.timeline.getSelectionSpan().getStart() + File.pathSeparator +
 //				doc.timeline.getSelectionSpan().getStop() );
-            return new StringSelection( doc.getDisplayDescr().file.getAbsolutePath() + File.pathSeparator +
-                doc.timeline.getSelectionSpan().getStart() + File.pathSeparator +
-                doc.timeline.getSelectionSpan().getStop() );
+            return new StringSelection(doc.getDisplayDescr().file.getAbsolutePath() + File.pathSeparator +
+                    doc.timeline.getSelectionSpan().getStart() + File.pathSeparator +
+                    doc.timeline.getSelectionSpan().getStop());
 
 //			System.err.println( "createTransferable" );
 //			return new AudioFileRegion( new File( "haschimoto" ), new Span( 42, 43 ));
@@ -2926,9 +2959,8 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 //			}
         }
 
-        protected void exportDone( JComponent source, Transferable data, int action )
-        {
-             /* ignored */
+        protected void exportDone(JComponent source, Transferable data, int action) {
+            /* ignored */
         }
 
 //		public boolean canImport( JComponent c, DataFlavor[] flavors )
@@ -2938,49 +2970,47 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
     }
 
     private abstract class TimelineTool
-    extends AbstractTool
-    {
-        private final List<Component> collObservedComponents	= new ArrayList<Component>();
+            extends AbstractTool {
+        private final List<Component> collObservedComponents = new ArrayList<Component>();
 
         private boolean adjustCatchBypass	= false;
 
         protected TimelineTool() { /* empty */ }
 
-        public void toolAcquired( Component c )
-        {
-            super.toolAcquired( c );
+        public void toolAcquired(Component c) {
+            super.toolAcquired(c);
 
-            if( c instanceof Container ) addMouseListeners( (Container) c );
+//            c.addKeyListener(this);
+            if (c instanceof Container) addAllListeners((Container) c);
         }
 
         // additionally installs mouse input listeners on child components
-        private void addMouseListeners(Container c) {
-            Component c2;
-
+        private void addAllListeners(Container c) {
             for (int i = 0; i < c.getComponentCount(); i++) {
-                c2 = c.getComponent(i);
+                final Component c2 = c.getComponent(i);
                 collObservedComponents.add(c2);
-                c2.addMouseListener(this);
-                c2.addMouseMotionListener(this);
-                if (c2 instanceof Container) addMouseListeners((Container) c2);    // recurse
+                c2.addMouseListener         (this);
+                c2.addMouseMotionListener   (this);
+//                c2.addKeyListener           (this);
+                if (c2 instanceof Container) addAllListeners((Container) c2);    // recurse
             }
         }
 
         // additionally removes mouse input listeners from child components
-        private void removeMouseListeners() {
-            Component c;
-
+        private void removeAllListeners() {
             while (!collObservedComponents.isEmpty()) {
-                c = collObservedComponents.remove(0);
-                c.removeMouseListener(this);
-                c.removeMouseMotionListener(this);
+                final Component c = collObservedComponents.remove(0);
+                c.removeMouseListener       (this);
+                c.removeMouseMotionListener (this);
+//                c.removeKeyListener         (this);
             }
         }
 
         public void toolDismissed(Component c) {
             super.toolDismissed(c);
 
-            removeMouseListeners();
+            removeAllListeners();
+//            c.removeKeyListener(this);
 
             if (adjustCatchBypass) {
                 adjustCatchBypass = false;
@@ -2988,21 +3018,25 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
             }
         }
 
-        public void mousePressed( MouseEvent e )
-        {
+        public void mousePressed(MouseEvent e) {
             adjustCatchBypass = true;
             addCatchBypass();
 
-            super.mousePressed( e );
+            super.mousePressed(e);
         }
 
-        public void mouseReleased( MouseEvent e )
-        {
+        public void mouseReleased(MouseEvent e) {
             adjustCatchBypass = false;
             removeCatchBypass();
 
-            super.mouseReleased( e );
+            super.mouseReleased(e);
         }
+
+//        public void keyTyped(KeyEvent e) { /* empty */ }
+//
+//        public void keyPressed(KeyEvent e) { /* empty */ }
+//
+//        public void keyReleased(KeyEvent e) { /* empty */ }
     }
 
     /*
@@ -3011,141 +3045,168 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
      *	Alt+Drag = drag timeline position; double-click = Play
      */
     private class TimelinePointerTool
-    extends TimelineTool
-    {
+            extends TimelineTool implements TimelineListener {
+
         private boolean shiftDrag, ctrlDrag, dragStarted = false;
         protected boolean validDrag = false;
         private long startPos;
         private int startX;
+
+        private int ccLast  = 0;
+        private int ccMinus = 0;
 
         private final Object[] argsCsr	= new Object[8];
         private final String[] csrInfo	= new String[3];
 
         protected TimelinePointerTool() { /* empty */ }
 
-        public void paintOnTop( Graphics2D g )
-        {
+        public void paintOnTop(Graphics2D g) {
             // not necessary
         }
 
-        protected void cancelGesture()
-        {
-            dragStarted = false;
-            validDrag	= false;
+        @Override
+        public void timelineSelected(TimelineEvent e) { /* empty */ }
+
+        @Override
+        public void timelineChanged(TimelineEvent e) { /* empty */ }
+
+        @Override
+        public void timelinePositioned(TimelineEvent e) { /* empty */ }
+
+        @Override
+        public void timelineScrolled(TimelineEvent e) {
+            // reset the double-click detection
+            ccMinus = ccLast;
         }
 
-        public void mousePressed( MouseEvent e )
-        {
-            super.mousePressed( e );
+        @Override
+        public void toolAcquired(Component c) {
+            super.toolAcquired(c);
+            doc.timeline.addTimelineListener(this);
+        }
 
-            if( e.isMetaDown() ) {
-                selectRegion( e );
+        @Override
+        public void toolDismissed(Component c) {
+            super.toolDismissed(c);
+            doc.timeline.removeTimelineListener(this);
+        }
+
+        protected void cancelGesture() {
+            dragStarted = false;
+            validDrag   = false;
+        }
+
+        public void mousePressed(MouseEvent e) {
+            super.mousePressed(e);
+
+            if (e.isMetaDown()) {
+                selectRegion(e);
                 dragStarted = false;
-                validDrag	= false;
+                validDrag   = false;
             } else {
-                shiftDrag	= e.isShiftDown();
-                ctrlDrag	= e.isControlDown();
+                shiftDrag   = e.isShiftDown();
+                ctrlDrag    = e.isControlDown();
                 dragStarted = false;
-                validDrag	= true;
-                startX		= e.getX();
-                processDrag( e, false );
+                validDrag   = true;
+                startX      = e.getX();
+                processDrag(e, false);
             }
         }
 
-        public void mouseDragged( MouseEvent e )
-        {
+        public void mouseDragged(MouseEvent e) {
             final ObserverPalette observer;
 
-            super.mouseDragged( e );
+            super.mouseDragged(e);
 
-            if( validDrag ) {
-                if( !dragStarted ) {
-                    if( shiftDrag || ctrlDrag || Math.abs( e.getX() - startX ) > 2 ) {
+            if (validDrag) {
+                if (!dragStarted) {
+                    if (shiftDrag || ctrlDrag || Math.abs(e.getX() - startX) > 2) {
                         dragStarted = true;
                     } else return;
                 }
-                processDrag( e, true );
+                processDrag(e, true);
             }
 
             // cursor information
-            observer = (ObserverPalette) app.getComponent( Main.COMP_OBSERVER );
-            if( (observer != null) && observer.isVisible() && (observer.getShownTab() == ObserverPalette.CURSOR_TAB) ) {
-                showCursorInfo( SwingUtilities.convertPoint( e.getComponent(), e.getPoint(), waveView ));
+            observer = (ObserverPalette) app.getComponent(Main.COMP_OBSERVER);
+            if ((observer != null) && observer.isVisible() && (observer.getShownTab() == ObserverPalette.CURSOR_TAB)) {
+                showCursorInfo(SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), waveView));
             }
         }
 
-        private void showCursorInfo( Point screenPt )
-        {
+        private void showCursorInfo(Point screenPt) {
             final ObserverPalette	observer;
 
-            final int				ch		= waveView.channelForPoint( screenPt );
-            if( ch == -1 ) return;
+            final int ch = waveView.channelForPoint(screenPt);
+            if (ch == -1) return;
 
-            final DecimationInfo	info	= waveView.getDecimationInfo();
-            if( info == null ) return;
+            final DecimationInfo info = waveView.getDecimationInfo();
+            if (info == null) return;
 
-            final long				pos		= timelineVis.getStart() + (long)
-                                        ((double) screenPt.x / (double) waveView.getWidth() *
-                                         timelineVis.getLength());
-            if( (pos < 0) || (pos >= timelineLen) ) return;
+            final long pos = timelineVis.getStart() + (long)
+                    ((double) screenPt.x / (double) waveView.getWidth() *
+                            timelineVis.getLength());
+            if ((pos < 0) || (pos >= timelineLen)) return;
 
-            final String			chName	= doc.audioTracks.get( ch ).getName();
+            final String			chName = doc.audioTracks.get(ch).getName();
             final double			seconds	= pos / timelineRate;
             final AudioTrail 		at;
-            final DecimatedWaveTrail	dt;
+            final DecimatedWaveTrail dt;
             final float[][]			data;
             final float[]			frame;
             float					f1;
 
             argsCsr[3]		= chName;
             argsCsr[0]		= pos;
-            argsCsr[1]		= (int) (seconds / 60);
+            argsCsr[1]		= (int)   (seconds / 60);
             argsCsr[2]		= (float) (seconds % 60);
 
-            csrInfo[0]		= msgCsr1.format( argsCsr );
+            csrInfo[0]		= msgCsr1.format(argsCsr);
 
-            switch( info.model ) {
-            case DecimatedTrail.MODEL_PCM:
-                at			= doc.getAudioTrail();
-                data		= new float[ at.getChannelNum() ][];
-                data[ ch ]	= new float[ 1 ];
-                try {
-                    at.readFrames( data, 0, new Span( pos, pos + 1 ));
-                }
-                catch( IOException e1 ) { return; }
-                f1			= data[ ch ][ 0 ];
-                argsCsr[4] = f1;
-                argsCsr[5] = (float) (Math.log(Math.abs(f1)) * TWENTYDIVLOG10);
-                csrInfo[1] = msgCsr2PCMFloat.format(argsCsr);
-                if (csrInfoIsInt) {
-                    argsCsr[6] = (long) (f1 * (1L << (csrInfoBits - 1)));
-                    argsCsr[7] = csrInfoBits;
-                    csrInfo[2] = msgCsr3PCMInt.format(argsCsr);
-                } else {
-                    csrInfo[2] = "";
-                }
-                break;
+            switch (info.model) {
+                case DecimatedTrail.MODEL_PCM:
+                    at = doc.getAudioTrail();
+                    data = new float[at.getChannelNum()][];
+                    data[ch] = new float[1];
+                    try {
+                        at.readFrames(data, 0, new Span(pos, pos + 1));
+                    } catch (IOException e1) {
+                        return;
+                    }
+                    f1 = data[ch][0];
+                    argsCsr[4] = f1;
+                    argsCsr[5] = (float) (Math.log(Math.abs(f1)) * TWENTY_DIV_LOG10);
+                    csrInfo[1] = msgCsr2PCMFloat.format(argsCsr);
+                    if (csrInfoIsInt) {
+                        argsCsr[6] = (long) (f1 * (1L << (csrInfoBits - 1)));
+                        argsCsr[7] = csrInfoBits;
+                        csrInfo[2] = msgCsr3PCMInt.format(argsCsr);
+                    } else {
+                        csrInfo[2] = "";
+                    }
+                    break;
 
-            case DecimatedTrail.MODEL_FULLWAVE_PEAKRMS:
-                dt			= doc.getDecimatedWaveTrail();
-                if( dt == null ) return;
-                frame		= new float[ dt.getNumModelChannels() ];
-                try {
-                    dt.readFrame( Math.min( dt.getNumDecimations() - 1, info.idx + 1 ), pos, ch, frame );
-                }
-                catch( IOException e1 ) { return; }
-                f1			= Math.max(frame[0], -frame[1]);    // peak pos/neg
-                argsCsr[4]	= f1;
-                argsCsr[5]	= (float) (Math.log(f1) * TWENTYDIVLOG10);
-                f1          = (float) Math.sqrt(frame[2]);    // mean sqr pos/neg
-                argsCsr[6]	= f1;
-                argsCsr[7]	= (float) (Math.log(f1) * TWENTYDIVLOG10);
-                csrInfo[1]	= msgCsr2Peak.format(argsCsr);
-                csrInfo[2]	= msgCsr3RMS.format(argsCsr);
-                break;
+                case DecimatedTrail.MODEL_FULLWAVE_PEAKRMS:
+                    dt = doc.getDecimatedWaveTrail();
+                    if (dt == null) return;
+                    frame = new float[dt.getNumModelChannels()];
+                    try {
+                        dt.readFrame(Math.min(dt.getNumDecimations() - 1, info.idx + 1), pos, ch, frame);
+                    } catch (IOException e1) {
+                        return;
+                    }
+                    f1 = Math.max(frame[0], -frame[1]);    // peak pos/neg
+                    argsCsr[4] = f1;
+                    argsCsr[5] = (float) (Math.log(f1) * TWENTY_DIV_LOG10);
+                    f1 = (float) Math.sqrt(frame[2]);    // mean sqr pos/neg
+                    argsCsr[6] = f1;
+                    argsCsr[7] = (float) (Math.log(f1) * TWENTY_DIV_LOG10);
+                    csrInfo[1] = msgCsr2Peak.format(argsCsr);
+                    csrInfo[2] = msgCsr3RMS.format(argsCsr);
+                    break;
 
-            default:
-                return;
+                default:
+                    return;
             }
 
             observer = (ObserverPalette) app.getComponent(Main.COMP_OBSERVER);
@@ -3165,23 +3226,23 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
             span2		= timelineSel; // doc.timeline.getSelectionSpan();
             pos			= span.getStart() + (long) (pt.getX() / getComponent().getWidth() *
                                                     span.getLength());
-            pos			= Math.max( 0, Math.min( timelineLen, pos ));
+            pos			= Math.max(0, Math.min(timelineLen, pos));
 
             stop		= timelineLen;
             start		= 0;
 
-            if( markVisible ) {
-                idx		= doc.markers.indexOf( pos + 1 );	// XXX check
-                if( idx < 0 ) idx = -(idx + 1);
-                if(	idx < doc.markers.getNumStakes() ) {
-                    mark	= doc.markers.get( idx );
-                    stop	= mark.pos;
+            if (markVisible) {
+                idx = doc.markers.indexOf(pos + 1);    // XXX check
+                if (idx < 0) idx = -(idx + 1);
+                if (idx < doc.markers.getNumStakes()) {
+                    mark = doc.markers.get(idx);
+                    stop = mark.pos;
                 }
-                idx		= doc.markers.indexOf( stop - 1 );	// XXX check
-                if( idx < 0 ) idx = -(idx + 2);
-                if( idx >= 0 ) {
-                    mark	= doc.markers.get( idx );
-                    start	= mark.pos;
+                idx = doc.markers.indexOf(stop - 1);    // XXX check
+                if (idx < 0) idx = -(idx + 2);
+                if (idx >= 0) {
+                    mark    = doc.markers.get(idx);
+                    start   = mark.pos;
                 }
             }
 
@@ -3212,66 +3273,68 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
             span2		= timelineSel; // doc.timeline.getSelectionSpan();
             position    = span.getStart() + (long) (pt.getX() / getComponent().getWidth() *
                                                     span.getLength());
-            position    = Math.max( 0, Math.min( timelineLen, position ));
-            if( !hasStarted && !ctrlDrag ) {
-                if( shiftDrag ) {
-                    if( span2.isEmpty() ) {
-                        span2 = new Span( timelinePos, timelinePos );
+            position    = Math.max(0, Math.min(timelineLen, position));
+            if (!hasStarted && !ctrlDrag) {
+                if (shiftDrag) {
+                    if (span2.isEmpty()) {
+                        span2 = new Span(timelinePos, timelinePos);
                     }
-                    startPos = Math.abs( span2.getStart() - position ) >
-                               Math.abs( span2.getStop() - position ) ?
-                                    span2.getStart() : span2.getStop();
-                    span2	= new Span( Math.min( startPos, position ),
-                                        Math.max( startPos, position ));
-                    edit	= TimelineVisualEdit.select( this, doc, span2 ).perform();
+                    startPos = Math.abs(span2.getStart() - position) >
+                               Math.abs(span2.getStop() - position) ?
+                            span2.getStart() : span2.getStop();
+                    span2 = new Span(Math.min(startPos, position),
+                                     Math.max(startPos, position));
+                    edit = TimelineVisualEdit.select(this, doc, span2).perform();
                 } else {
                     startPos = position;
-                    if( span2.isEmpty() ) {
-                        edit = TimelineVisualEdit.position( this, doc, position ).perform();
+                    if (span2.isEmpty()) {
+                        edit = TimelineVisualEdit.position(this, doc, position).perform();
                     } else {
                         edit = new CompoundEdit();
-                        edit.addEdit( TimelineVisualEdit.select( this, doc, new Span() ).perform() );
-                        edit.addEdit( TimelineVisualEdit.position( this, doc, position ).perform() );
+                        edit.addEdit(TimelineVisualEdit.select  (this, doc, new Span()  ).perform());
+                        edit.addEdit(TimelineVisualEdit.position(this, doc, position    ).perform());
                         ((CompoundEdit) edit).end();
                     }
                 }
             } else {
-                if( ctrlDrag ) {
-                    edit	= TimelineVisualEdit.position( this, doc, position ).perform();
+                if (ctrlDrag) {
+                    edit = TimelineVisualEdit.position(this, doc, position).perform();
                 } else {
-                    span2	= new Span( Math.min( startPos, position ),
-                                        Math.max( startPos, position ));
-                    edit	= TimelineVisualEdit.select( this, doc, span2 ).perform();
+                    span2 = new Span(Math.min(startPos, position),
+                                     Math.max(startPos, position));
+                    edit = TimelineVisualEdit.select(this, doc, span2).perform();
                 }
             }
-            doc.getUndoManager().addEdit( edit );
+            doc.getUndoManager().addEdit(edit);
         }
 
-        public void mouseReleased( MouseEvent e )
-        {
-            super.mouseReleased( e );
+        public void mouseReleased(MouseEvent e) {
+            super.mouseReleased(e);
 
             Span span2;
 
             // resets the position to selection start if (and only if) the selection was
             // made anew, ctrl key is not pressed and transport is not running
-            if( dragStarted && !shiftDrag && !ctrlDrag && !transport.isRunning() ) {
+            if (dragStarted && !shiftDrag && !ctrlDrag && !transport.isRunning()) {
                 span2 = timelineSel; // doc.timeline.getSelectionSpan();
-                if( !span2.isEmpty() && timelinePos != span2.getStart() ) {
-                    doc.timeline.editPosition( this, span2.getStart() );
+                if (!span2.isEmpty() && timelinePos != span2.getStart()) {
+                    doc.timeline.editPosition(this, span2.getStart());
                 }
             }
 
             dragStarted = false;
-            validDrag	= false;
+            validDrag   = false;
         }
 
-        public void mouseClicked( MouseEvent e )
-        {
-            super.mouseClicked( e );
+        public void mouseClicked(MouseEvent e) {
+            super.mouseClicked(e);
 
-            if( (e.getClickCount() == 2) && !e.isMetaDown() && !transport.isRunning() ) {
-                transport.play( 1.0f );
+            final int cc = e.getClickCount();
+            if (cc == 1) ccMinus = 0;
+            ccLast = cc;
+
+            if ((cc - ccMinus == 2) && !e.isMetaDown() && !transport.isRunning()) {
+                transport.play(1.0f);
             }
         }
 
@@ -3279,11 +3342,10 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
         // popup trigger by the system which means
         // no successive mouseDragged calls are made,
         // instead mouseMoved is called ...
-        public void mouseMoved( MouseEvent e )
-        {
-            super.mouseMoved( e );
+        public void mouseMoved(MouseEvent e) {
+            super.mouseMoved(e);
 
-            mouseDragged( e );
+            mouseDragged(e);
         }
     }
 
@@ -3326,12 +3388,13 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
         public void toolAcquired(final Component c) {
             super.toolAcquired(c);
             c.setCursor(zoomCsr[0]);
+//            c.requestFocusInWindow();
             if (c instanceof JComponent) {
                 final JComponent jc = (JComponent) c;
                 if (actionZoomOut == null) actionZoomOut = new SetCursorAction("zoomOut",
                         KeyStroke.getKeyStroke(KeyEvent.VK_ALT, InputEvent.ALT_DOWN_MASK, false), c, zoomCsr[1]);
                 if (actionZoomIn == null) actionZoomIn = new SetCursorAction("zoomIn",
-                            KeyStroke.getKeyStroke(KeyEvent.VK_ALT, 0, true), c, zoomCsr[0]);
+                        KeyStroke.getKeyStroke(KeyEvent.VK_ALT, 0, true), c, zoomCsr[0]);
                 actionZoomOut.installOn(jc, JComponent.WHEN_IN_FOCUSED_WINDOW);
                 actionZoomIn .installOn(jc, JComponent.WHEN_IN_FOCUSED_WINDOW);
             }
@@ -3342,69 +3405,64 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
             if (c instanceof JComponent) {
                 final JComponent jc = (JComponent) c;
                 if (actionZoomOut != null) actionZoomOut.deinstallFrom(jc, JComponent.WHEN_IN_FOCUSED_WINDOW);
-                if (actionZoomIn  != null) actionZoomIn .deinstallFrom(jc, JComponent.WHEN_IN_FOCUSED_WINDOW);
+                if (actionZoomIn != null) actionZoomIn.deinstallFrom(jc, JComponent.WHEN_IN_FOCUSED_WINDOW);
             }
         }
 
-        public void paintOnTop( Graphics2D g )
-        {
+        public void paintOnTop(Graphics2D g) {
             // not necessary
         }
 
-        public void mousePressed( MouseEvent e )
-        {
-            super.mousePressed( e );
+        public void mousePressed(MouseEvent e) {
+            super.mousePressed(e);
 
-            if( e.isAltDown() ) {
+            if (e.isAltDown()) {
                 dragStarted = false;
-                validDrag	= false;
-                clickZoom( 2.0f, e );
+                validDrag = false;
+                clickZoom(2.0f, e);
             } else {
                 dragStarted = false;
-                validDrag	= true;
-                processDrag( e, false );
+                validDrag = true;
+                processDrag(e, false);
             }
         }
 
-        public void mouseDragged( MouseEvent e )
-        {
-            super.mouseDragged( e );
+        public void mouseDragged(MouseEvent e) {
+            super.mouseDragged(e);
 
-            if( validDrag ) {
-                if( !dragStarted ) {
-                    if( Math.abs( e.getX() - startPt.x ) > 2 ) {
+            if (validDrag) {
+                if (!dragStarted) {
+                    if (Math.abs(e.getX() - startPt.x) > 2) {
                         dragStarted = true;
                         zoomTimer.restart();
                     } else return;
                 }
-                processDrag( e, true );
+                processDrag(e, true);
             }
         }
 
-        protected void cancelGesture()
-        {
+        protected void cancelGesture() {
             zoomTimer.stop();
-            setZoomRect( null );
+            setZoomRect(null);
             dragStarted = false;
-            validDrag	= false;
+            validDrag = false;
         }
 
-        public void mouseReleased( MouseEvent e )
-        {
-            super.mouseReleased( e );
+        public void mouseReleased(MouseEvent e) {
+            super.mouseReleased(e);
 
             Span span;
 
-            if( dragStarted ) {
+            if (dragStarted) {
                 cancelGesture();
-                span = new Span( Math.min( startPos, position ),
-                                 Math.max( startPos, position ));
-                if( !span.isEmpty() ) {
-                    doc.timeline.editScroll( this, span );
+                span = new Span(Math.min(startPos, position),
+                        Math.max(startPos, position));
+                if (!span.isEmpty()) {
+                    doc.timeline.editScroll(this, span);
                 }
             }
 
-            validDrag	= false;
+            validDrag = false;
         }
 
         // zoom to mouse position

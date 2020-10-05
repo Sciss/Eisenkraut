@@ -84,11 +84,7 @@ public class MarkerAxis
     private Span				visibleSpan		= new Span();
     private double				scale			= 1.0;
 
-//	private static final int[] pntBarGradientPixels = { 0xFFB8B8B8, 0xFFC0C0C0, 0xFFC8C8C8, 0xFFD3D3D3,
-//														0xFFDBDBDB, 0xFFE4E4E4, 0xFFEBEBEB, 0xFFF1F1F1,
-//														0xFFF6F6F6, 0xFFFAFAFA, 0xFFFBFBFB, 0xFFFCFCFC,
-//														0xFFF9F9F9, 0xFFF4F4F4, 0xFFEFEFEF };
-    private static final int barExtent = 15; // pntBarGradientPixels.length;
+    private static final int barExtent = 15;
 
     private static final int[] pntMarkGradPix= {
             0xFF5B8581, 0xFF618A86, 0xFF5D8682, 0xFF59827E,
@@ -139,10 +135,8 @@ public class MarkerAxis
 
     static {
         pntMarkDragPix  = new int[markExtent];
-//        pntMarkDragPixDark  = new int[markExtent];
         for (int i = 0; i < markExtent; i++) {
             pntMarkDragPix[i] = pntMarkGradPix[i] & 0xBFFFFFFF;    // = 50% alpha
-//            pntMarkDragPixDark [i] = pntMarkGradPixDark [i] & 0xBFFFFFFF;    // = 50% alpha
         }
     }
 
@@ -182,9 +176,6 @@ public class MarkerAxis
 
         setOpaque(true);
 
-        // not necessary; it also kills the VK_TAB response of DocumentFrame!
-        //		setFocusable( true );
-
         // --- Listener ---
 
         this.addMouseListener(this);
@@ -199,64 +190,49 @@ public class MarkerAxis
     // sync: attempts shared on timeline
     private void recalculateDisplay(FontMetrics fm) {
         List<Stake> markers;
-        long			start, stop;
-        MarkerStake		mark;
-
-//long t1 = System.currentTimeMillis();
+        long start, stop;
+        MarkerStake mark;
 
         shpFlags.reset();
-        numMarkers	= 0;
-//		numRegions	= 0;
+        numMarkers = 0;
 
 //		if( !doc.bird.attemptShared( Session.DOOR_TIME, 250 )) return;
 //		try {
-            visibleSpan = doc.timeline.getVisibleSpan();	// so we don't have to do that after startListening
-            start		= visibleSpan.start;
-            stop		= visibleSpan.stop;
-            scale		= (double) recentWidth / (stop - start);
+        visibleSpan = doc.timeline.getVisibleSpan();    // so we don't have to do that after startListening
+        start = visibleSpan.start;
+        stop = visibleSpan.stop;
+        scale = (double) recentWidth / (stop - start);
 
-            markers		= doc.markers.getRange( visibleSpan, true );	// XXX plus a bit before
-//long t3 = System.currentTimeMillis();
-            numMarkers	= markers.size();
-//System.err.println( "numMarkers = "+numMarkers );
-            if( (numMarkers > markLabels.length) || (numMarkers < (markLabels.length >> 1)) ) {
-                markLabels		= new String[ numMarkers * 3 / 2 ];		// 'decent growing and shrinking'
-                markFlagPos		= new int[ markLabels.length ];
-            }
+        markers = doc.markers.getRange(visibleSpan, true);    // XXX plus a bit before
+        numMarkers = markers.size();
+        if ((numMarkers > markLabels.length) || (numMarkers < (markLabels.length >> 1))) {
+            markLabels = new String[numMarkers * 3 / 2];        // 'decent growing and shrinking'
+            markFlagPos = new int[markLabels.length];
+        }
 
-            for( int i = 0; i < numMarkers; i++ ) {
-                mark				= (MarkerStake) markers.get( i );
-                markLabels[ i ]		= mark.name;
-                markFlagPos[ i ]	= (int) (((mark.pos - start) * scale) + 0.5);
-                shpFlags.append( new Rectangle( markFlagPos[ i ], 1, fm.stringWidth( mark.name ) + 8, markExtent ), false );
-            }
+        for (int i = 0; i < numMarkers; i++) {
+            mark = (MarkerStake) markers.get(i);
+            markLabels[i] = mark.name;
+            markFlagPos[i] = (int) (((mark.pos - start) * scale) + 0.5);
+            shpFlags.append(new Rectangle(markFlagPos[i], 1, fm.stringWidth(mark.name) + 8, markExtent), false);
+        }
 
-//			coll	= (java.util.List) afd.getProperty( AudioFileDescr.KEY_REGIONS );
-//			if( coll != regions ) {
-//				regions		= coll;
-//				regionIdx	= 0;
-//			}
-//			if( (regions != null) && !regions.isEmpty() ) {
-//			
-//			}
-            doRecalc	= false;
+        doRecalc = false;
 //		}
 //		finally {
 //			doc.bird.releaseShared( Session.DOOR_TIME );
 //		}
-//long t2 = System.currentTimeMillis();
-//System.out.println( "recalculateDisplay " + (t3-t1) + " / " + (t2-t3) );
     }
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        final Graphics2D	g2	= (Graphics2D) g;
+        final Graphics2D g2 = (Graphics2D) g;
 
         g2.setFont(fntLabel);
 
-        final FontMetrics	fm	= g2.getFontMetrics();
-        final int			y	= fm.getAscent() + 2;
+        final FontMetrics fm = g2.getFontMetrics();
+        final int y = fm.getAscent() + 2;
 
         if (doRecalc || (recentWidth != getWidth())) {
             recentWidth = getWidth();
@@ -287,73 +263,63 @@ public class MarkerAxis
             g2.drawString(dragLastMark.name, dragMarkFlagPos + 4, y);
         }
 
-//long t2 = System.currentTimeMillis();
-//System.out.println( "paintComponent " + (t2 - t1) );
-//System.out.println( numMarkers );
     }
 
-    public void paintFlagSticks( Graphics2D g2, Rectangle bounds )
-    {
-        if( doRecalc ) {
-            recalculateDisplay( g2.getFontMetrics() );	// XXX nicht ganz sauber (anderer graphics-context!)
+    public void paintFlagSticks(Graphics2D g2, Rectangle bounds) {
+        if (doRecalc) {
+            recalculateDisplay(g2.getFontMetrics());    // XXX nicht ganz sauber (anderer graphics-context!)
         }
 
-        final Stroke	strkOrig	= g2.getStroke();
-//		int				x;
+        final Stroke strkOrig = g2.getStroke();
 
-        g2.setPaint( pntMarkStick );
-        g2.setStroke( strkStick );
-        for( int i = 0; i < numMarkers; i++ ) {
-            g2.drawLine( markFlagPos[i], bounds.y, markFlagPos[i], bounds.y + bounds.height );
+        g2.setPaint(pntMarkStick);
+        g2.setStroke(strkStick);
+        for (int i = 0; i < numMarkers; i++) {
+            g2.drawLine(markFlagPos[i], bounds.y, markFlagPos[i], bounds.y + bounds.height);
         }
-        if( dragLastMark != null ) {
+        if (dragLastMark != null) {
             final int dragMarkFlagPos = (int) (((dragLastMark.pos - visibleSpan.start) * (double) recentWidth / visibleSpan.getLength()) + 0.5);
-            g2.setPaint( pntMarkStickDrag );
-            g2.drawLine( dragMarkFlagPos, bounds.y, dragMarkFlagPos, bounds.y + bounds.height );
+            g2.setPaint(pntMarkStickDrag);
+            g2.drawLine(dragMarkFlagPos, bounds.y, dragMarkFlagPos, bounds.y + bounds.height);
         }
-        g2.setStroke( strkOrig );
+        g2.setStroke(strkOrig);
     }
 
-    private void triggerRedisplay()
-    {
-        doRecalc	= true;
-        if( host != null ) {
-            host.update( this );
-        } else if( isVisible() ) {
+    private void triggerRedisplay() {
+        doRecalc = true;
+        if (host != null) {
+            host.update(this);
+        } else if (isVisible()) {
             repaint();
         }
     }
-  
-    public void addMarker( long pos )
-    {
-        final AbstractCompoundEdit	ce;
 
-        pos		= Math.max( 0, Math.min( doc.timeline.getLength(), pos ));
-        ce		= new BasicCompoundEdit( getResourceString( "editAddMarker" ));
-        doc.markers.editBegin( ce );
+    public void addMarker(long pos) {
+        final AbstractCompoundEdit ce;
+
+        pos = Math.max(0, Math.min(doc.timeline.getLength(), pos));
+        ce = new BasicCompoundEdit(getResourceString("editAddMarker"));
+        doc.markers.editBegin(ce);
         try {
-            doc.markers.editAdd( this, new MarkerStake( pos, "Mark" ), ce );
-        }
-        catch( IOException e1 ) {	// should never happen
+            doc.markers.editAdd(this, new MarkerStake(pos, "Mark"), ce);
+        } catch (IOException e1) {    // should never happen
             System.err.println("addMarker:");
             e1.printStackTrace();
             ce.cancel();
             return;
-        }
-        finally {
-            doc.markers.editEnd( ce );
+        } finally {
+            doc.markers.editEnd(ce);
         }
         ce.perform();
         ce.end();
-        doc.getUndoManager().addEdit( ce );
+        doc.getUndoManager().addEdit(ce);
     }
 
     private void removeMarkerLeftTo(long pos) {
         final AbstractCompoundEdit ce;
         final MarkerStake mark;
 
-        mark 	= getMarkerLeftTo(pos);
-        // pos 	= Math.max(0, Math.min(doc.timeline.getLength(), pos));
+        mark = getMarkerLeftTo(pos);
         if (mark == null) return;
 
         ce = new BasicCompoundEdit(getResourceString("editDeleteMarker"));
@@ -373,110 +339,93 @@ public class MarkerAxis
         doc.getUndoManager().addEdit(ce);
     }
 
-    private void editMarkerLeftTo( long pos )
-    {
-        final int				result;
-//		final MarkerStake		mark; //	= getMarkerLeftTo( pos );
+    private void editMarkerLeftTo(long pos) {
+        final int result;
 
-//		if( mark == null ) return;
-
-        editIdx		= doc.markers.indexOf( pos );
-        if( editIdx < 0 ) {
+        editIdx = doc.markers.indexOf(pos);
+        if (editIdx < 0) {
             editIdx = -(editIdx + 2);
-            if( editIdx == -1 ) return;
+            if (editIdx == -1) return;
         }
 
-        if( editMarkerPane == null ) {
-            final SpringPanel		spring;
-            final ActionMap			amap;
-            final InputMap			imap;
-            JLabel					lb;
-            KeyStroke				ks;
-            Action					a;
+        if (editMarkerPane == null) {
+            final SpringPanel spring;
+            final ActionMap amap;
+            final InputMap imap;
+            JLabel lb;
+            KeyStroke ks;
+            Action a;
 
-            spring			= new SpringPanel( 4, 2, 4, 2 );
-            ggMarkName		= new JTextField( 24 );
-//			GUIUtil.setInitialDialogFocus( ggMarkName );	// removes itself automatically
-            ggMarkName.addAncestorListener( new AncestorAdapter() {
-                public void ancestorAdded( AncestorEvent e ) {
+            spring = new SpringPanel(4, 2, 4, 2);
+            ggMarkName = new JTextField(24);
+            ggMarkName.addAncestorListener(new AncestorAdapter() {
+                public void ancestorAdded(AncestorEvent e) {
                     ggMarkName.requestFocusInWindow();
                     ggMarkName.selectAll();
-//					c.removeAncestorListener( this );
                 }
             });
 
             // XXX sync
-            timeTrans		= new DefaultUnitTranslator();
-            ggMarkPos		= new ParamField( timeTrans );
-            ggMarkPos.addSpace( ParamSpace.spcTimeHHMMSS );
-            ggMarkPos.addSpace( ParamSpace.spcTimeSmps );
-            ggMarkPos.addSpace( ParamSpace.spcTimeMillis );
-            ggMarkPos.addSpace( ParamSpace.spcTimePercentF );
+            timeTrans = new DefaultUnitTranslator();
+            ggMarkPos = new ParamField(timeTrans);
+            ggMarkPos.addSpace(ParamSpace.spcTimeHHMMSS);
+            ggMarkPos.addSpace(ParamSpace.spcTimeSmps);
+            ggMarkPos.addSpace(ParamSpace.spcTimeMillis);
+            ggMarkPos.addSpace(ParamSpace.spcTimePercentF);
 
-            lb				= new JLabel( getResourceString( "labelName" ));
-//			lb.setLabelFor( ggMarkName );
-            spring.gridAdd( lb, 0, 0 );
-            spring.gridAdd( ggMarkName, 1, 0 );
-            lb				= new JLabel( getResourceString( "labelPosition" ));
-//			lb.setLabelFor( ggMarkPos );
-            spring.gridAdd( lb, 0, 1 );
-            spring.gridAdd( ggMarkPos, 1, 1, -1, 1 );
-//			GUIUtil.setDeepFont( spring, null );
+            lb = new JLabel(getResourceString("labelName"));
+            spring.gridAdd(lb, 0, 0);
+            spring.gridAdd(ggMarkName, 1, 0);
+            lb = new JLabel(getResourceString("labelPosition"));
+            spring.gridAdd(lb, 0, 1);
+            spring.gridAdd(ggMarkPos, 1, 1, -1, 1);
             spring.makeCompactGrid();
-            editMarkerPane	= new JPanel( new BorderLayout() );
-            editMarkerPane.add( spring, BorderLayout.NORTH );
+            editMarkerPane = new JPanel(new BorderLayout());
+            editMarkerPane.add(spring, BorderLayout.NORTH);
 
-            amap			= spring.getActionMap();
-            imap			= spring.getInputMap( JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT );
-            ks				= KeyStroke.getKeyStroke( KeyEvent.VK_LEFT, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() );
+            amap = spring.getActionMap();
+            imap = spring.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+            ks = KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
             // XXX DOESN'T WORK ;-(
             //			ggMarkName.getInputMap().remove( ks );
-            imap.put( ks, "prev" );
-            a				= new ActionEditPrev();
-//			amap.put( "prev", a );
-            ggEditPrev		= new JButton( a );
-            amap.put( "prev", new DoClickAction( ggEditPrev ));
-            ks				= KeyStroke.getKeyStroke( KeyEvent.VK_RIGHT, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() );
+            imap.put(ks, "prev");
+            a = new ActionEditPrev();
+            ggEditPrev = new JButton(a);
+            amap.put("prev", new DoClickAction(ggEditPrev));
+            ks = KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
             // XXX DOESN'T WORK ;-(
             //			ggMarkName.getInputMap().remove( ks );
-            imap.put( ks, "next" );
-            a				= new ActionEditNext();
-//			amap.put( "next", a );
-            ggEditNext		= new JButton( a );
-            amap.put( "next", new DoClickAction( ggEditNext ));
+            imap.put(ks, "next");
+            a = new ActionEditNext();
+            ggEditNext = new JButton(a);
+            amap.put("next", new DoClickAction(ggEditNext));
 
-            editOptions		= new Object[] { ggEditNext, ggEditPrev, getResourceString( "buttonOk" ), getResourceString( "buttonCancel" )};
-//			editOptions		= new Object[] { ggEditNext, ggEditPrev, JOptionPane.OK_OPTION, JOptionPane.CANCEL_OPTION };
+            editOptions = new Object[]{ggEditNext, ggEditPrev, getResourceString("buttonOk"), getResourceString("buttonCancel")};
         }
 
         // XXX sync
-        timeTrans.setLengthAndRate( doc.timeline.getLength(), doc.timeline.getRate() );
+        timeTrans.setLengthAndRate(doc.timeline.getLength(), doc.timeline.getRate());
 
         updateEditMarker();
 
-        final JOptionPane op = new JOptionPane( editMarkerPane, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION,
-                                                null, editOptions, editOptions[ 2 ]);
-//		result = JOptionPane.showOptionDialog( BasicWindowHandler.getWindowAncestor( this ),
-//											   editMarkerPane, getResourceString( "inputDlgEditMarker" ),
-//			JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, editOptions, editOptions[ 2 ]);
-        result = BasicWindowHandler.showDialog( op, BasicWindowHandler.getWindowAncestor( this ), getResourceString( "inputDlgEditMarker" ));
+        final JOptionPane op = new JOptionPane(editMarkerPane, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION,
+                null, editOptions, editOptions[2]);
+        result = BasicWindowHandler.showDialog(op, BasicWindowHandler.getWindowAncestor(this), getResourceString("inputDlgEditMarker"));
 
-//		if( result == JOptionPane.OK_OPTION ) {
-        if( result == 2 ) {
+        if (result == 2) {
             commitEditMarker();
         }
     }
 
-    protected void updateEditMarker()
-    {
-        final MarkerStake mark = doc.markers.get( editIdx );
-        if( mark == null ) return;
+    protected void updateEditMarker() {
+        final MarkerStake mark = doc.markers.get(editIdx);
+        if (mark == null) return;
 
-        ggMarkPos.setValue( new Param( mark.pos, ParamSpace.TIME | ParamSpace.SMPS ));
-        ggMarkName.setText( mark.name );
+        ggMarkPos.setValue(new Param(mark.pos, ParamSpace.TIME | ParamSpace.SMPS));
+        ggMarkName.setText(mark.name);
 
-        ggEditPrev.setEnabled( editIdx > 0 );
-        ggEditNext.setEnabled( (editIdx + 1) < doc.markers.getNumStakes() );
+        ggEditPrev.setEnabled(editIdx > 0);
+        ggEditNext.setEnabled((editIdx + 1) < doc.markers.getNumStakes());
 
         ggMarkName.requestFocusInWindow();
         ggMarkName.selectAll();
@@ -486,44 +435,41 @@ public class MarkerAxis
         final MarkerStake mark = doc.markers.get(editIdx);
         if (mark == null) return;
 
-        final long				positionSmps;
-        final AbstractCompoundEdit	ce;
+        final long positionSmps;
+        final AbstractCompoundEdit ce;
 
-        positionSmps	= (long) timeTrans.translate( ggMarkPos.getValue(), ParamSpace.spcTimeSmps ).val;
-        if( (positionSmps == mark.pos) && (ggMarkName.getText().equals( mark.name ))) return; // no change
+        positionSmps = (long) timeTrans.translate(ggMarkPos.getValue(), ParamSpace.spcTimeSmps).val;
+        if ((positionSmps == mark.pos) && (ggMarkName.getText().equals(mark.name))) return; // no change
 
-        ce		= new BasicCompoundEdit( getResourceString( "editEditMarker" ));
-        doc.markers.editBegin( ce );
+        ce = new BasicCompoundEdit(getResourceString("editEditMarker"));
+        doc.markers.editBegin(ce);
         try {
-            doc.markers.editRemove( this, mark, ce );
-            doc.markers.editAdd( this, new MarkerStake( positionSmps, ggMarkName.getText() ), ce );
-        }
-        catch( IOException e1 ) {	// should never happen
+            doc.markers.editRemove(this, mark, ce);
+            doc.markers.editAdd(this, new MarkerStake(positionSmps, ggMarkName.getText()), ce);
+        } catch (IOException e1) {    // should never happen
             System.err.println("Edit marker:");
             e1.printStackTrace();
             ce.cancel();
             return;
-        }
-        finally {
-            doc.markers.editEnd( ce );
+        } finally {
+            doc.markers.editEnd(ce);
         }
         ce.perform();
         ce.end();
-        doc.getUndoManager().addEdit( ce );
+        doc.getUndoManager().addEdit(ce);
     }
 
-    private MarkerStake getMarkerLeftTo( long pos )
-    {
+    private MarkerStake getMarkerLeftTo(long pos) {
         int idx;
 
 //		if( !doc.bird.attemptShared( Session.DOOR_TIME, 250 )) return null;
 //		try {
-            idx		= doc.markers.indexOf( pos );
-            if( idx < 0 ) {
-                idx = -(idx + 2);
-                if( idx == -1 ) return null;
-            }
-            return doc.markers.get( idx );
+        idx = doc.markers.indexOf(pos);
+        if (idx < 0) {
+            idx = -(idx + 2);
+            if (idx == -1) return null;
+        }
+        return doc.markers.get(idx);
 //		}
 //		finally {
 //			doc.bird.releaseShared( Session.DOOR_TIME );
@@ -532,59 +478,38 @@ public class MarkerAxis
 
     // -------------- Disposable interface --------------
 
-    public void dispose()
-    {
-        markLabels	= null;
-        markFlagPos	= null;
+    public void dispose() {
+        markLabels = null;
+        markFlagPos = null;
         shpFlags.reset();
         // img1.flush();
         img2.flush();
         img3.flush();
     }
 
-// ---------------- LaterInvocationManager.Listener interface ---------------- 
-
-        // called by DynamicPrefChangeManager ; o = PreferenceChangeEvent
-//		public void laterInvocation( Object o )
-//		{
-//			final PreferenceChangeEvent	pce = (PreferenceChangeEvent) o;
-//			final String				key = pce.getKey();
-//			
-//			if( key.equals( PrefsUtil.KEY_TIMEUNITS )) {
-//				int timeUnits = pce.getNode().getInt( key, 0 );
-//				setFlags( timeUnits == 0 ? 0 : TIMEFORMAT );
-//				recalculateDisplay();
-//			}
-//		}
-
 // ---------------- DynamicListening interface ---------------- 
 
-    public void startListening()
-    {
-        if( !isListening ) {
-            doc.timeline.addTimelineListener( this );
-    //		doc.tracks.addListener( this );
-            doc.markers.addListener( this );
+    public void startListening() {
+        if (!isListening) {
+            doc.timeline.addTimelineListener(this);
+            doc.markers.addListener(this);
             triggerRedisplay();
             isListening = true;
         }
     }
 
-    public void stopListening()
-    {
-        if( isListening ) {
-            doc.markers.removeListener( this );
-    // 		doc.tracks.removeListener( this );
-            doc.timeline.removeTimelineListener( this );
+    public void stopListening() {
+        if (isListening) {
+            doc.markers.removeListener(this);
+            doc.timeline.removeTimelineListener(this);
             isListening = false;
         }
     }
 
 // ---------------- MarkerManager.Listener interface ---------------- 
 
-    public void trailModified( Trail.Event e )
-    {
-        if( e.getAffectedSpan().touches( visibleSpan )) {
+    public void trailModified(Trail.Event e) {
+        if (e.getAffectedSpan().touches(visibleSpan)) {
             triggerRedisplay();
         }
     }
@@ -592,69 +517,65 @@ public class MarkerAxis
 // ---------------- MouseListener interface ---------------- 
 // we're listening to the ourselves
 
-    public void mouseEntered( MouseEvent e )
-    {
+    public void mouseEntered(MouseEvent e) {
 //		if( isEnabled() ) dispatchMouseMove( e );
     }
 
-    public void mouseExited( MouseEvent e ) { /* ignore */ }
+    public void mouseExited(MouseEvent e) { /* ignore */ }
 
-    public void mousePressed( MouseEvent e )
-    {
+    public void mousePressed(MouseEvent e) {
         final long pos = (long) (e.getX() / scale + visibleSpan.getStart() + 0.5);
 
-        if( shpFlags.contains( e.getPoint() )) {
-            if( e.isAltDown() ) {					// delete marker
-                removeMarkerLeftTo( pos + 1 );
-            } else if( e.getClickCount() == 2 ) {	// rename
-                editMarkerLeftTo( pos + 1 );
-            } else {								// start drag
-                dragMark			= getMarkerLeftTo( pos + 1 );
+        if (shpFlags.contains(e.getPoint())) {
+            if (e.isAltDown()) {                    // delete marker
+                removeMarkerLeftTo(pos + 1);
+            } else if (e.getClickCount() == 2) {    // rename
+                editMarkerLeftTo(pos + 1);
+            } else {                                // start drag
+                dragMark = getMarkerLeftTo(pos + 1);
 //				dragLastMark		= dragMark;
-                dragStarted			= false;
-                dragStartX			= e.getX();
-                adjustCatchBypass	= true;
+                dragStarted = false;
+                dragStartX = e.getX();
+                adjustCatchBypass = true;
                 doc.getFrame().addCatchBypass();
                 requestFocus();
             }
 
-        } else if( !e.isAltDown() && (e.getClickCount() == 2) ) {		// insert marker
-            addMarker( pos );
+        } else if (!e.isAltDown() && (e.getClickCount() == 2)) {        // insert marker
+            addMarker(pos);
         }
     }
 
-    public void mouseReleased( MouseEvent e )
-    {
+    public void mouseReleased(MouseEvent e) {
         AbstractCompoundEdit ce;
 
-        if( adjustCatchBypass ) {
+        if (adjustCatchBypass) {
             adjustCatchBypass = false;
             doc.getFrame().removeCatchBypass();
         }
 
         try {
-            if( dragLastMark != null ) {
+            if (dragLastMark != null) {
 //				if( !doc.bird.attemptExclusive( Session.DOOR_TIME, 250 )) return;
 //				try {
-                    // ok this is tricky and totally stupid, have to replace it some day XXX
+                // ok this is tricky and totally stupid, have to replace it some day XXX
 //					doc.markers.remove( this, dragLastMark );	// remove temporary marker
 //					doc.markers.add( this, dragMark );			// restore original marker for undoable edit!
-                    ce	= new BasicCompoundEdit( getResourceString( "editMoveMarker" ));
-                    doc.markers.editBegin( ce );
-                    try {
-                        doc.markers.editRemove( this, dragMark, ce );
-                        doc.markers.editAdd( this, dragLastMark, ce );
-                    }
-                    catch( IOException e1 ) {	// should never happen
-                        System.err.println("Move marker:");
-                        e1.printStackTrace();
-                        ce.cancel();
-                        return;
-                    }
-                    doc.markers.editEnd( ce );
-                    ce.perform();
-                    ce.end();
-                    doc.getUndoManager().addEdit( ce );
+                ce = new BasicCompoundEdit(getResourceString("editMoveMarker"));
+                doc.markers.editBegin(ce);
+                try {
+                    doc.markers.editRemove(this, dragMark, ce);
+                    doc.markers.editAdd(this, dragLastMark, ce);
+                } catch (IOException e1) {    // should never happen
+                    System.err.println("Move marker:");
+                    e1.printStackTrace();
+                    ce.cancel();
+                    return;
+                }
+                doc.markers.editEnd(ce);
+                ce.perform();
+                ce.end();
+                doc.getUndoManager().addEdit(ce);
 //				}
 //				catch( IOException e1 ) {	// should never happen
 //					System.err.println( e1 );
@@ -664,77 +585,74 @@ public class MarkerAxis
 //					doc.bird.releaseExclusive( Session.DOOR_TIME );
 //				}
             }
-        }
-        finally {
-            dragStarted		= false;
-            dragMark		= null;
-            dragLastMark	= null;
+        } finally {
+            dragStarted = false;
+            dragMark = null;
+            dragLastMark = null;
         }
     }
 
-    public void mouseClicked( MouseEvent e ) { /* ignored */ }
+    public void mouseClicked(MouseEvent e) { /* ignored */ }
 
 // ---------------- MouseMotionListener interface ---------------- 
 // we're listening to ourselves
 
-    public void mouseMoved( MouseEvent e ) { /* ignore */ }
+    public void mouseMoved(MouseEvent e) { /* ignore */ }
 
-    public void mouseDragged( MouseEvent e )
-    {
-        if( dragMark == null ) return;
+    public void mouseDragged(MouseEvent e) {
+        if (dragMark == null) return;
 
-        if( !dragStarted ) {
-            if( Math.abs( e.getX() - dragStartX ) < 5 ) return;
+        if (!dragStarted) {
+            if (Math.abs(e.getX() - dragStartX) < 5) return;
             dragStarted = true;
         }
 
-        final Span			dirtySpan;
-        final long			oldPos	= dragLastMark != null ? dragLastMark.pos : dragMark.pos;
-        final long			newPos	= Math.max( 0, Math.min( doc.timeline.getLength(), (long) ((e.getX() - dragStartX) / scale + dragMark.pos + 0.5) ));
+        final Span dirtySpan;
+        final long oldPos = dragLastMark != null ? dragLastMark.pos : dragMark.pos;
+        final long newPos = Math.max(0, Math.min(doc.timeline.getLength(), (long) ((e.getX() - dragStartX) / scale + dragMark.pos + 0.5)));
 
-        if( oldPos == newPos ) return;
+        if (oldPos == newPos) return;
 
-        dirtySpan		= new Span( Math.min( oldPos, newPos ), Math.max( oldPos, newPos ));
-        dragLastMark	= new MarkerStake( newPos, dragMark.name );
-        doc.getFrame().repaintMarkers( dirtySpan );
+        dirtySpan = new Span(Math.min(oldPos, newPos), Math.max(oldPos, newPos));
+        dragLastMark = new MarkerStake(newPos, dragMark.name);
+        doc.getFrame().repaintMarkers(dirtySpan);
     }
 
 // ---------------- KeyListener interface ---------------- 
 // we're listening to ourselves
 
-    public void keyPressed( KeyEvent e )
-    {
-        if( e.getKeyCode() == KeyEvent.VK_ESCAPE ) {
-            dragMark		= null;
-            dragLastMark	= null;
-            if( dragStarted ) {
-                dragStarted	= false;
-                doc.getFrame().repaintMarkers( visibleSpan );
+    public void keyPressed(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+            dragMark = null;
+            dragLastMark = null;
+            if (dragStarted) {
+                dragStarted = false;
+                doc.getFrame().repaintMarkers(visibleSpan);
             }
         }
     }
 
-    public void keyReleased( KeyEvent e ) { /* ignored */ }
-    public void keyTyped( KeyEvent e ) { /* ignored */ }
+    public void keyReleased(KeyEvent e) { /* ignored */ }
+
+    public void keyTyped(KeyEvent e) { /* ignored */ }
 
 // ---------------- TimelineListener interface ---------------- 
-  
-    public void timelineSelected( TimelineEvent e ) { /* ignored */ }
-    public void timelinePositioned( TimelineEvent e ) { /* ignored */ }
 
-    public void timelineChanged( TimelineEvent e )
-    {
+    public void timelineSelected(TimelineEvent e) { /* ignored */ }
+
+    public void timelinePositioned(TimelineEvent e) { /* ignored */ }
+
+    public void timelineChanged(TimelineEvent e) {
         triggerRedisplay();
     }
 
-    public void timelineScrolled( TimelineEvent e )
-    {
+    public void timelineScrolled(TimelineEvent e) {
 //		if( !doc.bird.attemptShared( Session.DOOR_TIME, 250 )) return;
 //		try {
-            visibleSpan = doc.timeline.getVisibleSpan();
-            scale		= (double) getWidth() / visibleSpan.getLength();
+        visibleSpan = doc.timeline.getVisibleSpan();
+        scale = (double) getWidth() / visibleSpan.getLength();
 
-            triggerRedisplay();
+        triggerRedisplay();
 //		}
 //		finally {
 //			doc.bird.releaseShared( Session.DOOR_TIME );

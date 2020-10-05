@@ -81,8 +81,7 @@ public class Timeline
     /**
      *  Creates a new empty timeline
      */
-    public Timeline( Session doc )
-    {
+    public Timeline(Session doc) {
         super();
 
         this.doc		= doc;
@@ -102,10 +101,9 @@ public class Timeline
         setName( XML_OBJECT_NAME );
     }
 
-    public AbstractAction getPosToSelAction( boolean begin, boolean deselect )
-    {
+    public AbstractAction getPosToSelAction(boolean begin, boolean deselect) {
         return begin ? (deselect ? actionPosToSelBeginC : actionPosToSelBegin) :
-                       (deselect ? actionPosToSelEndC : actionPosToSelEnd);
+                (deselect ? actionPosToSelEndC : actionPosToSelEnd);
     }
 
     /**
@@ -116,14 +114,13 @@ public class Timeline
      *
      *  @param  source  who originated the action
      */
-    public void clear( Object source )
-    {
-        getMap().clearValues( source );
-        setRate( source, 1000 );
-        setPosition( source, 0 );
-        setSelectionSpan( source, new Span() );
-        setVisibleSpan( source, new Span() );
-        setLength( source, 0 );
+    public void clear(Object source) {
+        getMap().clearValues(source);
+        setRate(source, 1000);
+        setPosition(source, 0);
+        setSelectionSpan(source, new Span());
+        setVisibleSpan(source, new Span());
+        setLength(source, 0);
     }
 
     /**
@@ -153,9 +150,8 @@ public class Timeline
      *  @return the rate of timeline data (trajectories etc.)
      *			in frames per second
      */
-    public double getRate()
-    {
-        if( !java.awt.EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
+    public double getRate() {
+        if (!java.awt.EventQueue.isDispatchThread()) throw new IllegalMonitorStateException();
         return rate;
     }
 
@@ -164,9 +160,8 @@ public class Timeline
      *
      *  @return the timeline length in frames
      */
-    public long getLength()
-    {
-        if( !java.awt.EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
+    public long getLength() {
+        if (!java.awt.EventQueue.isDispatchThread()) throw new IllegalMonitorStateException();
         return length;
     }
 
@@ -177,9 +172,8 @@ public class Timeline
      *			of the vertical bar in the timeline frame)
      *			in frames
      */
-    public long getPosition()
-    {
-        if( !java.awt.EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
+    public long getPosition() {
+        if (!java.awt.EventQueue.isDispatchThread()) throw new IllegalMonitorStateException();
         return position;
     }
 
@@ -190,9 +184,8 @@ public class Timeline
      *			visible in the timeline frame. start and
      *			stop are measured in frames
      */
-    public Span getVisibleSpan()
-    {
-        if( !java.awt.EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
+    public Span getVisibleSpan() {
+        if (!java.awt.EventQueue.isDispatchThread()) throw new IllegalMonitorStateException();
         return visibleSpan;
     }
 
@@ -203,9 +196,8 @@ public class Timeline
      *			selected (highlighted hoverState). start and
      *			stop are measured in frames
      */
-    public Span getSelectionSpan()
-    {
-        if( !java.awt.EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
+    public Span getSelectionSpan() {
+        if (!java.awt.EventQueue.isDispatchThread()) throw new IllegalMonitorStateException();
         return selectionSpan;
     }
 
@@ -220,12 +212,11 @@ public class Timeline
      *
      *  @see	TimelineEvent#CHANGED
      */
-    public void setRate( Object source, double rate )
-    {
-        if( !java.awt.EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
+    public void setRate(Object source, double rate) {
+        if (!java.awt.EventQueue.isDispatchThread()) throw new IllegalMonitorStateException();
         this.rate = rate;
-        if( source != null ) dispatchChange( source );
-        getMap().putValue( this, MAP_KEY_RATE, rate);
+        if (source != null) dispatchChange(source);
+        getMap().putValue(this, MAP_KEY_RATE, rate);
     }
 
     /**
@@ -243,12 +234,11 @@ public class Timeline
      *  @see	de.sciss.eisenkraut.edit.EditSetTimelineLength
      *  @see	TimelineEvent#CHANGED
      */
-    public void setLength( Object source, long length )
-    {
-        if( !java.awt.EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
+    public void setLength(Object source, long length) {
+        if (!java.awt.EventQueue.isDispatchThread()) throw new IllegalMonitorStateException();
         this.length = length;
-        if( source != null ) dispatchChange( source );
-        getMap().putValue( this, MAP_KEY_LENGTH, length);
+        if (source != null) dispatchChange(source);
+        getMap().putValue(this, MAP_KEY_LENGTH, length);
     }
 
     /**
@@ -264,12 +254,11 @@ public class Timeline
      *  @see	de.sciss.eisenkraut.edit.TimelineVisualEdit
      *  @see	TimelineEvent#POSITIONED
      */
-    public void setPosition( Object source, long position )
-    {
-        if( !java.awt.EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
+    public void setPosition(Object source, long position) {
+        if (!java.awt.EventQueue.isDispatchThread()) throw new IllegalMonitorStateException();
         this.position = position;
-        if( source != null ) dispatchPosition( source );
-        getMap().putValue( this, MAP_KEY_POSITION, position);
+        if (source != null) dispatchPosition(source);
+        getMap().putValue(this, MAP_KEY_POSITION, position);
     }
 
     /**
@@ -285,11 +274,10 @@ public class Timeline
      *  @see	de.sciss.eisenkraut.edit.TimelineVisualEdit
      *  @see	TimelineEvent#SCROLLED
      */
-     public void setVisibleSpan( Object source, Span span )
-    {
-        if( !java.awt.EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
-        this.visibleSpan = new Span( span );
-        if( source != null ) dispatchScroll( source );
+    public void setVisibleSpan(Object source, Span span) {
+        if (!java.awt.EventQueue.isDispatchThread()) throw new IllegalMonitorStateException();
+        this.visibleSpan = new Span(span);
+        if (source != null) dispatchScroll(source);
     }
 
     /**
@@ -305,11 +293,10 @@ public class Timeline
      *  @see	de.sciss.eisenkraut.edit.TimelineVisualEdit
      *  @see	TimelineEvent#SELECTED
      */
-    public void setSelectionSpan( Object source, Span span )
-    {
-        if( !java.awt.EventQueue.isDispatchThread() ) throw new IllegalMonitorStateException();
-        this.selectionSpan = new Span( span );
-        if( source != null ) dispatchSelection( source );
+    public void setSelectionSpan(Object source, Span span) {
+        if (!java.awt.EventQueue.isDispatchThread()) throw new IllegalMonitorStateException();
+        this.selectionSpan = new Span(span);
+        if (source != null) dispatchSelection(source);
     }
 
     /**
@@ -322,9 +309,8 @@ public class Timeline
      *  @param  listener	the <code>TimelineListener</code> to register
      *  @see	de.sciss.app.EventManager#addListener( Object )
      */
-    public void addTimelineListener( TimelineListener listener )
-    {
-        elm.addListener( listener );
+    public void addTimelineListener(TimelineListener listener) {
+        elm.addListener(listener);
     }
 
     /**
@@ -334,237 +320,208 @@ public class Timeline
      *  @param  listener	the <code>TimelineListener</code> to unregister
      *  @see	de.sciss.app.EventManager#removeListener( Object )
      */
-    public void removeTimelineListener( TimelineListener listener )
-    {
-        elm.removeListener( listener );
+    public void removeTimelineListener(TimelineListener listener) {
+        elm.removeListener(listener);
     }
 
-    public void editPosition( Object source, long pos )
-    {
-        doc.getUndoManager().addEdit( TimelineVisualEdit.position( source, doc, pos ).perform() );
+    public void editPosition(Object source, long pos) {
+        doc.getUndoManager().addEdit(TimelineVisualEdit.position(source, doc, pos).perform());
     }
 
-    public void editScroll( Object source, Span span )
-    {
-        doc.getUndoManager().addEdit( TimelineVisualEdit.scroll( source, doc, span ).perform() );
+    public void editScroll(Object source, Span span) {
+        doc.getUndoManager().addEdit(TimelineVisualEdit.scroll(source, doc, span).perform());
     }
 
-    public void editSelect( Object source, Span span )
-    {
-        doc.getUndoManager().addEdit( TimelineVisualEdit.select( source, doc, span ).perform() );
+    public void editSelect(Object source, Span span) {
+        doc.getUndoManager().addEdit(TimelineVisualEdit.select(source, doc, span).perform());
     }
 
     /**
      *  This is called by the EventManager
      *  if new events are to be processed
      */
-    public void processEvent( BasicEvent e )
-    {
+    public void processEvent(BasicEvent e) {
         TimelineListener listener;
         int i;
 
-        for( i = 0; i < elm.countListeners(); i++ ) {
-            listener = (TimelineListener) elm.getListener( i );
-            switch( e.getID() ) {
-            case TimelineEvent.CHANGED:
-                listener.timelineChanged( (TimelineEvent) e );
-                break;
-            case TimelineEvent.POSITIONED:
-                listener.timelinePositioned( (TimelineEvent) e );
-                break;
-            case TimelineEvent.SELECTED:
-                listener.timelineSelected( (TimelineEvent) e );
-                break;
-            case TimelineEvent.SCROLLED:
-                listener.timelineScrolled( (TimelineEvent) e );
-                break;
+        for (i = 0; i < elm.countListeners(); i++) {
+            listener = (TimelineListener) elm.getListener(i);
+            switch (e.getID()) {
+                case TimelineEvent.CHANGED:
+                    listener.timelineChanged((TimelineEvent) e);
+                    break;
+                case TimelineEvent.POSITIONED:
+                    listener.timelinePositioned((TimelineEvent) e);
+                    break;
+                case TimelineEvent.SELECTED:
+                    listener.timelineSelected((TimelineEvent) e);
+                    break;
+                case TimelineEvent.SCROLLED:
+                    listener.timelineScrolled((TimelineEvent) e);
+                    break;
             }
         } // for( i = 0; i < elm.countListeners(); i++ )
     }
 
     // utility function to create and dispatch a TimelineEvent
-    private void dispatchChange( Object source )
-    {
-        TimelineEvent e2 = new TimelineEvent( source, TimelineEvent.CHANGED,
-                                              System.currentTimeMillis(), 0, null );
-        elm.dispatchEvent( e2 );
+    private void dispatchChange(Object source) {
+        TimelineEvent e2 = new TimelineEvent(source, TimelineEvent.CHANGED,
+                System.currentTimeMillis(), 0, null);
+        elm.dispatchEvent(e2);
     }
 
     // utility function to create and dispatch a TimelineEvent
-    private void dispatchPosition( Object source )
-    {
-        TimelineEvent e2 = new TimelineEvent( source, TimelineEvent.POSITIONED,
-                                              System.currentTimeMillis(), 0, (double) getPosition());
-        elm.dispatchEvent( e2 );
+    private void dispatchPosition(Object source) {
+        TimelineEvent e2 = new TimelineEvent(source, TimelineEvent.POSITIONED,
+                System.currentTimeMillis(), 0, (double) getPosition());
+        elm.dispatchEvent(e2);
     }
     
-
     // utility function to create and dispatch a TimelineEvent
-    private void dispatchSelection( Object source )
-    {
-        TimelineEvent e2 = new TimelineEvent( source, TimelineEvent.SELECTED,
-                                              System.currentTimeMillis(), 0, getSelectionSpan() );
-        elm.dispatchEvent( e2 );
+    private void dispatchSelection(Object source) {
+        TimelineEvent e2 = new TimelineEvent(source, TimelineEvent.SELECTED,
+                System.currentTimeMillis(), 0, getSelectionSpan());
+        elm.dispatchEvent(e2);
     }
 
     // utility function to create and dispatch a TimelineEvent
-    private void dispatchScroll( Object source )
-    {
-        TimelineEvent e2 = new TimelineEvent( source, TimelineEvent.SCROLLED,
-                                              System.currentTimeMillis(), 0, getVisibleSpan() );
-        elm.dispatchEvent( e2 );
+    private void dispatchScroll(Object source) {
+        TimelineEvent e2 = new TimelineEvent(source, TimelineEvent.SCROLLED,
+                System.currentTimeMillis(), 0, getVisibleSpan());
+        elm.dispatchEvent(e2);
     }
 
-    public Class<?> getDefaultEditor() { return null; }
+    public Class<?> getDefaultEditor() {
+        return null;
+    }
 
 // ---------------- MapManager.Listener interface ---------------- 
 
-    public void mapChanged( MapManager.Event e )
-    {
-        super.mapChanged( e );
+    public void mapChanged(MapManager.Event e) {
+        super.mapChanged(e);
 
         final Object source = e.getSource();
 
-        if( source == this ) return;
+        if (source == this) return;
 
-        final Set<String>	keySet		= e.getPropertyNames();
-        Object		val;
-        boolean		dChange		= false;
-        boolean		dPosition	= false;
+        final Set<String> keySet = e.getPropertyNames();
+        Object val;
+        boolean dChange = false;
+        boolean dPosition = false;
 
-        if( keySet.contains( MAP_KEY_RATE )) {
-            val		= e.getManager().getValue( MAP_KEY_RATE );
-            if( val != null ) {
-                rate	= ((Number) val).doubleValue(); // Float.parseFloat( val.toString() );
-                dChange	= true;
+        if (keySet.contains(MAP_KEY_RATE)) {
+            val = e.getManager().getValue(MAP_KEY_RATE);
+            if (val != null) {
+                rate = ((Number) val).doubleValue(); // Float.parseFloat( val.toString() );
+                dChange = true;
             }
         }
-        if( keySet.contains( MAP_KEY_LENGTH )) {
-            val		= e.getManager().getValue( MAP_KEY_LENGTH );
-            if( val != null ) {
-                length	= ((Number) val).longValue();
-                dChange	= true;
-                if( visibleSpan.isEmpty() && length > 0 ) setVisibleSpan( this, new Span( 0, length ));
+        if (keySet.contains(MAP_KEY_LENGTH)) {
+            val = e.getManager().getValue(MAP_KEY_LENGTH);
+            if (val != null) {
+                length = ((Number) val).longValue();
+                dChange = true;
+                if (visibleSpan.isEmpty() && length > 0) setVisibleSpan(this, new Span(0, length));
             }
         }
-        if( keySet.contains( MAP_KEY_POSITION )) {
-            val		= e.getManager().getValue( MAP_KEY_POSITION );
-            if( val != null ) {
-                position	= ((Number) val).longValue();
-                dPosition	= true;
+        if (keySet.contains(MAP_KEY_POSITION)) {
+            val = e.getManager().getValue(MAP_KEY_POSITION);
+            if (val != null) {
+                position = ((Number) val).longValue();
+                dPosition = true;
             }
         }
 
-        if( dChange ) dispatchChange( source );
-        if( dPosition ) dispatchPosition( source );
+        if (dChange) dispatchChange(source);
+        if (dPosition) dispatchPosition(source);
     }
 
     // ------------- OSCRouter interface -------------
 
-    public String oscGetPathComponent()
-    {
+    public String oscGetPathComponent() {
         return OSC_TIMELINE;
     }
 
-    public void oscRoute( RoutedOSCMessage rom )
-    {
-        osc.oscRoute( rom );
+    public void oscRoute(RoutedOSCMessage rom) {
+        osc.oscRoute(rom);
     }
 
-    public void oscAddRouter( OSCRouter subRouter )
-    {
-        osc.oscAddRouter( subRouter );
+    public void oscAddRouter(OSCRouter subRouter) {
+        osc.oscAddRouter(subRouter);
     }
 
-    public void oscRemoveRouter( OSCRouter subRouter )
-    {
-        osc.oscRemoveRouter( subRouter );
+    public void oscRemoveRouter(OSCRouter subRouter) {
+        osc.oscRemoveRouter(subRouter);
     }
 
-    public Object oscQuery_position()
-    {
+    public Object oscQuery_position() {
         return getPosition();
     }
 
-    public Object oscQuery_selectionStart()
-    {
+    public Object oscQuery_selectionStart() {
         return getSelectionSpan().start;
     }
 
-    public Object oscQuery_selectionStop()
-    {
+    public Object oscQuery_selectionStop() {
         return getSelectionSpan().stop;
     }
 
-    public Object oscQuery_viewStart()
-    {
+    public Object oscQuery_viewStart() {
         return getVisibleSpan().start;
     }
 
-    public Object oscQuery_viewStop()
-    {
+    public Object oscQuery_viewStop() {
         return getVisibleSpan().stop;
     }
 
-    public Object oscQuery_rate()
-    {
+    public Object oscQuery_rate() {
         return getRate();
     }
 
-    public Object oscQuery_length()
-    {
+    public Object oscQuery_length() {
         return getLength();
     }
 
-    public void oscCmd_position( RoutedOSCMessage rom )
-    {
+    public void oscCmd_position(RoutedOSCMessage rom) {
         try {
-            final long pos = ((Number) rom.msg.getArg( 1 )).longValue();
-            editPosition( this, Math.max( 0, Math.min( getLength(), pos )));
-        }
-        catch( IndexOutOfBoundsException e1 ) {
-            OSCRoot.failedArgCount( rom );
-        }
-        catch( ClassCastException e1 ) {
-            OSCRoot.failedArgType( rom, 0 );
+            final long pos = ((Number) rom.msg.getArg(1)).longValue();
+            editPosition(this, Math.max(0, Math.min(getLength(), pos)));
+        } catch (IndexOutOfBoundsException e1) {
+            OSCRoot.failedArgCount(rom);
+        } catch (ClassCastException e1) {
+            OSCRoot.failedArgType(rom, 0);
         }
     }
 
-    public void oscCmd_select( RoutedOSCMessage rom )
-    {
-        final long		start, stop;
-        int				argIdx	= 1;
+    public void oscCmd_select(RoutedOSCMessage rom) {
+        final long start, stop;
+        int argIdx = 1;
 
-        try	{
-            start	= Math.max( 0, Math.min( getLength(), ((Number) rom.msg.getArg( argIdx )).longValue() ));
+        try {
+            start = Math.max(0, Math.min(getLength(), ((Number) rom.msg.getArg(argIdx)).longValue()));
             argIdx++;
-            stop	= Math.max( start, Math.min( getLength(), ((Number) rom.msg.getArg( argIdx )).longValue() ));
-            editSelect( this, new Span( start, stop ));
-        }
-        catch( IndexOutOfBoundsException e1 ) {
-            OSCRoot.failedArgCount( rom );
-        }
-        catch( ClassCastException e1 ) {
-            OSCRoot.failedArgType( rom, argIdx );
+            stop = Math.max(start, Math.min(getLength(), ((Number) rom.msg.getArg(argIdx)).longValue()));
+            editSelect(this, new Span(start, stop));
+        } catch (IndexOutOfBoundsException e1) {
+            OSCRoot.failedArgCount(rom);
+        } catch (ClassCastException e1) {
+            OSCRoot.failedArgType(rom, argIdx);
         }
     }
 
-    public void oscCmd_view( RoutedOSCMessage rom )
-    {
-        final long		start, stop;
-        int				argIdx	= 1;
+    public void oscCmd_view(RoutedOSCMessage rom) {
+        final long start, stop;
+        int argIdx = 1;
 
-        try	{
-            start	= Math.max( 0, Math.min( getLength(), ((Number) rom.msg.getArg( argIdx )).longValue() ));
+        try {
+            start = Math.max(0, Math.min(getLength(), ((Number) rom.msg.getArg(argIdx)).longValue()));
             argIdx++;
-            stop	= Math.max( start, Math.min( getLength(), ((Number) rom.msg.getArg( argIdx )).longValue() ));
-            editScroll( this, new Span( start, stop ));
-        }
-        catch( IndexOutOfBoundsException e1 ) {
-            OSCRoot.failedArgCount( rom );
-        }
-        catch( ClassCastException e1 ) {
-            OSCRoot.failedArgType( rom, argIdx );
+            stop = Math.max(start, Math.min(getLength(), ((Number) rom.msg.getArg(argIdx)).longValue()));
+            editScroll(this, new Span(start, stop));
+        } catch (IndexOutOfBoundsException e1) {
+            OSCRoot.failedArgCount(rom);
+        } catch (ClassCastException e1) {
+            OSCRoot.failedArgType(rom, argIdx);
         }
     }
 
@@ -581,34 +538,31 @@ public class Timeline
         private final double	weight;
         private final boolean	deselect;
 
-        protected ActionSelToPos( double weight, boolean deselect )
-        {
+        protected ActionSelToPos(double weight, boolean deselect) {
             super();
 
-            this.weight		= weight;
-            this.deselect	= deselect;
+            this.weight     = weight;
+            this.deselect   = deselect;
         }
 
-        public void actionPerformed( ActionEvent e )
-        {
+        public void actionPerformed(ActionEvent e) {
             perform();
         }
 
-        private void perform()
-        {
-            Span			selSpan;
-            CompoundEdit	edit;
-            long			pos;
+        private void perform() {
+            Span selSpan;
+            CompoundEdit edit;
+            long pos;
 
-            selSpan		= getSelectionSpan();
-            if( selSpan.isEmpty() ) return;
+            selSpan = getSelectionSpan();
+            if (selSpan.isEmpty()) return;
 
-            edit	= new BasicCompoundEdit();
-            if( deselect ) edit.addEdit( TimelineVisualEdit.select( this, doc, new Span() ).perform() );
-            pos		= (long) (selSpan.getStart() + selSpan.getLength() * weight + 0.5);
-            edit.addEdit( TimelineVisualEdit.position( this, doc, pos ).perform() );
+            edit = new BasicCompoundEdit();
+            if (deselect) edit.addEdit(TimelineVisualEdit.select(this, doc, new Span()).perform());
+            pos = (long) (selSpan.getStart() + selSpan.getLength() * weight + 0.5);
+            edit.addEdit(TimelineVisualEdit.position(this, doc, pos).perform());
             edit.end();
-            doc.getUndoManager().addEdit( edit );
+            doc.getUndoManager().addEdit(edit);
         }
     } // class actionSelToPosClass
 }
