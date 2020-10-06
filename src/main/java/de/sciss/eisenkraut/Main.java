@@ -48,7 +48,9 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 
 /**
@@ -153,6 +155,18 @@ public class Main
     public final static boolean isMac       = System.getProperty("os.name").contains("Mac OS");
     public final static boolean isWindows   = System.getProperty("os.name").contains("Windows");
     public final static boolean isLinux     = !(isMac || isWindows);    // Well...
+
+    // like preferences, but never saved to disk
+    private final static Map<String, String> instancePrefs = new HashMap<>();
+
+    public static String getInstancePrefs(String key, String def) {
+        final String v = instancePrefs.get(key);
+        return v != null ? v : def;
+    }
+
+    public static void putInstancePrefs(String key, String value) {
+        instancePrefs.put(key, value);
+    }
 
     /**
      *  The arguments may contain the following options:

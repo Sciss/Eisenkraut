@@ -1960,28 +1960,27 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
     @SuppressWarnings("serial")
     private class ActionSaveAs
             extends MenuAction {
+
         private final boolean	asCopy;
         private final boolean	selection;
         private final Flag		openAfterSave;
 
-        protected ActionSaveAs( boolean asCopy, boolean selection )
-        {
-            if( selection && !asCopy ) throw new IllegalArgumentException();
+        protected ActionSaveAs(boolean asCopy, boolean selection) {
+            if (selection && !asCopy) throw new IllegalArgumentException();
 
-            this.asCopy		= asCopy;
-            this.selection	= selection;
-            openAfterSave	= new Flag( false );
+            this.asCopy     = asCopy;
+            this.selection  = selection;
+            openAfterSave   = new Flag(false);
         }
 
         /*
          *  Query a file name from the user and save the Session
          */
-        public void actionPerformed( ActionEvent e )
-        {
-            final List<Track.Info>	infos = Track.getInfo( doc.selectedTracks.getAll(), doc.tracks.getAll() );
-            boolean		saveMarkers	= true;
-            int[] 		channelMap	= null;
-            if( selection ) {
+        public void actionPerformed(ActionEvent e) {
+            final List<Track.Info> infos = Track.getInfo(doc.selectedTracks.getAll(), doc.tracks.getAll());
+            boolean saveMarkers = true;
+            int[] channelMap = null;
+            if (selection) {
                 for (Object info : infos) {
                     Track.Info ti = (Track.Info) info;
                     if (ti.trail instanceof AudioTrail) {
@@ -1998,15 +1997,17 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
                     }
                 }
             }
-            final AudioFileDescr[] afds = query( doc.getDescr(), channelMap, saveMarkers, asCopy, selection, openAfterSave );
-            if( afds != null ) {
-                actionSave.perform( getValue( NAME ).toString(), selection ? timelineSel : null, afds, channelMap, saveMarkers, asCopy, openAfterSave.isSet() );
+            final AudioFileDescr[] afds =
+                    query(doc.getDescr(), channelMap, saveMarkers, asCopy, selection, openAfterSave);
+
+            if (afds != null) {
+                actionSave.perform(getValue(NAME).toString(), selection ? timelineSel : null, afds, channelMap,
+                        saveMarkers, asCopy, openAfterSave.isSet());
             }
         }
 
-        protected AudioFileDescr[] query( AudioFileDescr[] protoType )
-        {
-            return query( protoType, null, true, false, false, null );
+        protected AudioFileDescr[] query(AudioFileDescr[] protoType) {
+            return query(protoType, null, true, false, false, null);
         }
 
         /**
@@ -2017,10 +2018,10 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
          *			and format or <code>null</code>
          *			if the dialog was cancelled.
          */
-        protected AudioFileDescr[] query( AudioFileDescr[] protoType, int[] channelMap, boolean saveMarkers,
-                                          boolean asCopySettings, boolean selectionSettings, Flag openAfterSaveSettings )
-        {
-            if( protoType.length == 0 ) return null;
+        protected AudioFileDescr[] query(AudioFileDescr[] protoType, int[] channelMap, boolean saveMarkers,
+                                         boolean asCopySettings, boolean selectionSettings,
+                                         Flag openAfterSaveSettings) {
+            if (protoType.length == 0) return null;
 
 //			final FileDialog			fDlg;
             final AudioFileDescr[]		afds;
@@ -2079,7 +2080,7 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
                 } else {
                     fileName = protoType[j].file.getName();
                 }
-                dirName = app.getUserPrefs().get(prefsDirKey, protoType[j].file == null ? System.getProperty("user.home") : protoType[j].file.getParent());
+                dirName = Main.getInstancePrefs(prefsDirKey, protoType[j].file == null ? System.getProperty("user.home") : protoType[j].file.getParent());
                 ggPathFields[j].setPath(new File(dirName, fileName));
                 affp.automaticFileSuffix(ggPathFields[j]);
                 if ((protoType[j].file == null) || asCopySettings || selectionSettings) {    // create non-existent file name
@@ -2119,14 +2120,14 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 //														null, queryOptions, queryOptions[ 0 ]);
             result = BasicWindowHandler.showDialog( op, getWindow(), getValue( NAME ).toString() );
 
-            if( ggOpenAfterSave != null ) {
-                openAfterSaveSettings.set( ggOpenAfterSave.isSelected() );
+            if (ggOpenAfterSave != null) {
+                openAfterSaveSettings.set(ggOpenAfterSave.isSelected());
             }
 
-            if( result == 0 ) {
+            if (result == 0) {
                 // save dir prefs
-                if( ggPathFields.length > 0 ) {
-                    app.getUserPrefs().put( prefsDirKey, ggPathFields[ 0 ].getPath().getParent() );
+                if (ggPathFields.length > 0) {
+                    Main.putInstancePrefs(prefsDirKey, ggPathFields[0].getPath().getParent());
                 }
 
                 afds = new AudioFileDescr[ filesUsed ];
