@@ -975,9 +975,9 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
          *	- schreibe alle files (at.flatten)
          *	- liefere ein array aller geschriebener files in client arg "afs"
          */
-        public int processRun( ProcessingThread context )
-        throws IOException
-        {
+        public int processRun(ProcessingThread context)
+                throws IOException {
+
             final AudioFileDescr[]			clientAFDs	= (AudioFileDescr[]) context.getClientArg("afds");
             final int						numFiles	= clientAFDs.length;
             final Session					doc			= (Session) context.getClientArg("doc");
@@ -1002,28 +1002,31 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
             } else { // WARNING: we must clear KEY_MARKERS, it might contain copied data!
                 clientAFDs[0].setProperty(AudioFileDescr.KEY_MARKERS, null);
             }
-            if (clientAFDs[0].getProperty(AudioFileDescr.KEY_COMMENT) != null) {
-                if (!clientAFDs[0].isPropertySupported(AudioFileDescr.KEY_COMMENT)) {
-                    System.err.println("WARNING: comments are not saved in this file format!");
-                }
+            Object comment = clientAFDs[0].getProperty(AudioFileDescr.KEY_COMMENT);
+            if (comment != null && comment.toString().length() == 0) {
+                comment = null;
+                clientAFDs[0].setProperty(AudioFileDescr.KEY_COMMENT, null);
+            }
+            if (comment != null && !clientAFDs[0].isPropertySupported(AudioFileDescr.KEY_COMMENT)) {
+                System.err.println("WARNING: comments are not saved in this file format!");
             }
 
-            for( int i = 0; i < numFiles; i++ ) {
-                if( clientAFDs[ i ].file.exists() ) {
+            for (int i = 0; i < numFiles; i++) {
+                if (clientAFDs[i].file.exists()) {
 //						tempFs[ i ]			= File.createTempFile( "eis", null, afds[ i ].file.getParentFile() );
 //						tempFs[ i ].delete();
-                    tempF				= File.createTempFile( "eis", null, clientAFDs[ i ].file.getParentFile() );
-                    afdTemp				= new AudioFileDescr( clientAFDs[ i ]);
+                    tempF = File.createTempFile("eis", null, clientAFDs[i].file.getParentFile());
+                    afdTemp = new AudioFileDescr(clientAFDs[i]);
 //						afdTemp.file		= tempFs[ i ];
-                    afdTemp.file		= tempF;
+                    afdTemp.file = tempF;
 //						renamed[ i ]		= true;
-                    afs[ i ]			= AudioFile.openAsWrite( afdTemp );
+                    afs[i] = AudioFile.openAsWrite(afdTemp);
                 } else {
-                    afs[ i ]			= AudioFile.openAsWrite( clientAFDs[ i ]);
+                    afs[i] = AudioFile.openAsWrite(clientAFDs[i]);
                 }
             }
 
-            audioTrail.flatten( afs, span, channelMap );
+            audioTrail.flatten(afs, span, channelMap);
             return DONE;
         } // run
 
