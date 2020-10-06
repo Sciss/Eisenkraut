@@ -53,6 +53,20 @@ Also note that, by default, the audio server is not automatically booted, so you
 the main window to launch the server and be able to actually _hear_ the sound file when playing it back. There is a
 preferences switch to enable automatic booting.
 
+On Linux, you can prevent that multiple instances of Eisenkraut are opened (for example, when you double click on 
+sound files in the desktop file manager), by enabling the OSC server (Preferences > OSC). A running OSC server will be
+detected, and instead the currently running instance will be used to open another file.
+
+When using a newer JDK, you will see the following warning messages upon start:
+
+    WARNING: An illegal reflective access operation has occurred
+    WARNING: Illegal reflective access by com.thoughtworks.xstream.core.util.Fields ...
+    WARNING: Please consider reporting this to the maintainers of com.thoughtworks.xstream.core.util.Fields
+    WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+    WARNING: All illegal access operations will be denied in a future release
+
+This is harmless and can be ignored. It is caused by the look-and-feel. Future versions may try to fix this warning.
+
 ## building from source
 
 Eisenkraut can be build from source with [sbt](http://www.scala-sbt.org/#install).
@@ -92,7 +106,7 @@ A short screencast is available on [Vimeo](https://vimeo.com/26510634).
 
 ## to-do's
 
-A lot. Here are some suggestions:
+The following items are left on my to-do list, but in the long-term, Eisenkraut will be integrated with Mellite.
 
  - Still need to integrate FScape (more a job about FScape than about Eisenkraut)
  - Finding a way to edit with simultaneous video display (might be a separate app synchronized through some kind of
@@ -102,5 +116,3 @@ A lot. Here are some suggestions:
  - Finishing sonogram functionality (needs decimation and must be editable)
  - Improving SuperCollider interface and classes
  - etc. etc.
-
-In the long-term, Eisenkraut will be integrated with Mellite.
