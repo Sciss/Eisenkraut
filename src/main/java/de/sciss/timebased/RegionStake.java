@@ -4,7 +4,7 @@
  *
  *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
  *
- *  This software is published under the GNU General Public License v3+
+ *  This software is published under the GNU Affero General Public License v3+
  *
  *
  *  For further information, please contact Hanns Holger Rutz at
@@ -25,19 +25,17 @@ import de.sciss.io.Span;
 
 @SuppressWarnings("serial")
 public class RegionStake
-extends Region
-implements Stake
-{
-    private Trail	t	= null;
+        extends Region
+        implements Stake {
 
-    public RegionStake( Span span, String name )
-    {
-        super( span, name );
+    private Trail t = null;
+
+    public RegionStake(Span span, String name) {
+        super(span, name);
     }
 
-    public RegionStake( Region orig )
-    {
-        super( orig );
+    public RegionStake(Region orig) {
+        super(orig);
     }
 
     public Stake duplicate()
@@ -55,30 +53,25 @@ implements Stake
         t	= null;
     }
 
-    public Stake replaceStart( long newStart )
-    {
-        return new RegionStake( new Span( newStart, span.stop ), name );
+    public Stake replaceStart(long newStart) {
+        return new RegionStake(new Span(newStart, span.stop), name);
     }
 
-    public Stake replaceStop( long newStop )
-    {
-        return new RegionStake( new Span( span.start, newStop ), name );
+    public Stake replaceStop(long newStop) {
+        return new RegionStake(new Span(span.start, newStop), name);
     }
 
-    public Stake shiftVirtual( long delta )
-    {
-        return new RegionStake( span.shift( delta ), name );
+    public Stake shiftVirtual(long delta) {
+        return new RegionStake(span.shift(delta), name);
     }
 
-    public void setTrail( Trail t )
-    {
-        this.t	= t;
+    public void setTrail(Trail t) {
+        this.t = t;
     }
 
 // ---------------- TreeNode interface ---------------- 
 
-    public TreeNode getChildAt( int childIndex )
-    {
+    public TreeNode getChildAt(int childIndex) {
         return null;
     }
 
@@ -92,8 +85,7 @@ implements Stake
         return t;
     }
 
-    public int getIndex( TreeNode node )
-    {
+    public int getIndex(TreeNode node) {
         return -1;
     }
 
@@ -107,8 +99,8 @@ implements Stake
         return true;
     }
 
-    public Enumeration<?> children()
-    {
+    @Override
+    public Enumeration<? extends TreeNode> children() {
         return null;
     }
 }

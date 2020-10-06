@@ -11,7 +11,7 @@
 Eisenkraut is a standalone, cross-platform audio file editor using the SuperCollider 3 server application.
 
 Eisenkraut is (C)opyright 2004&ndash;2020 by Hanns Holger Rutz. All rights reserved. It is released under the
-[GNU General Public License](http://github.com/Sciss/Eisenkraut/blob/main/licenses/Eisenkraut-License.txt).
+[GNU Affero General Public License](http://github.com/Sciss/Eisenkraut/blob/main/licenses/Eisenkraut-License.txt) v3+.
 
 To contact the author, send an e-mail to `contact at sciss.de`. For project status, API and current version visit
 [github.com/Sciss/Eisenkraut](http://github.com/Sciss/Eisenkraut).
@@ -78,21 +78,19 @@ Eisenkraut can be build from source with [sbt](http://www.scala-sbt.org/#install
  
 The release bundles are produced with tasks `universal:packageBin` and `debian:packageBin`.
 
-__Note:__ Somebody decided to change the API of `javax.swing.tree.TreeNode` in a non-backwards compatible
-fashion. The project currently requires JDK 8 to compile, as JDK 11 contains this
-breakage. We may decide in the future to move on to JDK 11 or 12.
-
 ## source code distribution
 
-Eisenkraut's GPL'ed source code is made available through [github.com/Sciss/Eisenkraut](http://github.com/Sciss/Eisenkraut).
+Eisenkraut's AGPL'ed source code is made available through [github.com/Sciss/Eisenkraut](http://github.com/Sciss/Eisenkraut).
 
-- As a SuperCollider client it uses the JCollider library, which is also licensed under the GNU Lesser General Public
+- As a SuperCollider client it uses the JCollider library, which is licensed under the GNU Lesser General Public
   License (LGPL). The compiled library is included, for source code and details visit
   [github.com/Sciss/JCollider](https://github.com/Sciss/JCollider).
 - For OSC communication, the NetUtil library is used, which is licensed under the GNU Lesser General Public License
   (LGPL), for source code and details visit [github.com/Sciss/NetUtil](https://github.com/Sciss/NetUtil).
 - It uses the ScissLib library which is licensed under the GNU Lesser General Public License (LGPL), source code
   provided through [github.com/Sciss/ScissLib](https://github.com/Sciss/ScissLib).
+- It includes the [Web Look And Feel](https://github.com/mgarin/weblaf) which is licensed under the 
+  GNU General Public License.
 
 ## contributing
 

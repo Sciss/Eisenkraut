@@ -1,5 +1,13 @@
 # change history
 
+## v1.4.0 (oct 2020)
+
+ - fixes a bug with Wave 64 reading
+ - fixes a bug with non-ASCII characters in AIFF marker names
+ - improves focus and keyboard navigation for Marker Editor
+ - improves default save-as/selection location
+ - fixes scsynth crashes when using certain solo/mute combination
+
 ## v1.3.2 (may 2017)
 
  - fixes region list bugs with 'reverse' process

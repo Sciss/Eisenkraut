@@ -8,7 +8,7 @@ lazy val authorEMail  = "contact@sciss.de"
 
 lazy val basicJavaOpts = Seq("-source", "1.8")
 
-lazy val projectVersion   = "1.4.0-SNAPSHOT"
+lazy val projectVersion   = "1.4.0"
 
 lazy val jcolliderVersion = "1.0.0"
 lazy val scissLibVersion  = "1.1.4"
@@ -20,8 +20,8 @@ lazy val commonSettings = Seq(
   version          := projectVersion,
   organization     := "de.sciss",
   description      := "A multi-channel and hi-res capable audio file editor",
-  homepage         := Some(url("https://github.com/Sciss/Eisenkraut")),
-  licenses         := Seq("GPL v3+" -> url("http://www.gnu.org/licenses/gpl-3.0.txt")),
+  homepage         := Some(url("https://git.iem.at/sciss/Eisenkraut")),
+  licenses         := Seq("AGPL v3+" -> url("http://www.gnu.org/licenses/agpl-3.0.txt")),
   javacOptions    ++= basicJavaOpts ++ Seq("-encoding", "utf8", "-target", "1.8"),
   javacOptions in (Compile, doc) := basicJavaOpts,  // doesn't eat `-encoding`
   scalaVersion     := "2.12.12", // not used
@@ -52,8 +52,8 @@ lazy val publishSettings = Seq(
   pomIncludeRepository := { _ => false },
   pomExtra := { val n = name.value
 <scm>
-  <url>git@github.com:Sciss/{n}.git</url>
-  <connection>scm:git:git@github.com:Sciss/{n}.git</connection>
+  <url>git@git.iem.at:sciss/{n}.git</url>
+  <connection>scm:git:git@git.iem.at:sciss/{n}.git</connection>
 </scm>
 <developers>
   <developer>
