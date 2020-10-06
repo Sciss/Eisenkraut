@@ -11,7 +11,7 @@ lazy val basicJavaOpts = Seq("-source", "1.8")
 lazy val projectVersion   = "1.4.0-SNAPSHOT"
 
 lazy val jcolliderVersion = "1.0.0"
-lazy val scissLibVersion  = "1.1.2"
+lazy val scissLibVersion  = "1.1.3"
 lazy val subminVersion    = "0.3.4"
 lazy val weblafVersion    = "1.2.11"
 

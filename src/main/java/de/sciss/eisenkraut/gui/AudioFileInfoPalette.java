@@ -13,6 +13,8 @@
 
 package de.sciss.eisenkraut.gui;
 
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.awt.BorderLayout;
@@ -26,7 +28,9 @@ import javax.swing.JTextArea;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
+import javax.swing.event.AncestorEvent;
 
+import de.sciss.app.AncestorAdapter;
 import de.sciss.eisenkraut.Main;
 import de.sciss.eisenkraut.edit.EditChangeAudioFileDescr;
 import de.sciss.eisenkraut.edit.EditPutMapValue;
@@ -64,6 +68,19 @@ public class AudioFileInfoPalette
     protected final JTextArea   ggComment;
     private final SpringPanel   p;
 
+    private void checkCommentEdited() {
+        if (doc != null) {
+            final AudioFileDescr displayAFD = doc.getDisplayDescr();
+            final String newText = ggComment.getText();
+            final String oldText = (String) displayAFD.getProperty(AudioFileDescr.KEY_COMMENT);
+
+            if (!newText.equals(oldText)) {
+                doc.getUndoManager().addEdit(new EditChangeAudioFileDescr(this, displayAFD,
+                        AudioFileDescr.KEY_COMMENT, newText, getResourceString("editChangeComment")).perform());
+            }
+        }
+    }
+
     /**
      *  Constructs a new <code>AudioFileInfoPalette</code>
      */
@@ -96,16 +113,12 @@ public class AudioFileInfoPalette
         new LooseFocusAction(ggComment);
         ggComment.addFocusListener(new FocusAdapter() {
             public void focusLost(FocusEvent e) {
-                if (doc != null) {
-                    final AudioFileDescr displayAFD = doc.getDisplayDescr();
-                    final String newText = ggComment.getText();
-                    final String oldText = (String) displayAFD.getProperty(AudioFileDescr.KEY_COMMENT);
-
-                    if (!newText.equals(oldText)) {
-                        doc.getUndoManager().addEdit(new EditChangeAudioFileDescr(this, displayAFD,
-                                AudioFileDescr.KEY_COMMENT, newText, getResourceString("editChangeComment")).perform());
-                    }
-                }
+                checkCommentEdited();
+            }
+        });
+        ggComment.addAncestorListener(new AncestorAdapter() {
+            public void ancestorRemoved(AncestorEvent e) {
+                checkCommentEdited();
             }
         });
         ggScroll = new JScrollPane(ggComment, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
