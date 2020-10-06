@@ -290,6 +290,7 @@ public class DocumentFrame
 
     private static final Point				lastLeftTop		= new Point();
     private static final String				KEY_TRACKSIZE	= "tracksize";
+    private static final String				KEY_TRACKNUM	= "tracknum";
 
     private int								verticalScale;
 
@@ -820,41 +821,54 @@ public class DocumentFrame
         final Preferences			cp	= getClassPrefs();
         final BasicWindowHandler	bwh	= getWindowHandler();
         final Rectangle				sr	= bwh.getWindowSpace();
-        final Dimension				dt	= stringToDimension( cp.get( KEY_TRACKSIZE, null ));
+        final Dimension				dt	= stringToDimension(cp.get(KEY_TRACKSIZE, null));
+        final int                   numChIn     = Math.max(1, cp.getInt(KEY_TRACKNUM, 1));
+        final int                   numChOut    = Math.max(1, waveView.getNumChannels());
         final Dimension				d	= dt == null ? new Dimension() : dt;
-        final float					hf	= (float) Math.sqrt( Math.max( 1, waveView.getNumChannels() ));
         final Dimension				winSize;
         final Rectangle				wr;
-        int							w	= d.width;
-        int							h	= d.height;
         sr.x		+= 36;
         sr.y		+= 36;
         sr.width	-= 60;
         sr.height	-= 60;
-        if( w <= 0 ) {
-            w = sr.width*2/3 - AudioTrackRowHeader.ROW_WIDTH;
+
+        // System.out.println("DIM IN " + d.width + ", " + d.height);
+
+        if (d.width <= 0) {
+            d.width = sr.width * 2 / 3 - AudioTrackRowHeader.ROW_WIDTH;
         }
-        if( h <= 0 ) {
-            h = (sr.height - 106) / 4; // 106 = approx. extra space for title bar, tool bar etc.
+        if (d.height <= 0) {
+            d.height = (sr.height - 106) / 4; // 106 = approx. extra space for title bar, tool bar etc.
+        }
+        if (numChIn != numChOut) {
+            final double hf = Math.sqrt(numChIn) / Math.sqrt(numChOut);
+            d.height = (int) Math.round(d.height * hf);
         }
 
-        waveView.setPreferredSize(new Dimension(w, (int) (h * hf + 0.5f)));
+        // System.out.println("DIM ADJUST " + d.width + ", " + d.height);
+
+        waveView.setPreferredSize(d);
         pack();
         winSize = getSize();
-        wr = new Rectangle(lastLeftTop.x + 21, lastLeftTop.y + 23,
-                winSize.width, winSize.height);
+        wr = new Rectangle(lastLeftTop.x + 21, lastLeftTop.y + 23, winSize.width, winSize.height);
         GUIUtil.wrapWindowBounds(wr, sr);
         lastLeftTop.setLocation(wr.getLocation());
-        setBounds(wr);
+        // avoid using `setBounds` --- https://git.iem.at/sciss/Eisenkraut/-/issues/18
+        if (wr.width != winSize.width || wr.height != winSize.height) {
+            setBounds(wr);
+        } else {
+            setLocation(wr.getLocation());
+        }
 
         waveView.addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent e) {
                 if (waveExpanded) {
                     final Dimension dNew = e.getComponent().getSize();
-                    dNew.height = (int) (dNew.height / hf + 0.5f);
                     if (!dNew.equals(d)) {
                         d.setSize(dNew);
+                        // System.out.println("DIM SET " + d.width + ", " + d.height);
                         cp.put(KEY_TRACKSIZE, AppWindow.dimensionToString(dNew));
+                        cp.putInt(KEY_TRACKNUM , numChOut);
                     }
                 }
             }
@@ -1325,7 +1339,8 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
                 afds = actionSaveAs.query( afds );
             }
             if( afds != null ) {
-                return actionSave.initiate( actionSave.getValue( Action.NAME ).toString(), null, afds, null, true, false, false );
+                return actionSave.initiate(actionSave.getValue(Action.NAME).toString(), /* span */ null,
+                        afds, /* channelMap */ null, /* saveMarkers */ true, /* asCopy */ false, /* asCopy */ false);
             }
             return null;
 
@@ -1793,11 +1808,10 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
             extends MenuAction {
         protected ActionDebugDump() { /* empty */ }
 
-        public void actionPerformed( ActionEvent e )
-        {
-            System.err.println( "------------ Document: "+doc.getDisplayDescr().file+" ------------" );
+        public void actionPerformed(ActionEvent e) {
+            System.err.println("------------ Document: " + doc.getDisplayDescr().file + " ------------");
             doc.getAudioTrail().debugDump();
-            System.err.println( "   --------- decimated ---------" );
+            System.err.println("   --------- decimated ---------");
             doc.getDecimatedWaveTrail().debugDump();
         }
     }
@@ -1807,9 +1821,8 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
             extends MenuAction {
         protected ActionDebugVerify() { /* empty */ }
 
-        public void actionPerformed( ActionEvent e )
-        {
-            System.err.println( "------------ Document: " + doc.getDisplayDescr().file + " ------------" );
+        public void actionPerformed(ActionEvent e) {
+            System.err.println("------------ Document: " + doc.getDisplayDescr().file + " ------------");
             doc.getAudioTrail().debugVerifyContiguity();
             System.err.println("   --------- decimated ---------");
             doc.getDecimatedWaveTrail().debugVerifyContiguity();
@@ -1821,17 +1834,16 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
             extends MenuAction {
         protected ActionNewFromSel() { /* empty */ }
 
-        public void actionPerformed( ActionEvent e )
-        {
+        public void actionPerformed(ActionEvent e) {
             final ClipboardTrackList	tl		= doc.getSelectionAsTrackList();
             final Session				doc2;
             final AudioFileDescr		afd, afd2;
             final int					selChans;
             final ProcessingThread		pt;
 
-            if( tl == null ) return;
+            if (tl == null) return;
 
-            selChans			= tl.getTrackNum( AudioTrail.class );
+            selChans = tl.getTrackNum(AudioTrail.class);
 
             afd					= doc.getDisplayDescr();
             afd2				= new AudioFileDescr();
@@ -1840,23 +1852,24 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
             afd2.rate			= afd.rate;
             afd2.sampleFormat	= afd.sampleFormat;
 
-            doc2				= ((MenuFactory) app.getMenuFactory()).newDocument( afd2 );
-            if( doc2 == null ) {
+            doc2 = ((MenuFactory) app.getMenuFactory()).newDocument(afd2);
+            if (doc2 == null) {
                 // it's important that the clipboard tl be diposed
                 // when not used any more
                 tl.dispose();
                 return;
             }
 
-            pt = doc2.pasteTrackList( tl, 0, getResourceString( "menuPaste" ), Session.EDIT_INSERT );
-            if( pt != null ) {
-                pt.addListener( new ProcessingThread.Listener() {
-                    public void processStarted( ProcessingThread.Event e1 ) { /* ignored */ }
-                    public void processStopped( ProcessingThread.Event e2 ) {
+            pt = doc2.pasteTrackList(tl, 0, getResourceString("menuPaste"), Session.EDIT_INSERT);
+            if (pt != null) {
+                pt.addListener(new ProcessingThread.Listener() {
+                    public void processStarted(ProcessingThread.Event e1) { /* ignored */ }
+
+                    public void processStopped(ProcessingThread.Event e2) {
                         tl.dispose();
                     }
                 });
-                doc.start( pt );
+                doc.start(pt);
             } else {
                 tl.dispose();
             }
@@ -1869,15 +1882,13 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
             extends MenuAction {
         protected ActionClose() { /* empty */ }
 
-        public void actionPerformed( ActionEvent e )
-        {
+        public void actionPerformed(ActionEvent e) {
             perform();
         }
 
-        public void perform()
-        {
-            final ProcessingThread pt = closeDocument( false, new Flag( false ));
-            if( pt != null ) doc.start( pt );
+        public void perform() {
+            final ProcessingThread pt = closeDocument(false, new Flag(false));
+            if (pt != null) doc.start(pt);
         }
     }
 
@@ -1892,65 +1903,61 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
          *  wasn't saved before, a file chooser
          *  is shown before.
          */
-        public void actionPerformed( ActionEvent e )
-        {
-            final AudioFileDescr	displayAFD	= doc.getDisplayDescr();
-            final AudioFileDescr[]	afds;
+        public void actionPerformed(ActionEvent e) {
+            final AudioFileDescr displayAFD = doc.getDisplayDescr();
+            final AudioFileDescr[] afds;
 
-            if( displayAFD.file == null ) {
-                afds = actionSaveAs.query( doc.getDescr() );
+            if (displayAFD.file == null) {
+                afds = actionSaveAs.query(doc.getDescr());
             } else {
                 afds = doc.getDescr();
             }
-            if( afds != null ) {
-                perform( getValue( NAME ).toString(), afds );
+            if (afds != null) {
+                perform(getValue(NAME).toString(), afds);
             }
         }
 
-        protected void perform( String name, AudioFileDescr[] afds )
-        {
-            perform( name, null, afds, null, true, false, false );
+        protected void perform(String name, AudioFileDescr[] afds) {
+            perform(name, /* Span */ null, afds, /* channelMap */ null, /* saveMarkers */ true, /* asCopy */ false,
+                    /* openAfterSave */ false);
         }
 
-        protected void perform( String name, Span span, AudioFileDescr[] afds,
-                                int[] channelMap, boolean saveMarkers, boolean asCopy, boolean openAfterSave )
-        {
-            final ProcessingThread pt = initiate( name, span, afds, channelMap, saveMarkers, asCopy, openAfterSave );
-            if( pt != null ) doc.start( pt );
+        protected void perform(String name, Span span, AudioFileDescr[] afds,
+                               int[] channelMap, boolean saveMarkers, boolean asCopy, boolean openAfterSave) {
+            final ProcessingThread pt = initiate(name, span, afds, channelMap, saveMarkers, asCopy, openAfterSave);
+            if (pt != null) doc.start(pt);
         }
 
-        protected ProcessingThread initiate( String name, final Span span, final AudioFileDescr[] afds,
-                                             int[] channelMap, boolean saveMarkers, final boolean asCopy, final boolean openAfterSave )
-        {
-            final ProcessingThread pt = doc.procSave( name, span, afds, channelMap, saveMarkers, asCopy );
-            if( pt == null ) return null;
+        protected ProcessingThread initiate(String name, final Span span, final AudioFileDescr[] afds,
+                                            int[] channelMap, boolean saveMarkers, final boolean asCopy, final boolean openAfterSave) {
+            final ProcessingThread pt = doc.procSave(name, span, afds, channelMap, saveMarkers, asCopy);
+            if (pt == null) return null;
 
-            pt.addListener( new ProcessingThread.Listener() {
-                public void processStopped( ProcessingThread.Event e )
-                {
-                    if( !e.isDone() ) return;
+            pt.addListener(new ProcessingThread.Listener() {
+                public void processStopped(ProcessingThread.Event e) {
+                    if (!e.isDone()) return;
 
                     wpHaveWarned = false;
 
-                    if( !asCopy ) {
-                        if( afds.length == 1 ) app.getMenuFactory().addRecent( afds[ 0 ].file );
+                    if (!asCopy) {
+                        if (afds.length == 1) app.getMenuFactory().addRecent(afds[0].file);
                         updateAFDGadget();
                         updateCursorFormat();
                     }
-                    if( openAfterSave ) {
-                        if( afds.length == 1 ) {
-                            app.getMenuFactory().openDocument( afds[ 0 ].file );
+                    if (openAfterSave) {
+                        if (afds.length == 1) {
+                            app.getMenuFactory().openDocument(afds[0].file);
                         } else {
-                            final File[] fs = new File[ afds.length ];
-                            for( int i = 0; i < afds.length; i++ ) {
-                                fs[ i ] = afds[ i ].file;
+                            final File[] fs = new File[afds.length];
+                            for (int i = 0; i < afds.length; i++) {
+                                fs[i] = afds[i].file;
                             }
-                            ((MenuFactory) app.getMenuFactory()).openDocument( fs );
+                            ((MenuFactory) app.getMenuFactory()).openDocument(fs);
                         }
                     }
                 }
 
-                public void processStarted( ProcessingThread.Event e ) { /* ignored */ }
+                public void processStarted(ProcessingThread.Event e) { /* ignored */ }
             });
             return pt;
         }
@@ -2094,10 +2101,10 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
                     setFocus = true;
                 }
             }
-            lb = new JLabel( getResourceString( "labelFormat" ), RIGHT );
-            msgPane.gridAdd( lb, 0, y );
-            msgPane.gridAdd( affp, 1, y, -1, 1 );
-            lb.setLabelFor( affp );
+            lb = new JLabel(getResourceString("labelFormat"), RIGHT);
+            msgPane.gridAdd(lb, 0, y);
+            msgPane.gridAdd(affp, 1, y, -1, 1);
+            lb.setLabelFor(affp);
             y++;
 
             if( asCopySettings ) {
@@ -2130,28 +2137,28 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
                     Main.putInstancePrefs(prefsDirKey, ggPathFields[0].getPath().getParent());
                 }
 
-                afds = new AudioFileDescr[ filesUsed ];
-                for( int j = 0, k = 0; j < ggPathFields.length; j++ ) {
+                afds = new AudioFileDescr[filesUsed];
+                for (int j = 0, k = 0; j < ggPathFields.length; j++) {
                     if( channelsUsed[ j ] == 0 ) continue;
                     f = ggPathFields[ j ].getPath();
-                    if( f.exists() ) {
-                        queryOptions = new String[] { getResourceString( "buttonOverwrite" ),
-                                                      getResourceString( "buttonCancel" )};
-                        final JOptionPane op2 = new JOptionPane( getResourceString( "warnFileExists" ) +
-                                                                ":\n" + f.getAbsolutePath() + "\n" + getResourceString( "warnOverwriteFile" ),
-                                                                JOptionPane.WARNING_MESSAGE, JOptionPane.YES_NO_OPTION,
-                                                                null, queryOptions, queryOptions[1] );
+                    if (f.exists()) {
+                        queryOptions = new String[]{getResourceString("buttonOverwrite"),
+                                getResourceString("buttonCancel")};
+                        final JOptionPane op2 = new JOptionPane(getResourceString("warnFileExists") +
+                                ":\n" + f.getAbsolutePath() + "\n" + getResourceString("warnOverwriteFile"),
+                                JOptionPane.WARNING_MESSAGE, JOptionPane.YES_NO_OPTION,
+                                null, queryOptions, queryOptions[1]);
 //						result = JOptionPane.showOptionDialog( getWindow(), getResourceString( "warnFileExists" ) +
 //							":\n" + f.getAbsolutePath() + "\n" + getResourceString( "warnOverwriteFile" ),
 //							getValue( NAME ).toString(), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE,
 //							null, queryOptions, queryOptions[1] );
-                        result = BasicWindowHandler.showDialog( op2, getWindow(), getValue( NAME ).toString() );
-                        if( result != 0 ) return null;
+                        result = BasicWindowHandler.showDialog(op2, getWindow(), getValue(NAME).toString());
+                        if (result != 0) return null;
                     }
-                    afds[ k ]		= new AudioFileDescr( protoType[ j ]);
-                    affp.toDescr( afds[ k ]);
-                    afds[ k ].file	= f;
-                    afds[ k ].channels = channelsUsed[ j ];
+                    afds[k] = new AudioFileDescr(protoType[j]);
+                    affp.toDescr(afds[k]);
+                    afds[k].file = f;
+                    afds[k].channels = channelsUsed[j];
                     k++;
                 }
                 return afds;

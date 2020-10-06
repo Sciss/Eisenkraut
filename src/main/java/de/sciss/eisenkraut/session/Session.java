@@ -519,10 +519,9 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
         return actionDelete.initiate( procName, span, mode );
     }
 
-    public ProcessingThread procSave( String procName, Span span, AudioFileDescr[] targetAFDs,
-                                      int[] channelMap, boolean saveMarkers, boolean asCopy )
-    {
-        return actionSave.initiate( procName, span, targetAFDs, channelMap, saveMarkers, asCopy );
+    public ProcessingThread procSave(String procName, Span span, AudioFileDescr[] targetAFDs,
+                                     int[] channelMap, boolean saveMarkers, boolean asCopy) {
+        return actionSave.initiate(procName, span, targetAFDs, channelMap, saveMarkers, asCopy);
     }
 
     public MenuAction getCutAction()
@@ -954,16 +953,18 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
             final ProcessingThread proc;
 
             getTransport().stop();
-            if( !checkProcess() ) return null;
+            if (!checkProcess()) return null;
 
 //			pt				= new ProcessingThread( this, getFrame(), bird, name, args, Session.DOOR_ALL );
             proc				= new ProcessingThread( this, getFrame(), procName );
-            proc.putClientArg( "afds", descrs );
-            proc.putClientArg( "doc", Session.this );
-            proc.putClientArg( "asCopy", asCopy);
-            proc.putClientArg( "chanMap", channelMap );
-            proc.putClientArg( "markers", saveMarkers);
-            proc.putClientArg( "span", span == null ? new Span( 0, timeline.getLength() ) : span );
+            proc.putClientArg("afds", descrs);
+            proc.putClientArg("doc", Session.this);
+            proc.putClientArg("asCopy", asCopy);
+            proc.putClientArg("chanMap", channelMap);
+            proc.putClientArg("markers", saveMarkers);
+            final boolean isSelection = span != null;
+            proc.putClientArg("selection", isSelection);
+            proc.putClientArg("span", isSelection ? span : new Span(0, timeline.getLength()));
             return proc;
         }
 
@@ -977,16 +978,16 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
         public int processRun( ProcessingThread context )
         throws IOException
         {
-            final AudioFileDescr[]			clientAFDs	= (AudioFileDescr[]) context.getClientArg( "afds" );
+            final AudioFileDescr[]			clientAFDs	= (AudioFileDescr[]) context.getClientArg("afds");
             final int						numFiles	= clientAFDs.length;
-            final Session					doc			= (Session) context.getClientArg( "doc" );
+            final Session					doc			= (Session) context.getClientArg("doc");
             final boolean					saveMarkers	= (Boolean) context.getClientArg("markers");
-            final Span						span		= (Span) context.getClientArg( "span" );
-            final int[]						channelMap	= (int[]) context.getClientArg( "chanMap" );
+            final Span						span		= (Span) context.getClientArg("span");
+            final int[]						channelMap	= (int[]) context.getClientArg("chanMap");
             final AudioTrail				audioTrail	= doc.getAudioTrail();
 //			final File[]					tempFs		= new File[ numFiles ];
 //			final boolean[]					renamed		= new boolean[ numFiles ];
-            final AudioFile[]				afs			= new AudioFile[ numFiles ];
+            final AudioFile[]				afs			= new AudioFile[numFiles];
             AudioFileDescr					afdTemp;
             File							tempF;
 
@@ -996,11 +997,17 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
                 if (clientAFDs[0].isPropertySupported(AudioFileDescr.KEY_MARKERS)) {
                     doc.markers.copyToAudioFile(clientAFDs[0], span);    // XXX
                 } else if (!doc.markers.isEmpty()) {
-                    System.err.println("WARNING: markers are not saved in this file format!!!");
+                    System.err.println("WARNING: markers are not saved in this file format!");
                 }
             } else { // WARNING: we must clear KEY_MARKERS, it might contain copied data!
                 clientAFDs[0].setProperty(AudioFileDescr.KEY_MARKERS, null);
             }
+            if (clientAFDs[0].getProperty(AudioFileDescr.KEY_COMMENT) != null) {
+                if (!clientAFDs[0].isPropertySupported(AudioFileDescr.KEY_COMMENT)) {
+                    System.err.println("WARNING: comments are not saved in this file format!");
+                }
+            }
+
             for( int i = 0; i < numFiles; i++ ) {
                 if( clientAFDs[ i ].file.exists() ) {
 //						tempFs[ i ]			= File.createTempFile( "eis", null, afds[ i ].file.getParentFile() );
