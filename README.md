@@ -104,6 +104,11 @@ Please refer to the `help/index.html` file for a list of manual topics.
 
 A short screencast is available on [Vimeo](https://vimeo.com/26510634).
 
+## known issues
+
+- SuperCollider (as of 3.10.x) cannot correctly read (play) 24-bit BICSF files, nor Wave64 files that contain
+  markers. This is a bug in libsndfile and not Eisenkraut.
+
 ## to-do's
 
 The following items are left on my to-do list, but in the long-term, Eisenkraut will be integrated with Mellite.

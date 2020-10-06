@@ -992,14 +992,14 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
 
             context.putClientArg( "afs", afs );
 
-            if( saveMarkers ) {
-                if( clientAFDs[ 0 ].isPropertySupported( AudioFileDescr.KEY_MARKERS )) {
-                    doc.markers.copyToAudioFile( clientAFDs[ 0 ], span );	// XXX
-                } else if( !doc.markers.isEmpty() ) {
-                    System.err.println( "WARNING: markers are not saved in this file format!!!" );
+            if (saveMarkers) {
+                if (clientAFDs[0].isPropertySupported(AudioFileDescr.KEY_MARKERS)) {
+                    doc.markers.copyToAudioFile(clientAFDs[0], span);    // XXX
+                } else if (!doc.markers.isEmpty()) {
+                    System.err.println("WARNING: markers are not saved in this file format!!!");
                 }
             } else { // WARNING: we must clear KEY_MARKERS, it might contain copied data!
-                clientAFDs[ 0 ].setProperty( AudioFileDescr.KEY_MARKERS, null );
+                clientAFDs[0].setProperty(AudioFileDescr.KEY_MARKERS, null);
             }
             for( int i = 0; i < numFiles; i++ ) {
                 if( clientAFDs[ i ].file.exists() ) {
@@ -1213,54 +1213,50 @@ tryRename:					  {
     private class ActionPaste
             extends MenuAction
             implements ProcessingThread.Client {
+
         protected ActionPaste() { /* empty */ }
 
-        public void actionPerformed( ActionEvent e )
-        {
+        public void actionPerformed(ActionEvent e) {
             perform();
         }
 
-        protected void perform()
-        {
-            perform( getValue( NAME ).toString(), getEditMode() );
+        protected void perform() {
+            perform(getValue(NAME).toString(), getEditMode());
         }
 
-        private void perform( String procName, int mode )
-        {
-            final Transferable			t;
-            final ClipboardTrackList	tl;
+        private void perform(String procName, int mode) {
+            final Transferable t;
+            final ClipboardTrackList tl;
 
             try {
-                t = AbstractApplication.getApplication().getClipboard().getContents( this );
-                if( t == null ) return;
+                t = AbstractApplication.getApplication().getClipboard().getContents(this);
+                if (t == null) return;
 
-                if( !t.isDataFlavorSupported( ClipboardTrackList.trackListFlavor )) return;
-                tl = (ClipboardTrackList) t.getTransferData( ClipboardTrackList.trackListFlavor );
-            }
-            catch( IOException e11 ) {
-                System.err.println( e11.getLocalizedMessage() );
+                if (!t.isDataFlavorSupported(ClipboardTrackList.trackListFlavor)) return;
+                tl = (ClipboardTrackList) t.getTransferData(ClipboardTrackList.trackListFlavor);
+            } catch (IOException e11) {
+                System.err.println(e11.getLocalizedMessage());
                 return;
-            }
-            catch( UnsupportedFlavorException e11 ) {
-                System.err.println( e11.getLocalizedMessage() );
+            } catch (UnsupportedFlavorException e11) {
+                System.err.println(e11.getLocalizedMessage());
                 return;
-            } catch( IllegalStateException e11 ) {
-                System.err.println( getResourceString( "errClipboard" ));
+            } catch (IllegalStateException e11) {
+                System.err.println(getResourceString("errClipboard"));
                 return;
             }
 
-            if( !checkProcess() ) return;
-            final ProcessingThread proc = initiate( tl, timeline.getPosition(), procName, mode );	// XXX sync
-            if( proc != null ) {
-                start( proc );
+            if (!checkProcess()) return;
+            final ProcessingThread proc = initiate(tl, timeline.getPosition(), procName, mode);    // XXX sync
+            if (proc != null) {
+                start(proc);
             }
         }
 
-        protected ProcessingThread initiate( ClipboardTrackList tl, long insertPos, String procName, int mode )
-        {
-            if( !checkProcess() ) return null;
+        protected ProcessingThread initiate(ClipboardTrackList tl, long insertPos, String procName, int mode) {
+            if (!checkProcess()) return null;
 
-            if( (insertPos < 0) || (insertPos > timeline.getLength()) ) throw new IllegalArgumentException( String.valueOf( insertPos ));
+            if ((insertPos < 0) || (insertPos > timeline.getLength()))
+                throw new IllegalArgumentException(String.valueOf(insertPos));
 
             final ProcessingThread		proc;
             final Span					oldSelSpan, insertSpan, copySpan, cutTimelineSpan;
@@ -1271,9 +1267,9 @@ tryRename:					  {
             final long					docLength, pasteLength, preMaxLen, postMaxLen;
             final BlendContext			bcPre, bcPost;
 
-            hasSelectedAudio	= new Flag( false );
-            tis					= Track.getInfo( selectedTracks.getAll(), tracks.getAll() );
-            if( !AudioTracks.checkSyncedAudio( tis, mode == EDIT_INSERT, null, hasSelectedAudio )) return null;
+            hasSelectedAudio = new Flag(false);
+            tis = Track.getInfo(selectedTracks.getAll(), tracks.getAll());
+            if (!AudioTracks.checkSyncedAudio(tis, mode == EDIT_INSERT, null, hasSelectedAudio)) return null;
 
             expTimeline			= (mode == EDIT_INSERT) && hasSelectedAudio.isSet();
             docLength			= timeline.getLength();
@@ -1281,7 +1277,7 @@ tryRename:					  {
                 Math.min( tl.getSpan().getLength(), docLength - insertPos );
             if( pasteLength == 0 ) return null;
 
-            if( mode == EDIT_INSERT ) {
+            if (mode == EDIT_INSERT) {
                 /*
                  *	before paste:
                  *
@@ -1325,37 +1321,37 @@ tryRename:					  {
 //System.out.println( "C" );
             }
             bcPre			= createBlendContext( preMaxLen, 0, hasSelectedAudio.isSet() );
-            bcPost			= createBlendContext( postMaxLen, 0, hasSelectedAudio.isSet() );
+            bcPost			= createBlendContext(postMaxLen, 0, hasSelectedAudio.isSet());
 //System.out.println( "D ; preMaxLen = " + preMaxLen + "; postMaxLen = " + postMaxLen + "; bcPre.getLeftLen() = " + (bcPre == null ? null : String.valueOf( bcPre.getLeftLen())) + "; bcPre.getRightLen() = " + (bcPre == null ? null : String.valueOf( bcPre.getRightLen() )) + "; bcPost.getLeftLen() = " + (bcPost == null ? null : String.valueOf( bcPost.getLeftLen() )) + "; bcPost.getRightLen() = " + (bcPost == null ? null : String.valueOf( bcPost.getRightLen() )));
 
 //			if( bcPre != null )  System.out.println( "bcPre  : " + bcPre.getLen() + ", " + bcPre.getLeftLen() + ", "+ bcPre.getRightLen() );
 //			if( bcPost != null ) System.out.println( "bcPost : " + bcPost.getLen() + ", " + bcPost.getLeftLen() + ", "+ bcPost.getRightLen() );
 
-            insertSpan			= new Span( insertPos, insertPos + pasteLength );
+            insertSpan			= new Span(insertPos, insertPos + pasteLength);
             copySpan			= new Span( tl.getSpan().start, tl.getSpan().start + pasteLength );
             cutTimeline			= (mode == EDIT_INSERT) && !hasSelectedAudio.isSet();
-            cutTimelineSpan		= cutTimeline ? new Span( docLength, docLength + pasteLength ) : null;
+            cutTimelineSpan = cutTimeline ? new Span(docLength, docLength + pasteLength) : null;
 
-            edit			= new BasicCompoundEdit( procName );
-            oldSelSpan		= timeline.getSelectionSpan();
-            if( !oldSelSpan.isEmpty() ) { // deselect
-                edit.addPerform( TimelineVisualEdit.select( this, Session.this, new Span() ));
+            edit = new BasicCompoundEdit(procName);
+            oldSelSpan = timeline.getSelectionSpan();
+            if (!oldSelSpan.isEmpty()) { // deselect
+                edit.addPerform(TimelineVisualEdit.select(this, Session.this, new Span()));
             }
 
-            proc	= new ProcessingThread( this, getFrame(), procName );
-            proc.putClientArg( "tl", tl );
-            proc.putClientArg( "pos", insertPos);
-            proc.putClientArg( "mode", mode);
-            proc.putClientArg( "tis", tis );
-            proc.putClientArg( "pasteLen", pasteLength);
-            proc.putClientArg( "exp", expTimeline);
-            proc.putClientArg( "bcPre", bcPre );
-            proc.putClientArg( "bcPost", bcPost );
-            proc.putClientArg( "insertSpan", insertSpan );
-            proc.putClientArg( "copySpan", copySpan );
-            proc.putClientArg( "cut", cutTimeline);
-            proc.putClientArg( "cutSpan", cutTimelineSpan );
-            proc.putClientArg( "edit", edit );
+            proc = new ProcessingThread(this, getFrame(), procName);
+            proc.putClientArg("tl", tl);
+            proc.putClientArg("pos", insertPos);
+            proc.putClientArg("mode", mode);
+            proc.putClientArg("tis", tis);
+            proc.putClientArg("pasteLen", pasteLength);
+            proc.putClientArg("exp", expTimeline);
+            proc.putClientArg("bcPre", bcPre);
+            proc.putClientArg("bcPost", bcPost);
+            proc.putClientArg("insertSpan", insertSpan);
+            proc.putClientArg("copySpan", copySpan);
+            proc.putClientArg("cut", cutTimeline);
+            proc.putClientArg("cutSpan", cutTimelineSpan);
+            proc.putClientArg("edit", edit);
 
             return proc;
         }
