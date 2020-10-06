@@ -83,7 +83,7 @@ public class Main
      */
     private static final double APP_VERSION     = 1.4;
 
-    public static final String VERSION_STRING   = "1.4.0";
+    public static final String VERSION_STRING   = "1.4.1";
 
     /**
      *  Enables / disables event dispatching debugging

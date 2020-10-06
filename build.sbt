@@ -8,10 +8,10 @@ lazy val authorEMail  = "contact@sciss.de"
 
 lazy val basicJavaOpts = Seq("-source", "1.8")
 
-lazy val projectVersion   = "1.4.0"
+lazy val projectVersion   = "1.4.1"
 
 lazy val jcolliderVersion = "1.0.0"
-lazy val scissLibVersion  = "1.1.4"
+lazy val scissLibVersion  = "1.1.5"
 lazy val subminVersion    = "0.3.4"
 lazy val weblafVersion    = "1.2.11"
 
@@ -22,7 +22,9 @@ lazy val commonSettings = Seq(
   description      := "A multi-channel and hi-res capable audio file editor",
   homepage         := Some(url("https://git.iem.at/sciss/Eisenkraut")),
   licenses         := Seq("AGPL v3+" -> url("http://www.gnu.org/licenses/agpl-3.0.txt")),
-  javacOptions    ++= basicJavaOpts ++ Seq("-encoding", "utf8", "-target", "1.8"),
+  javacOptions     := Seq("-encoding", "utf8"),
+  // note: --release cannot be used in conjunction with -source or -target (YEAH, GREAT THINKING THERE)
+  javacOptions ++= (if (scala.util.Properties.isJavaAtLeast("9")) Seq("--release", "8") else basicJavaOpts ++ Seq("-target", "1.8")), // JDK >8 breaks API; skip scala-doc
   javacOptions in (Compile, doc) := basicJavaOpts,  // doesn't eat `-encoding`
   scalaVersion     := "2.12.12", // not used
   autoScalaLibrary := false,
