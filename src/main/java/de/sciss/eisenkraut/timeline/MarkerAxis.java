@@ -21,9 +21,12 @@ import de.sciss.app.GraphicsHandler;
 import de.sciss.common.BasicWindowHandler;
 import de.sciss.eisenkraut.edit.BasicCompoundEdit;
 import de.sciss.eisenkraut.gui.GraphicsUtil;
+import de.sciss.eisenkraut.gui.RequestFocusAction;
 import de.sciss.eisenkraut.session.Session;
 import de.sciss.gui.ComponentHost;
 import de.sciss.gui.DoClickAction;
+import de.sciss.gui.GUIUtil;
+import de.sciss.gui.LooseFocusAction;
 import de.sciss.gui.MenuAction;
 import de.sciss.gui.ParamField;
 import de.sciss.gui.SpringPanel;
@@ -36,9 +39,34 @@ import de.sciss.util.Disposable;
 import de.sciss.util.Param;
 import de.sciss.util.ParamSpace;
 
-import javax.swing.*;
+import javax.swing.AbstractButton;
+import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.event.AncestorEvent;
-import java.awt.*;
+import java.awt.BasicStroke;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Paint;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.Stroke;
+import java.awt.TexturePaint;
+import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -95,18 +123,18 @@ public class MarkerAxis
     private static final int[] pntMarkDragPix; // Light, pntMarkDragPixDark;
 
     private static final Color	colrLabelLight      = Color.white;
-    private static final Color	colrLabelDragLight  = new Color( 0xFF, 0xFF, 0xFF, 0x7F );
+    private static final Color	colrLabelDragLight  = new Color(0xFF, 0xFF, 0xFF, 0x7F);
 
     private static final Color	colrLabelDark       = Color.black;
-    private static final Color	colrLabelDragDark   = new Color( 0x00, 0x00, 0x00, 0x7F );
+    private static final Color	colrLabelDragDark   = new Color(0x00, 0x00, 0x00, 0x7F);
 
     private final Color	colrLabel, colrLabelDrag;
 
     //	private static final Paint	pntMarkStick= new Color( 0x31, 0x50, 0x4D, 0xC0 );
-    private static final Paint	pntMarkStick= new Color( 0x31, 0x50, 0x4D, 0x7F );
-    private static final Paint	pntMarkStickDrag = new Color( 0x31, 0x50, 0x4D, 0x5F );
-    private static final Stroke	strkStick	= new BasicStroke( 1.0f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_BEVEL,
-        1.0f, new float[] { 4.0f, 4.0f }, 0.0f );
+    private static final Paint	pntMarkStick= new Color(0x31, 0x50, 0x4D, 0x7F);
+    private static final Paint	pntMarkStickDrag = new Color(0x31, 0x50, 0x4D, 0x5F);
+    private static final Stroke	strkStick	= new BasicStroke(1.0f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_BEVEL,
+            1.0f, new float[] { 4.0f, 4.0f }, 0.0f);
 
     private static final int	markExtent = pntMarkGradPix.length;
     private final Paint			pntBackground;
@@ -121,7 +149,7 @@ public class MarkerAxis
     private Object[]				editOptions		= null;
     private ParamField				ggMarkPos;
     protected JTextField			ggMarkName;
-    private JButton					ggEditPrev, ggEditNext;
+    private JButton					ggEditPrev, ggEditNext, ggEditOk;
     protected int					editIdx			= -1;
     private DefaultUnitTranslator	timeTrans;
 
@@ -160,7 +188,8 @@ public class MarkerAxis
         colrLabel       = isDark ? colrLabelDark     : colrLabelLight;
         colrLabelDrag   = isDark ? colrLabelDragDark : colrLabelDragLight;
 
-        fntLabel = AbstractApplication.getApplication().getGraphicsHandler().getFont(GraphicsHandler.FONT_LABEL | GraphicsHandler.FONT_MINI).deriveFont(Font.ITALIC);
+        fntLabel = AbstractApplication.getApplication().getGraphicsHandler()
+                .getFont(GraphicsHandler.FONT_LABEL | GraphicsHandler.FONT_MINI).deriveFont(Font.ITALIC);
 
         setMaximumSize(new Dimension(getMaximumSize().width, barExtent));
         setMinimumSize(new Dimension(getMinimumSize().width, barExtent));
@@ -256,7 +285,8 @@ public class MarkerAxis
 
         // handle dnd graphics
         if (dragLastMark != null) {
-            final int dragMarkFlagPos = (int) (((dragLastMark.pos - visibleSpan.start) * (double) recentWidth / visibleSpan.getLength()) + 0.5);
+            final int dragMarkFlagPos = (int) (((dragLastMark.pos - visibleSpan.start) *
+                    (double) recentWidth / visibleSpan.getLength()) + 0.5);
             g2.setPaint(pntMarkFlagDrag);
             g2.fillRect(dragMarkFlagPos, 1, fm.stringWidth(dragLastMark.name) + 8, markExtent);
             g2.setColor(colrLabelDrag);
@@ -278,7 +308,8 @@ public class MarkerAxis
             g2.drawLine(markFlagPos[i], bounds.y, markFlagPos[i], bounds.y + bounds.height);
         }
         if (dragLastMark != null) {
-            final int dragMarkFlagPos = (int) (((dragLastMark.pos - visibleSpan.start) * (double) recentWidth / visibleSpan.getLength()) + 0.5);
+            final int dragMarkFlagPos = (int) (((dragLastMark.pos - visibleSpan.start) *
+                    (double) recentWidth / visibleSpan.getLength()) + 0.5);
             g2.setPaint(pntMarkStickDrag);
             g2.drawLine(dragMarkFlagPos, bounds.y, dragMarkFlagPos, bounds.y + bounds.height);
         }
@@ -385,22 +416,32 @@ public class MarkerAxis
 
             amap = spring.getActionMap();
             imap = spring.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-            ks = KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+            final int menu = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+            ks = KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, menu);
             // XXX DOESN'T WORK ;-(
             //			ggMarkName.getInputMap().remove( ks );
             imap.put(ks, "prev");
             a = new ActionEditPrev();
             ggEditPrev = new JButton(a);
             amap.put("prev", new DoClickAction(ggEditPrev));
-            ks = KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+            ks = KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, menu);
             // XXX DOESN'T WORK ;-(
             //			ggMarkName.getInputMap().remove( ks );
             imap.put(ks, "next");
             a = new ActionEditNext();
             ggEditNext = new JButton(a);
             amap.put("next", new DoClickAction(ggEditNext));
+            a = new ActionEditConfirm();
+            ggEditOk = new JButton(a);
+            ks = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, menu);
+            imap.put(ks, "confirm");
+            amap.put("confirm", new DoClickAction(ggEditOk));
+            ks = KeyStroke.getKeyStroke(KeyEvent.VK_T, menu);
+            imap.put(ks, "select-time");
+            amap.put("select-time", new RequestFocusAction(ggMarkPos));
 
-            editOptions = new Object[]{ggEditNext, ggEditPrev, getResourceString("buttonOk"), getResourceString("buttonCancel")};
+            editOptions = new Object[] { ggEditNext, ggEditPrev, ggEditOk,
+                    getResourceString("buttonCancel") };
         }
 
         // XXX sync
@@ -408,13 +449,15 @@ public class MarkerAxis
 
         updateEditMarker();
 
-        final JOptionPane op = new JOptionPane(editMarkerPane, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION,
-                null, editOptions, editOptions[2]);
-        result = BasicWindowHandler.showDialog(op, BasicWindowHandler.getWindowAncestor(this), getResourceString("inputDlgEditMarker"));
+        final JOptionPane op = new JOptionPane(editMarkerPane, JOptionPane.QUESTION_MESSAGE,
+                JOptionPane.OK_CANCEL_OPTION, null, editOptions, ggMarkName /*editOptions[2]*/);
+//        GUIUtil.setInitialDialogFocus(ggMarkName);
+        result = BasicWindowHandler.showDialog(op, BasicWindowHandler.getWindowAncestor(this),
+                getResourceString("inputDlgEditMarker"));
 
-        if (result == 2) {
-            commitEditMarker();
-        }
+//        if (result == 2) {
+//            commitEditMarker();
+//        }
     }
 
     protected void updateEditMarker() {
@@ -660,6 +703,23 @@ public class MarkerAxis
     }
 
 // ---------------- internal classes ----------------
+
+    @SuppressWarnings("serial")
+    private class ActionEditConfirm
+            extends MenuAction {
+        protected ActionEditConfirm() {
+            super(getResourceString("buttonOk"));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            final Object source = e.getSource();
+            commitEditMarker();
+            if (source instanceof AbstractButton) {
+                final Window w = SwingUtilities.getWindowAncestor((AbstractButton) source);
+                if (w != null) w.dispose();
+            }
+        }
+    }
 
     @SuppressWarnings("serial")
     private class ActionEditPrev
