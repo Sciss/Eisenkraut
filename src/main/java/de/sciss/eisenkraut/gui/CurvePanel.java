@@ -2,7 +2,7 @@
  *  CurvePanel.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -31,7 +31,6 @@ import java.util.prefs.Preferences;
  *  that can be acquired and dismissed by
  *  a <code>Component</code>.
  */
-@SuppressWarnings("serial")
 public class CurvePanel extends JComponent {
     private static final String     KEY_CTRLX1      = "ctrlx1";
     private static final String     KEY_CTRLY1      = "ctrly1";

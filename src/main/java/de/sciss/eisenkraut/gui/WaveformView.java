@@ -2,7 +2,7 @@
  *  WaveformView.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -26,7 +26,6 @@ import de.sciss.util.Disposable;
 import javax.swing.*;
 import java.awt.*;
 
-@SuppressWarnings("serial")
 public class WaveformView
         extends JComponent
         implements Disposable {
@@ -42,7 +41,7 @@ public class WaveformView
     private static final Stroke strkNull = new BasicStroke(1.0f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_BEVEL,
             1.0f, new float[]{4.0f, 4.0f}, 0.0f);
 
-    private int     verticalScale   = PrefsUtil.VSCALE_AMP_LIN;
+    private int     verticalScale   = PrefsUtil.V_SCALE_AMP_LIN;
     private float   ampLinMin       = -1.0f;    // minimum vector value
     private float   ampLinMax       = 1.0f;     // maximum vector value
     private float   ampLogMin       = -60f;
@@ -146,7 +145,7 @@ public class WaveformView
             this.ampLinMin = min;
             this.ampLinMax = max;
 
-            if (verticalScale == PrefsUtil.VSCALE_AMP_LIN) triggerRedisplay();
+            if (verticalScale == PrefsUtil.V_SCALE_AMP_LIN) triggerRedisplay();
         }
     }
 
@@ -155,7 +154,7 @@ public class WaveformView
             this.ampLogMin = min;
             this.ampLogMax = max;
 
-            if (verticalScale != PrefsUtil.VSCALE_AMP_LIN) triggerRedisplay();
+            if (verticalScale != PrefsUtil.V_SCALE_AMP_LIN) triggerRedisplay();
         }
     }
 
@@ -172,7 +171,7 @@ public class WaveformView
             this.freqMin = min;
             this.freqMax = max;
 
-            if (verticalScale == PrefsUtil.VSCALE_FREQ_SPECT) triggerRedisplay();
+            if (verticalScale == PrefsUtil.V_SCALE_FREQ_SPECTRUM) triggerRedisplay();
         }
     }
 
@@ -225,13 +224,13 @@ public class WaveformView
         final Graphics2D g2 = (Graphics2D) g;
 
         switch (verticalScale) {
-            case PrefsUtil.VSCALE_AMP_LIN:
+            case PrefsUtil.V_SCALE_AMP_LIN:
                 paintAmpLin(g2);
                 break;
-            case PrefsUtil.VSCALE_AMP_LOG:
+            case PrefsUtil.V_SCALE_AMP_LOG:
                 paintAmpLog(g2);
                 break;
-            case PrefsUtil.VSCALE_FREQ_SPECT:
+            case PrefsUtil.V_SCALE_FREQ_SPECTRUM:
                 paintFreqSpect(g2);
                 break;
             default:

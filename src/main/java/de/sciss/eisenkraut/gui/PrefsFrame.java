@@ -2,7 +2,7 @@
  *  PrefsFrame.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -251,11 +251,11 @@ public class PrefsFrame
 
         prefs = app.getUserPrefs().node(PrefsUtil.NODE_AUDIO);
         audioPrefs = prefs;
-        abPrefs = audioPrefs.node(PrefsUtil.NODE_AUDIOBOXES);
+        abPrefs = audioPrefs.node(PrefsUtil.NODE_AUDIO_BOXES);
         tab = createTab();
 
         row = 0;
-        key = PrefsUtil.KEY_SUPERCOLLIDERAPP;
+        key = PrefsUtil.KEY_SUPERCOLLIDER_APP;
         key2 = "prefsSuperColliderApp";
         lb = new JLabel(getResourceString(key2), TRAILING);
         tab.gridAdd(lb, 0, row);
@@ -264,21 +264,21 @@ public class PrefsFrame
         tab.gridAdd(ggPath, 1, row);
 
         row++;
-        key = PrefsUtil.KEY_AUTOBOOT;
+        key = PrefsUtil.KEY_AUTO_BOOT;
         key2 = "prefsAutoBoot";
         ggCheckBox = new PrefCheckBox(getResourceString(key2));
         ggCheckBox.setPreferences(prefs, key);
         tab.gridAdd(ggCheckBox, 1, row, -1, 1);
 
         row++;
-        key = PrefsUtil.KEY_AUTOPLAYFROMFINDER;
+        key = PrefsUtil.KEY_AUTO_PLAY_FROM_DESKTOP;
         key2 = "prefsAutoPlayFromFinder";
         lb = new JLabel(getResourceString(key2), JLabel.TRAILING);
         tab.gridAdd(lb, 0, row);
         ggChoice = new PrefComboBox();
-        ggChoice.addItem(new StringItem(PrefsUtil.AUTOPLAYFROMFINDER_NONE, getResourceString(key2 + "." + PrefsUtil.AUTOPLAYFROMFINDER_NONE)));
-        ggChoice.addItem(new StringItem(PrefsUtil.AUTOPLAYFROMFINDER_PLAY, getResourceString(key2 + "." + PrefsUtil.AUTOPLAYFROMFINDER_PLAY)));
-        ggChoice.addItem(new StringItem(PrefsUtil.AUTOPLAYFROMFINDER_LOOP, getResourceString(key2 + "." + PrefsUtil.AUTOPLAYFROMFINDER_LOOP)));
+        ggChoice.addItem(new StringItem(PrefsUtil.AUTO_PLAY_FROM_DESKTOP_NONE, getResourceString(key2 + "." + PrefsUtil.AUTO_PLAY_FROM_DESKTOP_NONE)));
+        ggChoice.addItem(new StringItem(PrefsUtil.AUTO_PLAY_FROM_DESKTOP_PLAY, getResourceString(key2 + "." + PrefsUtil.AUTO_PLAY_FROM_DESKTOP_PLAY)));
+        ggChoice.addItem(new StringItem(PrefsUtil.AUTO_PLAY_FROM_DESKTOP_LOOP, getResourceString(key2 + "." + PrefsUtil.AUTO_PLAY_FROM_DESKTOP_LOOP)));
         ggChoice.setPreferences(prefs, key);
         tab.gridAdd(ggChoice, 1, row, -1, 1);
 
@@ -288,7 +288,7 @@ public class PrefsFrame
         tab.gridAdd(createAudioBoxGUI(), 1, row, 1, -1);
 
         row++;
-        key = PrefsUtil.KEY_AUDIORATE;
+        key = PrefsUtil.KEY_AUDIO_RATE;
         key2 = "prefsAudioRate";
         lb = new JLabel(getResourceString(key2), TRAILING);
         tab.gridAdd(lb, 0, row);
@@ -320,7 +320,7 @@ public class PrefsFrame
         lb.setVisible(false);
         collAudioAdvanced.add(lb);
         tab.gridAdd(lb, 0, row);
-        key = PrefsUtil.KEY_SCPROTOCOL;
+        key = PrefsUtil.KEY_SC_PROTOCOL;
         key2 = "prefsOSCProtocol";
         lb = new JLabel(getResourceString(key2), TRAILING);
         b = Box.createHorizontalBox();
@@ -332,7 +332,7 @@ public class PrefsFrame
         ggChoice.setPreferences(prefs, key);
         b.add(ggChoice);
 
-        key = PrefsUtil.KEY_SCPORT;
+        key = PrefsUtil.KEY_SC_PORT;
         key2 = "prefsOSCPort";
         lb = new JLabel(getResourceString(key2), TRAILING);
         b.add(Box.createHorizontalStrut(16));
@@ -346,7 +346,7 @@ public class PrefsFrame
         tab.gridAdd(b, 1, row, -1, 1);
 
         row++;
-        key = PrefsUtil.KEY_SCBLOCKSIZE;
+        key = PrefsUtil.KEY_SC_BLOCK_SIZE;
         key2 = "prefsSCBlockSize";
         lb = new JLabel(getResourceString(key2), TRAILING);
         lb.setVisible(false);
@@ -360,7 +360,7 @@ public class PrefsFrame
         tab.gridAdd(ggParam, 1, row, -1, 1);
 
         row++;
-        key = PrefsUtil.KEY_AUDIOBUSSES;
+        key = PrefsUtil.KEY_AUDIO_BUSSES;
         key2 = "prefsAudioBuses";
         lb = new JLabel(getResourceString(key2), TRAILING);
         lb.setVisible(false);
@@ -374,7 +374,7 @@ public class PrefsFrame
         tab.gridAdd(ggParam, 1, row, -1, 1);
 
         row++;
-        key = PrefsUtil.KEY_SCMEMSIZE;
+        key = PrefsUtil.KEY_SC_MEM_SIZE;
         key2 = "prefsSCMemSize";
         lb = new JLabel(getResourceString(key2), TRAILING);
         lb.setVisible(false);
@@ -388,7 +388,7 @@ public class PrefsFrame
         tab.gridAdd(ggParam, 1, row, -1, 1);
 
         row++;
-        key = PrefsUtil.KEY_SCRENDEZVOUS;
+        key = PrefsUtil.KEY_SC_RENDEZVOUS;
         key2 = "prefsSCRendezvous";
         lb = new JLabel(getResourceString(key2), TRAILING);
         lb.setVisible(false);
@@ -482,7 +482,7 @@ public class PrefsFrame
         tab = createTab();
 
         row = 0;
-        key = PrefsUtil.KEY_SONAENABLED;
+        key = PrefsUtil.KEY_SONOGRAM_ENABLED;
         ggCheckBox = new PrefCheckBox("Enable Sonagramme Option (Experimental!)");
         ggCheckBox.setPreferences(prefs, key);
         tab.gridAdd(ggCheckBox, 0, row, 2, 1);
@@ -491,7 +491,7 @@ public class PrefsFrame
         tab.gridAdd(new JLabel(" "), 0, row);
 
         row++;
-        key = PrefsUtil.NODE_SONAGRAM;
+        key = PrefsUtil.NODE_SONOGRAM;
         key2 = "prefsSonoSettings";
         lb = new JLabel(getResourceString(key2), CENTER);
         tab.gridAdd(lb, 0, row, 2, 1);
@@ -650,7 +650,7 @@ public class PrefsFrame
     }
 
     protected void triggerCtrlRoomRefill() {
-        final ControlRoomFrame f = (ControlRoomFrame) AbstractApplication.getApplication().getComponent(Main.COMP_CTRLROOM);
+        final ControlRoomFrame f = (ControlRoomFrame) AbstractApplication.getApplication().getComponent(Main.COMP_CTRL_ROOM);
         if (f != null) f.refillAudioBoxes();
     }
 
@@ -709,7 +709,7 @@ public class PrefsFrame
         // this doesn't show up obviously, so we add it manually...
         collDetected.add(new AudioBoxConfig(AudioBoxConfig.ID_DEFAULT, "Default", 8, 8, true));
 
-        scsynthPath = audioPrefs.get(PrefsUtil.KEY_SUPERCOLLIDERAPP, null);
+        scsynthPath = audioPrefs.get(PrefsUtil.KEY_SUPERCOLLIDER_APP, null);
         if (scsynthPath == null) {
             System.err.println(getResourceString("errSCSynthAppNotFound"));
             return;

@@ -2,7 +2,7 @@
  *  MainFrame.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -59,7 +59,6 @@ public class MainFrame
 
     private final SuperColliderClient superCollider;
 
-    @SuppressWarnings("serial")
     private static class TH extends TransferHandler {
         TH() {
             super();
@@ -93,7 +92,6 @@ public class MainFrame
         }
     }
 
-    @SuppressWarnings("serial")
     private static class DropBorder extends AbstractBorder {
         private final Color colr;
 
@@ -338,7 +336,6 @@ public class MainFrame
 
 // ------------- internal classes -------------
 
-    @SuppressWarnings("serial")
     private class ActionBoot
             extends AbstractAction {
 
@@ -365,7 +362,6 @@ public class MainFrame
         }
     }
 
-    @SuppressWarnings("serial")
     private class ActionDumpOSC
             extends AbstractAction {
 

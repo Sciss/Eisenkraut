@@ -2,7 +2,7 @@
  *  TrackRowHeader.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -46,7 +46,6 @@ import java.util.List;
  *	and soloing/muting. In the future it could
  *	carry insert effects and the like.
  */
-@SuppressWarnings("serial")
 public class TrackRowHeader
         extends JPanel
         implements MouseListener, DynamicListening, Disposable {
@@ -216,23 +215,23 @@ public class TrackRowHeader
         UndoableEdit 	edit;
         List<SessionObject> collTracks;
 
-        if( e.isAltDown() ) {
+        if (e.isAltDown()) {
             selected = !selected;   // toggle item
-            if( selected ) {		// select all
+            if (selected) {        // select all
                 collTracks = tracks.getAll();
-            } else {				// deselect all
-                collTracks = new ArrayList<SessionObject>( 1 );
+            } else {                // deselect all
+                collTracks = new ArrayList<SessionObject>(1);
             }
-        } else if( e.isMetaDown() ) {
+        } else if (e.isMetaDown()) {
             selected = !selected;   // toggle item
-            if( selected ) {		// deselect all except uns
-                collTracks = Collections.singletonList((SessionObject) t);
-            } else {				// select all except us
+            if (selected) {        // deselect all except uns
+                collTracks = Collections.singletonList(t);
+            } else {                // select all except us
                 collTracks = tracks.getAll();
-                collTracks.remove( t );
+                collTracks.remove(t);
             }
         } else {
-            if( e.isShiftDown() ) {
+            if (e.isShiftDown()) {
                 collTracks = selectedTracks.getAll();
                 selected = !selected;
                 if (selected) {
@@ -241,14 +240,14 @@ public class TrackRowHeader
                     collTracks.remove(t);        // remove us from selection
                 }
             } else {
-                if( selected ) return;						// no action
-                selected	= true;
-                collTracks	= Collections.singletonList((SessionObject) t);	// deselect all except uns
+                if (selected) return;                        // no action
+                selected = true;
+                collTracks = Collections.singletonList(t);    // deselect all except uns
             }
         }
         // XXX should use a lazy edit here
         edit = new EditSetSessionObjects(this, selectedTracks, collTracks).perform();
-        undo.addEdit( edit );
+        undo.addEdit(edit);
         repaint();
     }
 

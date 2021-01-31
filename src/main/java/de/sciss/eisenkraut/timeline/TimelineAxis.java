@@ -2,7 +2,7 @@
  *  TimelineAxis.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -43,7 +43,6 @@ import java.util.prefs.PreferenceChangeListener;
  *  user to position and select the
  *  timeline.
  */
-@SuppressWarnings("serial")
 public class TimelineAxis
         extends Axis
         implements TimelineListener, MouseListener, MouseMotionListener,

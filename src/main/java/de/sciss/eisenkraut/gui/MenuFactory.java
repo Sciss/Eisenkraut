@@ -2,7 +2,7 @@
  *  MenuFactory.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -229,7 +229,7 @@ public class MenuFactory
         ba = new BooleanPrefsMenuAction(getResourceString("menuInsertionFollowsPlay"), null);
         mci = new MenuCheckItem("insertionFollowsPlay", ba);
         ba.setCheckItem(mci);
-        ba.setPreferences(prefs, PrefsUtil.KEY_INSERTIONFOLLOWSPLAY);
+        ba.setPreferences(prefs, PrefsUtil.KEY_INSERTION_FOLLOWS_PLAY);
         mg.add(mci);
         add(mg, i + 3);
 
@@ -241,31 +241,31 @@ public class MenuFactory
         smg.add(new MenuRadioItem(rg, "samples", ia));    // crucial reihenfolge : erst item erzeugen, dann gruppe setzen, dann prefs
         ia.setRadioGroup(rg);
         ia.setPreferences(prefs, PrefsUtil.KEY_TIMEUNITS);
-        ia = new IntPrefsMenuAction(getResourceString("menuTimeUnitsMinSecs"), null, PrefsUtil.TIME_MINSECS);
+        ia = new IntPrefsMenuAction(getResourceString("menuTimeUnitsMinSecs"), null, PrefsUtil.TIME_MIN_SECS);
         smg.add(new MenuRadioItem(rg, "minSecs", ia));
         ia.setRadioGroup(rg);
         ia.setPreferences(prefs, PrefsUtil.KEY_TIMEUNITS);
         mg.add(smg);
 
         smg = new MenuGroup("vertscale", getResourceString("menuVertScale"));
-        ia = new IntPrefsMenuAction(getResourceString("menuVertScaleAmpLin"), null, PrefsUtil.VSCALE_AMP_LIN);
+        ia = new IntPrefsMenuAction(getResourceString("menuVertScaleAmpLin"), null, PrefsUtil.V_SCALE_AMP_LIN);
         rg = new MenuRadioGroup();
         smg.add(new MenuRadioItem(rg, "amplin", ia));    // crucial reihenfolge : erst item erzeugen, dann gruppe setzen, dann prefs
         ia.setRadioGroup(rg);
-        ia.setPreferences(prefs, PrefsUtil.KEY_VERTSCALE);
-        ia = new IntPrefsMenuAction(getResourceString("menuVertScaleAmpLog"), null, PrefsUtil.VSCALE_AMP_LOG);
+        ia.setPreferences(prefs, PrefsUtil.KEY_VERT_SCALE);
+        ia = new IntPrefsMenuAction(getResourceString("menuVertScaleAmpLog"), null, PrefsUtil.V_SCALE_AMP_LOG);
         smg.add(new MenuRadioItem(rg, "amplog", ia));
         ia.setRadioGroup(rg);
-        ia.setPreferences(prefs, PrefsUtil.KEY_VERTSCALE);
-        ia = new IntPrefsMenuAction(getResourceString("menuVertScaleFreqSpect"), null, PrefsUtil.VSCALE_FREQ_SPECT);
+        ia.setPreferences(prefs, PrefsUtil.KEY_VERT_SCALE);
+        ia = new IntPrefsMenuAction(getResourceString("menuVertScaleFreqSpect"), null, PrefsUtil.V_SCALE_FREQ_SPECTRUM);
         smg.add(new MenuRadioItem(rg, "freqspect", ia));
         ia.setRadioGroup(rg);
-        ia.setPreferences(prefs, PrefsUtil.KEY_VERTSCALE);
+        ia.setPreferences(prefs, PrefsUtil.KEY_VERT_SCALE);
         final IntPrefsMenuAction freqSpectAction = ia;
         new DynamicPrefChangeManager(prefs.node(PrefsUtil.NODE_VIEW), new String[]{
-                PrefsUtil.KEY_SONAENABLED}, new PreferenceChangeListener() {
+                PrefsUtil.KEY_SONOGRAM_ENABLED}, new PreferenceChangeListener() {
             public void preferenceChange(PreferenceChangeEvent pce) {
-                freqSpectAction.setEnabled(prefs.node(PrefsUtil.NODE_VIEW).getBoolean(PrefsUtil.KEY_SONAENABLED, false));
+                freqSpectAction.setEnabled(prefs.node(PrefsUtil.NODE_VIEW).getBoolean(PrefsUtil.KEY_SONOGRAM_ENABLED, false));
             }
         }).startListening();
 
@@ -274,22 +274,22 @@ public class MenuFactory
         ba = new BooleanPrefsMenuAction(getResourceString("menuViewNullLinie"), null);
         mci = new MenuCheckItem("nullLinie", ba);
         ba.setCheckItem(mci);
-        ba.setPreferences(prefs, PrefsUtil.KEY_VIEWNULLLINIE);
+        ba.setPreferences(prefs, PrefsUtil.KEY_VIEW_ZERO_LINE);
         mg.add(mci);
         ba = new BooleanPrefsMenuAction(getResourceString("menuViewVerticalRulers"), null);
         mci = new MenuCheckItem("verticalRulers", ba);
         ba.setCheckItem(mci);
-        ba.setPreferences(prefs, PrefsUtil.KEY_VIEWVERTICALRULERS);
+        ba.setPreferences(prefs, PrefsUtil.KEY_VIEW_VERTICAL_RULERS);
         mg.add(mci);
         ba = new BooleanPrefsMenuAction(getResourceString("menuViewChanMeters"), null);
         mci = new MenuCheckItem("channelMeters", ba);
         ba.setCheckItem(mci);
-        ba.setPreferences(prefs, PrefsUtil.KEY_VIEWCHANMETERS);
+        ba.setPreferences(prefs, PrefsUtil.KEY_VIEW_CHANNEL_METERS);
         mg.add(mci);
         ba = new BooleanPrefsMenuAction(getResourceString("menuViewMarkers"), null);
         mci = new MenuCheckItem("markers", ba);
         ba.setCheckItem(mci);
-        ba.setPreferences(prefs, PrefsUtil.KEY_VIEWMARKERS);
+        ba.setPreferences(prefs, PrefsUtil.KEY_VIEW_MARKERS);
         mg.add(mci);
         add(mg, i + 4);
 
@@ -372,11 +372,11 @@ public class MenuFactory
     public void openDocument(File f, boolean postAction) {
         if (actionOpen.perform(f) && postAction) {
             final Preferences audioPrefs = getApplication().getUserPrefs().node(PrefsUtil.NODE_AUDIO);
-            final String postActionValue = audioPrefs.get(PrefsUtil.KEY_AUTOPLAYFROMFINDER, PrefsUtil.AUTOPLAYFROMFINDER_NONE);
-            if (!postActionValue.equals(PrefsUtil.AUTOPLAYFROMFINDER_NONE)) {
+            final String postActionValue = audioPrefs.get(PrefsUtil.KEY_AUTO_PLAY_FROM_DESKTOP, PrefsUtil.AUTO_PLAY_FROM_DESKTOP_NONE);
+            if (!postActionValue.equals(PrefsUtil.AUTO_PLAY_FROM_DESKTOP_NONE)) {
                 final Session doc = findDocumentForPath(f);
                 if (doc != null) {
-                    if (postActionValue.equals(PrefsUtil.AUTOPLAYFROMFINDER_LOOP)) {
+                    if (postActionValue.equals(PrefsUtil.AUTO_PLAY_FROM_DESKTOP_LOOP)) {
                         final Span loopSpan = doc.getAudioTrail().getSpan();
                         // hmmm.... bit shaky all because we don't have a clean MVC
                         doc.timeline.setSelectionSpan(this, loopSpan);
@@ -424,7 +424,6 @@ public class MenuFactory
 // ---------------- Action objects for file (session) operations ---------------- 
 
     // action for the New-Empty Document menu item
-    @SuppressWarnings("serial")
     private class ActionNewEmpty
             extends MenuAction {
 
@@ -465,7 +464,7 @@ public class MenuFactory
                 sampleRate = status.sampleRate;
             } else {
                 audioPrefs = getApplication().getUserPrefs().node(PrefsUtil.NODE_AUDIO);
-                param = Param.fromPrefs(audioPrefs, PrefsUtil.KEY_AUDIORATE, null);
+                param = Param.fromPrefs(audioPrefs, PrefsUtil.KEY_AUDIO_RATE, null);
                 if (param != null) {
                     sampleRate = param.val;
                 } else {
@@ -507,7 +506,6 @@ public class MenuFactory
     }
 
     // action for the Open-Session menu item
-    @SuppressWarnings("serial")
     private class ActionOpen
             extends MenuAction {
         protected ActionOpen(String text, KeyStroke shortcut) {
@@ -534,7 +532,7 @@ public class MenuFactory
             final Preferences       prefs   = getApplication().getUserPrefs();
 
             fDlg = new FileDialog(frame, getResourceString("fileDlgOpen"), FileDialog.LOAD);
-            fDlg.setDirectory(prefs.get(PrefsUtil.KEY_FILEOPENDIR, System.getProperty("user.home")));
+            fDlg.setDirectory(prefs.get(PrefsUtil.KEY_FILE_OPEN_DIR, System.getProperty("user.home")));
             fDlg.setVisible(true);
             strDir = fDlg.getDirectory();
             strFile = fDlg.getFile();
@@ -542,7 +540,7 @@ public class MenuFactory
             if (strFile == null) return null;   // means the dialog was cancelled
 
             // save dir prefs
-            prefs.put(PrefsUtil.KEY_FILEOPENDIR, strDir);
+            prefs.put(PrefsUtil.KEY_FILE_OPEN_DIR, strDir);
 
             return (new File(strDir, strFile));
         }
@@ -579,7 +577,6 @@ public class MenuFactory
     }
 
     // action for the Open-Multiple-Mono menu item
-    @SuppressWarnings("serial")
     private class ActionOpenMM
             extends MenuAction {
         protected ActionOpenMM(String text, KeyStroke shortcut) {
@@ -608,14 +605,14 @@ public class MenuFactory
 
             fDlg.setMultiSelectionEnabled(true);
             fDlg.setDialogTitle(getValue(Action.NAME).toString());
-            fDlg.setCurrentDirectory(new File(prefs.get(PrefsUtil.KEY_FILEOPENDIR, System.getProperty("user.home"))));
+            fDlg.setCurrentDirectory(new File(prefs.get(PrefsUtil.KEY_FILE_OPEN_DIR, System.getProperty("user.home"))));
             result = fDlg.showOpenDialog(c);
 
             if (result == JFileChooser.APPROVE_OPTION) {
                 files = fDlg.getSelectedFiles();
                 // save dir prefs
                 if (files.length > 0) {
-                    prefs.put(PrefsUtil.KEY_FILEOPENDIR, files[0].getParent());
+                    prefs.put(PrefsUtil.KEY_FILE_OPEN_DIR, files[0].getParent());
                 }
                 return files;
             } else {
@@ -656,7 +653,6 @@ public class MenuFactory
     }
 
     // action for the Open-Recent menu
-    @SuppressWarnings("serial")
     private class ActionEisKOpenRecent
             extends ActionOpenRecent {
 
@@ -720,7 +716,6 @@ public class MenuFactory
 // ---------------- Action objects for window operations ---------------- 
 
     // action for the IOSetup menu item
-    @SuppressWarnings("serial")
     private class ActionIOSetup
             extends MenuAction {
 
@@ -733,7 +728,7 @@ public class MenuFactory
          */
         public void actionPerformed(ActionEvent e) {
 
-            IOSetupFrame f = (IOSetupFrame) getApplication().getComponent(Main.COMP_IOSETUP);
+            IOSetupFrame f = (IOSetupFrame) getApplication().getComponent(Main.COMP_IO_SETUP);
 
             if (f == null) {
                 f = new IOSetupFrame();        // automatically adds component
@@ -744,7 +739,6 @@ public class MenuFactory
     }
 
     // action for the Control Room menu item
-    @SuppressWarnings("serial")
     private class ActionCtrlRoom
             extends MenuAction {
 
@@ -756,7 +750,7 @@ public class MenuFactory
          *  Brings up the IOSetup
          */
         public void actionPerformed(ActionEvent e) {
-            ControlRoomFrame f = (ControlRoomFrame) getApplication().getComponent(Main.COMP_CTRLROOM);
+            ControlRoomFrame f = (ControlRoomFrame) getApplication().getComponent(Main.COMP_CTRL_ROOM);
 
             if (f == null) {
                 f = new ControlRoomFrame();    // automatically adds component
@@ -767,7 +761,6 @@ public class MenuFactory
     }
 
     // action for the Observer menu item
-    @SuppressWarnings("serial")
     private class ActionObserver
             extends MenuAction {
 

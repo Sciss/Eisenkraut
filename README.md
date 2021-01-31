@@ -3,14 +3,14 @@
 # Eisenkraut
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Sciss/Eisenkraut?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Build Status](https://travis-ci.org/Sciss/Eisenkraut.svg?branch=main)](https://travis-ci.org/Sciss/Eisenkraut)
+[![Build Status](https://github.com/Sciss/Eisenkraut/workflows/Scala%20CI/badge.svg?branch=main)](https://github.com/Sciss/Eisenkraut/actions?query=workflow%3A%22Scala+CI%22)
 <a href="https://liberapay.com/sciss/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg" height="24"></a>
 
 ## statement
 
 Eisenkraut is a standalone, cross-platform audio file editor using the SuperCollider 3 server application.
 
-Eisenkraut is (C)opyright 2004&ndash;2020 by Hanns Holger Rutz. All rights reserved. It is released under the
+Eisenkraut is (C)opyright 2004&ndash;2021 by Hanns Holger Rutz. All rights reserved. It is released under the
 [GNU Affero General Public License](http://github.com/Sciss/Eisenkraut/blob/main/licenses/Eisenkraut-License.txt) v3+.
 
 To contact the author, send an e-mail to `contact at sciss.de`. For project status, API and current version visit

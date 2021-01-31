@@ -2,7 +2,7 @@
  *  PrefsUtil.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -10,7 +10,7 @@
  *  For further information, please contact Hanns Holger Rutz at
  *  contact@sciss.de
  */
- 
+
 package de.sciss.eisenkraut.util;
 
 import de.sciss.app.AbstractApplication;
@@ -44,312 +44,272 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 /**
- *	A helper class for programme preferences. It
- *	contains the globally known preferences keys,
- *	adds support for default preferences generation
- *	and some geometric object (de)serialization.
- *	Has utility methods for clearing preferences trees
- *	and importing and exporting from/to XML.
+ * A helper class for programme preferences. It
+ * contains the globally known preferences keys,
+ * adds support for default preferences generation
+ * and some geometric object (de)serialization.
+ * Has utility methods for clearing preferences trees
+ * and importing and exporting from/to XML.
  */
 public class PrefsUtil {
 
     // ------------ root node level ------------
 
     /**
-     *  Value: Double representing the application
-     *  version of Meloncillo last time prefs was saved.<br>
-     *  Has default value: no!<br>
-     *  Node: root
+     * Value: Double representing the application
+     * version of Meloncillo last time prefs was saved.<br>
+     * Has default value: no!<br>
+     * Node: root
      */
-    public static final String KEY_VERSION	= "version";	// double : app version
-
-//	/**
-//	 *  Value: String representing the path list of
-//	 *  a user's set favourite directories. See PathList
-//	 *  and PathField documentation.<br>
-//	 *  Has default value: no!<br>
-//	 *  Node: root
-//	 */
-//	public static final String KEY_USERPATHS= "usrpaths";	// string : path list
+    public static final String KEY_VERSION = "version";    // double : app version
 
     /**
-     *  Value: String representing the path of
-     *  the last used directory for opening a file.<br>
-     *  Has default value: no!<br>
-     *  Node: root
+     * Value: String representing the path of
+     * the last used directory for opening a file.<br>
+     * Has default value: no!<br>
+     * Node: root
      */
-    public static final String KEY_FILEOPENDIR = "fileopendir";	// string : path
+    public static final String KEY_FILE_OPEN_DIR = "fileopendir";    // string : path
 
     /**
-     *  Value: String representing the path of
-     *  the last used directory for saving a file.<br>
-     *  Has default value: no!<br>
-     *  Node: root
+     * Value: String representing the path of
+     * the last used directory for saving a file.<br>
+     * Has default value: no!<br>
+     * Node: root
      */
-    public static final String KEY_FILESAVEDIR = "filesavedir";	// string : path
+    public static final String KEY_FILE_SAVE_DIR = "filesavedir";    // string : path
 
     /**
-     *  Value: String representing the path of
-     *  the last used directory for saving a selection of a file.<br>
-     *  Has default value: no!<br>
-     *  Node: root
+     * Value: String representing the path of
+     * the last used directory for saving a selection of a file.<br>
+     * Has default value: no!<br>
+     * Node: root
      */
-    public static final String KEY_FILESAVESELDIR = "filesaveseldir";	// string : path
+    public static final String KEY_FILE_SAVE_SEL_DIR = "filesaveseldir";    // string : path
 
     /**
-     *  Value: Boolean stating whether frame bounds
-     *  should be recalled a session file when it's
-     *  loaded. Has default value: yes!<br>
-     *  Node: root
+     * Value: Boolean stating whether frame bounds
+     * should be recalled a session file when it's
+     * loaded. Has default value: yes!<br>
+     * Node: root
      */
-    public static final String KEY_LOOKANDFEEL = "lookandfeel";
+    public static final String KEY_LOOK_AND_FEEL = "lookandfeel";
 
     /**
      * Value: String of "native", "metal", "web", "submin"
      */
-    public static final String KEY_LAF_TYPE                 = "laf-type";
-    public static final String VALUE_LAF_TYPE_NATIVE        = "native";
-    public static final String VALUE_LAF_TYPE_METAL         = "metal";
-    public static final String VALUE_LAF_TYPE_SUBMIN_LIGHT  = "light";
-    public static final String VALUE_LAF_TYPE_SUBMIN_DARK   = "dark";
+    public static final String KEY_LAF_TYPE = "laf-type";
+    public static final String VALUE_LAF_TYPE_NATIVE = "native";
+    public static final String VALUE_LAF_TYPE_METAL = "metal";
+    public static final String VALUE_LAF_TYPE_SUBMIN_LIGHT = "light";
+    public static final String VALUE_LAF_TYPE_SUBMIN_DARK = "dark";
 
     /**
-     *  Value: Boolean indicating whether timeline position catch
-     *  is active or not.<br>
-     *  Has default value: yes!<br>
-     *  Node: shared
+     * Value: Boolean indicating whether timeline position catch
+     * is active or not.<br>
+     * Has default value: yes!<br>
+     * Node: shared
      */
-    public static final String KEY_CATCH		= "catch";		// boolean : catch on/off
+    public static final String KEY_CATCH = "catch";        // boolean : catch on/off
     /**
-     *  Value: Boolean indicating whether timeline position is
-     *  adjusted after transport stop or not.<br>
-     *  Has default value: yes!<br>
-     *  Node:
+     * Value: Boolean indicating whether timeline position is
+     * adjusted after transport stop or not.<br>
+     * Has default value: yes!<br>
+     * Node:
      */
-    public static final String KEY_INSERTIONFOLLOWSPLAY	= "insertionfollowsplay";		// boolean
+    public static final String KEY_INSERTION_FOLLOWS_PLAY = "insertionfollowsplay";        // boolean
     /**
-     *  Value: Boolean indicating whether a null-line
-     *  should be painted in the overviews or not.<br>
-     *  Has default value: yes!<br>
-     *  Node:
+     * Value: Boolean indicating whether a null-line
+     * should be painted in the overviews or not.<br>
+     * Has default value: yes!<br>
+     * Node:
      */
-    public static final String KEY_VIEWNULLLINIE	= "viewnulllinie";		// boolean
+    public static final String KEY_VIEW_ZERO_LINE = "viewnulllinie";        // boolean
     /**
-     *  Value: Boolean indicating whether a vertical
-     *  (amplitude range) ruler should be display for each channel or not.<br>
-     *  Has default value: yes!<br>
-     *  Node:
+     * Value: Boolean indicating whether a vertical
+     * (amplitude range) ruler should be display for each channel or not.<br>
+     * Has default value: yes!<br>
+     * Node:
      */
-    public static final String KEY_VIEWVERTICALRULERS	= "viewverticalrulers";		// boolean
+    public static final String KEY_VIEW_VERTICAL_RULERS = "viewverticalrulers";        // boolean
     /**
-     *  Value: Boolean indicating whether a marker
-     *	axis and flagsticks should be painted in the overviews or not.<br>
-     *  Has default value: yes!<br>
-     *  Node:
+     * Value: Boolean indicating whether a marker
+     * axis and flag sticks should be painted in the overviews or not.<br>
+     * Has default value: yes!<br>
+     * Node:
      */
-    public static final String KEY_VIEWMARKERS	= "viewmarkers";		// boolean
+    public static final String KEY_VIEW_MARKERS = "viewmarkers";        // boolean
     /**
-     *  Value: Boolean indicating whether level meters
-     *	per channel should be displayed or not.<br>
-     *  Has default value: yes!<br>
-     *  Node:
+     * Value: Boolean indicating whether level meters
+     * per channel should be displayed or not.<br>
+     * Has default value: yes!<br>
+     * Node:
      */
-    public static final String KEY_VIEWCHANMETERS	= "viewchanmeters";		// boolean
+    public static final String KEY_VIEW_CHANNEL_METERS = "viewchanmeters";        // boolean
     /**
-     *  Value: Integer indicating the dislayed time format.<br>
-     *  Has default value: yes!<br>
-     *  Node:
+     * Value: Integer indicating the displayed time format.<br>
+     * Has default value: yes!<br>
+     * Node:
      */
-    public static final String KEY_TIMEUNITS	= "timeunits";		// integer (TIME_SAMPLES, TIME_MINSECS)
+    public static final String KEY_TIMEUNITS = "timeunits";        // integer (TIME_SAMPLES, TIME_MINSECS)
     /**
-     *  Value: Integer indicating the dislayed amplitude scaling.<br>
-     *  Has default value: yes!<br>
-     *  Node:
+     * Value: Integer indicating the displayed amplitude scaling.<br>
+     * Has default value: yes!<br>
+     * Node:
      */
-    public static final String KEY_VERTSCALE	= "vertscale";		// integer (VSCALE_AMP_LIN etc.)
+    public static final String KEY_VERT_SCALE = "vertscale";        // integer (VSCALE_AMP_LIN etc.)
 
-    public static final int TIME_SAMPLES		= 0;
-    public static final int TIME_MINSECS		= 1;
+    public static final int TIME_SAMPLES    = 0;
+    public static final int TIME_MIN_SECS   = 1;
 
-    public static final int VSCALE_AMP_LIN		= 0;
-    public static final int VSCALE_AMP_LOG		= 1;
-    public static final int VSCALE_FREQ_SPECT	= 2;
+    public static final int V_SCALE_AMP_LIN         = 0;
+    public static final int V_SCALE_AMP_LOG         = 1;
+    public static final int V_SCALE_FREQ_SPECTRUM   = 2;
 
     // ------------ audio node level ------------
 
     /**
-     *  Child node of global prefs
+     * Child node of global prefs
      */
-    public static final String NODE_AUDIO	= "audio";
+    public static final String NODE_AUDIO = "audio";
+
+    public static final String KEY_SC_PROTOCOL  = "scprotocol";            // string : osc protocol
+    public static final String KEY_SC_PORT      = "scport";                // param : osc port
 
     /**
-     *  Value: String representing the osc port
-     *  of the supercollider application.<br>
-     *  Has default value: yes!<br>
-     *  Node: audio
+     * Value: String representing the pathname
+     * of the supercollider application.<br>
+     * Has default value: yes!<br>
+     * Node: audio
      */
-//	public static final String KEY_SUPERCOLLIDEROSC	= "supercolliderosc";	// string : "ip:port"
-
-    public static final String KEY_SCPROTOCOL		= "scprotocol";			// string : osc protocol
-    public static final String KEY_SCPORT			= "scport";				// param : osc port
+    public static final String KEY_SUPERCOLLIDER_APP = "supercolliderapp";    // string : pathname
 
     /**
-     *  Value: String representing the pathname
-     *  of the supercollider application.<br>
-     *  Has default value: yes!<br>
-     *  Node: audio
+     * Value: Param representing the sample rate
+     * at which supercollider shall run (0 = default system rate)
+     * Has default value: yes!<br>
+     * Node: audio
      */
-    public static final String KEY_SUPERCOLLIDERAPP	= "supercolliderapp";	// string : pathname
-
-//	/**
-//	 *  Value: String representing the name
-//	 *  of the audio hardware to use by supercollider.
-//	 *	On Mac OS X, the internal hardware is known
-//	 *	as 'Built-in Audio'. Another example is 'Mobile I/O 2882 [2600]'
-//	 *  Has default value: no!<br>
-//	 *  Node: audio
-//	 */
-//	public static final String KEY_AUDIODEVICE = "audiodevice";		// string : name of audio driver
-//	/**
-//	 *  Value: Param representing the number
-//	 *  of input channels supplied by the audio hardware
-//	 *  Has default value: yes!<br>
-//	 *  Node: audio
-//	 */
-//	public static final String KEY_AUDIOINPUTS = "audioinputs";		// Param : number of audio interface input ch
-//	/**
-//	 *  Value: Param representing the number
-//	 *  of output channels supplied by the audio hardware
-//	 *  Has default value: yes!<br>
-//	 *  Node: audio
-//	 */
-//	public static final String KEY_AUDIOOUTPUTS = "audiooutputs";	// Param : number of audio interface output ch
+    public static final String KEY_AUDIO_RATE = "audiorate";        // Param : sample rate for sc
     /**
-     *  Value: Param representing the sample rate
-     *  at which supercollider shall run (0 = default system rate)
-     *  Has default value: yes!<br>
-     *  Node: audio
+     * Value: Param representing the number of
+     * internal supercollider busses
+     * Has default value: yes!<br>
+     * Node: audio
      */
-    public static final String KEY_AUDIORATE	= "audiorate";		// Param : sample rate for sc
+    public static final String KEY_AUDIO_BUSSES = "audiobusses";    // Param : integer number of busses
     /**
-     *  Value: Param representing the number of
-     *  internal supercollider busses
-     *  Has default value: yes!<br>
-     *  Node: audio
+     * Value: Param representing the amount of
+     * realtime memory for supercollider (in MB)
+     * Has default value: yes!<br>
+     * Node: audio
      */
-    public static final String KEY_AUDIOBUSSES	= "audiobusses";	// Param : integer number of busses
+    public static final String KEY_SC_MEM_SIZE = "scmemsize";        // Param : integer number MB realtime mem for supercollider
     /**
-     *  Value: Param representing the amount of
-     *  realtime memory for supercollider (in MB)
-     *  Has default value: yes!<br>
-     *  Node: audio
+     * Value: Param representing the number of
+     * audio samples per control period in supercollider
+     * Has default value: yes!<br>
+     * Node: audio
      */
-    public static final String KEY_SCMEMSIZE	= "scmemsize";		// Param : integer number MB realtime mem for supercollider
+    public static final String KEY_SC_BLOCK_SIZE = "scblocksize";    // Param : integer number samples per control period in supercollider
     /**
-     *  Value: Param representing the number of
-     *  audio samples per control period in supercollider
-     *  Has default value: yes!<br>
-     *  Node: audio
+     * Value: Boolean determining whether scsynth should be booted
+     * with Rendezvous enabled or not.
+     * Has default value: yes!<br>
+     * Node: audio
      */
-    public static final String KEY_SCBLOCKSIZE	= "scblocksize";	// Param : integer number samples per control period in supercollider
+    public static final String KEY_SC_RENDEZVOUS = "screndezvous";    // Boolean
     /**
-     *  Value: Boolean determining whether scsynth should be booted
-     *  with Rendezvous enabled or not.
-     *  Has default value: yes!<br>
-     *  Node: audio
+     * Value: Boolean indicating whether scsynth shall
+     * be booted automatically when Eisenkraut launched or not
+     * Has default value: yes!<br>
+     * Node: audio
      */
-    public static final String KEY_SCRENDEZVOUS	= "screndezvous";	// Boolean
-    /**
-     *  Value: Boolean indicating whether scsynth shall
-     *  be booted automatically when Eisenkraut launched or not
-     *  Has default value: yes!<br>
-     *  Node: audio
-     */
-    public static final String KEY_AUTOBOOT		= "autoboot";	// boolean : automatic scsynth booting
+    public static final String KEY_AUTO_BOOT = "autoboot";    // boolean : automatic scsynth booting
 
     /**
-     *  Value: String indicating whether Eisenkraut should start
-     *  playing back a file if it is opened by double clicking
-     *  in the Finder.
-     *  Has default value: yes!<br>
-     *  Node: audio
+     * Value: String indicating whether Eisenkraut should start
+     * playing back a file if it is opened by double clicking
+     * in the Finder.
+     * Has default value: yes!<br>
+     * Node: audio
      */
-    public static final String KEY_AUTOPLAYFROMFINDER       = "autoplay";
+    public static final String KEY_AUTO_PLAY_FROM_DESKTOP = "autoplay";
 
-    public static final String AUTOPLAYFROMFINDER_NONE      = "none";
-    public static final String AUTOPLAYFROMFINDER_PLAY      = "play";
-    public static final String AUTOPLAYFROMFINDER_LOOP      = "loop";
+    public static final String AUTO_PLAY_FROM_DESKTOP_NONE = "none";
+    public static final String AUTO_PLAY_FROM_DESKTOP_PLAY = "play";
+    public static final String AUTO_PLAY_FROM_DESKTOP_LOOP = "loop";
 
     /**
-     *  Value: String representing the name
-     *  of the currently active output routine configuration
-     *  Has default value: yes!<br>
-     *  Node: audio
+     * Value: String representing the name
+     * of the currently active output routine configuration
+     * Has default value: yes!<br>
+     * Node: audio
      */
-    public static final String KEY_OUTPUTCONFIG	= "outputconfig";	// string : active output configuration
+    public static final String KEY_OUTPUT_CONFIG = "outputconfig";    // string : active output configuration
     /**
-     *  Value: String representing the name
-     *  of the currently active audio box
-     *  Has default value: ???<br>
-     *  Node: audio
+     * Value: String representing the name
+     * of the currently active audio box
+     * Has default value: ???<br>
+     * Node: audio
      */
-    public static final String KEY_AUDIOBOX		= "audiobox";	// string : active audio box configuration
-
-    /**
-     *  Value: String representing the command
-     *  to reveal a file in the desktop manager.
-     *  The command will be split on space characters,
-     *  where single quotes <tt>'</tt> can be used
-     *  to avoid split. Place holders for escape:
-     *  <tt>%p</tt> for the file path, <tt>%P</tt> for url-style
-     *  <tt>%d</tt> for parent directory, <tt>%D</tt> for url-style,
-     *  <tt>%f</tt> for file, <tt>%F</tt> for url-style.
-     *  Has default value: ???<br>
-     *  Node: general
-     */
-    public static final String KEY_REVEAL_FILE  = "reveal-file";
-
-    // ------------ audio->inputconfigs node level ------------
+    public static final String KEY_AUDIO_BOX = "audiobox";    // string : active audio box configuration
 
     /**
-     *  Child node of audio prefs
+     * Value: String representing the command
+     * to reveal a file in the desktop manager.
+     * The command will be split on space characters,
+     * where single quotes <tt>'</tt> can be used
+     * to avoid split. Place holders for escape:
+     * <tt>%p</tt> for the file path, <tt>%P</tt> for url-style
+     * <tt>%d</tt> for parent directory, <tt>%D</tt> for url-style,
+     * <tt>%f</tt> for file, <tt>%F</tt> for url-style.
+     * Has default value: ???<br>
+     * Node: general
      */
-    public static final String NODE_INPUTCONFIGS	= "inputconfigs";
+    public static final String KEY_REVEAL_FILE = "reveal-file";
 
-    // ------------ audio->outputconfigs node level ------------
+    // ------------ audio->input configs node level ------------
 
     /**
-     *  Child node of audio prefs
+     * Child node of audio prefs
      */
-    public static final String NODE_OUTPUTCONFIGS	= "outputconfigs";
+    public static final String NODE_INPUT_CONFIGS = "inputconfigs";
 
-    // ------------ audio->outputconfigs node level ------------
+    // ------------ audio->output configs node level ------------
 
     /**
-     *  Child node of audio prefs
+     * Child node of audio prefs
      */
-    public static final String NODE_AUDIOBOXES		= "audioboxes";
+    public static final String NODE_OUTPUT_CONFIGS = "outputconfigs";
+
+    // ------------ audio->output configs node level ------------
+
+    /**
+     * Child node of audio prefs
+     */
+    public static final String NODE_AUDIO_BOXES = "audioboxes";
 
     // ------------ plugin node level ------------
 
     /**
-     *  Child node of global prefs
+     * Child node of global prefs
      */
-    public static final String NODE_PLUGINS	= "plugins";
+    public static final String NODE_PLUGINS = "plugins";
 
     // ------------ view node level ------------
 
     /**
-     *  Child node of global prefs
+     * Child node of global prefs
      */
-    public static final String NODE_VIEW	= "view";
+    public static final String NODE_VIEW = "view";
 
     /**
-     *  Child node of view prefs
+     * Child node of view prefs
      */
-    public static final String NODE_SONAGRAM	= "sonagram";
+    public static final String NODE_SONOGRAM = "sonagram";
 
-    public static final String KEY_SONAENABLED	= "sonaenabled";
+    public static final String KEY_SONOGRAM_ENABLED = "sonaenabled";
 
     private static String[] execDirs() {
         final String fs = File.separator;
@@ -364,23 +324,23 @@ public class PrefsUtil {
     }
 
     public static List<String> createDefaults(Preferences mainPrefs, double lastVersion) {
-        File			f;
-        String			value;
-        Preferences		childPrefs, childPrefs2;
-        final String	fs			= File.separator;
-        final List<String> warnings	= new ArrayList<String>();
+        File f;
+        String value;
+        Preferences childPrefs, childPrefs2;
+        final String fs = File.separator;
+        final List<String> warnings = new ArrayList<String>();
 
-        putDontOverwrite(IOUtil.getUserPrefs(), IOUtil.KEY_TEMPDIR, System.getProperty("java.io.tmpdir"));
+        putDoNotOverwrite(IOUtil.getUserPrefs(), IOUtil.KEY_TEMPDIR, System.getProperty("java.io.tmpdir"));
 
         // general
-        putDontOverwrite(mainPrefs, KEY_LOOKANDFEEL, UIManager.getSystemLookAndFeelClassName());
-        putBooleanDontOverwrite(mainPrefs, CoverGrowBox.KEY_INTRUDINGSIZE, Main.isMac);
-        putBooleanDontOverwrite(mainPrefs, KEY_INSERTIONFOLLOWSPLAY, true);
-        putBooleanDontOverwrite(mainPrefs, KEY_VIEWCHANMETERS, true);
-        putBooleanDontOverwrite(mainPrefs, KEY_VIEWMARKERS, true);
-        putBooleanDontOverwrite(mainPrefs, KEY_VIEWNULLLINIE, true);
-        putBooleanDontOverwrite(mainPrefs, KEY_VIEWVERTICALRULERS, true);
-        putBooleanDontOverwrite(mainPrefs, KEY_CATCH, true);
+        putDoNotOverwrite(mainPrefs, KEY_LOOK_AND_FEEL, UIManager.getSystemLookAndFeelClassName());
+        putBooleanDoNotOverwrite(mainPrefs, CoverGrowBox.KEY_INTRUDINGSIZE, Main.isMac);
+        putBooleanDoNotOverwrite(mainPrefs, KEY_INSERTION_FOLLOWS_PLAY, true);
+        putBooleanDoNotOverwrite(mainPrefs, KEY_VIEW_CHANNEL_METERS, true);
+        putBooleanDoNotOverwrite(mainPrefs, KEY_VIEW_MARKERS, true);
+        putBooleanDoNotOverwrite(mainPrefs, KEY_VIEW_ZERO_LINE, true);
+        putBooleanDoNotOverwrite(mainPrefs, KEY_VIEW_VERTICAL_RULERS, true);
+        putBooleanDoNotOverwrite(mainPrefs, KEY_CATCH, true);
 
         if (mainPrefs.get(KEY_REVEAL_FILE, null) == null) {
             if (Main.isMac) {
@@ -402,7 +362,7 @@ public class PrefsUtil {
                     }
                 }
                 final String cmd = sb.toString().trim();
-                putDontOverwrite(mainPrefs, KEY_REVEAL_FILE, cmd);
+                putDoNotOverwrite(mainPrefs, KEY_REVEAL_FILE, cmd);
 
             } else if (Main.isLinux) {
                 final String[] dirs = execDirs();
@@ -419,15 +379,15 @@ public class PrefsUtil {
                     final boolean escape = cmd.contains(" ") || useDirs;
                     final String cmd1 = escape ? "'" + cmd + "'" : cmd;
                     final String cmd2 = useDirs ? cmd1 + " '%d'" : cmd1;
-                    putDontOverwrite(mainPrefs, KEY_REVEAL_FILE, cmd2);
+                    putDoNotOverwrite(mainPrefs, KEY_REVEAL_FILE, cmd2);
                 }
             } else {
                 // todo: Windows - no idea
             }
         }
 
-        putIntDontOverwrite(mainPrefs, KEY_TIMEUNITS, TIME_MINSECS);
-        putIntDontOverwrite(mainPrefs, KEY_VERTSCALE, VSCALE_AMP_LIN);
+        putIntDoNotOverwrite(mainPrefs, KEY_TIMEUNITS, TIME_MIN_SECS);
+        putIntDoNotOverwrite(mainPrefs, KEY_VERT_SCALE, V_SCALE_AMP_LIN);
 
         // audio
         childPrefs = mainPrefs.node(NODE_AUDIO);
@@ -436,38 +396,38 @@ public class PrefsUtil {
         childPrefs.remove("audioinputs");       // not used any more
         childPrefs.remove("audiooutputs");      // not used any more
 
-        putDontOverwrite( childPrefs, KEY_AUTOPLAYFROMFINDER, AUTOPLAYFROMFINDER_NONE );
+        putDoNotOverwrite(childPrefs, KEY_AUTO_PLAY_FROM_DESKTOP, AUTO_PLAY_FROM_DESKTOP_NONE);
 
         // audio boxes
         value = AudioBoxConfig.ID_DEFAULT;
-        putDontOverwrite( childPrefs, KEY_AUDIOBOX, value );
+        putDoNotOverwrite(childPrefs, KEY_AUDIO_BOX, value);
         try {
-            if (!childPrefs.nodeExists(NODE_AUDIOBOXES)) {
-                childPrefs2 = childPrefs.node(NODE_AUDIOBOXES);
+            if (!childPrefs.nodeExists(NODE_AUDIO_BOXES)) {
+                childPrefs2 = childPrefs.node(NODE_AUDIO_BOXES);
                 new AudioBoxConfig(value, Main.isLinux ? "Eisenkraut" : "Default", 8, 8, true).toPrefs(childPrefs2.node(value));
             }
         } catch (BackingStoreException e1) {
             warnings.add(e1.toString());
         }
 
-        putDontOverwrite( childPrefs, KEY_AUDIORATE, new Param( 0, ParamSpace.FREQ | ParamSpace.HERTZ ).toString() );
-        putDontOverwrite( childPrefs, KEY_AUDIOBUSSES, new Param( 256, ParamSpace.NONE ).toString() );
-        putDontOverwrite( childPrefs, KEY_SCMEMSIZE, new Param( 8, ParamSpace.NONE ).toString() );
-        putDontOverwrite( childPrefs, KEY_SCBLOCKSIZE, new Param( 64, ParamSpace.NONE ).toString() );
-        putBooleanDontOverwrite(childPrefs, KEY_SCRENDEZVOUS, false);
+        putDoNotOverwrite(childPrefs, KEY_AUDIO_RATE, new Param(0, ParamSpace.FREQ | ParamSpace.HERTZ).toString());
+        putDoNotOverwrite(childPrefs, KEY_AUDIO_BUSSES, new Param(256, ParamSpace.NONE).toString());
+        putDoNotOverwrite(childPrefs, KEY_SC_MEM_SIZE, new Param(8, ParamSpace.NONE).toString());
+        putDoNotOverwrite(childPrefs, KEY_SC_BLOCK_SIZE, new Param(64, ParamSpace.NONE).toString());
+        putBooleanDoNotOverwrite(childPrefs, KEY_SC_RENDEZVOUS, false);
 //		putBooleanDontOverwrite( childPrefs, KEY_AUTOBOOT, false );
 
         // output configs
         value = "out1to2";
-        putDontOverwrite( childPrefs, KEY_OUTPUTCONFIG, value );
+        putDoNotOverwrite(childPrefs, KEY_OUTPUT_CONFIG, value);
         try {
-            if( !childPrefs.nodeExists( NODE_OUTPUTCONFIGS )) {
-                childPrefs2 = childPrefs.node( NODE_OUTPUTCONFIGS );
-                new RoutingConfig( value, "Out 1-2", new int[] { 0, 1 }, -90f ).toPrefs(
-                    childPrefs2.node( value ));
+            if (!childPrefs.nodeExists(NODE_OUTPUT_CONFIGS)) {
+                childPrefs2 = childPrefs.node(NODE_OUTPUT_CONFIGS);
+                new RoutingConfig(value, "Out 1-2", new int[]{0, 1}, -90f).toPrefs(
+                        childPrefs2.node(value));
                 value = "out1to8";
-                new RoutingConfig( value, "Out 1-8", new int[] { 0, 1, 2, 3, 4, 5, 6, 7 }, -45f ).toPrefs(
-                    childPrefs2.node( value ));
+                new RoutingConfig(value, "Out 1-8", new int[]{0, 1, 2, 3, 4, 5, 6, 7}, -45f).toPrefs(
+                        childPrefs2.node(value));
 //				// ok dis wan is rather for demonstration purpose
 //				new RoutingConfig( value, 2, new int[] { 1, 0 }, -90f ).toPrefs(
 //					childPrefs2.node( "Reversed Stereo" ));
@@ -478,17 +438,17 @@ public class PrefsUtil {
 
         // input configs
         try {
-            if( !childPrefs.nodeExists( NODE_INPUTCONFIGS )) {
-                childPrefs2 = childPrefs.node( NODE_INPUTCONFIGS );
+            if (!childPrefs.nodeExists(NODE_INPUT_CONFIGS)) {
+                childPrefs2 = childPrefs.node(NODE_INPUT_CONFIGS);
                 value = "in1";
-                new RoutingConfig( value, "In 1", new int[] { 0 }, 0f ).toPrefs(
-                    childPrefs2.node( value ));
+                new RoutingConfig(value, "In 1", new int[]{0}, 0f).toPrefs(
+                        childPrefs2.node(value));
                 value = "in1to2";
-                new RoutingConfig( value, "In 1-2", new int[] { 0, 1 }, 0f ).toPrefs(
-                    childPrefs2.node( value ));
+                new RoutingConfig(value, "In 1-2", new int[]{0, 1}, 0f).toPrefs(
+                        childPrefs2.node(value));
                 value = "in1to8";
-                new RoutingConfig( value, "In 1-8", new int[] { 0, 1, 2, 3, 4, 5, 6, 7 }, 0f ).toPrefs(
-                    childPrefs2.node( value ));
+                new RoutingConfig(value, "In 1-8", new int[]{0, 1, 2, 3, 4, 5, 6, 7}, 0f).toPrefs(
+                        childPrefs2.node(value));
 //				// ok dis wan is rather for demonstration purpose
 //				new RoutingConfig( value, 2, new int[] { 1, 0 }, -90f ).toPrefs(
 //					childPrefs2.node( "Reversed Stereo" ));
@@ -506,26 +466,26 @@ public class PrefsUtil {
 //		}
 //		putDontOverwrite( childPrefs, KEY_SUPERCOLLIDEROSC, value );
 
-        putDontOverwrite(childPrefs, KEY_SCPROTOCOL, OSCChannel.TCP);
-        putDontOverwrite(childPrefs, KEY_SCPORT, new Param(0, ParamSpace.ABS).toString());
+        putDoNotOverwrite(childPrefs, KEY_SC_PROTOCOL, OSCChannel.TCP);
+        putDoNotOverwrite(childPrefs, KEY_SC_PORT, new Param(0, ParamSpace.ABS).toString());
 
         // sc app
-        if (childPrefs.get(KEY_SUPERCOLLIDERAPP, null) == null) {
+        if (childPrefs.get(KEY_SUPERCOLLIDER_APP, null) == null) {
             f = findFile(Main.isWindows ? "scsynth.exe" : "scsynth", execDirs());
             if (f == null) {
                 warnings.add(AbstractApplication.getApplication().getResourceString("errSCSynthAppNotFound"));
             }
-            if (f != null) putDontOverwrite(childPrefs, KEY_SUPERCOLLIDERAPP, f.getAbsolutePath());
+            if (f != null) putDoNotOverwrite(childPrefs, KEY_SUPERCOLLIDER_APP, f.getAbsolutePath());
         }
 
-        value = childPrefs.get( KEY_SUPERCOLLIDERAPP, null );
-        putBooleanDontOverwrite( childPrefs, KEY_AUTOBOOT, (value != null) && new File( value ).isFile() );
+        value = childPrefs.get(KEY_SUPERCOLLIDER_APP, null);
+        putBooleanDoNotOverwrite(childPrefs, KEY_AUTO_BOOT, (value != null) && new File(value).isFile());
 
         // OSC
-        childPrefs  = OSCRoot.getInstance().getPreferences();
-        putDontOverwrite   	   (childPrefs, OSCRoot.KEY_PROTOCOL, OSCChannel.TCP      );
-        putIntDontOverwrite	   (childPrefs, OSCRoot.KEY_PORT    , OSCRoot.DEFAULT_PORT);
-        putBooleanDontOverwrite(childPrefs, OSCRoot.KEY_ACTIVE  , Main.isLinux	      ); // used to enforce MDA
+        childPrefs = OSCRoot.getInstance().getPreferences();
+        putDoNotOverwrite(childPrefs, OSCRoot.KEY_PROTOCOL, OSCChannel.TCP);
+        putIntDoNotOverwrite(childPrefs, OSCRoot.KEY_PORT, OSCRoot.DEFAULT_PORT);
+        putBooleanDoNotOverwrite(childPrefs, OSCRoot.KEY_ACTIVE, Main.isLinux); // used to enforce MDA
 
         if (childPrefs.get(OSCGUI.KEY_SWINGAPP, null) == null) {
             final String[] folders = new String[value == null ? 2 : 4];
@@ -537,23 +497,22 @@ public class PrefsUtil {
                 folders[3] = new File(new File(new File(value).getParentFile(), "SwingOSC"), "build").getAbsolutePath();
             }
             f = findFile("SwingOSC.jar", folders);
-            if (f != null) putDontOverwrite(childPrefs, OSCGUI.KEY_SWINGAPP, f.getAbsolutePath());
+            if (f != null) putDoNotOverwrite(childPrefs, OSCGUI.KEY_SWINGAPP, f.getAbsolutePath());
         }
 
         // view
-        childPrefs  = mainPrefs.node( NODE_VIEW );
+        childPrefs = mainPrefs.node(NODE_VIEW);
         try {
-            if( !childPrefs.nodeExists( NODE_SONAGRAM )) {
-                childPrefs2 = childPrefs.node( NODE_SONAGRAM );
-                new ConstQ().writePrefs( childPrefs2 );
+            if (!childPrefs.nodeExists(NODE_SONOGRAM)) {
+                childPrefs2 = childPrefs.node(NODE_SONOGRAM);
+                new ConstQ().writePrefs(childPrefs2);
             }
-        }
-        catch( BackingStoreException e1 ) {
-            warnings.add( e1.toString() );
+        } catch (BackingStoreException e1) {
+            warnings.add(e1.toString());
         }
 
         // save current version
-        mainPrefs.putDouble( KEY_VERSION, AbstractApplication.getApplication().getVersion() );
+        mainPrefs.putDouble(KEY_VERSION, AbstractApplication.getApplication().getVersion());
 
         return warnings;
     }
@@ -570,34 +529,31 @@ public class PrefsUtil {
 
     // --- custom put/get methods ---
 
-    private static boolean putDontOverwrite( Preferences prefs, String key, String value )
-    {
-        boolean overwrite = prefs.get( key, null ) == null;
+    private static boolean putDoNotOverwrite(Preferences prefs, String key, String value) {
+        boolean overwrite = prefs.get(key, null) == null;
 
-        if( overwrite ) {
-            prefs.put( key, value );
+        if (overwrite) {
+            prefs.put(key, value);
         }
 
         return overwrite;
     }
 
-    private static boolean putIntDontOverwrite( Preferences prefs, String key, int value )
-    {
-        boolean overwrite = prefs.get( key, null ) == null;
+    private static boolean putIntDoNotOverwrite(Preferences prefs, String key, int value) {
+        boolean overwrite = prefs.get(key, null) == null;
 
-        if( overwrite ) {
-            prefs.putInt( key, value );
+        if (overwrite) {
+            prefs.putInt(key, value);
         }
 
         return overwrite;
     }
 
-    private static boolean putBooleanDontOverwrite( Preferences prefs, String key, boolean value )
-    {
-        boolean overwrite = prefs.get( key, null ) == null;
+    private static boolean putBooleanDoNotOverwrite(Preferences prefs, String key, boolean value) {
+        boolean overwrite = prefs.get(key, null) == null;
 
-        if( overwrite ) {
-            prefs.putBoolean( key, value );
+        if (overwrite) {
+            prefs.putBoolean(key, value);
         }
 
         return overwrite;
@@ -614,74 +570,74 @@ public class PrefsUtil {
 //		return overwrite;
 //	}
 
-    public static Rectangle stringToRectangle( String value )
-    {
-        Rectangle				rect	= null;
-        final StringTokenizer	tok;
+    public static Rectangle stringToRectangle(String value) {
+        Rectangle rect = null;
+        final StringTokenizer tok;
 
-        if( value != null ) {
+        if (value != null) {
             try {
-                tok		= new StringTokenizer( value );
-                rect	= new Rectangle( Integer.parseInt( tok.nextToken() ), Integer.parseInt( tok.nextToken() ),
-                                         Integer.parseInt( tok.nextToken() ), Integer.parseInt( tok.nextToken() ));
+                tok = new StringTokenizer(value);
+                rect = new Rectangle(Integer.parseInt(tok.nextToken()), Integer.parseInt(tok.nextToken()),
+                        Integer.parseInt(tok.nextToken()), Integer.parseInt(tok.nextToken()));
+            } catch (NoSuchElementException e1) {
+                e1.printStackTrace();
+            } catch (NumberFormatException e2) {
+                e2.printStackTrace();
             }
-            catch( NoSuchElementException e1 ) { e1.printStackTrace(); }
-            catch( NumberFormatException e2 ) { e2.printStackTrace(); }
         }
         return rect;
     }
 
-    public static Point stringToPoint( String value )
-    {
-        Point					pt	= null;
-        final StringTokenizer	tok;
+    public static Point stringToPoint(String value) {
+        Point pt = null;
+        final StringTokenizer tok;
 
-        if( value != null ) {
+        if (value != null) {
             try {
-                tok		= new StringTokenizer( value );
-                pt		= new Point( Integer.parseInt( tok.nextToken() ), Integer.parseInt( tok.nextToken() ));
+                tok = new StringTokenizer(value);
+                pt = new Point(Integer.parseInt(tok.nextToken()), Integer.parseInt(tok.nextToken()));
+            } catch (NoSuchElementException e1) {
+                e1.printStackTrace();
+            } catch (NumberFormatException e2) {
+                e2.printStackTrace();
             }
-            catch( NoSuchElementException e1 ) { e1.printStackTrace(); }
-            catch( NumberFormatException e2 ) { e2.printStackTrace(); }
         }
         return pt;
     }
 
-    public static Dimension stringToDimension( String value )
-    {
-        Dimension				dim	= null;
-        final StringTokenizer	tok;
+    public static Dimension stringToDimension(String value) {
+        Dimension dim = null;
+        final StringTokenizer tok;
 
-        if( value != null ) {
+        if (value != null) {
             try {
-                tok		= new StringTokenizer( value );
-                dim		= new Dimension( Integer.parseInt( tok.nextToken() ), Integer.parseInt( tok.nextToken() ));
+                tok = new StringTokenizer(value);
+                dim = new Dimension(Integer.parseInt(tok.nextToken()), Integer.parseInt(tok.nextToken()));
+            } catch (NoSuchElementException e1) {
+                e1.printStackTrace();
+            } catch (NumberFormatException e2) {
+                e2.printStackTrace();
             }
-            catch( NoSuchElementException e1 ) { e1.printStackTrace(); }
-            catch( NumberFormatException e2 ) { e2.printStackTrace(); }
         }
         return dim;
     }
 
     /**
-     *  Rectangle, z.B. von Frame.getBounds() in
-     *  einen String konvertieren, der als Prefs
-     *  gespeichert werden kann. Bei Fehler wird
-     *  null zurueckgeliefert. 'value' darf null sein.
+     * Rectangle, z.B. von Frame.getBounds() in
+     * einen String konvertieren, der als Prefs
+     * gespeichert werden kann. Bei Fehler wird
+     * null zurueckgeliefert. 'value' darf null sein.
      */
-    public static String rectangleToString( Rectangle value )
-    {
-        return( value != null ? (value.x + " " + value.y + " " + value.width + " " + value.height) : null );
+    public static String rectangleToString(Rectangle value) {
+        return (value != null ? (value.x + " " + value.y + " " + value.width + " " + value.height) : null);
     }
 
-    public static String pointToString( Point value )
-    {
-        return( value != null ? (value.x + " " + value.y) : null );
+    public static String pointToString(Point value) {
+        return (value != null ? (value.x + " " + value.y) : null);
     }
 
-    public static String dimensionToString( Dimension value )
-    {
-        return( value != null ? (value.width + " " + value.height) : null );
+    public static String dimensionToString(Dimension value) {
+        return (value != null ? (value.width + " " + value.height) : null);
     }
 
 //	public static String classToNodeName( Class c )
@@ -690,13 +646,13 @@ public class PrefsUtil {
 //	}
 
     /**
-     *  Converts a a key stroke's string representation as
-     *	from preference storage into a KeyStroke object.
+     * Converts a a key stroke's string representation as
+     * from preference storage into a KeyStroke object.
      *
-     *  @param		prefsValue		a string representation of the form &quot;modifiers keyCode&quot;
-     *								or <code>null</code>
-     *	@return		the KeyStroke parsed from the prefsValue or null if the string was
-     *				invalid or <code>null</code>
+     * @param        prefsValue        a string representation of the form &quot;modifiers keyCode&quot;
+     * or <code>null</code>
+     * @return the KeyStroke parsed from the prefsValue or null if the string was
+     * invalid or <code>null</code>
      */
     public static KeyStroke prefsToStroke(String prefsValue) {
         if (prefsValue == null) return null;
@@ -714,28 +670,28 @@ public class PrefsUtil {
     }
 
     /**
-     *  Converts a KeyStroke into a string representation for
-     *	preference storage.
+     * Converts a KeyStroke into a string representation for
+     * preference storage.
      *
-     *  @param		prefsStroke	the KeyStroke to convert
-     *	@return		a string representation of the form &quot;modifiers keyCode&quot;
-     *				or <code>null</code> if the prefsStroke is invalid or <code>null</code>
+     * @param        prefsStroke    the KeyStroke to convert
+     * @return a string representation of the form &quot;modifiers keyCode&quot;
+     * or <code>null</code> if the prefsStroke is invalid or <code>null</code>
      */
     public static String strokeToPrefs(KeyStroke prefsStroke) {
         if (prefsStroke == null) return null;
         else return String.valueOf(prefsStroke.getModifiers()) + ' ' +
-                String.valueOf(prefsStroke.getKeyCode());
+                prefsStroke.getKeyCode();
     }
 
     /**
-     *  Traverse a preference node and optionally all
-     *  children nodes and remove any keys found.
+     * Traverse a preference node and optionally all
+     * children nodes and remove any keys found.
      */
     public static void removeAll(Preferences prefs, boolean deep)
             throws BackingStoreException {
-        String[]	keys;
-        String[]	children;
-        int			i;
+        String[] keys;
+        String[] children;
+        int i;
 
         keys = prefs.keys();
         for (i = 0; i < keys.length; i++) {
@@ -750,15 +706,14 @@ public class PrefsUtil {
     }
 
     /**
-     *  Get an Action object that will dump the
-     *  structure of the MultiTrackEditors of
-     *  all selected transmitters
+     * Get an Action object that will dump the
+     * structure of the MultiTrackEditors of
+     * all selected transmitters
      */
     public static Action getDebugDumpAction() {
         return new DebugDumpAction();
     }
 
-    @SuppressWarnings("serial")
     private static class DebugDumpAction extends AbstractAction {
         public DebugDumpAction() {
             super("Dump preferences tree");
@@ -769,48 +724,47 @@ public class PrefsUtil {
         }
 
         private void debugDump(Preferences prefs) {
-            System.err.println( "------- debugDump prefs : "+prefs.name()+" -------" );
-            String[]	keys;
-            String[]	children;
-            String		value;
-            int			i;
+            System.err.println("------- debugDump prefs : " + prefs.name() + " -------");
+            String[] keys;
+            String[] children;
+            String value;
+            int i;
 
             try {
-                keys		= prefs.keys();
-                for( i = 0; i < keys.length; i++ ) {
-                    value   = prefs.get( keys[i], null );
-                    System.err.println( "  key = '"+keys[i]+"' ; value = '"+value+"'" );
+                keys = prefs.keys();
+                for (i = 0; i < keys.length; i++) {
+                    value = prefs.get(keys[i], null);
+                    System.err.println("  key = '" + keys[i] + "' ; value = '" + value + "'");
                 }
-                children	= prefs.childrenNames();
-                for( i = 0; i < children.length; i++ ) {
-                    debugDump( prefs.node( children[i] ));
+                children = prefs.childrenNames();
+                for (i = 0; i < children.length; i++) {
+                    debugDump(prefs.node(children[i]));
                 }
-            } catch( BackingStoreException e1 ) {
-                System.err.println( e1.getLocalizedMessage() );
+            } catch (BackingStoreException e1) {
+                System.err.println(e1.getLocalizedMessage());
             }
         }
     }
 
     /**
-     *  Similar to the XMLRepresentation interface,
-     *  this method will append an XML representation
-     *  of some preferences to an existing node.
+     * Similar to the XMLRepresentation interface,
+     * this method will append an XML representation
+     * of some preferences to an existing node.
      *
-     *  @param  prefs   the preferences node to write out.
-     *  @param  deep	- true to include a subtree with all
-     *					child preferences nodes.
-     *  @param  domDoc  the document in which the node will reside.
-     *  @param  node	the node to which a child is applied.
+     * @param prefs  the preferences node to write out.
+     * @param deep   - true to include a subtree with all
+     *               child preferences nodes.
+     * @param domDoc the document in which the node will reside.
+     * @param node   the node to which a child is applied.
      */
-    public static void toXML( Preferences prefs, boolean deep, org.w3c.dom.Document domDoc,
-                              Element node, Map<Object, Object> options )
-    throws IOException
-    {
-        String[]	keys;
-        String[]	children;
-        Element		childElement, entry;
-        String		value;
-        int			i;
+    public static void toXML(Preferences prefs, boolean deep, org.w3c.dom.Document domDoc,
+                             Element node, Map<Object, Object> options)
+            throws IOException {
+        String[] keys;
+        String[] children;
+        Element childElement, entry;
+        String value;
+        int i;
 
         try {
             keys = prefs.keys();
@@ -830,54 +784,53 @@ public class PrefsUtil {
                     toXML(prefs.node(children[i]), true, domDoc, childElement, options);
                 }
             }
-        } catch( DOMException e1 ) {
-            throw IOUtil.map( e1 );
-        } catch( BackingStoreException e2 ) {
-            throw IOUtil.map( e2 );
+        } catch (DOMException e1) {
+            throw IOUtil.map(e1);
+        } catch (BackingStoreException e2) {
+            throw IOUtil.map(e2);
         }
     }
 
     /**
-     *  Similar to the XMLRepresentation interface,
-     *  this method will parse an XML representation
-     *  of some preferences and restore it's values.
+     * Similar to the XMLRepresentation interface,
+     * this method will parse an XML representation
+     * of some preferences and restore it's values.
      *
-     *  @param  prefs		the preferences node to import to.
-     *  @param  domDoc		the document in which the node resides.
-     *  @param  rootElement	the node whose children to parse.
+     * @param prefs       the preferences node to import to.
+     * @param domDoc      the document in which the node resides.
+     * @param rootElement the node whose children to parse.
      */
-    public static void fromXML( Preferences prefs, org.w3c.dom.Document domDoc,
-                                Element rootElement, Map<Object, Object> options )
-    throws IOException
-    {
-        NodeList	nl, nl2;
-        Element		childElement, entry;
-        Node		node;
-        int			i, j;
+    public static void fromXML(Preferences prefs, org.w3c.dom.Document domDoc,
+                               Element rootElement, Map<Object, Object> options)
+            throws IOException {
+        NodeList nl, nl2;
+        Element childElement, entry;
+        Node node;
+        int i, j;
 
         try {
-            nl	= rootElement.getChildNodes();
-            for( i = 0; i < nl.getLength(); i++ ) {
-                node			= nl.item( i );
-                if( !(node instanceof Element) ) continue;
-                childElement	= (Element) node;
-                nl2				= childElement.getElementsByTagName( "entry" );
-                for( j = 0; j < nl2.getLength(); j++ ) {
-                    entry		= (Element) nl2.item( j );
-                    prefs.put( entry.getAttribute( "key" ), entry.getAttribute( "value" ));
+            nl = rootElement.getChildNodes();
+            for (i = 0; i < nl.getLength(); i++) {
+                node = nl.item(i);
+                if (!(node instanceof Element)) continue;
+                childElement = (Element) node;
+                nl2 = childElement.getElementsByTagName("entry");
+                for (j = 0; j < nl2.getLength(); j++) {
+                    entry = (Element) nl2.item(j);
+                    prefs.put(entry.getAttribute("key"), entry.getAttribute("value"));
 //System.err.println( "auto : node = "+(prefs.name() )+"; key = "+entry.getAttribute( "key" )+"; val = "+entry.getAttribute( "value" ) );
 
                 }
                 break;
             }
-            for( ; i < nl.getLength(); i++ ) {
-                node			= nl.item( i );
-                if( !(node instanceof Element) ) continue;
-                childElement	= (Element) node;
-                fromXML( prefs.node( childElement.getAttribute( "name" )), domDoc, childElement, options );
+            for (; i < nl.getLength(); i++) {
+                node = nl.item(i);
+                if (!(node instanceof Element)) continue;
+                childElement = (Element) node;
+                fromXML(prefs.node(childElement.getAttribute("name")), domDoc, childElement, options);
             }
-        } catch( DOMException e1 ) {
-            throw IOUtil.map( e1 );
+        } catch (DOMException e1) {
+            throw IOUtil.map(e1);
         }
     }
 }

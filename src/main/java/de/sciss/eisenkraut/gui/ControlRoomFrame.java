@@ -2,7 +2,7 @@
  *  ControlRoomFrame.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -113,8 +113,8 @@ public class ControlRoomFrame
         ggOutputConfig.setPrototypeDisplayValue(comboProto);
         ggAudioBox.setPrototypeDisplayValue(comboProto);
         refillConfigs();
-        ggOutputConfig.setPreferences(audioPrefs, PrefsUtil.KEY_OUTPUTCONFIG);
-        ggAudioBox.setPreferences(audioPrefs, PrefsUtil.KEY_AUDIOBOX);
+        ggOutputConfig.setPreferences(audioPrefs, PrefsUtil.KEY_OUTPUT_CONFIG);
+        ggAudioBox.setPreferences(audioPrefs, PrefsUtil.KEY_AUDIO_BOX);
         audioBoxListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 final Server server = superCollider.getServer();
@@ -179,7 +179,7 @@ public class ControlRoomFrame
 
         setDefaultCloseOperation( WindowConstants.DO_NOTHING_ON_CLOSE ); // window listener see above!
         init();
-        app.addComponent( Main.COMP_CTRLROOM, this );
+        app.addComponent( Main.COMP_CTRL_ROOM, this );
     }
 
     protected boolean autoUpdatePrefs()
@@ -197,7 +197,7 @@ public class ControlRoomFrame
     }
 
     public void dispose() {
-        AbstractApplication.getApplication().removeComponent(Main.COMP_CTRLROOM);
+        AbstractApplication.getApplication().removeComponent(Main.COMP_CTRL_ROOM);
         lmm.dispose();
         if (grpMeters != null) {
             try {
@@ -334,7 +334,7 @@ public class ControlRoomFrame
     public void clientAction( SuperColliderClient.Event e )
     {
         switch( e.getID() ) {
-        case SuperColliderClient.Event.OUTPUTCONFIG:
+        case SuperColliderClient.Event.OUTPUT_CONFIG:
             stopMeters();
             rebuildMeters();
             startMeters();
@@ -415,7 +415,7 @@ public class ControlRoomFrame
             if (isListening) {
                 ggOutputConfig.stopListening();
             }
-            childPrefs = audioPrefs.node(PrefsUtil.NODE_OUTPUTCONFIGS);
+            childPrefs = audioPrefs.node(PrefsUtil.NODE_OUTPUT_CONFIGS);
             cfgIDs = childPrefs.childrenNames();
             cfgItems = new TreeSet<StringItem>(StringItem.valueComparator);
             for (String cfgID : cfgIDs) {
@@ -445,7 +445,7 @@ public class ControlRoomFrame
                 ggAudioBox.stopListening();
                 ggAudioBox.removeActionListener(audioBoxListener);
             }
-            childPrefs  = audioPrefs.node(PrefsUtil.NODE_AUDIOBOXES);
+            childPrefs  = audioPrefs.node(PrefsUtil.NODE_AUDIO_BOXES);
             cfgIDs      = childPrefs.childrenNames();
             cfgItems    = new TreeSet<StringItem>(StringItem.valueComparator);
             for (String cfgID : cfgIDs) {

@@ -2,7 +2,7 @@
  *  Timeline.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -532,7 +532,6 @@ public class Timeline
      *				there were quantization errors. with double seems
      *				to be fine. haven't checked with really long files!!
      */
-    @SuppressWarnings("serial")
     private class ActionSelToPos
             extends AbstractAction {
         private final double	weight;

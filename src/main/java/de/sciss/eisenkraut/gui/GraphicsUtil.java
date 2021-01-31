@@ -2,7 +2,7 @@
  *  GraphicsUtil.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -365,8 +365,8 @@ public class GraphicsUtil {
         }
     }
 
-    private static Color colrShadowDefaultLight = new Color(0xFF, 0xFF, 0xFF, 0x7F);
-    private static Color colrShadowDefaultDark  = new Color(0x00, 0x00, 0x00, 0x7F);
+    private static final Color colrShadowDefaultLight = new Color(0xFF, 0xFF, 0xFF, 0x7F);
+    private static final Color colrShadowDefaultDark  = new Color(0x00, 0x00, 0x00, 0x7F);
 
     private static class ShapeIcon implements Icon {
 

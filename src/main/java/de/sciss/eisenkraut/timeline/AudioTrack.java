@@ -2,7 +2,7 @@
  *  AudioTrack.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -37,8 +37,7 @@ public class AudioTrack
     public static final String MAP_KEY_PAN_AZIMUTH	= "panazimuth";
     public static final String MAP_KEY_PAN_SPREAD 	= "panspread";
 
-//	private final		AudioTrail	trail;
-    private final		int			chan;
+    private final		int channel;
     private final		AudioTracks	coll;
 
     private final OSCRouterWrapper	osc;
@@ -49,18 +48,14 @@ public class AudioTrack
      *  adding a preexisting file to the track editor,
      *  calling <code>setName</code> etc. methods.
      */
-//	public AudioTrack( AudioTrail trail, int chan )
-    public AudioTrack( AudioTracks coll, int chan )	// need chan because of initial oscGetPathComponent !
+    public AudioTrack(AudioTracks coll, int channel)    // need `channel` because of initial oscGetPathComponent !
     {
         super();
 
-//		this.trail	= trail;
-        this.chan	= chan;
-        this.coll	= coll;
+        this.channel    = channel;
+        this.coll       = coll;
 
-//		final NumberSpace	spcAzi		= new NumberSpace( -360.0, 360.0, 0.1 );
-//		final NumberSpace	spcSpread	= new NumberSpace( -1.0, 1.0, 0.1 );
-        final MapManager	map			= getMap();
+        final MapManager map = getMap();
 
         map.putContext( this, MAP_KEY_PAN_AZIMUTH, new MapManager.Context( MapManager.Context.FLAG_OBSERVER_DISPLAY,
                                                                            MapManager.Context.TYPE_DOUBLE, null, "labelAzimuth",
@@ -77,7 +72,7 @@ public class AudioTrack
     }
 
     public int getChannelIndex() {
-        return chan;
+        return channel;
     }
 
     public Class<?> getDefaultEditor()
@@ -90,7 +85,7 @@ public class AudioTrack
         return ((Number) getMap().getValue( MAP_KEY_FLAGS )).intValue();
     }
 
-    // shorthand for (FLAGS_MUTE | FLAGS_VIRTUALMUTE) == 0
+    // shorthand for (FLAGS_MUTE | FLAGS_VIRTUAL_MUTE) == 0
     public boolean isAudible() {
         return ((getFlags() & (FLAGS_MUTE | FLAGS_VIRTUAL_MUTE)) == 0);
     }
@@ -98,7 +93,7 @@ public class AudioTrack
     // ------------- OSCRouter interface -------------
 
     public String oscGetPathComponent() {
-        return String.valueOf(chan);
+        return String.valueOf(channel);
     }
 
     public void oscRoute(RoutedOSCMessage rom) {
@@ -139,8 +134,8 @@ public class AudioTrack
     }
 
     // flags <(int) flagsToSet> <(int) flagsToClear>
-    public void oscCmd_flags( RoutedOSCMessage rom )
-    {
+    public void oscCmd_flags(RoutedOSCMessage rom) {
+
         int argIdx	= 1;
         final int flagsSet, flagsClear, oldFlags, newFlags;
 
@@ -164,28 +159,26 @@ public class AudioTrack
     // pan <(float) azi> <(float) spread>
     // azi : 0...360
     // spread : 0...1
-    public void oscCmd_pan( RoutedOSCMessage rom )
-    {
-        int		argIdx	= 1;
-        double	azi, spread;
+    public void oscCmd_pan(RoutedOSCMessage rom) {
+
+        int argIdx = 1;
+        double azi, spread;
 
         try {
-            azi			= ((Number) rom.msg.getArg( argIdx )).doubleValue();
-            if( azi < 0.0 ) {
-                azi	   += Math.ceil( -azi / 360 ) * 360;
-            } else if( azi > 360.0 ) {
-                azi	   %= 360.0;
+            azi = ((Number) rom.msg.getArg(argIdx)).doubleValue();
+            if (azi < 0.0) {
+                azi += Math.ceil(-azi / 360) * 360;
+            } else if (azi > 360.0) {
+                azi %= 360.0;
             }
             argIdx++;
-            spread		= Math.max( -1.0, Math.min( 1.0, ((Number) rom.msg.getArg( argIdx )).doubleValue() ));
-            getMap().putValue( this, MAP_KEY_PAN_AZIMUTH, azi);
-            getMap().putValue( this, MAP_KEY_PAN_SPREAD, spread);
-        }
-        catch( ClassCastException e1 ) {
-            OSCRoot.failedArgType( rom, argIdx );
-        }
-        catch( IndexOutOfBoundsException e1 ) {
-            OSCRoot.failedArgCount( rom );
+            spread = Math.max(-1.0, Math.min(1.0, ((Number) rom.msg.getArg(argIdx)).doubleValue()));
+            getMap().putValue(this, MAP_KEY_PAN_AZIMUTH, azi);
+            getMap().putValue(this, MAP_KEY_PAN_SPREAD, spread);
+        } catch (ClassCastException e1) {
+            OSCRoot.failedArgType(rom, argIdx);
+        } catch (IndexOutOfBoundsException e1) {
+            OSCRoot.failedArgCount(rom);
         }
     }
 }

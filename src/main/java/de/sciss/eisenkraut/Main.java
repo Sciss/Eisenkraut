@@ -2,7 +2,7 @@
  *  Main.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -112,7 +112,7 @@ public class Main
      *
      *  @see    #getComponent( Object )
      */
-    public static final Object      COMP_IOSETUP    = IOSetupFrame.class.getName();
+    public static final Object COMP_IO_SETUP = IOSetupFrame.class.getName();
     /**
      *  Value for add/getComponent(): the filter-process dialog
      *
@@ -132,7 +132,7 @@ public class Main
      *  @see    #getComponent( Object )
      *  @see    de.sciss.eisenkraut.gui.ControlRoomFrame
      */
-    public static final Object      COMP_CTRLROOM   = ControlRoomFrame.class.getName();
+    public static final Object COMP_CTRL_ROOM = ControlRoomFrame.class.getName();
     /**
      *  Value for add/getComponent(): the online help display frame
      *
@@ -145,7 +145,7 @@ public class Main
      *
      *  @see    #getComponent( Object )
      */
-    public static final Object      COMP_AUDIOINFO  = AudioFileInfoPalette.class.getName();
+    public static final Object COMP_AUDIO_INFO = AudioFileInfoPalette.class.getName();
 
     private final OSCRouterWrapper  osc;
     private static final String     OSC_MAIN    = "main";
@@ -305,7 +305,7 @@ public class Main
 
         oscServer.init();
 
-        if (prefs.node(PrefsUtil.NODE_AUDIO).getBoolean(PrefsUtil.KEY_AUTOBOOT, false)) {
+        if (prefs.node(PrefsUtil.NODE_AUDIO).getBoolean(PrefsUtil.KEY_AUTO_BOOT, false)) {
             superCollider.boot();
         }
 
@@ -369,7 +369,7 @@ public class Main
      *
      *  @param  args    are not parsed.
      */
-    public static void main(final String args[]) {
+    public static void main(final String[] args) {
         // --- run the main application ---
         // Schedule a job for the event-dispatching thread:
         // creating and showing this application's GUI.

@@ -2,7 +2,7 @@
  *  PanoramaPanel.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -28,7 +28,6 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings("serial")
 public class PanoramaPanel extends JComponent {
 
     private final AffineTransform at = new AffineTransform();

@@ -2,7 +2,7 @@
  *  DecimatedSonaTrail.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -235,7 +235,7 @@ extends DecimatedTrail
 
         constQ			= new ConstQ();
 
-        final Preferences cqPrefs = AbstractApplication.getApplication().getUserPrefs().node( PrefsUtil.NODE_VIEW ).node( PrefsUtil.NODE_SONAGRAM );
+        final Preferences cqPrefs = AbstractApplication.getApplication().getUserPrefs().node( PrefsUtil.NODE_VIEW ).node( PrefsUtil.NODE_SONOGRAM);
         constQ.readPrefs( cqPrefs );
         constQ.setSampleRate( fullScale.getRate() );
         System.out.println( "Creating ConstQ Kernels..." );
@@ -263,7 +263,7 @@ extends DecimatedTrail
         stepSize		= Math.max( 64, Math.min( fftSize, MathUtil.nextPowerOfTwo( (int) (constQ.getMaxTimeRes() / 1000 * fullScale.getRate() / Math.sqrt( 2 )))));
 
         int decimKorr, j;
-        for( decimKorr = 1, j = stepSize; j > 2; decimKorr++, j >>= 1 ) ;
+        for (decimKorr = 1, j = stepSize; j > 2; decimKorr++, j >>= 1) ;
 
 //		inpWin			= Filter.createFullWindow( fftSize, Filter.WIN_HANNING );
 
@@ -462,14 +462,14 @@ long screenOffX = 0;
 n = decimHelps[ 0 ].fullRateToSubsample( fullLength );
 subLength = n;
 idx=0;
-        // had to change '>= minLen' to '> minLen' because minLen could be zero!
-        if (model == MODEL_SONA) {//			for( inlineDecim = 2; subLength / inlineDecim > minLen; inlineDecim++ ) ;
-//			inlineDecim--;
-            inlineDecim = 1;
-        } else {
-            assert false : model;
-            inlineDecim = 1; // never gets here
-        }
+        /*
+         had to change '>= minLen' to '> minLen' because minLen could be zero!
+         never gets here
+        */
+        assert model == MODEL_SONA : model;
+        //			inlineDecim--;
+
+        inlineDecim = 1;
         subLength /= inlineDecim;
         // System.err.println( "minLen = "+minLen+"; subLength = "+subLength+";
         // inlineDecim = "+inlineDecim+" ; idx = "+idx );
@@ -792,14 +792,14 @@ Thread.currentThread().setPriority( pri - 2 );
 //final long t2 = System.currentTimeMillis();
 //System.out.println( "for doSlide = " + doSlide + "; len = " + extSpan.getLength() + "; calc took " + (t2-t1) + " ms; fftSize = " + fftSize + "; stepSize " + stepSize );
 
-                } catch( IOException e1 ) {
+                } catch (IOException e1) {
                     e1.printStackTrace();
                 } finally {
-                    if( asyncManager != null ) {
-                        asyncManager.dispatchEvent( new AsyncEvent( DecimatedSonaTrail.this,
-                            AsyncEvent.FINISHED, System.currentTimeMillis(), DecimatedSonaTrail.this ));
+                    if (asyncManager != null) {
+                        asyncManager.dispatchEvent(new AsyncEvent(DecimatedSonaTrail.this,
+                                AsyncEvent.FINISHED, System.currentTimeMillis(), DecimatedSonaTrail.this));
                     }
-                    synchronized( threadAsync ) {
+                    synchronized (threadAsync) {
                         threadAsync.notifyAll();
                         // threadAsync = null;
                     }
@@ -915,18 +915,18 @@ Thread.currentThread().setPriority( pri - 2 );
 
 //System.out.println( "allocAsync( " + span + " ) --> " + extSpan );
 
-        if( tempFAsync == null ) {
+        if (tempFAsync == null) {
             // XXX THIS IS THE PLACE TO OPEN WAVEFORM CACHE FILE
             tempFAsync = createTempFiles();
         }
-        synchronized( tempFAsync ) {
-            for(int i = 0; i < SUB_NUM; i++ ) {
-                fileStart		= tempFAsync[ i ].getFrameNum();
-                fileStop		= fileStart + (extSpan.getLength() >> decimHelps[ i ].shift);
-                tempFAsync[ i ].setFrameNum( fileStop );
-                fileSpans[ i ]	= new Span( fileStart, fileStop );
+        synchronized (tempFAsync) {
+            for (int i = 0; i < SUB_NUM; i++) {
+                fileStart = tempFAsync[i].getFrameNum();
+                fileStop = fileStart + (extSpan.getLength() >> decimHelps[i].shift);
+                tempFAsync[i].setFrameNum(fileStop);
+                fileSpans[i] = new Span(fileStart, fileStop);
 //System.out.println( "... fileSpan =  " + fileSpans[ i ] + " ( i = " + i + "; shift = " + decimHelps[ i ].shift + " )" );
-                biasedSpans[ i ] = extSpan;
+                biasedSpans[i] = extSpan;
             }
         }
         return new DecimatedStake( extSpan, tempFAsync, fileSpans, biasedSpans, decimHelps );
@@ -1146,64 +1146,61 @@ Thread.currentThread().setPriority( pri - 2 );
     }
 
     // same as subsampleWrite but input is already at first decim stage
-    private void subsampleWrite2( float[][] buf, DecimatedStake das, int len )
-    throws IOException
-    {
+    private void subsampleWrite2(float[][] buf, DecimatedStake das, int len)
+            throws IOException {
         int decim;
 
         // calculate remaining decimations from preceding ones
-        for(int i = 1; i < SUB_NUM; i++ ) {
-            decim = decimHelps[ i ].shift - decimHelps[ i - 1 ].shift;
+        for (int i = 1; i < SUB_NUM; i++) {
+            decim = decimHelps[i].shift - decimHelps[i - 1].shift;
             len >>= decim;
             // framesWritten >>= decim;
-            decimator.decimate( buf, buf, 0, len, 1 << decim );
+            decimator.decimate(buf, buf, 0, len, 1 << decim);
             // ste[i].continueWrite( ts[i], framesWritten, outBuf, 0, len );
-            das.continueWrite( i, buf, 0, len );
+            das.continueWrite(i, buf, 0, len);
         } // for( SUBNUM )
     }
 
     // ---------------------- decimation subclasses ----------------------
 
-    private abstract class Decimator
-    {
+    private abstract class Decimator {
         protected Decimator() { /* empty */ }
 
-        protected abstract void decimate( float[][] inBuf, float[][] outBuf, int outOff, int len, int decim );
-        protected abstract void decimatePCM( float[][] inBuf, float[][] outBuf, int outOff, int len, int decim );
+        protected abstract void decimate(float[][] inBuf, float[][] outBuf, int outOff, int len, int decim);
+
+        protected abstract void decimatePCM(float[][] inBuf, float[][] outBuf, int outOff, int len, int decim);
+
         // protected abstract void decimatePCMFast( float[][] inBuf, float[][]
         // outBuf, int outOff, int len, int decim );
-        protected abstract int draw( DecimationInfo info, int ch, int[][] peakPolyX, int[][] peakPolyY,
-                                     int[][] rmsPolyX, int[][] rmsPolyY, int decimLen,
-                                     Rectangle r, float deltaYN, int off );
+        protected abstract int draw(DecimationInfo info, int ch, int[][] peakPolyX, int[][] peakPolyY,
+                                    int[][] rmsPolyX, int[][] rmsPolyY, int decimLen,
+                                    Rectangle r, float deltaYN, int off);
     }
 
     private class SonaDecimator
-    extends Decimator
-    {
+            extends Decimator {
         protected SonaDecimator() { /* empty */ }
 
-        protected void decimate( float[][] inBuf, float[][] outBuf, int outOff, int len, int decim )
-        {
-            int 	stop, j, k, m, ch;
-            float	f1;
-            float[]	inBufCh, outBufCh;
+        protected void decimate(float[][] inBuf, float[][] outBuf, int outOff, int len, int decim) {
+            int stop, j, k, m, ch;
+            float f1;
+            float[] inBufCh, outBufCh;
 
-            for( ch = 0; ch < fullChannels; ch++ ) {
-                inBufCh		= inBuf[ ch ];
-                outBufCh	= outBuf[ ch ];
+            for (ch = 0; ch < fullChannels; ch++) {
+                inBufCh = inBuf[ch];
+                outBufCh = outBuf[ch];
 
-                for( j = outOff, stop = outOff + len, k = 0; j < stop; j++ ) {
-                    f1 = inBufCh[ k ];
-                    for( m = k + decim, k++; k < m; k++ ) {
-                        f1 += inBufCh[ k ];
+                for (j = outOff, stop = outOff + len, k = 0; j < stop; j++) {
+                    f1 = inBufCh[k];
+                    for (m = k + decim, k++; k < m; k++) {
+                        f1 += inBufCh[k];
                     }
-                    outBufCh[ j ] = f1 / decim;
+                    outBufCh[j] = f1 / decim;
                 }
             }
         }
 
-        protected void decimatePCM( float[][] inBuf, float[][] outBuf, int outOff, int len, int decim )
-        {
+        protected void decimatePCM(float[][] inBuf, float[][] outBuf, int outOff, int len, int decim) {
             final float w = 1.0f / decim;
 
 //			for( int inOff = 0, stop = outOff + len, decimCnt = 0; outOff < stop; inOff += stepSize ) {
@@ -1215,39 +1212,38 @@ Thread.currentThread().setPriority( pri - 2 );
 //			}
 
 //int gaga = fftSize;
-            for( int inOff = 0, stop = outOff + len, decimCnt = 0; outOff < stop; inOff += stepSize ) {
-                for( int ch = 0, outChanOff = 0; ch < fullChannels; ch++ ) {
+            for (int inOff = 0, stop = outOff + len, decimCnt = 0; outOff < stop; inOff += stepSize) {
+                for (int ch = 0, outChanOff = 0; ch < fullChannels; ch++) {
 //System.out.println( "calling with " + inBuf[ ch].length + " -- " + inOff + " ; " + fftSize + "; " + filterBuf.length + " -- " + constQ.getNumKernels() );
 
 //					if( doSlide ) {
 //						slide.next( inBuf[ ch ], inOff, stepSize, ch, constQ.getFFTBuffer() );
 //						constQ.convolve( filterBuf, 0 );
 //					} else {
-                        constQ.transform( inBuf[ ch ], inOff, fftSize, filterBuf, 0 );
+                    constQ.transform(inBuf[ch], inOff, fftSize, filterBuf, 0);
 //					}
-                    if( decimCnt == 0 ) {
-                        for( int i = 0; i < numKernels; i++ ) {
-                            outBuf[ outChanOff++ ][ outOff ] = filterBuf[ i ] * w;
+                    if (decimCnt == 0) {
+                        for (int i = 0; i < numKernels; i++) {
+                            outBuf[outChanOff++][outOff] = filterBuf[i] * w;
                         }
                     } else {
-                        for( int i = 0; i < numKernels; i++ ) {
-                            outBuf[ outChanOff++ ][ outOff ] += filterBuf[ i ] * w;
+                        for (int i = 0; i < numKernels; i++) {
+                            outBuf[outChanOff++][outOff] += filterBuf[i] * w;
                         }
                     }
                 }
                 decimCnt = (decimCnt + 1) % decim;
-                if( decimCnt == 0 ) outOff++;
+                if (decimCnt == 0) outOff++;
             }
         }
 
-        protected int draw( DecimationInfo info, int ch,
-                            int[][] peakPolyX, int[][] peakPolyY,
-                            int[][] rmsPolyX, int[][] rmsPolyY, int decimLen,
-                            Rectangle r, float deltaYN, int off )
-        {
-            int			ch2;
-            float[]		sPeakP, sPeakN, sRMSP;
-            float		offX, scaleX, scaleY;
+        protected int draw(DecimationInfo info, int ch,
+                           int[][] peakPolyX, int[][] peakPolyY,
+                           int[][] rmsPolyX, int[][] rmsPolyY, int decimLen,
+                           Rectangle r, float deltaYN, int off) {
+            int ch2;
+            float[] sPeakP, sPeakN, sRMSP;
+            float offX, scaleX, scaleY;
 
             ch2		= ch * 3;
             sPeakP	= tmpBuf[ ch2++ ];
@@ -1257,36 +1253,35 @@ Thread.currentThread().setPriority( pri - 2 );
             scaleY	= r.height * deltaYN;
             offX	= scaleX * off;
 
-            return drawFullWavePeakRMS( sPeakP, sPeakN,
-                                        sRMSP, decimLen, peakPolyX[ ch ],
-                                        peakPolyY[ ch ], rmsPolyX[ ch ],
-                                        rmsPolyY[ ch ], off, offX, scaleX,
-                                        scaleY );
+            return drawFullWavePeakRMS(sPeakP, sPeakN,
+                    sRMSP, decimLen, peakPolyX[ch],
+                    peakPolyY[ch], rmsPolyX[ch],
+                    rmsPolyY[ch], off, offX, scaleX,
+                    scaleY);
         }
 
-        private int drawFullWavePeakRMS( float[] sPeakP, float[] sPeakN,
-                float[] sRMS, int len, int[] peakPolyX, int[] peakPolyY,
-                int[] rmsPolyX, int[] rmsPolyY, int off, float offX, float scaleX,
-                float scaleY )
-        {
+        private int drawFullWavePeakRMS(float[] sPeakP, float[] sPeakN,
+                                        float[] sRMS, int len, int[] peakPolyX, int[] peakPolyY,
+                                        int[] rmsPolyX, int[] rmsPolyY, int off, float offX, float scaleX,
+                                        float scaleY) {
             // final float scaleYN = -scaleY;
             int		x;
             float	peakP, peakN, rms;
 
-            for( int i = 0, k = peakPolyX.length - 1 - off; i < len; i++, off++, k-- ) {
+            for (int i = 0, k = peakPolyX.length - 1 - off; i < len; i++, off++, k--) {
                 x					= (int) (i * scaleX + offX);
                 peakPolyX[ off ]	= x;
                 peakPolyX[ k ]		= x;
                 rmsPolyX[ off ]		= x;
                 rmsPolyX[ k ]		= x;
-                peakP				= sPeakP[ i ];
-                peakN				= sPeakN[ i ];
+                peakP				= sPeakP[i];
+                peakN				= sPeakN[i];
                 peakPolyY[ off ]	= (int) (peakP * scaleY) + 2;
                 peakPolyY[ k ]		= (int) (peakN * scaleY) - 2;
                 // peakC = (peakP + peakN) / 2;
-                rms					= (float) Math.sqrt( sRMS[ i ]); // / 2;
-                rmsPolyY[ off ]		= (int) (Math.min( peakP, rms ) * scaleY);
-                rmsPolyY[ k ]		= (int) (Math.max( peakN, -rms ) * scaleY);
+                rms					= (float) Math.sqrt(sRMS[i]); // / 2;
+                rmsPolyY[ off ]		= (int) (Math.min(peakP,  rms) * scaleY);
+                rmsPolyY[ k ]		= (int) (Math.max(peakN, -rms) * scaleY);
             }
 
             return off;

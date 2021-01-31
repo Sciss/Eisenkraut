@@ -2,7 +2,7 @@
  *  RoutineConfig.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -128,7 +128,7 @@ public class RoutingConfig {
         final StringBuilder bMap = new StringBuilder("[ ");
         for (int i = 0; i < mapping.length; i++) {
             if (i > 0) bMap.append(", ");
-            bMap.append(String.valueOf(mapping[i]));
+            bMap.append(mapping[i]);
         }
         bMap.append(" ]");
         return "RoutingConfig( \"" + id + "\", \"" + name + "\", " + bMap.toString() + ", " + startAngle + " )";

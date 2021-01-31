@@ -2,7 +2,7 @@
  *  BlendingAction.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -66,7 +66,6 @@ import java.util.prefs.Preferences;
  *  TODO: close action should be called whenever popup disappears,
  *  and duplicates should be filtered out!
  */
-@SuppressWarnings("serial")
 public class BlendingAction
         extends AbstractAction {
 
@@ -377,7 +376,7 @@ public class BlendingAction
             if (view instanceof Icon) {
                 // XXX hmmm. should use composite icon
             } else {
-                text = String.valueOf((int) p.val) + " " + view.toString();
+                text = (int) p.val + " " + view.toString();
                 b.setText(text);
                 // b.setItemText(0, text);
                 // b.setItemText(1, text);
@@ -551,7 +550,6 @@ public class BlendingAction
         }
     }
 
-    @SuppressWarnings("serial")
     private static class BlendCBRenderer
             extends JLabel
             implements ListCellRenderer {
@@ -574,7 +572,7 @@ public class BlendingAction
             final Settings s = (Settings) value;
             final Object view = uvf.createView(s.duration.unit);
 
-            final String txt = String.valueOf((int) s.duration.val) + " " + view.toString();
+            final String txt = (int) s.duration.val + " " + view.toString();
             final Component res = peer.getListCellRendererComponent(list, txt /* value */, index, isSelected, cellHasFocus);
 
             curveIcon.update(s.ctrlPt[0], s.ctrlPt[1]);

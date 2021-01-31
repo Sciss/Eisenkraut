@@ -2,7 +2,7 @@
  *  DocumentHandler.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -90,7 +90,7 @@ public class DocumentHandler
                     break;
                 case OSC_ID:
                     rom = rom.next();
-                    final Integer id = new Integer(rom.getPathComponent());
+                    final Integer id = Integer.valueOf(rom.getPathComponent());
                     synchronized (this.sync) {
                         doc = this.mapIDs.get(id);
                     }

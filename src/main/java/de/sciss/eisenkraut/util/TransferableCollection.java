@@ -2,7 +2,7 @@
  *  TransferableCollection.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -72,7 +72,7 @@ public class TransferableCollection
         collTransferables = new Vector<Transferable>();
 
         int i, j, k;
-        Object o;
+        Transferable o;
         DataFlavor[] flavorArray;
         DataFlavor flavor;
         Vector<DataFlavor> v = new Vector<DataFlavor>();
@@ -80,9 +80,10 @@ public class TransferableCollection
         for (i = 0; i < coll.size(); i++) {
             o = coll.get(i);
             if (!(o instanceof Transferable)) throw new IllegalArgumentException();
-            Transferable t = (Transferable) o;
-            flavorArray = ((Transferable) o).getTransferDataFlavors();
-        collFlavLp:
+            Transferable t = o;
+            flavorArray = o.getTransferDataFlavors();
+
+            collFlavLp:
             for (j = 0; j < flavorArray.length; j++) {
                 flavor = flavorArray[j];
                 for (k = 0; k < v.size(); k++) {
@@ -92,7 +93,7 @@ public class TransferableCollection
             }
             collTransferables.add(t);
         }
-        v.add( collectionFlavor );
+        v.add(collectionFlavor);
 
         collFlavors = new DataFlavor[v.size()];
         for (i = 0; i < v.size(); i++) {
@@ -142,20 +143,20 @@ public class TransferableCollection
      *  @throws UnsupportedFlavorException  if none of the items supports the given flavor
      *  @throws IOException					if the data is no longer available in the requested flavor
      */
-    public Object getTransferData(DataFlavor flavor)
-            throws UnsupportedFlavorException, IOException {
+    @Override
+    public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
         if (flavor.equals(collectionFlavor)) return new Vector<Transferable>(collTransferables);
 
-        Object o;
+        Transferable o;
 
         for (Transferable collTransferable : collTransferables) {
             o = collTransferable;
             if (o instanceof Transferable) {
-                if (((Transferable) o).isDataFlavorSupported(flavor)) {
-                    return (((Transferable) o).getTransferData(flavor));
+                if (o.isDataFlavorSupported(flavor)) {
+                    return (o.getTransferData(flavor));
                 }
             }
         }
-        throw new UnsupportedFlavorException( flavor );
+        throw new UnsupportedFlavorException(flavor);
     }
 }

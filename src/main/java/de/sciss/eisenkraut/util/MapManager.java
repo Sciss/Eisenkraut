@@ -2,7 +2,7 @@
  *  MapManager.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -370,16 +370,16 @@ public class MapManager
                 try {
                     switch (type) {
                         case Context.TYPE_INTEGER:
-                            o = new Integer(value);
+                            o = Integer.valueOf(value);
                             break;
                         case Context.TYPE_LONG:
-                            o = new Long(value);
+                            o = Long.valueOf(value);
                             break;
                         case Context.TYPE_FLOAT:
-                            o = new Float(value);
+                            o = Float.valueOf(value);
                             break;
                         case Context.TYPE_DOUBLE:
-                            o = new Double(value);
+                            o = Double.valueOf(value);
                             break;
                         case Context.TYPE_BOOLEAN:
                             o = Boolean.valueOf(value);
@@ -472,7 +472,6 @@ public class MapManager
         public void mapOwnerModified(MapManager.Event e);
     }
 
-    @SuppressWarnings("serial")
     public static class Event
             extends BasicEvent {
         public static final int MAP_CHANGED		= 0;

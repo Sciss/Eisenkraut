@@ -7,3 +7,4 @@ project/boot/
 *.app/
 sbt-launch.jar
 Eisenkraut.jar
+.bsp/

@@ -2,7 +2,7 @@
  *  AudioFileInfoPalette.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -13,14 +13,26 @@
 
 package de.sciss.eisenkraut.gui;
 
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
+import de.sciss.app.AbstractApplication;
+import de.sciss.app.AbstractWindow;
+import de.sciss.app.AncestorAdapter;
+import de.sciss.app.Application;
+import de.sciss.app.DynamicListening;
+import de.sciss.common.AppWindow;
+import de.sciss.eisenkraut.Main;
+import de.sciss.eisenkraut.edit.EditChangeAudioFileDescr;
+import de.sciss.eisenkraut.edit.EditPutMapValue;
+import de.sciss.eisenkraut.session.Session;
+import de.sciss.eisenkraut.timeline.Timeline;
+import de.sciss.eisenkraut.timeline.TimelineEvent;
+import de.sciss.eisenkraut.timeline.TimelineListener;
+import de.sciss.gui.LooseFocusAction;
+import de.sciss.gui.ParamField;
+import de.sciss.gui.SpringPanel;
+import de.sciss.io.AudioFileDescr;
+import de.sciss.util.Param;
+import de.sciss.util.ParamSpace;
+
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -29,29 +41,12 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 import javax.swing.event.AncestorEvent;
-
-import de.sciss.app.AncestorAdapter;
-import de.sciss.eisenkraut.Main;
-import de.sciss.eisenkraut.edit.EditChangeAudioFileDescr;
-import de.sciss.eisenkraut.edit.EditPutMapValue;
-import de.sciss.eisenkraut.session.Session;
-import de.sciss.eisenkraut.timeline.Timeline;
-import de.sciss.eisenkraut.timeline.TimelineEvent;
-import de.sciss.eisenkraut.timeline.TimelineListener;
-
-import de.sciss.app.AbstractApplication;
-import de.sciss.app.AbstractWindow;
-import de.sciss.app.Application;
-import de.sciss.app.DynamicListening;
-import de.sciss.app.GraphicsHandler;
-import de.sciss.common.AppWindow;
-import de.sciss.gui.LooseFocusAction;
-import de.sciss.gui.GUIUtil;
-import de.sciss.gui.ParamField;
-import de.sciss.gui.SpringPanel;
-import de.sciss.io.AudioFileDescr;
-import de.sciss.util.Param;
-import de.sciss.util.ParamSpace;
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 /**
  *  Allows header editing (only sample rate for now).
@@ -150,7 +145,7 @@ public class AudioFileInfoPalette
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE); // window listener see above!
 
         init();
-        app.addComponent(Main.COMP_AUDIOINFO, this);
+        app.addComponent(Main.COMP_AUDIO_INFO, this);
     }
 
     protected boolean autoUpdatePrefs() {
@@ -158,7 +153,7 @@ public class AudioFileInfoPalette
     }
 
     public void dispose() {
-        AbstractApplication.getApplication().removeComponent(Main.COMP_AUDIOINFO);
+        AbstractApplication.getApplication().removeComponent(Main.COMP_AUDIO_INFO);
         super.dispose();
     }
 
@@ -264,7 +259,7 @@ public class AudioFileInfoPalette
         if ((doc == null) || e.isAdjusting()) return;
 
         doc.getUndoManager().addEdit(new EditPutMapValue(this,
-                doc.timeline.getMap(), Timeline.MAP_KEY_RATE, new Float(ggRate.getValue().val),
+                doc.timeline.getMap(), Timeline.MAP_KEY_RATE, (float) ggRate.getValue().val,
                 getResourceString("editSampleRate")).perform());
     }
 

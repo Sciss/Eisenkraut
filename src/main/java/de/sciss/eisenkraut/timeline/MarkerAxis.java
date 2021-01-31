@@ -2,7 +2,7 @@
  *  MarkerAxis.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -25,8 +25,6 @@ import de.sciss.eisenkraut.gui.RequestFocusAction;
 import de.sciss.eisenkraut.session.Session;
 import de.sciss.gui.ComponentHost;
 import de.sciss.gui.DoClickAction;
-import de.sciss.gui.GUIUtil;
-import de.sciss.gui.LooseFocusAction;
 import de.sciss.gui.MenuAction;
 import de.sciss.gui.ParamField;
 import de.sciss.gui.SpringPanel;
@@ -92,7 +90,6 @@ import java.util.List;
  *
  *	TODO:		actionEditPrev/NextClass shortcuts funktionieren nicht
  */
-@SuppressWarnings("serial")
 public class MarkerAxis
         extends JComponent
         implements TimelineListener, MouseListener, MouseMotionListener, KeyListener,
@@ -149,7 +146,8 @@ public class MarkerAxis
     private Object[]				editOptions		= null;
     private ParamField				ggMarkPos;
     protected JTextField			ggMarkName;
-    private JButton					ggEditPrev, ggEditNext, ggEditOk;
+    private JButton					ggEditPrev;
+    private JButton ggEditNext;
     protected int					editIdx			= -1;
     private DefaultUnitTranslator	timeTrans;
 
@@ -432,7 +430,7 @@ public class MarkerAxis
             ggEditNext = new JButton(a);
             amap.put("next", new DoClickAction(ggEditNext));
             a = new ActionEditConfirm();
-            ggEditOk = new JButton(a);
+            JButton ggEditOk = new JButton(a);
             ks = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, menu);
             imap.put(ks, "confirm");
             amap.put("confirm", new DoClickAction(ggEditOk));
@@ -704,7 +702,6 @@ public class MarkerAxis
 
 // ---------------- internal classes ----------------
 
-    @SuppressWarnings("serial")
     private class ActionEditConfirm
             extends MenuAction {
         protected ActionEditConfirm() {
@@ -721,26 +718,22 @@ public class MarkerAxis
         }
     }
 
-    @SuppressWarnings("serial")
     private class ActionEditPrev
             extends MenuAction {
-        protected ActionEditPrev()
-        {
-//			super( "\u21E0", KeyStroke.getKeyStroke( KeyEvent.VK_LEFT, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() ));
-            super( "\u21E0" );
+
+        protected ActionEditPrev() {
+            super("\u21E0");
         }
 
-        public void actionPerformed( ActionEvent e )
-        {
+        public void actionPerformed(ActionEvent e) {
             commitEditMarker();
-            if( editIdx > 0 ) {
+            if (editIdx > 0) {
                 editIdx--;
                 updateEditMarker();
             }
         }
     }
 
-    @SuppressWarnings("serial")
     private class ActionEditNext
             extends MenuAction {
 

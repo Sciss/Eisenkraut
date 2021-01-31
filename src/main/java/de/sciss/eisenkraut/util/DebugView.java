@@ -2,7 +2,7 @@
  *  DebugView.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -92,31 +92,29 @@ vaxis.setSpace( spc );
         f.setVisible( true );
     }
 
-    public static DebugView fftMag( float[] fftBuf, int numBins, boolean log, String descr )
-    {
-        final float[]	data = new float[ numBins ];
-        float			f1, f2;
-        for( int i = 0, j = 0; i < numBins; i++ ) {
-            f1 = fftBuf[ j++ ];
-            f2 = fftBuf[ j++ ];
-            f1 = (float) Math.sqrt( f1 * f1 + f2 * f2 );
-            data[ i ] = log ? (float) Math.max( -160, MathUtil.linearToDB( f1 )) : f1;
+    public static DebugView fftMag(float[] fftBuf, int numBins, boolean log, String descr) {
+        final float[] data = new float[numBins];
+        float f1, f2;
+        for (int i = 0, j = 0; i < numBins; i++) {
+            f1 = fftBuf[j++];
+            f2 = fftBuf[j++];
+            f1 = (float) Math.sqrt(f1 * f1 + f2 * f2);
+            data[i] = log ? (float) Math.max(-160, MathUtil.linearToDB(f1)) : f1;
         }
-        return new DebugView( data, 0, numBins, descr );
+        return new DebugView(data, 0, numBins, descr);
     }
 
-    public static DebugView fftPhase( float[] fftBuf, int numBins, boolean deg, String descr )
-    {
-        final float[]	data = new float[ numBins ];
-        float			f1, f2;
-        for( int i = 0, j = 0; i < numBins; i++ ) {
-            f1 = fftBuf[ j++ ];
-            f2 = fftBuf[ j++ ];
-            f1 = (float) Math.atan2( f2, f1 );
-            if( deg ) f1 *= (float) (180 / Math.PI);
-            data[ i ] = f1;
+    public static DebugView fftPhase(float[] fftBuf, int numBins, boolean deg, String descr) {
+        final float[] data = new float[numBins];
+        float f1, f2;
+        for (int i = 0, j = 0; i < numBins; i++) {
+            f1 = fftBuf[j++];
+            f2 = fftBuf[j++];
+            f1 = (float) Math.atan2(f2, f1);
+            if (deg) f1 *= (float) (180 / Math.PI);
+            data[i] = f1;
         }
-        return new DebugView( data, 0, numBins, descr );
+        return new DebugView(data, 0, numBins, descr);
     }
 
     /**
@@ -142,7 +140,6 @@ vaxis.setSpace( spc );
      *  TODO: due to a bug in horizontal wrapping, the modified span
      *				information is wrong?
      */
-    @SuppressWarnings("serial")
     public static class VectorDisplay extends JComponent {
         private float[]		vector;
 
@@ -297,7 +294,7 @@ vaxis.setSpace( spc );
          */
         public void setLabel( String label )
         {
-            if( this.label == null || label == null || !this.label.equals( label )) {
+            if(this.label == null || !this.label.equals(label)) {
                 txtLay		= null;
                 this.label  = label;
                 repaint();

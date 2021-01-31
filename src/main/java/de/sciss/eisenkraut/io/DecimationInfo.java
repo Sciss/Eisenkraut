@@ -2,7 +2,7 @@
  *  DecimationInfo.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -30,8 +30,8 @@ import de.sciss.io.Span;
  *
  *  TODO: this class could be internal to mte
  */
-public class DecimationInfo
-{
+public class DecimationInfo {
+
     /**
      *  Internal index for MultirateTrackEditor
      */
@@ -59,8 +59,7 @@ public class DecimationInfo
      *						frames (rounded to integer)
      */
     protected DecimationInfo(Span span, long subLength, int channels,
-                             int idx, int shift, int inlineDecim, int model )
-    {
+                             int idx, int shift, int inlineDecim, int model) {
         this.span			= span;
         this.subLength = subLength;
         this.channels		= channels;
@@ -77,13 +76,11 @@ public class DecimationInfo
      *  @return the factor by which the full rate is decimated,
      *			that is, <code>decimatedRate = fullRate / returnedFactor</code>
      */
-    public int getDecimationFactor()
-    {
-        return( (1<<shift) * inlineDecim );
+    public int getDecimationFactor() {
+        return ((1 << shift) * inlineDecim);
     }
 
-    public long getTotalLength()
-    {
-        return( (subLength * inlineDecim) << shift );
+    public long getTotalLength() {
+        return ((subLength * inlineDecim) << shift);
     }
 }

@@ -2,7 +2,7 @@
  *  TransportToolBar.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -60,7 +60,6 @@ import java.awt.event.MouseEvent;
  *	TODO: (FIXED?) when palette is opened when transport is running(?)
  *				realtime listener is not registered (only after timeline change)
  */
-@SuppressWarnings("serial")
 public class TransportToolBar
         extends Box
         implements TimelineListener, TransportListener,    // RealtimeConsumer,
@@ -292,7 +291,6 @@ public class TransportToolBar
 
 // ---------------- actions ---------------- 
 
-    @SuppressWarnings("serial")
     private class ActionGoToTime
             extends AbstractAction {
 
@@ -375,7 +373,6 @@ msgPane.add( ggCurrent );
         }
     } // class actionGoToTimeClass
 
-    @SuppressWarnings("serial")
     private class ActionTogglePlayStop
             extends AbstractAction {
 
@@ -391,7 +388,6 @@ msgPane.add( ggCurrent );
     } // class actionTogglePlayStopClass
 
 
-    @SuppressWarnings("serial")
     private class ActionPlaySelection
             extends AbstractAction {
 
@@ -413,7 +409,6 @@ msgPane.add( ggCurrent );
         }
     } // class actionPlaySelectionClass
 
-    @SuppressWarnings("serial")
     private static class ActionCue
             extends AbstractAction {
 
@@ -461,7 +456,6 @@ msgPane.add( ggCurrent );
         }
     } // class actionCueClass
 
-    @SuppressWarnings("serial")
     private class ActionLoop
             extends AbstractAction {
 
@@ -470,12 +464,11 @@ msgPane.add( ggCurrent );
             super();
         }
 
-        public void actionPerformed( ActionEvent e )
-        {
-            if( ((AbstractButton) e.getSource()).isSelected() ) {
+        public void actionPerformed(ActionEvent e) {
+            if (((AbstractButton) e.getSource()).isSelected()) {
 //				if( doc.bird.attemptShared( Session.DOOR_TIME, 200 )) {
 //					try {
-                        updateLoop();
+                updateLoop();
 //					}
 //					finally {
 //						doc.bird.releaseShared( Session.DOOR_TIME );
@@ -484,18 +477,17 @@ msgPane.add( ggCurrent );
 //					((AbstractButton) e.getSource()).setSelected( false );
 //				}
             } else {
-                transport.setLoop( null );
+                transport.setLoop(null);
             }
         }
 
-        protected void updateLoop()
-        {
+        protected void updateLoop() {
             Span span;
 
 //			if( !doc.bird.attemptShared( Session.DOOR_TIME, 250 )) return;
 //			try {
-                span = doc.timeline.getSelectionSpan();
-                transport.setLoop( span.isEmpty() ? null : span );
+            span = doc.timeline.getSelectionSpan();
+            transport.setLoop(span.isEmpty() ? null : span);
 //			}
 //			finally {
 //				doc.bird.releaseShared( Session.DOOR_TIME );
@@ -542,43 +534,36 @@ msgPane.add( ggCurrent );
 
     // --------------- internal actions ---------------
 
-    @SuppressWarnings("serial")
     private class ActionPlay
             extends AbstractAction {
 
-        protected ActionPlay()
-        {
+        protected ActionPlay() {
             super();
         }
 
-        public void actionPerformed( ActionEvent e )
-        {
-            perform( (e.getModifiers() & ActionEvent.SHIFT_MASK) == 0 ? 1.0f :
-                        ((e.getModifiers() & ActionEvent.ALT_MASK) == 0 ? 0.5f : 2.0f) );
+        public void actionPerformed(ActionEvent e) {
+            perform((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0 ? 1.0f :
+                    ((e.getModifiers() & ActionEvent.ALT_MASK) == 0 ? 0.5f : 2.0f));
         }
 
-        protected void perform( float scale )
-        {
-            if( doc.timeline.getPosition() == doc.timeline.getLength() ) {
+        protected void perform(float scale) {
+            if (doc.timeline.getPosition() == doc.timeline.getLength()) {
 //				doc.getFrame().addCatchBypass();
-                doc.timeline.editPosition( transport, 0 );
+                doc.timeline.editPosition(transport, 0);
 //				doc.getFrame().removeCatchBypass();
             }
-            transport.play( scale );
+            transport.play(scale);
         }
     } // class actionPlayClass
 
-    @SuppressWarnings("serial")
     private class ActionStop
             extends AbstractAction {
 
-        protected ActionStop()
-        {
+        protected ActionStop() {
             super();
         }
 
-        public void actionPerformed( ActionEvent e )
-        {
+        public void actionPerformed(ActionEvent e) {
             transport.stop();
         }
     } // class actionStopClass

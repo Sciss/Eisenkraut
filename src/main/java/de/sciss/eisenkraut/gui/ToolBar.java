@@ -2,7 +2,7 @@
  *  ToolBar.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -31,7 +31,6 @@ import de.sciss.app.EventManager;
  *  be informed about tool changes. Icons can
  *  be mutually exclusive grouped.
  */
-@SuppressWarnings("serial")
 public class ToolBar
         extends JPanel // JToolBar
         implements EventManager.Processor {
@@ -169,13 +168,10 @@ public class ToolBar
 
         for (i = 0; i < elm.countListeners(); i++) {
             listener = (ToolActionListener) elm.getListener(i);
-            switch (e.getID()) {
-                case ToolActionEvent.CHANGED:
-                    listener.toolChanged((ToolActionEvent) e);
-                    break;
-                default:
-                    assert false : e.getID();
-                    break;
+            if (e.getID() == ToolActionEvent.CHANGED) {
+                listener.toolChanged((ToolActionEvent) e);
+            } else {
+                assert false : e.getID();
             }
         } // for( i = 0; i < elm.countListeners(); i++ )
     }
@@ -228,7 +224,7 @@ public class ToolBar
                 promote = false;
             }
 
-            if (promote && action != null && action instanceof ToolAction) {
+            if (promote && action instanceof ToolAction) {
                 dispatchChange(button, (ToolAction) action);
             }
         }

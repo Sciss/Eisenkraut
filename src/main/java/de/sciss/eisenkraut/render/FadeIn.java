@@ -2,7 +2,7 @@
  *  FadeIn.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -13,17 +13,14 @@
 
 package de.sciss.eisenkraut.render;
 
-// @version	0.56, 15-Sep-05
 public class FadeIn
-extends FadePlugIn
-{
-    public FadeIn()
-    {
-        super( true );
+        extends FadePlugIn {
+
+    public FadeIn() {
+        super(true);
     }
 
-    public String getName()
-    {
-        return getResourceString( "plugInFadeIn" );
+    public String getName() {
+        return getResourceString("plugInFadeIn");
     }
 }

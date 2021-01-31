@@ -2,7 +2,7 @@
  *  FilterDialog.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -386,7 +386,7 @@ public class FilterDialog
 
     /**
      *	Cancels the re-importing of transformed data.
-     *	Aborts and undos the compound edit.
+     *	Aborts and undoes the compound edit.
      */
     public void consumerCancel(RenderSource source)
             throws IOException {
@@ -758,7 +758,6 @@ public class FilterDialog
 
 // ---------------- Action objects ---------------- 
 
-    @SuppressWarnings("serial")
     private class ActionClose
             extends AbstractAction {
         protected ActionClose(String text) {
@@ -770,7 +769,6 @@ public class FilterDialog
         }
     }
 
-    @SuppressWarnings("serial")
     private class ActionRender extends AbstractAction {
         protected ActionRender(String text) {
             super(text);

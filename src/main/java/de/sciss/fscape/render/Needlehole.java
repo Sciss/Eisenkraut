@@ -2,7 +2,7 @@
  *  Needlehole.java
  *  FScape
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -175,24 +175,33 @@ public class Needlehole
         source.context.setOption( RenderContext.KEY_PREF_BLOCK_SIZE, outBufSizeI );
         source.context.setOption( RenderContext.KEY_MAX_BLOCK_SIZE, outBufSizeI );
 
-        if( filterType.equals( FILTER_MEDIAN )) {
-            prFilter	= new MedianFilter( prWinSize, source.numAudioChannels );
-        } else if( filterType.equals( FILTER_STDDEV )) {
-            prFilter	= new StdDevFilter( prWinSize, source.numAudioChannels );
-        } else if( filterType.equals( FILTER_MINIMUM )) {
-            prFilter	= new MinimumFilter( prWinSize, source.numAudioChannels );
-        } else if( filterType.equals( FILTER_CENTER )) {
-            prFilter	= new CenterClippingFilter( prWinSize, source.numAudioChannels, threshAmp );
-        } else if( filterType.equals( FILTER_MINIMUM2 )) {
-            prFilter	= new Minimum2Filter( prWinSize, source.numAudioChannels );
-        } else if( filterType.equals( FILTER_AUTOCORR )) {
-            prFilter	= new AutoCorrelationFilter( prWinSize, source.numAudioChannels );
-        } else if( filterType.equals( FILTER_AUTOCORR2 )) {
-            prFilter	= new AutoCorrelation2Filter( prWinSize, source.numAudioChannels );
-        } else if( filterType.equals( FILTER_MINPHASE )) {
-            prFilter	= new MinimumPhaseFilter( prWinSize, source.numAudioChannels );
-        } else {
-            throw new IOException( "Unknown filter type : " + filterType );
+        switch (filterType) {
+            case FILTER_MEDIAN:
+                prFilter = new MedianFilter(prWinSize, source.numAudioChannels);
+                break;
+            case FILTER_STDDEV:
+                prFilter = new StdDevFilter(prWinSize, source.numAudioChannels);
+                break;
+            case FILTER_MINIMUM:
+                prFilter = new MinimumFilter(prWinSize, source.numAudioChannels);
+                break;
+            case FILTER_CENTER:
+                prFilter = new CenterClippingFilter(prWinSize, source.numAudioChannels, threshAmp);
+                break;
+            case FILTER_MINIMUM2:
+                prFilter = new Minimum2Filter(prWinSize, source.numAudioChannels);
+                break;
+            case FILTER_AUTOCORR:
+                prFilter = new AutoCorrelationFilter(prWinSize, source.numAudioChannels);
+                break;
+            case FILTER_AUTOCORR2:
+                prFilter = new AutoCorrelation2Filter(prWinSize, source.numAudioChannels);
+                break;
+            case FILTER_MINPHASE:
+                prFilter = new MinimumPhaseFilter(prWinSize, source.numAudioChannels);
+                break;
+            default:
+                throw new IOException("Unknown filter type : " + filterType);
         }
 
         prOffStart		= prFilter.getStartOffset(); // prWinSizeH;
@@ -1145,13 +1154,9 @@ inOff += winSizeD2;
         } // process
     } // class AutoCorrelation2Filter
 
-    /*
-     *	Minimum Phase schnuckendorfer
-     */
     private static class MinimumPhaseFilter
-    extends RunningWindowFilter
-    {
-        private final int			winSizeM2;
+            extends RunningWindowFilter {
+
         private final int			winSizeH;
         private final int			channels;
         private final double[][]	dcMem;
@@ -1163,14 +1168,13 @@ inOff += winSizeD2;
         private final float			gain;
         private int					winBufIdx	= 0;
 
-        protected MinimumPhaseFilter( int winSize, int channels )
-        {
-            super( winSize );
+        protected MinimumPhaseFilter(int winSize, int channels) {
+            super(winSize);
 
             this.channels   = channels;
-            winSizeM2		= winSize << 1;
+            int winSizeM2 = winSize << 1;
             winSizeH		= winSize >> 1;
-            fftSize			= MathUtil.nextPowerOfTwo( winSizeM2 );
+            fftSize			= MathUtil.nextPowerOfTwo(winSizeM2);
             fftSizeP2		= fftSize + 2;
             complexFFTsize	= fftSize << 1;
 //			gain			= (float) (1.0 / Math.sqrt( winSize ));	// ??? seems to be ok
@@ -1213,11 +1217,11 @@ inOff += winSizeD2;
                     }
                     // remove phase line ? XXX
 
-                f1 = fftBuf[ 1 ];
-                f2 = (fftBuf[ fftSize + 1 ] - f1) / (fftSize >> 1);
-                for( int jj = 1, kk = 0; jj < fftSize + 2; jj += 2, kk++ ) {
-                    fftBuf[ jj ] -= f1 + kk * f2;
-                }
+                    f1 = fftBuf[1];
+                    f2 = (fftBuf[fftSize + 1] - f1) / (fftSize >> 1);
+                    for (int jj = 1, kk = 0; jj < fftSize + 2; jj += 2, kk++) {
+                        fftBuf[jj] -= f1 + kk * f2;
+                    }
 
                     // make complex conjugate spectrum
                     for( int jj = fftSize + 2, kk = fftSize - 2; jj < complexFFTsize; kk -= 2, jj += 2 ) {
@@ -1244,22 +1248,22 @@ inOff += winSizeD2;
                         fftBuf[ jj ]		= (float) Math.exp( fftBuf[ jj ]);
                     }
 
-                for( int jj = 1, kk = 0; jj < fftSize + 2; jj += 2, kk++ ) {
-                    fftBuf[ jj ] += f1 + kk * f2;
-                }
+                    for (int jj = 1, kk = 0; jj < fftSize + 2; jj += 2, kk++) {
+                        fftBuf[jj] += f1 + kk * f2;
+                    }
 
-                    // go to timedomain and apply window
+                    // go to time domain and apply window
                     Fourier.polar2Rect( fftBuf, 0, fftBuf, 0, fftSize + 2 );
                     Fourier.realTransform( fftBuf, fftSize, Fourier.INVERSE );
 
                     maxImpAmp	= 0.0f;
-                    support		= winSizeH;	// will be overriden below
+                    support		= winSizeH;	// will be overwritten below
 
                     for( int jj = 0; jj < winSize; jj++ ) {
                         f1 = Math.abs( fftBuf[ jj ]);
                         if( f1 > maxImpAmp ) {
                             maxImpAmp	= f1;
-                            support		= jj;	// empiricially determine support from greatest elongation
+                            support		= jj;	// empirically determine support from greatest elongation
                         }
                     }
                     support		= support >> 1;
@@ -1274,12 +1278,11 @@ inOff += winSizeD2;
                         }
                     }
 
-                    multiply( fftBuf, 0, winSize, gain );
-                    add( convBuf5, p, fftBuf, 0, winSize - p );
-                    add( convBuf5, 0, fftBuf, winSize - p, p );
-//					d1 = convBuf5[ (p + winSizeH) % winSize ];
-                    d1 = convBuf5[ p ];
-                    convBuf5[ p ] = 0f;
+                    multiply(fftBuf, 0, winSize, gain);
+                    add(convBuf5, p, fftBuf, 0, winSize - p);
+                    add(convBuf5, 0, fftBuf, winSize - p, p);
+                    d1 = convBuf5[p];
+                    convBuf5[p] = 0f;
 
                 // ---- remove DC ----
                     d2				= d1 - convBuf4[ 0 ] + 0.99 * convBuf4[ 1 ];

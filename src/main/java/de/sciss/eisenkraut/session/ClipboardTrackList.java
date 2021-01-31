@@ -2,7 +2,7 @@
  *  ClipboardTrackList.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -184,8 +184,8 @@ public class ClipboardTrackList
      *  @throws UnsupportedFlavorException  if the flavor is not <code>trackListFlavor</code>
      *  @throws IOException when data cannot be transferred
      */
-    public Object getTransferData(DataFlavor flavor)
-            throws UnsupportedFlavorException, IOException {
+    @Override
+    public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
         if (!disposed && flavor.equals(trackListFlavor)) {
             return this;
 //		} else if( flavor.equals( AudioFileRegion.flavor ) && (size() == 1) ) {

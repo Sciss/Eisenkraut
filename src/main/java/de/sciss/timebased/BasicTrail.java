@@ -2,7 +2,7 @@
  *  BasicTrail.java
  *  de.sciss.timebased package
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -239,7 +239,7 @@ public abstract class BasicTrail
             }
             collResult = new ArrayList<Stake>(collByStop.subList(idx, collByStop.size()));
 
-            Collections.sort( collResult, startComparator );
+            collResult.sort(startComparator);
 
             idx = Collections.binarySearch(collResult, span.stop, startComparator);
             if (idx < 0) {
@@ -258,7 +258,7 @@ public abstract class BasicTrail
             }
             collResult = new ArrayList<Stake>(collByStart.subList(0, idx));
 
-            Collections.sort(collResult, stopComparator);
+            collResult.sort(stopComparator);
 
             idx = Collections.binarySearch(collResult, span.start, stopComparator);
             if (idx < 0) {
@@ -286,7 +286,6 @@ public abstract class BasicTrail
 
     public void editInsert(Object source, Span span, int touchMode, AbstractCompoundEdit ce) {
         final long start = span.start;
-//		final long	stop			= span.stop;
         final long totStop = editGetStop(ce);
         final long delta = span.getLength();
 
@@ -574,22 +573,20 @@ public abstract class BasicTrail
 
                         collToRemove.add(stake);
 
-                        if (stakeSpan.start >= start) {            // start portion not splitted
-                            if (stakeSpan.stop > stop) {            // stop portion splitted (otherwise completely removed!)
-                                collToAdd.add(stake.replaceStart(stop));
-                            }
-                        } else {
-                            collToAdd.add(stake.replaceStop(start));    // start portion splitted
-                            if (stakeSpan.stop > stop) {                // stop portion splitted
-                                collToAdd.add(stake.replaceStart(stop));
-                            }
+                        // stop portion split
+                        if (stakeSpan.start < start) {
+                            collToAdd.add(stake.replaceStop(start));    // start portion split
+                        }
+
+                        if (stakeSpan.stop > stop) {            // stop portion split (otherwise completely removed!)
+                            collToAdd.add(stake.replaceStart(stop));
                         }
                     }
                 }
                 break;
 
             case TOUCH_RESIZE:
-                System.err.println("BasicTrail.clear, touchmode resize : not tested");
+                System.err.println("BasicTrail.clear, touch mode resize : not tested");
                 for (Stake stake : collRange) {
                     stakeSpan = stake.getSpan();
                     if (stakeSpan.stop > start) {
@@ -597,7 +594,7 @@ public abstract class BasicTrail
                         collToRemove.add(stake);
 
                         if (stakeSpan.start >= start) {        // start portion not modified
-                            if (stakeSpan.stop > stop) {        // stop portion splitted (otherwise completely removed!)
+                            if (stakeSpan.stop > stop) {        // stop portion split (otherwise completely removed!)
                                 collToAdd.add(stake.replaceStart(stop));
                             }
                         } else {
@@ -649,11 +646,8 @@ public abstract class BasicTrail
         final BasicTrail trail = createEmptyCopy();
         final List<Stake> stakes = getCutRange(span, true, touchMode, shiftVirtual);
 
-//		trail.setRate( this.getRate() );
-
-//		Collections.sort( stakes, startComparator );
         trail.collStakesByStart.addAll(stakes);
-        Collections.sort(stakes, stopComparator);
+        stakes.sort(stopComparator);
         trail.collStakesByStop.addAll(stakes);
 
         return trail;
@@ -661,8 +655,8 @@ public abstract class BasicTrail
 
     protected abstract BasicTrail createEmptyCopy();
 
-    public static List<Stake> getCuttedRange(List<Stake> stakes, Span span, boolean byStart,
-                                             int touchMode, long shiftVirtual) {
+    public static List<Stake> getCutRange(List<Stake> stakes, Span span, boolean byStart,
+                                          int touchMode, long shiftVirtual) {
         if (stakes.isEmpty()) return stakes;
 
         final List<Stake> collResult = new ArrayList<Stake>();
@@ -713,7 +707,6 @@ public abstract class BasicTrail
                                 stake = stake.shiftVirtual(shiftVirtual);
                                 stake2.dispose();    // delete temp product
                             }
-                            collResult.add(stake);
                         } else {                                // adjust both start and stop
                             final Stake stake2 = stake.replaceStart(start);
                             stake = stake2.replaceStop(stop);
@@ -723,8 +716,8 @@ public abstract class BasicTrail
                                 stake = stake.shiftVirtual(shiftVirtual);
                                 stake3.dispose();    // delete temp product
                             }
-                            collResult.add(stake);
                         }
+                        collResult.add(stake);
                     }
                 }
                 break;
@@ -737,7 +730,7 @@ public abstract class BasicTrail
     }
 
     public List<Stake> getCutRange(Span span, boolean byStart, int touchMode, long shiftVirtual) {
-        return BasicTrail.getCuttedRange(getRange(span, byStart), span, byStart, touchMode, shiftVirtual);
+        return BasicTrail.getCutRange(getRange(span, byStart), span, byStart, touchMode, shiftVirtual);
     }
 
     public Stake get(int idx, boolean byStart) {
@@ -1228,13 +1221,10 @@ public abstract class BasicTrail
 
         for (i = 0; i < elm.countListeners(); i++) {
             listener = (Trail.Listener) elm.getListener(i);
-            switch (e.getID()) {
-                case Trail.Event.MODIFIED:
-                    listener.trailModified(te);
-                    break;
-                default:
-                    assert false : e.getID();
-                    break;
+            if (e.getID() == Event.MODIFIED) {
+                listener.trailModified(te);
+            } else {
+                assert false : e.getID();
             }
         } // for( i = 0; i < this.countListeners(); i++ )
     }
@@ -1251,7 +1241,6 @@ public abstract class BasicTrail
 
     // @todo	disposal is wrong (leaks?) when edit is not performed (e.g. EDIT_ADD not performed)
     // @todo	dispatch should not be a separate edit but one that is sucked and collapsed through multiple EDIT_ADD / EDIT_REMOVE stages
-    @SuppressWarnings("serial")
     private static class Edit
             extends BasicUndoableEdit {
         private final int				cmd;
@@ -1407,11 +1396,11 @@ public abstract class BasicTrail
         public int compare(Object o1, Object o2) {
             long l1 = (o1 instanceof Stake) ? ((Stake) o1).getSpan().start : (Long) o1;
             long l2 = (o2 instanceof Stake) ? ((Stake) o2).getSpan().start : (Long) o2;
-            return l1 < l2 ? -1 : (l1 > l2 ? 1 : 0);
+            return Long.compare(l1, l2);
         }
 
         public boolean equals(Object o) {
-            return ((o != null) && (o instanceof StartComparator));
+            return ((o instanceof StartComparator));
         }
     }
 
@@ -1422,11 +1411,11 @@ public abstract class BasicTrail
         public int compare(Object o1, Object o2) {
             long l1 = (o1 instanceof Stake) ? ((Stake) o1).getSpan().stop : (Long) o1;
             long l2 = (o2 instanceof Stake) ? ((Stake) o2).getSpan().stop : (Long) o2;
-            return l1 < l2 ? -1 : (l1 > l2 ? 1 : 0);
+            return Long.compare(l1, l2);
         }
 
         public boolean equals(Object o) {
-            return ((o != null) && (o instanceof StopComparator));
+            return ((o instanceof StopComparator));
         }
     }
 }

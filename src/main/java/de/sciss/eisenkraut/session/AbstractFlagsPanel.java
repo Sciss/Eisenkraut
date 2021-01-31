@@ -2,7 +2,7 @@
  *	AbstractFlagsPanel.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -42,9 +42,11 @@ public abstract class AbstractFlagsPanel extends JPanel {
         actionMute.set(flags);
     }
 
-    protected abstract void setFlags( int mask, boolean set );
-    protected abstract void broadcastFlags( int mask, boolean set );
-    protected abstract boolean isAny( int mask, boolean set );
+    protected abstract void setFlags(int mask, boolean set);
+
+    protected abstract void broadcastFlags(int mask, boolean set);
+
+    protected abstract boolean isAny(int mask, boolean set);
 
 // ---------------- internal classes ----------------
 
@@ -92,7 +94,6 @@ public abstract class AbstractFlagsPanel extends JPanel {
         }
     }
 
-    @SuppressWarnings("serial")
     private class FlagAction extends TriStateAction {
         private final int		normalMask;
         private final int		thirdMask;

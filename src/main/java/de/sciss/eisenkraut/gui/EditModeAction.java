@@ -2,7 +2,7 @@
  *  EditModeAction.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -19,7 +19,6 @@ import de.sciss.eisenkraut.session.Session;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 
-@SuppressWarnings("serial")
 public class EditModeAction
         extends AbstractAction {
     private final JToggleButton[] b;

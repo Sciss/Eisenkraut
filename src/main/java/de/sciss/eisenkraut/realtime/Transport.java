@@ -2,7 +2,7 @@
  *  Transport.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -133,7 +133,7 @@ public class Transport
             (collListener).transportStop(this, pos);
         }
         if( AbstractApplication.getApplication().getUserPrefs().getBoolean(
-            PrefsUtil.KEY_INSERTIONFOLLOWSPLAY, false )) {
+            PrefsUtil.KEY_INSERTION_FOLLOWS_PLAY, false )) {
 
             doc.timeline.editPosition( this, pos );
         } else {

@@ -2,7 +2,7 @@
  *  AudioTrackPanorama.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -93,7 +93,7 @@ public class AudioTrackPanorama implements Disposable {
 
         prefListener = new PreferenceChangeListener() {
             public void preferenceChange(PreferenceChangeEvent e) {
-                if (e.getKey().equals(PrefsUtil.KEY_OUTPUTCONFIG)) {
+                if (e.getKey().equals(PrefsUtil.KEY_OUTPUT_CONFIG)) {
                     createPanPan();
                 }
             }
@@ -205,14 +205,14 @@ public class AudioTrackPanorama implements Disposable {
     }
 
     protected void createPanPan() {
-        final String cfgName = audioPrefs.get(PrefsUtil.KEY_OUTPUTCONFIG, null);
+        final String cfgName = audioPrefs.get(PrefsUtil.KEY_OUTPUT_CONFIG, null);
         RoutingConfig oCfg;
 
         destroyPanPan();
 
         try {
-            if (cfgName != null && audioPrefs.node(PrefsUtil.NODE_OUTPUTCONFIGS).nodeExists(cfgName)) {
-                oCfg = new RoutingConfig(audioPrefs.node(PrefsUtil.NODE_OUTPUTCONFIGS).node(cfgName));
+            if (cfgName != null && audioPrefs.node(PrefsUtil.NODE_OUTPUT_CONFIGS).nodeExists(cfgName)) {
+                oCfg = new RoutingConfig(audioPrefs.node(PrefsUtil.NODE_OUTPUT_CONFIGS).node(cfgName));
                 pan = new PanoramaPanel(oCfg.numChannels, oCfg.startAngle);
                 setAzimuthAndSpread();
                 pan.addActionListener(actionListener);

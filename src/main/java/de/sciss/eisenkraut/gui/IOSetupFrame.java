@@ -2,7 +2,7 @@
  *  IOSetupFrame.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -114,7 +114,7 @@ public class IOSetupFrame extends AppWindow {
 
     private static final String[] KEY_INFOTEXT      = {"ioInputInfo", "ioOutputInfo"};
     private static final String[] KEY_DEFAULTNAME   = {"ioDefaultInName", "ioDefaultOutName"};
-    private static final String[] KEY_PREFSNODE     = {PrefsUtil.NODE_INPUTCONFIGS, PrefsUtil.NODE_OUTPUTCONFIGS};
+    private static final String[] KEY_PREFSNODE     = {PrefsUtil.NODE_INPUT_CONFIGS, PrefsUtil.NODE_OUTPUT_CONFIGS};
 
     static {
         BufferedImage img;
@@ -154,8 +154,8 @@ public class IOSetupFrame extends AppWindow {
         pntMapSelected  = isDark ? pntMapSelDark : pntMapSelLight;
 
         audioPrefs  = app.getUserPrefs().node(PrefsUtil.NODE_AUDIO);
-        abCfgID     = audioPrefs.get(PrefsUtil.KEY_AUDIOBOX, AudioBoxConfig.ID_DEFAULT);
-        abCfg       = new AudioBoxConfig(audioPrefs.node(PrefsUtil.NODE_AUDIOBOXES).node(abCfgID));
+        abCfgID     = audioPrefs.get(PrefsUtil.KEY_AUDIO_BOX, AudioBoxConfig.ID_DEFAULT);
+        abCfg       = new AudioBoxConfig(audioPrefs.node(PrefsUtil.NODE_AUDIO_BOXES).node(abCfgID));
 
         audioHwChannels[0] = abCfg.numInputChannels;
         audioHwChannels[1] = abCfg.numOutputChannels;
@@ -193,7 +193,7 @@ public class IOSetupFrame extends AppWindow {
                 disposeAndClose();
 // XXX ControlRoomFrame cannot rely on prefs since childAdded is
 // never fired (probably bug in java or spi)
-                f = (ControlRoomFrame) app.getComponent(Main.COMP_CTRLROOM);
+                f = (ControlRoomFrame) app.getComponent(Main.COMP_CTRL_ROOM);
                 if (f != null) f.refillIOConfigs();
             }
         });
@@ -222,7 +222,7 @@ public class IOSetupFrame extends AppWindow {
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
         init();
-        app.addComponent(Main.COMP_IOSETUP, this);
+        app.addComponent(Main.COMP_IO_SETUP, this);
     }
 
     protected boolean autoUpdatePrefs() {
@@ -344,7 +344,7 @@ public class IOSetupFrame extends AppWindow {
     }
 
     private void disposeAndClose() {
-        AbstractApplication.getApplication().removeComponent(Main.COMP_IOSETUP);    // needs to re-created each time!
+        AbstractApplication.getApplication().removeComponent(Main.COMP_IO_SETUP);    // needs to re-created each time!
         setVisible(false);
         dispose();
     }
@@ -460,7 +460,6 @@ public class IOSetupFrame extends AppWindow {
 
 // ----------- internal classes  -----------
 
-    @SuppressWarnings("serial")
     private class MapTransferHandler extends TransferHandler {
         private final int id;
 
@@ -579,17 +578,15 @@ public class IOSetupFrame extends AppWindow {
             return false;
         }
 
-        public Object getTransferData( DataFlavor flavor )
-        throws UnsupportedFlavorException, IOException
-        {
-            if( flavor.equals( mapFlavor )) {
+        @Override
+        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+            if (flavor.equals(mapFlavor)) {
                 return this;
             }
-            throw new UnsupportedFlavorException( flavor );
+            throw new UnsupportedFlavorException(flavor);
         }
     }
 
-    @SuppressWarnings("serial")
     private class MappingRenderer
             extends JComponent
             implements TableCellRenderer {
@@ -629,7 +626,6 @@ public class IOSetupFrame extends AppWindow {
         }
     }
 
-    @SuppressWarnings("serial")
     private class TableModel
             extends AbstractTableModel {
 
@@ -647,63 +643,58 @@ public class IOSetupFrame extends AppWindow {
             }
         }
 
-        public int getRowCount()
-        {
+        public int getRowCount() {
             return tabs[id].collConfig.size();
         }
 
-        public int getColumnCount()
-        {
-            return audioHwChannels[ id ] + staticColNames.length;
+        public int getColumnCount() {
+            return audioHwChannels[id] + staticColNames.length;
         }
 
-        public Object getValueAt( int row, int col )
-        {
+        public Object getValueAt(int row, int col) {
             final Tab t = tabs[id];
 
-            if( row > t.collConfig.size() ) return null;
+            if (row > t.collConfig.size()) return null;
 
             final RoutingConfig c = t.collConfig.get(row);
 
-            switch( col ) {
-            case 0:
-                return c.name;
-            case 1:
-                return c.numChannels;
-            case 2:
-                return c.startAngle;
-            default:
-                col -= staticColNames.length;
-                for( int i = 0; i < c.mapping.length; i++ ) {
-                    if( c.mapping[ i ] == col ) return i + 1;
-                }
-                return null;
+            switch (col) {
+                case 0:
+                    return c.name;
+                case 1:
+                    return c.numChannels;
+                case 2:
+                    return c.startAngle;
+                default:
+                    col -= staticColNames.length;
+                    for (int i = 0; i < c.mapping.length; i++) {
+                        if (c.mapping[i] == col) return i + 1;
+                    }
+                    return null;
             }
         }
 
-        public Class<?> getColumnClass( int col )
-        {
-            switch( col ) {
-            case 0:
-                return String.class;
-            case 1:
-                return Integer.class;
-            case 2:
-                return Float.class;
-            default:
-                return Integer.class;
+        public Class<?> getColumnClass(int col) {
+            switch (col) {
+                case 0:
+                    return String.class;
+                case 1:
+                    return Integer.class;
+                case 2:
+                    return Float.class;
+                default:
+                    return Integer.class;
             }
         }
 
-        public boolean isCellEditable( int row, int col )
-        {
+        public boolean isCellEditable(int row, int col) {
             return col < staticColNames.length;
         }
 
         public void setValueAt(Object value, int row, int col) {
             final Tab t = tabs[id];
 
-            if( (row > t.collConfig.size()) || (value == null) ) return;
+            if ((row > t.collConfig.size()) || (value == null)) return;
 
             final RoutingConfig cfg         = t.collConfig.get(row);
             final int           oldChannels = cfg.numChannels;

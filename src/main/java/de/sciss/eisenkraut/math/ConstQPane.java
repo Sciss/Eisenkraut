@@ -2,7 +2,7 @@
  *  PrefConstQ.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -26,7 +26,6 @@ import de.sciss.gui.SpringPanel;
 import de.sciss.gui.StringItem;
 import de.sciss.util.ParamSpace;
 
-@SuppressWarnings("serial")
 public class ConstQPane
         extends SpringPanel
         implements PreferenceNodeSync, SwingConstants {
@@ -45,7 +44,7 @@ public class ConstQPane
         ggMinFreq		= new PrefParamField();
         ggMinFreq.addSpace( spcFreq );
         Preferences prefs = null;
-        ggMinFreq.setPreferences(prefs, ConstQ.KEY_MINFREQ );
+        ggMinFreq.setPreferences(prefs, ConstQ.KEY_MIN_FREQ);
         ggMinFreq.addListener( new ParamField.Listener() {
             public void paramSpaceChanged( ParamField.Event e ) { /* ignore */ }
             public void paramValueChanged( ParamField.Event e )
@@ -57,7 +56,7 @@ public class ConstQPane
         });
         ggMaxFreq		= new PrefParamField();
         ggMaxFreq.addSpace( ParamSpace.spcFreqHertz );
-        ggMaxFreq.setPreferences(prefs, ConstQ.KEY_MAXFREQ );
+        ggMaxFreq.setPreferences(prefs, ConstQ.KEY_MAX_FREQ);
         ggMaxFreq.addListener( new ParamField.Listener() {
             public void paramSpaceChanged( ParamField.Event e ) { /* ignore */ }
             public void paramValueChanged( ParamField.Event e )
@@ -70,16 +69,16 @@ public class ConstQPane
         ggBandsPerOct	= new PrefParamField();
 //		ggBandsPerOct.setSpace( NumberSpace.createIntSpace( 1, 96 ));
         ggBandsPerOct.addSpace( new ParamSpace( 1, 768, 1, 0, 0, 24 ));
-        ggBandsPerOct.setPreferences(prefs, ConstQ.KEY_BANDSPEROCT );
+        ggBandsPerOct.setPreferences(prefs, ConstQ.KEY_BANDS_PER_OCT);
         ggMaxTimeRes	= new PrefParamField();
         ggMaxTimeRes.addSpace( spcTime );
-        ggMaxTimeRes.setPreferences(prefs, ConstQ.KEY_MAXTIMERES );
+        ggMaxTimeRes.setPreferences(prefs, ConstQ.KEY_MAX_TIME_RES);
         ggMaxFFTSize	= new PrefComboBox();
         for( int i = 256; i <= 32768; i <<= 1 ) {
             final String s = String.valueOf( i );
             ggMaxFFTSize.addItem( new StringItem( s, s ));
         }
-        ggMaxFFTSize.setPreferences(prefs, ConstQ.KEY_MAXFFTSIZE );
+        ggMaxFFTSize.setPreferences(prefs, ConstQ.KEY_MAX_FFT_SIZE);
 
         gridAdd( new JLabel( getResourceString( "labelMinFreq" ), TRAILING ), 0, 0 );
         gridAdd( ggMinFreq, 1, 0, -1, 1 );

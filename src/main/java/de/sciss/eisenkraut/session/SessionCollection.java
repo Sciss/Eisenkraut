@@ -2,7 +2,7 @@
  *  SessionCollection.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -468,9 +468,8 @@ public class SessionCollection
 
 // -------------------------- inner Event class --------------------------
 
-    // XXX TO-DO : Event should have a getDocumentCollection method
-    // XXX TO-DO : Event should have indices of all elements
-    @SuppressWarnings("serial")
+    // XXX TODO : Event should have a getDocumentCollection method
+    // XXX TODO : Event should have indices of all elements
     public static class Event
             extends BasicEvent {
         // --- ID values ---

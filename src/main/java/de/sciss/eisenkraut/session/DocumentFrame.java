@@ -2,7 +2,7 @@
  *  DocumentFrame.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -146,6 +146,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -351,7 +352,7 @@ public class DocumentFrame
         wavePanel			= new ComponentHost();
         timeAxis			= new TimelineAxis(doc, wavePanel);
         markAxis			= new MarkerAxis  (doc, wavePanel);
-        viewMarkers			= app.getUserPrefs().getBoolean(PrefsUtil.KEY_VIEWMARKERS, false);
+        viewMarkers			= app.getUserPrefs().getBoolean(PrefsUtil.KEY_VIEW_MARKERS, false);
         markVisible			= viewMarkers && waveExpanded;
         markAxisHeader = new TrackRowHeader(doc.markerTrack, doc.tracks, doc.selectedTracks, doc.getUndoManager());
         markAxisHeader.setPreferredSize(new Dimension( 63, markAxis.getPreferredSize().height));    // XXX
@@ -799,8 +800,8 @@ public class DocumentFrame
         documentUpdate();
 
         addDynamicListening( new DynamicPrefChangeManager( app.getUserPrefs(), new String[] {
-            PrefsUtil.KEY_VIEWNULLLINIE, PrefsUtil.KEY_VIEWVERTICALRULERS, PrefsUtil.KEY_VIEWMARKERS,
-            PrefsUtil.KEY_TIMEUNITS, PrefsUtil.KEY_VERTSCALE, PrefsUtil.KEY_VIEWCHANMETERS },
+            PrefsUtil.KEY_VIEW_ZERO_LINE, PrefsUtil.KEY_VIEW_VERTICAL_RULERS, PrefsUtil.KEY_VIEW_MARKERS,
+            PrefsUtil.KEY_TIMEUNITS, PrefsUtil.KEY_VERT_SCALE, PrefsUtil.KEY_VIEW_CHANNEL_METERS},
             this ));
 
         initBounds();	// be sure this is after documentUpdate!
@@ -879,7 +880,7 @@ public class DocumentFrame
         final DecimatedTrail dt;
 
         if (waveExpanded) {
-            if (verticalScale == PrefsUtil.VSCALE_FREQ_SPECT) {
+            if (verticalScale == PrefsUtil.V_SCALE_FREQ_SPECTRUM) {
                 if (doc.getDecimatedSonaTrail() == null) {
                     try {
                         final DecimatedSonaTrail dst = doc.createDecimatedSonaTrail();
@@ -1037,7 +1038,7 @@ public class DocumentFrame
         actionSave.setEnabled( !writeProtected && doc.isDirty() );
         setDirty( doc.isDirty() );
 
-        final AudioFileInfoPalette infoBox = (AudioFileInfoPalette) app.getComponent( Main.COMP_AUDIOINFO );
+        final AudioFileInfoPalette infoBox = (AudioFileInfoPalette) app.getComponent( Main.COMP_AUDIO_INFO);
         if( infoBox != null ) infoBox.updateDocumentName( doc );
 
         if( writeProtected && !wpHaveWarned && doc.isDirty() ) {
@@ -1207,8 +1208,7 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
         super.dispose();
     }
 
-    private void updateEditEnabled( boolean enabled )
-    {
+    private void updateEditEnabled(boolean enabled) {
         Action ma;
         ma			= doc.getCutAction();
         if( ma != null ) ma.setEnabled( enabled );
@@ -1223,7 +1223,6 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
         actionSaveSelectionAs.setEnabled( enabled );
     }
 
-    @SuppressWarnings("serial")
     private static class SetFlagAndDisposeAction extends AbstractAction {
         private final Flag 		flag;
         private final JDialog	d;
@@ -1421,13 +1420,12 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
             if( cEmpty ) {
                 x   = Math.max( 0, vpUpdateRect.x );
                 x2  = Math.min( vpRecentRect.width, vpUpdateRect.x + vpUpdateRect.width );
-                vpUpdateRect.setBounds( x, vpUpdateRect.y, x2 - x, vpUpdateRect.height );
             } else {
                 x   = Math.max( 0, Math.min( vpUpdateRect.x, vpPositionRect.x ));
                 x2  = Math.min( vpRecentRect.width, Math.max( vpUpdateRect.x + vpUpdateRect.width,
                                                             vpPositionRect.x + vpPositionRect.width ));
-                vpUpdateRect.setBounds( x, vpUpdateRect.y, x2 - x, vpUpdateRect.height );
             }
+            vpUpdateRect.setBounds( x, vpUpdateRect.y, x2 - x, vpUpdateRect.height );
         }
         if( !vpUpdateRect.isEmpty() ) {
             wavePanel.repaint( vpUpdateRect );
@@ -1619,17 +1617,17 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
         Axis				chanRuler;
 
         switch( waveView.getVerticalScale() ) {
-        case PrefsUtil.VSCALE_AMP_LIN:
+        case PrefsUtil.V_SCALE_AMP_LIN:
             min = waveView.getAmpLinMin() * 100;
             max = waveView.getAmpLinMax() * 100;
             spc = VectorSpace.createLinSpace( 0.0, 1.0, min, max, null, null, null, null );
             break;
-        case PrefsUtil.VSCALE_AMP_LOG:
+        case PrefsUtil.V_SCALE_AMP_LOG:
             min = waveView.getAmpLogMin();
             max = waveView.getAmpLogMax();
             spc = VectorSpace.createLinSpace( 0.0, 1.0, min, max, null, null, null, null );
             break;
-        case PrefsUtil.VSCALE_FREQ_SPECT:
+        case PrefsUtil.V_SCALE_FREQ_SPECTRUM:
             min = waveView.getFreqMin();
             max = waveView.getFreqMax();
             spc = VectorSpace.createLinLogSpace( 0.0, 1.0, min, max, Math.sqrt( min * max ), null, null, null, null );
@@ -1761,37 +1759,45 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
     public void preferenceChange(PreferenceChangeEvent e) {
         final String key = e.getKey();
 
-        if (key.equals(PrefsUtil.KEY_VIEWNULLLINIE)) {
-            waveView.setNullLine(e.getNode().getBoolean(e.getKey(), false));
-        } else if (key.equals(PrefsUtil.KEY_VIEWVERTICALRULERS)) {
-            final boolean visible = e.getNode().getBoolean(e.getKey(), false);
-            rulersPanel.setVisible(visible);
-        } else if (key.equals(PrefsUtil.KEY_VIEWCHANMETERS)) {
-            chanMeters = e.getNode().getBoolean(e.getKey(), false);
-            showHideMeters();
-        } else if (key.equals(PrefsUtil.KEY_VIEWMARKERS)) {
-            viewMarkers = e.getNode().getBoolean(e.getKey(), false);
-            markVisible = viewMarkers && waveExpanded;
-            if (waveExpanded) {
-                markAxis.setVisible(markVisible);
-                markAxisHeader.setVisible(markVisible);
-                wavePanel.updateAll();
-            }
-            if (markVisible) {
-                markAxis.startListening();
-            } else {
-                markAxis.stopListening();
-            }
+        switch (key) {
+            case PrefsUtil.KEY_VIEW_ZERO_LINE:
+                waveView.setNullLine(e.getNode().getBoolean(e.getKey(), false));
+                break;
+            case PrefsUtil.KEY_VIEW_VERTICAL_RULERS:
+                final boolean visible = e.getNode().getBoolean(e.getKey(), false);
+                rulersPanel.setVisible(visible);
+                break;
+            case PrefsUtil.KEY_VIEW_CHANNEL_METERS:
+                chanMeters = e.getNode().getBoolean(e.getKey(), false);
+                showHideMeters();
+                break;
+            case PrefsUtil.KEY_VIEW_MARKERS:
+                viewMarkers = e.getNode().getBoolean(e.getKey(), false);
+                markVisible = viewMarkers && waveExpanded;
+                if (waveExpanded) {
+                    markAxis.setVisible(markVisible);
+                    markAxisHeader.setVisible(markVisible);
+                    wavePanel.updateAll();
+                }
+                if (markVisible) {
+                    markAxis.startListening();
+                } else {
+                    markAxis.stopListening();
+                }
 
-        } else if (key.equals(PrefsUtil.KEY_TIMEUNITS)) {
-            final boolean timeSmps = e.getNode().getInt(key, PrefsUtil.TIME_SAMPLES) == PrefsUtil.TIME_SAMPLES;
-            msgCsr1.applyPattern(timeSmps ? smpPtrn : timePtrn);
-        } else if (key.equals(PrefsUtil.KEY_VERTSCALE)) {
-            verticalScale = e.getNode().getInt(key, PrefsUtil.VSCALE_AMP_LIN);
-            checkDecimatedTrails(); // needs to be before setVert.scale / updateRuler!
+                break;
+            case PrefsUtil.KEY_TIMEUNITS:
+                final boolean timeSmps = e.getNode().getInt(key, PrefsUtil.TIME_SAMPLES) == PrefsUtil.TIME_SAMPLES;
+                msgCsr1.applyPattern(timeSmps ? smpPtrn : timePtrn);
+                break;
+            case PrefsUtil.KEY_VERT_SCALE:
+                verticalScale = e.getNode().getInt(key, PrefsUtil.V_SCALE_AMP_LIN);
+                checkDecimatedTrails(); // needs to be before setVert.scale / updateRuler!
 
-            waveView.setVerticalScale(verticalScale);
-            updateVerticalRuler();
+
+                waveView.setVerticalScale(verticalScale);
+                updateVerticalRuler();
+                break;
         }
     }
 
@@ -1803,7 +1809,6 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 
 // ---------------- internal action classes ---------------- 
 
-    @SuppressWarnings("serial")
     private class ActionDebugDump
             extends MenuAction {
         protected ActionDebugDump() { /* empty */ }
@@ -1816,7 +1821,6 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
         }
     }
 
-    @SuppressWarnings("serial")
     private class ActionDebugVerify
             extends MenuAction {
         protected ActionDebugVerify() { /* empty */ }
@@ -1829,7 +1833,6 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
         }
     }
 
-    @SuppressWarnings("serial")
     private class ActionNewFromSel
             extends MenuAction {
         protected ActionNewFromSel() { /* empty */ }
@@ -1877,7 +1880,6 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
     } // actionNewFromSelClass
 
     // action for the Save-Session menu item
-    @SuppressWarnings("serial")
     private class ActionClose
             extends MenuAction {
         protected ActionClose() { /* empty */ }
@@ -1893,7 +1895,6 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
     }
 
     // action for the Save-Session menu item
-    @SuppressWarnings("serial")
     private class ActionSave
             extends MenuAction {
         protected ActionSave() { /* empty */ }
@@ -1964,7 +1965,6 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
     }
 
     // action for the Save-Session-As menu item
-    @SuppressWarnings("serial")
     private class ActionSaveAs
             extends MenuAction {
 
@@ -2038,7 +2038,7 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
             final PathField[]			ggPathFields;
             final int[]					channelsUsed	= new int[protoType.length];
             final JCheckBox				ggOpenAfterSave;
-            final String				prefsDirKey		= selectionSettings ? PrefsUtil.KEY_FILESAVESELDIR : PrefsUtil.KEY_FILESAVEDIR;
+            final String				prefsDirKey		= selectionSettings ? PrefsUtil.KEY_FILE_SAVE_SEL_DIR : PrefsUtil.KEY_FILE_SAVE_DIR;
             final JPanel				p;
             int							filesUsed		= 0;
             File						f; // , f2;
@@ -2168,16 +2168,6 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
         }
     }
 
-//	private class actionImportMarkersClass
-//	extends MenuAction
-//	{
-//		public void actionPerformed( ActionEvent e )
-//		{
-//			new ImportMarkersDialog( doc );
-//		}
-//	}
-
-    @SuppressWarnings("serial")
     private class ActionSelectAll
             extends MenuAction {
         protected ActionSelectAll() { /* empty */ }
@@ -2188,7 +2178,6 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
         }
     }
 
-    @SuppressWarnings("serial")
     private class ActionInsertRec
             extends MenuAction {
         protected ActionInsertRec() { /* empty */ }
@@ -2279,15 +2268,13 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
         }
     } // class actionInsertRecClass
 
-    @SuppressWarnings("serial")
-    private class ActionProcess
+    private static class ActionProcess
             extends MenuAction {
         protected ActionProcess() { /* empty */ }
 
         public void actionPerformed( ActionEvent e ) { /* empty */ }
     }
 
-    @SuppressWarnings("serial")
     private class ActionPlugIn
             extends MenuAction {
         private final String plugInClassName;
@@ -2313,7 +2300,6 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
         }
     }
 
-    @SuppressWarnings("serial")
     private class ActionProcessAgain
             extends MenuAction {
         private String plugInClassName = null;
@@ -2351,7 +2337,6 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
         }
     }
 
-    @SuppressWarnings("serial")
     private class ActionAudioInfo
             extends MenuAction {
         protected ActionAudioInfo() { /* empty */ }
@@ -2360,7 +2345,7 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
          *  Brings up the Audio-Info-Box
          */
         public void actionPerformed(ActionEvent e) {
-            AudioFileInfoPalette infoBox = (AudioFileInfoPalette) app.getComponent(Main.COMP_AUDIOINFO);
+            AudioFileInfoPalette infoBox = (AudioFileInfoPalette) app.getComponent(Main.COMP_AUDIO_INFO);
 
             if (infoBox == null) {
                 infoBox = new AudioFileInfoPalette();
@@ -2370,7 +2355,6 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
         }
     }
 
-    @SuppressWarnings("serial")
     private class ActionRevealFile extends MenuAction {
         private File f;
 
@@ -2461,7 +2445,7 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
             StringBuilder sb = new StringBuilder();
             int chI;
             byte[] hex = "0123456789abcdef".getBytes();
-            byte[] enc = path.getBytes("UTF-8");
+            byte[] enc = path.getBytes(StandardCharsets.UTF_8);
             for (byte anEnc : enc) {
                 chI = anEnc; // parentDir.charAt( i );
                 if ((chI < 33) || (chI > 127)) {
@@ -2474,53 +2458,16 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
             return path;
         }
 
-//        private void performMac() {
-//            try {
-//                // make sure space characters are escaped as %20 in URL style
-//                String path = f.getParentFile().getAbsoluteFile().toURI().toURL().toExternalForm();
-//                path = path.substring(5);
-//                StringBuilder sb = new StringBuilder();
-//                int chI;
-//                byte[] hex = "0123456789abcdef".getBytes();
-//                byte[] enc = path.getBytes("UTF-8");
-//                for (byte anEnc : enc) {
-//                    chI = anEnc; // parentDir.charAt( i );
-//                    if ((chI < 33) || (chI > 127)) {
-//                        sb.append("%").append((char) hex[(chI >> 4) & 0x0F]).append((char) hex[chI & 0x0F]);
-//                    } else {
-//                        sb.append((char) chI);
-//                    }
-//                }
-//                path = sb.toString();
-//                final String parentDir = path;
-//                final String fileName = f.getName();
-//                final String[] cmdArray = {"osascript", "-e", "tell application \"Finder\"", "-e", "activate",
-//                        "-e", "open location \"file://" + parentDir + "\"",
-//                        "-e", "select file \"" + fileName + "\" of folder of the front window",
-//                        "-e", "end tell"};
-//                Runtime.getRuntime().exec(cmdArray, null, null);
-//            } catch (IOException e1) {
-//                displayError(e1, getValue(NAME).toString());
-//            }
-//        }
-
         protected void setFile(File f) {
             this.f = f;
             setEnabled(f != null);
         }
     }
 
-//	private abstract class ActionVerticalZoom
-//	extends AbstractAction
-//	{
-//		protected ActionVerticalZoom() { /* empty */ }
-//	}
-
     /**
      *  Increase or decrease the vertical
      *  range of the waveform display
      */
-    @SuppressWarnings("serial")
     private class ActionVerticalMax
             extends AbstractAction {
         private final float linFactor;
@@ -2537,7 +2484,7 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (waveView.getVerticalScale() == PrefsUtil.VSCALE_AMP_LIN) zoomLin();
+            if (waveView.getVerticalScale() == PrefsUtil.V_SCALE_AMP_LIN) zoomLin();
             else zoomLog();
         }
 
@@ -2574,28 +2521,22 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 
     /**
      *  Increase or decrease the vertical
-     *  noisefloor of the waveform display (in log mode)
+     *  noise floor of the waveform display (in log mode)
      */
-    @SuppressWarnings("serial")
     private class ActionVerticalMin
             extends AbstractAction {
         private final float logOffset;
 
-        /**
-         */
-        protected ActionVerticalMin( float logOffset )
-        {
+        protected ActionVerticalMin(float logOffset) {
             super();
             this.logOffset = logOffset;
         }
 
-        public void actionPerformed( ActionEvent e )
-        {
-            if( waveView.getVerticalScale() != PrefsUtil.VSCALE_AMP_LIN ) zoomLog();
+        public void actionPerformed(ActionEvent e) {
+            if (waveView.getVerticalScale() != PrefsUtil.V_SCALE_AMP_LIN) zoomLog();
         }
 
-        private void zoomLog()
-        {
+        private void zoomLog() {
             float min, max;
 
             min = waveView.getAmpLogMin();
@@ -2615,7 +2556,6 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
      *  Increase or decrease the width
      *  of the visible time span
      */
-    @SuppressWarnings("serial")
     private class ActionSpanWidth
             extends AbstractAction {
         private final float factor;
@@ -2625,19 +2565,17 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
          *					factors < 1 decrease (zoom in).
          *					special value 0.0 means zoom to sample level
          */
-        protected ActionSpanWidth( float factor )
-        {
+        protected ActionSpanWidth(float factor) {
             super();
             this.factor = factor;
         }
 
-        public void actionPerformed( ActionEvent e )
-        {
+        public void actionPerformed(ActionEvent e) {
             perform();
         }
 
-        public void perform()
-        {
+        public void perform() {
+
             long	pos, visiLen, start, stop;
             Span	visiSpan;
 
@@ -2679,25 +2617,22 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
     private static final int SCROLL_FIT_TO_SELECTION= 3;
     private static final int SCROLL_ENTIRE_SESSION	= 4;
 
-    @SuppressWarnings("serial")
     private class ActionScroll
             extends AbstractAction {
         private final int mode;
 
-        protected ActionScroll( int mode )
-        {
+        protected ActionScroll(int mode) {
             super();
 
             this.mode = mode;
         }
 
-        public void actionPerformed( ActionEvent e )
-        {
+        public void actionPerformed(ActionEvent e) {
             perform();
         }
 
-        public void perform()
-        {
+        public void perform() {
+
             UndoableEdit	edit	= null;
             Span			selSpan, newSpan;
             long			start, stop;
@@ -2775,46 +2710,43 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
     private static final int SELECT_TO_SESSION_START	= 0;
     private static final int SELECT_TO_SESSION_END		= 1;
 
-    @SuppressWarnings("serial")
     private class ActionSelect
             extends AbstractAction {
         private final int mode;
 
-        protected ActionSelect( int mode )
-        {
+        protected ActionSelect(int mode) {
             super();
 
             this.mode = mode;
         }
 
-        public void actionPerformed( ActionEvent e )
-        {
-            Span			selSpan, newSpan = null;
+        public void actionPerformed(ActionEvent e) {
+            Span selSpan, newSpan = null;
 
-            selSpan		= timelineSel; // doc.timeline.getSelectionSpan();
-            if( selSpan.isEmpty() ) {
-                selSpan	= new Span( timelinePos, timelinePos );
+            selSpan = timelineSel; // doc.timeline.getSelectionSpan();
+            if (selSpan.isEmpty()) {
+                selSpan = new Span(timelinePos, timelinePos);
             }
 
-            switch( mode ) {
-            case SELECT_TO_SESSION_START:
-                if( selSpan.getStop() > 0 ){
-                    newSpan = new Span( 0, selSpan.getStop() );
-                }
-                break;
+            switch (mode) {
+                case SELECT_TO_SESSION_START:
+                    if (selSpan.getStop() > 0) {
+                        newSpan = new Span(0, selSpan.getStop());
+                    }
+                    break;
 
-            case SELECT_TO_SESSION_END:
-                if( selSpan.getStart() < timelineLen ){
-                    newSpan = new Span( selSpan.getStart(), timelineLen );
-                }
-                break;
+                case SELECT_TO_SESSION_END:
+                    if (selSpan.getStart() < timelineLen) {
+                        newSpan = new Span(selSpan.getStart(), timelineLen);
+                    }
+                    break;
 
-            default:
-                assert false : mode;
-                break;
+                default:
+                    assert false : mode;
+                    break;
             }
-            if( newSpan != null && !newSpan.equals( selSpan )) {
-                doc.timeline.editSelect( this, newSpan );
+            if (newSpan != null && !newSpan.equals(selSpan)) {
+                doc.timeline.editSelect(this, newSpan);
 //					doc.getUndoManager().addEdit( TimelineVisualEdit.select( this, doc, newSpan ));
             }
         }
@@ -2825,20 +2757,18 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
     private static final int EXTEND_NEXT_REGION	= 2;
     private static final int EXTEND_PREV_REGION	= 3;
 
-    @SuppressWarnings("serial")
     private class ActionSelectRegion
             extends AbstractAction {
         private final int mode;
 
-        protected ActionSelectRegion( int mode )
-        {
+        protected ActionSelectRegion(int mode) {
             super();
 
             this.mode = mode;
         }
 
-        public void actionPerformed( ActionEvent e )
-        {
+        public void actionPerformed(ActionEvent e) {
+
             Span			selSpan;
             UndoableEdit	edit;
             long			start, stop;
@@ -2917,7 +2847,6 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
         }
     } // class actionSelectRegionClass
 
-    @SuppressWarnings("serial")
     private class ActionDropMarker
             extends AbstractAction {
         protected ActionDropMarker() { /* empty */ }
@@ -2931,7 +2860,6 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
 
 // -------------- AFR Transfer Handler --------------
 
-    @SuppressWarnings("serial")
     private class AFRTransferHandler
             extends TransferHandler {
         protected AFRTransferHandler() { /* empty */ }
@@ -3357,7 +3285,6 @@ newLp:	for( int ch = 0; ch < newChannels; ch++ ) {
         }
     }
 
-    @SuppressWarnings("serial")
     private static class SetCursorAction extends MenuAction {
         private final Component c;
         private final Cursor	csr;

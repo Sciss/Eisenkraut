@@ -2,7 +2,7 @@
  *  PrefCacheManager.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -111,7 +111,7 @@ public class PrefCacheManager
                 }
                 break;
             case KEY_ACTIVE:
-                final boolean b = Boolean.valueOf(e.getNewValue());
+                final boolean b = Boolean.parseBoolean(e.getNewValue());
                 if (isActive() != b) {
                     setActive(b);
                 }

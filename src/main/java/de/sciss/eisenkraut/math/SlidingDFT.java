@@ -2,7 +2,7 @@
  *  SlidingDFT.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -16,18 +16,15 @@ package de.sciss.eisenkraut.math;
  * 	For the sliding DFT algorithm, see for example
  * 	Bradford/Dobson/ffitch "Sliding is smoother than jumping".
  */
-public class SlidingDFT
-{
+public class SlidingDFT {
+
     private final int			fftSize;
     private final int			fftSizeP2;
-    private final int			bins;
-//	private final int			binsQ1;
-//	private final int			binsQ3;
     private final double[]		cos;
     private final double[]		sin;
     private final float[][]		timeBuf;
     private final double[][]	fftBufD;
-    private int[]				timeBufIdx;
+    private final int[]			timeBufIdx;
 
     public SlidingDFT( int fftSize, int numChannels )
     {
@@ -37,7 +34,7 @@ public class SlidingDFT
         final int		binsH;
         double			d2;
 
-        bins		= fftSize >> 1;
+        int bins = fftSize >> 1;
         fftSizeP2	= fftSize + 2;
         fftBufD		= new double[ numChannels ][ fftSizeP2 ];
         d1			= MathUtil.PI2 / fftSize;
@@ -58,7 +55,7 @@ public class SlidingDFT
         // note that cos[ binsH ] == 0, so we can write i < binsH instead of i <= binsH
         // and don't invert the roundoff error here.
 //double phas = Math.PI/2;
-        for( int i = 0, j = bins, k = binsH, m = binsH; i < binsH; i++, j--, k--, m++ ) {
+        for(int i = 0, j = bins, k = binsH, m = binsH; i < binsH; i++, j--, k--, m++ ) {
             d2		 = Math.cos( d1 * i );
             cos[ i ] = d2;
             cos[ j ] = -d2;
@@ -67,8 +64,7 @@ public class SlidingDFT
         }
     }
 
-    public void next( float[] inBuf, int inOff, int len, int chan, float[] fftBuf )
-    {
+    public void next(float[] inBuf, int inOff, int len, int chan, float[] fftBuf) {
         // formula: ("The Sliding DFT" Tutorial)
         // Xk[n] = (Xk[n-1] - x[n-N] + x[n]) * exp( j2pi*k/N )
 
@@ -78,7 +74,7 @@ public class SlidingDFT
         double			delta, re1, im1, re2, im2;
         float			f1;
 
-        for( int i = 0, j = inOff; i < len; i++, j++ ) {
+        for (int i = 0, j = inOff; i < len; i++, j++) {
             f1						= inBuf[ j ];
             delta					= (double) f1 - (double) timeBufC[ timeBufIdxC ];
 
@@ -120,12 +116,12 @@ public class SlidingDFT
                 fftBufDC[ m++ ]	= re1 * re2 - im1 * im2; // + deltaRe;
                 fftBufDC[ m++ ]	= re1 * im2 + re2 * im1; // + deltaIm;
             }
-            if( ++timeBufIdxC == fftSize ) timeBufIdxC = 0;
+            if (++timeBufIdxC == fftSize) timeBufIdxC = 0;
         }
-        timeBufIdx[ chan ] = timeBufIdxC;
+        timeBufIdx[chan] = timeBufIdxC;
         // now cast the internal fftBufDC back to fftBuf
-        for( int i = 0; i < fftSizeP2; i++ ) {
-            fftBuf[ i ] = (float) fftBufDC[ i ];
+        for (int i = 0; i < fftSizeP2; i++) {
+            fftBuf[i] = (float) fftBufDC[i];
         }
 
 // this is to compare with non-sliding variant

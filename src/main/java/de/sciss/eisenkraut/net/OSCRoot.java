@@ -2,7 +2,7 @@
  *  OSCRoot.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -509,7 +509,7 @@ public class OSCRoot
         final String key = e.getKey();
 
         if (key.equals(KEY_ACTIVE)) {
-            if (Boolean.valueOf(e.getNewValue())) {
+            if (Boolean.parseBoolean(e.getNewValue())) {
                 if (!isRunning()) {
                     boot();
                 }

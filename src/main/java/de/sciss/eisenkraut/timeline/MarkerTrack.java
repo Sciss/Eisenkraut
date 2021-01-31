@@ -2,7 +2,7 @@
  *  MarkerTrack.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -45,17 +45,15 @@ public class MarkerTrack
     private final OSCRouterWrapper	osc;
     private final Session			doc;
 
-    public MarkerTrack( Session doc )
-    {
+    public MarkerTrack(Session doc) {
         super();
 
-//		this.trail	= new MarkerTrail( doc );
-        this.trail	= new MarkerTrail();
+        this.trail = new MarkerTrail();
 
-        setName( AbstractApplication.getApplication().getResourceString( "labelMarkers" ));
+        setName(AbstractApplication.getApplication().getResourceString("labelMarkers"));
 
-        this.doc	= doc;
-        osc			= new OSCRouterWrapper( doc, this );
+        this.doc = doc;
+        osc = new OSCRouterWrapper(doc, this);
     }
 
     public Trail getTrail()

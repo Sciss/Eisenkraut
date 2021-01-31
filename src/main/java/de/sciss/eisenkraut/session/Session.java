@@ -2,7 +2,7 @@
  *  Session.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -486,10 +486,9 @@ if( !audioTracks.isEmpty() ) throw new IllegalStateException( "Cannot call repea
     }
 
     public DecimatedSonaTrail createDecimatedSonaTrail()
-    throws IOException
-    {
-        if( dst == null ) {
-            dst	= new DecimatedSonaTrail( at, DecimatedTrail.MODEL_SONA /*, sonaDecims */ );
+            throws IOException {
+        if (dst == null) {
+            dst = new DecimatedSonaTrail(at, DecimatedTrail.MODEL_SONA /*, sonaDecims */);
         }
         return dst;
     }
@@ -1149,7 +1148,6 @@ tryRename:					  {
         public void processCancel( ProcessingThread context ) { /* ignored */ }
     }
 
-    @SuppressWarnings("serial")
     private class ActionCut
             extends MenuAction {
         protected ActionCut() { /* empty */ }
@@ -1176,7 +1174,6 @@ tryRename:					  {
         }
     }
 
-    @SuppressWarnings("serial")
     private class ActionCopy
             extends MenuAction {
         protected ActionCopy() { /* empty */ }
@@ -1219,7 +1216,6 @@ tryRename:					  {
         }
     }
 
-    @SuppressWarnings("serial")
     private class ActionPaste
             extends MenuAction
             implements ProcessingThread.Client {
@@ -1483,30 +1479,27 @@ tryRename:					  {
      *	TODO: when a cutted region spans entire view,
      *			selecting undo results in empty visible span
      */
-    @SuppressWarnings("serial")
     private class ActionDelete
             extends MenuAction
             implements ProcessingThread.Client {
+
         protected ActionDelete() { /* empty */ }
 
-        public void actionPerformed( ActionEvent e )
-        {
+        public void actionPerformed(ActionEvent e) {
             perform();
         }
 
-        protected void perform()
-        {
-            final Span				span	= timeline.getSelectionSpan(); // XXX sync
-            if( span.isEmpty() ) return;
+        protected void perform() {
+            final Span span = timeline.getSelectionSpan(); // XXX sync
+            if (span.isEmpty()) return;
 
-            final ProcessingThread	proc		= initiate( getValue( NAME ).toString(), span, getEditMode() );
-            if( proc != null ) start( proc );
+            final ProcessingThread proc = initiate(getValue(NAME).toString(), span, getEditMode());
+            if (proc != null) start(proc);
         }
 
         // XXX sync
-        protected ProcessingThread initiate( String procName, Span span, int mode )
-        {
-            if( !checkProcess() ) return null;
+        protected ProcessingThread initiate(String procName, Span span, int mode) {
+            if (!checkProcess()) return null;
 
             final BlendContext			bc;
             final long					cutLength, docLength, newDocLength, maxLen;
@@ -1614,9 +1607,9 @@ tryRename:					  {
         /**
          *  This method is called by ProcessingThread
          */
-        public int processRun( ProcessingThread context )
-        throws IOException
-        {
+        public int processRun(ProcessingThread context)
+                throws IOException {
+
             final Span						span				= (Span) context.getClientArg( "span" );
             final int						mode				= (Integer) context.getClientArg("mode");
             final List<?> tis					= (List<?>) context.getClientArg( "tis" );
@@ -1683,19 +1676,17 @@ tryRename:					  {
         public void processCancel( ProcessingThread context ) { /* ignore */ }
     } // class actionDeleteClass
 
-    @SuppressWarnings("serial")
     private class ActionTrim
             extends MenuAction {
         protected ActionTrim() { /* empty */ }
 
-        // performs inplace (no runnable processing) coz it's always fast
-        public void actionPerformed( ActionEvent e )
-        {
+        // performs in-place (no runnable processing) because it is always fast
+        public void actionPerformed(ActionEvent e) {
             perform();
         }
 
-        protected void perform()
-        {
+        protected void perform() {
+
             final Span				selSpan, deleteBefore, deleteAfter;
             final BasicCompoundEdit	edit;
             final List<Track.Info>	tis;
@@ -1746,7 +1737,6 @@ tryRename:					  {
      *	TODO:	when edit mode != EDIT_INSERT, audio tracks are cleared which should be bypassed and vice versa
      *	TODO:	waveform display not automatically updated when edit mode != EDIT_INSERT
      */
-    @SuppressWarnings("serial")
     private class ActionSilence
             extends MenuAction
             implements ProcessingThread.Client {
@@ -1756,13 +1746,12 @@ tryRename:					  {
 
         protected ActionSilence() { /* empty */ }
 
-        public void actionPerformed( ActionEvent e )
-        {
+        public void actionPerformed(ActionEvent e) {
             perform();
         }
 
-        private void perform()
-        {
+        private void perform() {
+
             final SpringPanel			msgPane;
             final int					result;
             final ParamField			ggDuration;
@@ -1807,39 +1796,38 @@ tryRename:					  {
             }
         }
 
-        public ProcessingThread initiate( long pos, long numFrames )
-        {
-            if( !checkProcess() || (numFrames == 0) ) return null;
+        public ProcessingThread initiate(long pos, long numFrames) {
+            if (!checkProcess() || (numFrames == 0)) return null;
 
-            if( numFrames < 0 ) throw new IllegalArgumentException( String.valueOf( numFrames ));
-            if( (pos < 0) || (pos > timeline.getLength()) ) throw new IllegalArgumentException( String.valueOf( pos ));
+            if (numFrames < 0) throw new IllegalArgumentException(String.valueOf(numFrames));
+            if ((pos < 0) || (pos > timeline.getLength())) throw new IllegalArgumentException(String.valueOf(pos));
 
             final ProcessingThread 		proc;
             final AbstractCompoundEdit	edit;
             final Span					oldSelSpan, insertSpan;
 
-            proc = new ProcessingThread( this, getFrame(), getValue( NAME ).toString() );
+            proc = new ProcessingThread(this, getFrame(), getValue(NAME).toString());
 
-            edit		= new BasicCompoundEdit( proc.getName() );
+            edit		= new BasicCompoundEdit(proc.getName());
             oldSelSpan	= timeline.getSelectionSpan();
-            insertSpan	= new Span( pos, pos + numFrames );
+            insertSpan	= new Span(pos, pos + numFrames);
 
-            if( !oldSelSpan.isEmpty() ) { // deselect
-                edit.addPerform( TimelineVisualEdit.select( this, Session.this, new Span() ));
+            if (!oldSelSpan.isEmpty()) { // deselect
+                edit.addPerform(TimelineVisualEdit.select(this, Session.this, new Span()));
             }
 
-            proc.putClientArg( "tis", Track.getInfo( selectedTracks.getAll(), tracks.getAll() ));
-            proc.putClientArg( "edit", edit );
-            proc.putClientArg( "span", insertSpan );
+            proc.putClientArg("tis", Track.getInfo(selectedTracks.getAll(), tracks.getAll()));
+            proc.putClientArg("edit", edit);
+            proc.putClientArg("span", insertSpan);
             return proc;
         }
 
         /**
          *  This method is called by ProcessingThread
          */
-        public int processRun( ProcessingThread context )
-        throws IOException
-        {
+        public int processRun(ProcessingThread context)
+                throws IOException {
+
             final List<?> tis = (List<?>) context.getClientArg("tis");
             final AbstractCompoundEdit edit = (AbstractCompoundEdit) context.getClientArg("edit");
             final Span insertSpan = (Span) context.getClientArg("span");
@@ -1861,31 +1849,31 @@ tryRename:					  {
             return DONE;
         }
 
-        public void processFinished( ProcessingThread context )
-        {
+        public void processFinished(ProcessingThread context) {
+
             final AbstractCompoundEdit	edit		= (AbstractCompoundEdit) context.getClientArg( "edit" );
             final Span					insertSpan	= (Span) context.getClientArg( "span" );
 
-            if( context.getReturnCode() == DONE ) {
-                if( !insertSpan.isEmpty() ) {	// adjust timeline
-                    edit.addPerform( new EditSetTimelineLength( this, Session.this, timeline.getLength() + insertSpan.getLength() ));
-                    if( timeline.getVisibleSpan().isEmpty() ) {
-                        edit.addPerform( TimelineVisualEdit.scroll( this, Session.this, insertSpan ));
+            if (context.getReturnCode() == DONE) {
+                if (!insertSpan.isEmpty()) {    // adjust timeline
+                    edit.addPerform(new EditSetTimelineLength(this, Session.this, timeline.getLength() + insertSpan.getLength()));
+                    if (timeline.getVisibleSpan().isEmpty()) {
+                        edit.addPerform(TimelineVisualEdit.scroll(this, Session.this, insertSpan));
                     }
                 }
-                if( !insertSpan.isEmpty() ) {
-                    edit.addPerform( TimelineVisualEdit.select( this, Session.this, insertSpan ));
-                    edit.addPerform( TimelineVisualEdit.position( this, Session.this, insertSpan.stop ));
+                if (!insertSpan.isEmpty()) {
+                    edit.addPerform(TimelineVisualEdit.select  (this, Session.this, insertSpan));
+                    edit.addPerform(TimelineVisualEdit.position(this, Session.this, insertSpan.stop));
                 }
                 edit.perform();
                 edit.end();
-                getUndoManager().addEdit( edit );
+                getUndoManager().addEdit(edit);
             } else {
                 edit.cancel();
             }
         }
 
         // mte will check pt.shouldCancel() itself
-        public void processCancel( ProcessingThread context ) { /* ignore */ }
+        public void processCancel(ProcessingThread context) { /* ignore */ }
     } // class actionSilenceClass
 }

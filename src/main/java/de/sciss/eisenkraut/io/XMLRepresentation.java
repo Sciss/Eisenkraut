@@ -2,7 +2,7 @@
  *  XMLRepresentation.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -31,7 +31,7 @@ public interface XMLRepresentation
      *	to specify the base directory of the xml file.
      *	The value should be of class <code>File</code>
      */
-    public static final String KEY_BASEPATH	= "path";
+    public static final String KEY_BASE_PATH = "path";
 
     /**
      *	This key can be used for the options map

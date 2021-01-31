@@ -2,7 +2,7 @@
  *  UndoManager.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -18,7 +18,6 @@ import javax.swing.AbstractAction;
 
 import de.sciss.eisenkraut.session.Session;
 
-@SuppressWarnings("serial")
 public class UndoManager extends de.sciss.app.UndoManager {
 
     public UndoManager(Session doc) {
@@ -33,7 +32,6 @@ public class UndoManager extends de.sciss.app.UndoManager {
         return new ActionRedoProc();
     }
 
-    @SuppressWarnings("serial")
     private class ActionUndoProc
             extends ActionUndo {
         protected ActionUndoProc() { /* empty */ }
@@ -44,7 +42,6 @@ public class UndoManager extends de.sciss.app.UndoManager {
         }
     }
 
-    @SuppressWarnings("serial")
     private class ActionRedoProc
             extends ActionRedo {
         protected ActionRedoProc() { /* empty */ }

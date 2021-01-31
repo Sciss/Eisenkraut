@@ -2,7 +2,7 @@
  *  TimeLabel.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -23,7 +23,6 @@ import java.util.Locale;
 /**
  *  A GUI component showing a time position.
  */
-@SuppressWarnings("serial")
 public class TimeLabel
         extends JPanel
         implements Disposable {
@@ -114,7 +113,6 @@ public class TimeLabel
         lb.dispose();
     }
 
-    @SuppressWarnings("serial")
     private class Label
             extends JComponent
             implements Disposable {

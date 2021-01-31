@@ -2,7 +2,7 @@
  *  RenderConsumer.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -27,8 +27,7 @@ import java.io.IOException;
  *	but is provided with a pre-configured
  *	source object and requests (push).
  */
-public interface RenderConsumer
-{
+public interface RenderConsumer {
     /**
      *	Initiates the consumption.
      *	The consumer should check the source's
@@ -42,8 +41,8 @@ public interface RenderConsumer
      *
      *	@throws	IOException	if a read/write error occurs
      */
-    public boolean consumerBegin( RenderSource source )
-    throws IOException;
+    public boolean consumerBegin(RenderSource source)
+            throws IOException;
 
     /**
      *	Requests the consumer to consume a block of rendered data.
@@ -55,8 +54,8 @@ public interface RenderConsumer
      *
      *	@throws	IOException	if a read/write error occurs
      */
-    public boolean consumerRender( RenderSource source )
-    throws IOException;
+    public boolean consumerRender(RenderSource source)
+            throws IOException;
 
     /**
      *	Tells the consumer to finish consumption.
@@ -68,8 +67,8 @@ public interface RenderConsumer
      *
      *	@throws	IOException	if a read/write error occurs
      */
-    public boolean consumerFinish( RenderSource source )
-    throws IOException;
+    public boolean consumerFinish(RenderSource source)
+            throws IOException;
 
     /**
      *	Tells the consumer that the rendering was
@@ -79,6 +78,6 @@ public interface RenderConsumer
      *
      *	@throws	IOException	if a read/write error occurs
      */
-    public void consumerCancel( RenderSource source )
-    throws IOException;
+    public void consumerCancel(RenderSource source)
+            throws IOException;
 }

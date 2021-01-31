@@ -2,7 +2,7 @@
  *  SuperColliderClient.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -137,7 +137,7 @@ public class SuperColliderClient
         // is not using the EventThread
         oCfgDynPrefs = new DynamicPrefChangeManager( null, RoutingConfig.KEYS, oCfgListener, false );
 
-        new DynamicPrefChangeManager(audioPrefs, new String[]{PrefsUtil.KEY_OUTPUTCONFIG},
+        new DynamicPrefChangeManager(audioPrefs, new String[]{PrefsUtil.KEY_OUTPUT_CONFIG},
                 oCfgListener, false).startListening();    // fires change and hence createOutputConfig()
 
 //		osc = new OSCRouterWrapper( superRouter, this );
@@ -289,8 +289,8 @@ public class SuperColliderClient
     protected void outputConfigChanged() {
         SuperColliderPlayer p;
 
-        final String cfgID = audioPrefs.get(PrefsUtil.KEY_OUTPUTCONFIG, null);
-        final Preferences childPrefs = audioPrefs.node(PrefsUtil.NODE_OUTPUTCONFIGS);
+        final String cfgID = audioPrefs.get(PrefsUtil.KEY_OUTPUT_CONFIG, null);
+        final Preferences childPrefs = audioPrefs.node(PrefsUtil.NODE_OUTPUT_CONFIGS);
         RoutingConfig newCfg = null;
 
 //		oCfg = null;
@@ -330,7 +330,7 @@ public class SuperColliderClient
             p.setOutputConfig(oCfg);
         }
         if (elmClient != null) {
-            elmClient.dispatchEvent(new Event(instance, Event.OUTPUTCONFIG, System.currentTimeMillis(), instance));
+            elmClient.dispatchEvent(new Event(instance, Event.OUTPUT_CONFIG, System.currentTimeMillis(), instance));
         }
     }
 
@@ -437,23 +437,23 @@ public class SuperColliderClient
         String val;
         int serverPort;    // , idx;
         Param p;
-        final String            abCfgID = audioPrefs.get(PrefsUtil.KEY_AUDIOBOX, AudioBoxConfig.ID_DEFAULT);
-        final AudioBoxConfig    abCfg   = new AudioBoxConfig(audioPrefs.node(PrefsUtil.NODE_AUDIOBOXES).node(abCfgID));
+        final String            abCfgID = audioPrefs.get(PrefsUtil.KEY_AUDIO_BOX, AudioBoxConfig.ID_DEFAULT);
+        final AudioBoxConfig    abCfg   = new AudioBoxConfig(audioPrefs.node(PrefsUtil.NODE_AUDIO_BOXES).node(abCfgID));
 
-        p = Param.fromPrefs(audioPrefs, PrefsUtil.KEY_AUDIORATE, null);
+        p = Param.fromPrefs(audioPrefs, PrefsUtil.KEY_AUDIO_RATE, null);
         if (p != null) so.setSampleRate(p.val);
         so.setNumInputBusChannels(abCfg.numInputChannels);
         so.setNumOutputBusChannels(abCfg.numOutputChannels);
-        p = Param.fromPrefs(audioPrefs, PrefsUtil.KEY_AUDIOBUSSES, null);
+        p = Param.fromPrefs(audioPrefs, PrefsUtil.KEY_AUDIO_BUSSES, null);
         if (p != null)
             so.setNumAudioBusChannels(Math.max(abCfg.numInputChannels + abCfg.numOutputChannels, (int) p.val));
-        p = Param.fromPrefs(audioPrefs, PrefsUtil.KEY_SCMEMSIZE, null);
+        p = Param.fromPrefs(audioPrefs, PrefsUtil.KEY_SC_MEM_SIZE, null);
         if (p != null) so.setMemSize((int) p.val << 10);
-        p = Param.fromPrefs(audioPrefs, PrefsUtil.KEY_SCBLOCKSIZE, null);
+        p = Param.fromPrefs(audioPrefs, PrefsUtil.KEY_SC_BLOCK_SIZE, null);
         if (p != null) so.setBlockSize((int) p.val);
         if (!abCfg.name.equals("Default")) so.setDevice(abCfg.name);
         so.setLoadDefs(false);
-        so.setRendezvous(audioPrefs.getBoolean(PrefsUtil.KEY_SCRENDEZVOUS, false));
+        so.setRendezvous(audioPrefs.getBoolean(PrefsUtil.KEY_SC_RENDEZVOUS, false));
 
 //System.err.println( "abCfgID ="+abCfgID+" ("+abCfgID.equals( AudioBoxConfig.NAME_DEFAULT )+") ; in "+abCfg.numInputChannels+"; out "+abCfg.numOutputChannels );
 
@@ -467,14 +467,14 @@ public class SuperColliderClient
 //		catch( NumberFormatException e1 ) {
 //			printError( "boot", e1 );
 //		}
-        p 			= Param.fromPrefs(audioPrefs, PrefsUtil.KEY_SCPORT, null);
+        p 			= Param.fromPrefs(audioPrefs, PrefsUtil.KEY_SC_PORT, null);
         serverPort 	= p == null ? DEFAULT_PORT : (int) p.val;
-        val 		= audioPrefs.get(PrefsUtil.KEY_SCPROTOCOL, OSCChannel.TCP);
+        val 		= audioPrefs.get(PrefsUtil.KEY_SC_PROTOCOL, OSCChannel.TCP);
         so.setProtocol(val);
 
 //		so.setEnv( "SC_JACK_NAME", "Eisenkraut" );
 
-        val = audioPrefs.get(PrefsUtil.KEY_SUPERCOLLIDERAPP, null);
+        val = audioPrefs.get(PrefsUtil.KEY_SUPERCOLLIDER_APP, null);
         if (val == null) {
             System.err.println(getResourceString("errSCSynthAppNotFound"));
             return false;
@@ -856,12 +856,11 @@ public class SuperColliderClient
 
 // -------------- internal classes --------------
 
-    @SuppressWarnings("serial")
     public static class Event
             extends BasicEvent {
         // --- ID values ---
 
-        public static final int OUTPUTCONFIG	= 0;
+        public static final int OUTPUT_CONFIG   = 0;
         public static final int VOLUME			= 1;
 
         private final SuperColliderClient client;
@@ -885,7 +884,6 @@ public class SuperColliderClient
         }
     }
 
-    @SuppressWarnings("serial")
     private class ActionLoadDefs
             extends AbstractAction {
         public ActionLoadDefs() {
@@ -904,7 +902,6 @@ public class SuperColliderClient
         }
     }
 
-    @SuppressWarnings("serial")
     private static class ActionKillAll
             extends AbstractAction {
         public ActionKillAll() {
@@ -920,7 +917,6 @@ public class SuperColliderClient
         }
     }
 
-    @SuppressWarnings("serial")
     private class ActionNodeTree
             extends AbstractAction {
         public ActionNodeTree() {

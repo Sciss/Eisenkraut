@@ -2,7 +2,7 @@
  *  DecimatedTrail.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -90,8 +90,8 @@ public abstract class DecimatedTrail extends BasicTrail {
 
     protected EventManager			asyncManager			= null;
 
-    protected static final double	TWENTYBYLOG10			= 20 / MathUtil.LN10; // 8.685889638065;
-    protected static final double	TENBYLOG10				= 10 / MathUtil.LN10;
+    protected static final double TWENTY_BY_LOG10   = 20 / MathUtil.LN10; // 8.685889638065;
+    protected static final double TEN_BY_LOG10      = 10 / MathUtil.LN10;
 
     static {
         final BufferedImage imgDark = new BufferedImage(3, 3, BufferedImage.TYPE_INT_ARGB);
@@ -371,22 +371,20 @@ public abstract class DecimatedTrail extends BasicTrail {
     // ---------------------- internal classes and interfaces ----------------------
 
     public static interface AsyncListener {
-        public void asyncFinished( AsyncEvent e );
-        public void asyncUpdate( AsyncEvent e );
+        public void asyncFinished   (AsyncEvent e);
+        public void asyncUpdate     (AsyncEvent e);
     }
 
-    @SuppressWarnings("serial")
     public static class AsyncEvent
             extends BasicEvent {
-        protected static final int UPDATE = 0;
+        protected static final int UPDATE   = 0;
         protected static final int FINISHED = 1;
 
         private final DecimatedTrail t;
 
-        protected AsyncEvent( Object source, int id, long when, DecimatedTrail t )
-        {
-            super( source, id, when );
-            this.t	= t;
+        protected AsyncEvent(Object source, int id, long when, DecimatedTrail t) {
+            super(source, id, when);
+            this.t = t;
         }
 
         public DecimatedTrail getDecimatedTrail() { return t; }

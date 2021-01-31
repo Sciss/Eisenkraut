@@ -2,7 +2,7 @@
  *  Fourier.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -53,8 +53,8 @@ public class Fourier
      *  @param  len		MUST be an integer power of 2
      *  @param  dir		use <code>INVERSE</code> or <code>FORWARD</code>
      */
-    public static void complexTransform(float[] a, int len, int dir )
-    {
+    public static void complexTransform(float[] a, int len, int dir) {
+
         int		i, j;
         int		n, m;
         int		mMax, iStep;
@@ -65,8 +65,8 @@ public class Fourier
         theta		= dir * PI2;
 
         // This is the bit-reversal section of the routine.
-        for( i = 1, j = 1; i < n; i += 2 ) {
-            if( j > i ) {
+        for (i = 1, j = 1; i < n; i += 2) {
+            if (j > i) {
                 tempRe		= a[ j-1 ];					// Exchange the two complex numbers ... Real
                 a[ j-1 ]	= a[ i-1 ];
                 a[ i-1 ]	= tempRe;
@@ -76,13 +76,13 @@ public class Fourier
                 a[ i ]		= tempIm;
             }
 
-            for( m = len; (m >= 2) && (j > m); j -= m, m >>= 1 ) ;
+            for (m = len; (m >= 2) && (j > m); j -= m, m >>= 1) ;
             j += m;
         }
 
         // Here begins the Danielson-Lanczos section of the routine.
         // Outer loop executed log 2 len times.
-        for( mMax = 2; n > mMax; ) {
+        for (mMax = 2; n > mMax; ) {
             iStep	= mMax << 1;
 
             tempW	= Math.sin( theta / iStep );	 			// Initialize the trigonometric recurrence.
@@ -91,8 +91,8 @@ public class Fourier
             wRe		= 1.0;
             wIm		= 0.0;
 
-            for( m = 1; m < mMax; m += 2 ) {					// Here are the two nested inner loops.
-                for( i = m; i <= n; i += iStep ) {
+            for (m = 1; m < mMax; m += 2) {                    // Here are the two nested inner loops.
+                for (i = m; i <= n; i += iStep) {
                     j		= i + mMax;
                     tempRe	= (float) (wRe * a[ j-1 ] - wIm * a[ j ]);		// This is the Danielson-Lanczos formula
                     tempIm	= (float) (wRe * a[ j ]   + wIm * a[ j-1 ]);
@@ -109,9 +109,9 @@ public class Fourier
         }
 
         // Normalize data when inverse transforming
-        if( dir == INVERSE ) {
-            for( i = 0; i < n; i++ ) {
-                a[ i ] /= len;
+        if (dir == INVERSE) {
+            for (i = 0; i < n; i++) {
+                a[i] /= len;
             }
         }
     }
@@ -132,8 +132,8 @@ public class Fourier
      *  @param  len		MUST be an integer power of 2
      *  @param  dir		use <code>INVERSE</code> or <code>FORWARD</code>
      */
-    public static void realTransform(float[] a, int len, int dir )
-    {
+    public static void realTransform(float[] a, int len, int dir) {
+
         int		i, i2, i3, i4;
         float	c1, c2, h1Re, h1Im, h2Re, h2Im;
         double	wRe, wIm, wpRe, wpIm, tempW, theta;		//  Double precision for the trigonometric recurrences.
@@ -149,11 +149,11 @@ public class Fourier
         wRe		= 1.0 + wpRe;
         wIm		= wpIm;
 
-        if( dir == FORWARD ) {
-            complexTransform( a, cLen, dir );		//  The forward transform is here.
+        if (dir == FORWARD) {
+            complexTransform(a, cLen, dir);        //  The forward transform is here.
         }
 
-        for( i = 2; i < cLen; i += 2 ) {			// Case i == 0 done separately below.
+        for (i = 2; i < cLen; i += 2) {            // Case i == 0 done separately below.
             i2		= i  + 1;
             i3		= len - i;
             i4		= i3 + 1;
@@ -170,7 +170,7 @@ public class Fourier
             wIm	   += tempW * wpIm + wIm * wpRe;
         }
 
-        if( dir == INVERSE ) {
+        if (dir == INVERSE) {
             h1Re		= a[ 0 ];
             a[ 0 ]		= c1 * (h1Re + a[ len ]);
             a[ 1 ]		= c1 * (h1Re - a[ len ]);
@@ -195,20 +195,20 @@ public class Fourier
      *	@param	destOff	offset, physical (complex offset * 2) into `dest`
      *	@param	length	complex length * 2
      */
-    public static void rect2Polar(float[] src, int srcOff, float[] dest, int destOff, int length )
-    {
+    public static void rect2Polar(float[] src, int srcOff, float[] dest, int destOff, int length) {
+
         int		i, j;
         double	d1, d2;
 
-        if( (src == dest) && (srcOff < destOff) ) {		// in-place rueckwaerts
-            for( i = srcOff + length, j = destOff + length; i > srcOff; ) {
+        if ((src == dest) && (srcOff < destOff)) {        // in-place rueckwaerts
+            for (i = srcOff + length, j = destOff + length; i > srcOff; ) {
                 d1			= src[ --i ];		// img
                 d2			= src[ --i ];		// real
                 dest[ --j ] = (float) Math.atan2( d1, d2 );
                 dest[ --j ] = (float) Math.sqrt( d1*d1 + d2*d2 );
             }
         } else {
-            for( i = srcOff, j = destOff; i < srcOff + length; ) {
+            for (i = srcOff, j = destOff; i < srcOff + length; ) {
                 d2			= src[ i++ ];		// real
                 d1			= src[ i++ ];		// img
                 dest[ j++ ] = (float) Math.sqrt( d1*d1 + d2*d2 );
@@ -225,20 +225,20 @@ public class Fourier
      *	@param	srcOff	array offset, physical (complex offset * 2)
      *	@param	length	complex length * 2
      */
-    public static void polar2Rect(float[] src, int srcOff, float[] dest, int destOff, int length )
-    {
+    public static void polar2Rect(float[] src, int srcOff, float[] dest, int destOff, int length) {
+
         int		i, j;
         double	d1, d2;
 
-        if( (src == dest) && (srcOff < destOff) ) {		// in-place rueckwaerts
-            for( i = srcOff + length, j = destOff + length; i > srcOff; ) {
+        if ((src == dest) && (srcOff < destOff)) {        // in-place backwards
+            for (i = srcOff + length, j = destOff + length; i > srcOff; ) {
                 d1			= src[ --i ];		// phase
                 d2			= src[ --i ];		// amp
                 dest[ --j ] = (float) (d2 * Math.sin( d1 ));
                 dest[ --j ] = (float) (d2 * Math.cos( d1 ));
             }
         } else {
-            for( i = srcOff, j = destOff; i < srcOff + length; ) {
+            for (i = srcOff, j = destOff; i < srcOff + length; ) {
                 d2			= src[ i++ ];		// amp
                 d1			= src[ i++ ];		// phase
                 dest[ j++ ] = (float) (d2 * Math.cos( d1 ));
@@ -254,12 +254,11 @@ public class Fourier
      *	@param	srcOff1	array offset, physical (complex offset * 2)
      *	@param	src2	Array with interleaved real/ imag data
      *	@param	srcOff2	array offset, physical (complex offset * 2)
-     *	@param	dest	kann identisch mit *einem* src sein (in-place)
+     *	@param	dest	can be identical to *one* src (in-place)
      *	@param	length	complex length * 2
      */
     public static void complexMult(float[] src1, int srcOff1, float[] src2, int srcOff2,
-                                   float[] dest, int destOff, int length )
-    {
+                                   float[] dest, int destOff, int length) {
         int		i, j, k;
         float	im1, im2, re1, re2;
 
@@ -288,7 +287,7 @@ public class Fourier
     }
 
     /**
-     *	Unwrappes 2-PI clipped phase data of a complex polar format data vector
+     *	Unwraps 2-PI clipped phase data of a complex polar format data vector
      *
      *	@param	src		Array with interleaved amplitude/ phase data
      *	@param	dest	target array which can be the same object as source (in place operation);
@@ -296,29 +295,29 @@ public class Fourier
      *	@param	srcOff	array offset, physical (complex offset * 2)
      *	@param	length	complex length * 2
      */
-    public static void unwrapPhases(float[] src, int srcOff, float[] dest, int destOff, int length )
-    {
+    public static void unwrapPhases(float[] src, int srcOff, float[] dest, int destOff, int length) {
+
         int		i, j, k;
         double	d2;
         double	d1	= 0.0;
         double	d3	= 0.0;
 
-        for( i = srcOff + 1, j = destOff + 1, k = 0; i < srcOff + length; i += 2, j += 2 ) {
-            d2 = src[ i ];
-            if( d2 - d1 > Math.PI ) {			// neg. fold
+        for (i = srcOff + 1, j = destOff + 1, k = 0; i < srcOff + length; i += 2, j += 2) {
+            d2 = src[i];
+            if (d2 - d1 > Math.PI) {            // neg. fold
                 k--;
                 d3 = k * PI2;
-            } else if( d1 - d2 > Math.PI ) {	// pos. fold
+            } else if (d1 - d2 > Math.PI) {    // pos. fold
                 k++;
                 d3 = k * PI2;
             }
-            dest[ j ] = (float) (d2 + d3);
+            dest[j] = (float) (d2 + d3);
             d1 = d2;
         }
     }
 
     /**
-     *	Wrappes 2-PI clipped phase data of a complex polar format data vector
+     *	Wraps 2-PI clipped phase data of a complex polar format data vector
      *  such that all phases in the target buffer are between -PI and +PI.
      *
      *	@param	src		Array with interleaved amplitude/ phase data
@@ -327,23 +326,23 @@ public class Fourier
      *	@param	srcOff	array offset, physical (complex offset * 2)
      *	@param	length	complex length * 2
      */
-    public static void wrapPhases(float[] src, int srcOff, float[] dest, int destOff, int length )
-    {
+    public static void wrapPhases(float[] src, int srcOff, float[] dest, int destOff, int length) {
+
         int		i, j, k;
         double	d2;
         double	d3	= 0.0;
 
-        for( i = srcOff + 1, j = destOff + 1, k = 0; i < srcOff + length; i += 2, j += 2 ) {
-            d2 = src[ i ];
-            while( d2 - d3 > Math.PI ) {
+        for (i = srcOff + 1, j = destOff + 1, k = 0; i < srcOff + length; i += 2, j += 2) {
+            d2 = src[i];
+            while (d2 - d3 > Math.PI) {
                 k++;
                 d3 = k * PI2;
             }
-            while( d3 - d2 > Math.PI ) {
+            while (d3 - d2 > Math.PI) {
                 k--;
                 d3 = k * PI2;
             }
-            dest[ j ] = (float) (d2 - d3);
+            dest[j] = (float) (d2 - d3);
         }
     }
 }

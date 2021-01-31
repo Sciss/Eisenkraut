@@ -2,7 +2,7 @@
  *  EditSetTimelineLength.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -25,7 +25,6 @@ import de.sciss.eisenkraut.session.Session;
  *
  * @see        UndoManager
  */
-@SuppressWarnings("serial")
 public class EditSetTimelineLength extends BasicUndoableEdit {
 
     private Object          source;

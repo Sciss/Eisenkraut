@@ -2,7 +2,7 @@
  *  RecorderDialog.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -74,14 +74,13 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
-@SuppressWarnings("serial")
 public class RecorderDialog
         extends JDialog
         implements Constants, ServerListener, NodeListener, OSCRouter,
         PreferenceChangeListener {
 
     private static final int DISKBUF_SIZE = 32768;    // buffer size in frames
-    private static final String NODE_CONF = PrefsUtil.NODE_INPUTCONFIGS;
+    private static final String NODE_CONF = PrefsUtil.NODE_INPUT_CONFIGS;
 
     private static final String KEY_CONFIG = "config";
 
@@ -169,7 +168,7 @@ public class RecorderDialog
 
         // use same encoding as parent document
         encodingString = (displayAFD.sampleFormat == AudioFileDescr.FORMAT_INT ? "int" : "float") +
-                String.valueOf(displayAFD.bitsPerSample);
+                displayAFD.bitsPerSample;
 
         audioPrefs = app.getUserPrefs().node(PrefsUtil.NODE_AUDIO);
         classPrefs = app.getUserPrefs().node(className.substring(className.lastIndexOf('.') + 1));
@@ -294,7 +293,7 @@ public class RecorderDialog
         setVisible(true);
     }
 
-    private boolean createDefs(int numInputChannels)
+    private void createDefs(int numInputChannels)
             throws IOException {
 
         final Control ctrlI = Control.ir(new String[]{"i_aInBs", "i_aOtBf"}, new float[]{0f, 0f});
@@ -309,7 +308,6 @@ public class RecorderDialog
         }
         def = new SynthDef("eisk-rec" + numInputChannels, graph);
         def.send(server);
-        return true;
     }
 
     public File getResult()
@@ -636,7 +634,6 @@ public class RecorderDialog
         }
     }
 
-    @SuppressWarnings("serial")
     private class ActionPeakReset
             extends AbstractAction {
         protected ActionPeakReset()
@@ -657,7 +654,6 @@ public class RecorderDialog
         }
     }
 
-    @SuppressWarnings("serial")
     private class ActionMonitoring
             extends AbstractAction {
         protected ActionMonitoring() {
@@ -671,26 +667,21 @@ public class RecorderDialog
         }
     }
 
-    @SuppressWarnings("serial")
     private class ActionRecord
-    extends AbstractAction
-    {
-        protected ActionRecord()
-        {
-            super( getResourceString( "buttonRecord" ));
-            setEnabled( false );
+            extends AbstractAction {
+        protected ActionRecord() {
+            super(getResourceString("buttonRecord"));
+            setEnabled(false);
         }
 
-        public void actionPerformed( ActionEvent e )
-        {
-            if( (server == null) || !server.isRunning() || (ct == null) ) return;
+        public void actionPerformed(ActionEvent e) {
+            if ((server == null) || !server.isRunning() || (ct == null)) return;
 
-            if( ct.recFile == null ) {
+            if (ct.recFile == null) {
                 try {
                     ct.recreateFile();
-                }
-                catch( IOException e1 ) {
-                    BasicWindowHandler.showErrorDialog( RecorderDialog.this, e1, getValue( NAME ).toString() );
+                } catch (IOException e1) {
+                    BasicWindowHandler.showErrorDialog(RecorderDialog.this, e1, getValue(NAME).toString());
                     return;
                 }
             }
@@ -722,7 +713,6 @@ public class RecorderDialog
         }
     }
 
-    @SuppressWarnings("serial")
     private class ActionStop
             extends AbstractAction {
         protected ActionStop() {
@@ -735,7 +725,6 @@ public class RecorderDialog
         }
     }
 
-    @SuppressWarnings("serial")
     private class ActionAbort
             extends AbstractAction {
         protected ActionAbort() {
@@ -748,7 +737,6 @@ public class RecorderDialog
         }
     }
 
-    @SuppressWarnings("serial")
     private class ActionClose
             extends AbstractAction {
         protected ActionClose() {
@@ -762,7 +750,6 @@ public class RecorderDialog
         }
     }
 
-    @SuppressWarnings("serial")
     private static class TimeoutTimer
             extends javax.swing.Timer
             implements ActionListener {
@@ -795,7 +782,6 @@ public class RecorderDialog
         }
     }
 
-    @SuppressWarnings("serial")
     private static class RecLenTimer
             extends javax.swing.Timer
             implements ActionListener {

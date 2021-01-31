@@ -2,7 +2,7 @@
  *  SilentAudioStake.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -14,6 +14,7 @@
 package de.sciss.eisenkraut.io;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import de.sciss.io.CacheManager;
 import de.sciss.io.InterleavedStreamFile;
@@ -90,18 +91,16 @@ public class SilentAudioStake extends AudioStake {
         throw new IOException( "Not allowed" );
     }
 
-    public long copyFrames( InterleavedStreamFile target, Span readSpan )
-    throws IOException
-    {
+    public long copyFrames(InterleavedStreamFile target, Span readSpan)
+            throws IOException {
+
         final long		len		= readSpan.getLength();
-        final int		bufLen	= (int) Math.min( 8192, readSpan.getLength() );
-        final float[]	empty	= new float[ bufLen ];
-        final float[][]	buf		= new float[ numChannels ][];
+        final int		bufLen	= (int) Math.min(8192, readSpan.getLength());
+        final float[]	empty	= new float[bufLen];
+        final float[][]	buf		= new float[numChannels][];
         int				chunkLen;
 
-        for( int i = 0; i < buf.length; i++ ) {
-            buf[ i ] = empty;
-        }
+        Arrays.fill(buf, empty);
 
         for( long framesWritten = 0; framesWritten < len; ) {
             chunkLen	= (int) Math.min( len - framesWritten, bufLen );

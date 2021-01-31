@@ -2,7 +2,7 @@
  *  DecimatedWaveTrail.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -264,23 +264,23 @@ public class DecimatedWaveTrail
         // final long maxLen = toPCM ? tmpBufSize : (fromPCM ? Math.min(
         // tmpBufSize, tmpBufSize2 * info.inlineDecim ) : tmpBufSize2);
         final long				maxLen			= toPCM ? tmpBufSize : (fromPCM ?
-                  Math.min( tmpBufSize, tmpBufSize2 * info.getDecimationFactor() )
-                : tmpBufSize2 << info.shift);
+                Math.min(tmpBufSize, tmpBufSize2 * info.getDecimationFactor())
+                : (long) tmpBufSize2 << info.shift);
 //		final int				polySize		= view.isLogarithmic() ?
 //			((int) info.sublength + 2) : ((int) (info.sublength << 1));
         final int				polySize		= (int) (info.subLength << 1);
         final AffineTransform	atOrig			= g2.getTransform();
         final Shape				clipOrig		= g2.getClip();
 
-        final int[][]			peakPolyX		= new int[ fullChannels ][ polySize ];
-        final int[][]			peakPolyY		= new int[ fullChannels ][ polySize ];
-        final int[][]			rmsPolyX		= toPCM ? null : new int[ fullChannels ][ polySize ];
-        final int[][]			rmsPolyY		= toPCM ? null : new int[ fullChannels ][ polySize ];
-        final boolean[]			sampleAndHold	= toPCM ? new boolean[ fullChannels ] : null;
+        final int[][]			peakPolyX		= new int[fullChannels][polySize];
+        final int[][]			peakPolyY		= new int[fullChannels][polySize];
+        final int[][]			rmsPolyX		= toPCM ? null : new int[fullChannels][polySize];
+        final int[][]			rmsPolyY		= toPCM ? null : new int[fullChannels][polySize];
+        final boolean[]			sampleAndHold	= toPCM ? new boolean[fullChannels] : null;
         final float				maxY, minY, minInpY, deltaY, deltaYN;
         final float				offY;
-        final int[]				off				= new int[ fullChannels ];
-        final boolean			logAmp			= view.getVerticalScale() == PrefsUtil.VSCALE_AMP_LOG;
+        final int[]				off				= new int[fullChannels];
+        final boolean			logAmp			= view.getVerticalScale() == PrefsUtil.V_SCALE_AMP_LOG;
 
         float[]					sPeakP;
         float					offX, scaleX, scaleY, f1;
@@ -297,7 +297,7 @@ public class DecimatedWaveTrail
             if( logAmp ) {
                 maxY	= view.getAmpLogMax();
                 minY	= view.getAmpLogMin();
-                minInpY = (float) Math.exp( minY / TWENTYBYLOG10 );
+                minInpY = (float) Math.exp( minY / TWENTY_BY_LOG10);
             } else {
                 maxY	= view.getAmpLinMax();
                 minY	= view.getAmpLinMin();
@@ -347,7 +347,7 @@ public class DecimatedWaveTrail
                                 for( int i = 0; i < decimLen; i++ ) {
                                     f1 = Math.abs( sPeakP[ i ]);
                                     if( f1 > minInpY ) {
-                                        sPeakP[ i ] = (float) (Math.log( f1 ) * TWENTYBYLOG10);
+                                        sPeakP[ i ] = (float) (Math.log( f1 ) * TWENTY_BY_LOG10);
                                     } else {
                                         sPeakP[ i ] = minY;
                                     }
@@ -457,20 +457,20 @@ public class DecimatedWaveTrail
         }
         idx--;
         // had to change '>= minLen' to '> minLen' because minLen could be zero!
-        switch( model ) {
-        case MODEL_HALFWAVE_PEAKRMS:
-        case MODEL_FULLWAVE_PEAKRMS:
-            for( inlineDecim = 2; subLength / inlineDecim > minLen; inlineDecim++ ) ;
-            inlineDecim--;
-            break;
+        switch (model) {
+            case MODEL_HALFWAVE_PEAKRMS:
+            case MODEL_FULLWAVE_PEAKRMS:
+                for (inlineDecim = 2; subLength / inlineDecim > minLen; inlineDecim++) ;
+                inlineDecim--;
+                break;
 
-        case MODEL_MEDIAN:
-            inlineDecim = 1;
-            break;
+            case MODEL_MEDIAN:
+                inlineDecim = 1;
+                break;
 
-        default:
-            assert false : model;
-            inlineDecim = 1; // never gets here
+            default:
+                assert false : model;
+                inlineDecim = 1; // never gets here
         }
         subLength /= inlineDecim;
         // System.err.println( "minLen = "+minLen+"; subLength = "+subLength+";
@@ -491,22 +491,20 @@ public class DecimatedWaveTrail
      * @see #getBestSubsample( Span, int )
      * @see DecimationInfo#subLength
      */
-    public boolean readFrame(int sub, long pos, int ch, float[] data)
+    public void readFrame(int sub, long pos, int ch, float[] data)
             throws IOException {
         synchronized (bufSync) {
             createBuffers();
 
             final int				idx	= indexOf( pos, true );
             final DecimatedStake	ds	= (DecimatedStake) editGetLeftMost( idx, true, null );
-            if( ds == null ) return false;
+            if( ds == null ) return;
 
-            if( !ds.readFrame( sub, tmpBuf2, 0, pos )) return false;
+            if( !ds.readFrame( sub, tmpBuf2, 0, pos )) return;
 
             for( int i = ch * modelChannels, k = 0; k < modelChannels; i++, k++ ) {
                 data[ k ] = tmpBuf2[ i ][ 0 ];
             }
-
-            return true;
         }
     }
 
@@ -1015,20 +1013,22 @@ Thread.currentThread().setPriority( pri - 2 );
 
     // ---------------------- decimation subclasses ----------------------
 
-    private abstract class Decimator
-    {
+    private abstract static class Decimator {
         protected Decimator() { /* empty */ }
 
-        protected abstract void decimate( float[][] inBuf, float[][] outBuf, int outOff, int len, int decim );
-        protected abstract void decimatePCM( float[][] inBuf, float[][] outBuf, int outOff, int len, int decim );
+        protected abstract void decimate(float[][] inBuf, float[][] outBuf, int outOff, int len, int decim);
+
+        protected abstract void decimatePCM(float[][] inBuf, float[][] outBuf, int outOff, int len, int decim);
+
         // protected abstract void decimatePCMFast( float[][] inBuf, float[][]
         // outBuf, int outOff, int len, int decim );
-        protected abstract int draw( DecimationInfo info, int ch, int[][] peakPolyX, int[][] peakPolyY,
-                                     int[][] rmsPolyX, int[][] rmsPolyY, int decimLen,
-                                     Rectangle r, float deltaYN, int off );
-        protected abstract int drawLog( DecimationInfo info, int ch, int[][] peakPolyX, int[][] peakPolyY,
-                                        int[][] rmsPolyX, int[][] rmsPolyY, int decimLen,
-                                        Rectangle r, float deltaYN, int off, float minY, float minInpY );
+        protected abstract int draw(DecimationInfo info, int ch, int[][] peakPolyX, int[][] peakPolyY,
+                                    int[][] rmsPolyX, int[][] rmsPolyY, int decimLen,
+                                    Rectangle r, float deltaYN, int off);
+
+        protected abstract int drawLog(DecimationInfo info, int ch, int[][] peakPolyX, int[][] peakPolyY,
+                                       int[][] rmsPolyX, int[][] rmsPolyY, int decimLen,
+                                       Rectangle r, float deltaYN, int off, float minY, float minInpY);
     }
 
     private class HalfPeakRMSDecimator
@@ -1509,7 +1509,7 @@ System.out.println( "warning: HalfPeakRMSDecimator : not checked" );
                 rmsPolyX[ k ]		= x;
                 peak				= Math.max( Math.abs( sPeakP[ i ]), Math.abs( sPeakN[ i ]));
                 if( peak > minInpY ) {
-                    peak			= (float) (Math.log( peak ) * TWENTYBYLOG10);
+                    peak			= (float) (Math.log( peak ) * TWENTY_BY_LOG10);
                 } else {
                     peak			= minY;
                 }
@@ -1517,7 +1517,7 @@ System.out.println( "warning: HalfPeakRMSDecimator : not checked" );
                 peakPolyY[ k ]		= minYPix;
                 rms					= sRMS[ i ];
                 if( rms > minInpYSqr ) {
-                    rms				= (float) (Math.log( rms ) * TENBYLOG10);
+                    rms				= (float) (Math.log( rms ) * TEN_BY_LOG10);
                 } else {
                     rms				= minY;
                 }

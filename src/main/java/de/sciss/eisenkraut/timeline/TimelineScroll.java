@@ -2,7 +2,7 @@
  *  TimelineScroll.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -53,7 +53,6 @@ import java.util.prefs.PreferenceChangeListener;
  *				are slightly wrong on Linux with platinum look+feel
  *				because the scroll gadgets have different positions.
  */
-@SuppressWarnings("serial")
 public class TimelineScroll
         extends JScrollBar
         implements AdjustmentListener, TimelineListener, DynamicListening, PreferenceChangeListener {
@@ -291,7 +290,7 @@ public class TimelineScroll
 
         if (!key.equals(PrefsUtil.KEY_CATCH)) return;
 
-        prefCatch = Boolean.valueOf(value);
+        prefCatch = Boolean.parseBoolean(value);
         if (!prefCatch) return;
 
         catchBypassCount	= 0;
@@ -339,33 +338,34 @@ public class TimelineScroll
     public void adjustmentValueChanged(AdjustmentEvent e) {
         if (!isEnabled()) return;
 
-        final boolean	isAdjusting	= e.getValueIsAdjusting();
+        final boolean isAdjusting = e.getValueIsAdjusting();
 
-        final Span		oldVisi		= doc.timeline.getVisibleSpan();
-        final Span		newVisi		= new Span( this.getValue() << timelineLenShift,
-                                        (this.getValue() + this.getVisibleAmount()) << timelineLenShift );
+        final Span oldVisi = doc.timeline.getVisibleSpan();
+        final Span newVisi = new Span(
+                (long) this.getValue() << timelineLenShift,
+                (long) (this.getValue() + this.getVisibleAmount()) << timelineLenShift);
 
-        if( prefCatch && isAdjusting && !wasAdjusting ) {
+        if (prefCatch && isAdjusting && !wasAdjusting) {
             adjustCatchBypass = true;
             addCatchBypass();
-        } else if( wasAdjusting && !isAdjusting && adjustCatchBypass ) {
-            if( prefCatch && !newVisi.contains( timelinePos )) {
+        } else if (wasAdjusting && !isAdjusting && adjustCatchBypass) {
+            if (prefCatch && !newVisi.contains(timelinePos)) {
                 // we need to set prefCatch here even though laterInvocation will handle it,
                 // because removeCatchBypass might look at it!
                 prefCatch = false;
-                AbstractApplication.getApplication().getUserPrefs().putBoolean( PrefsUtil.KEY_CATCH, false );
+                AbstractApplication.getApplication().getUserPrefs().putBoolean(PrefsUtil.KEY_CATCH, false);
             }
             adjustCatchBypass = false;
             removeCatchBypass();
         }
 
-        if( !newVisi.equals( oldVisi )) {
+        if (!newVisi.equals(oldVisi)) {
 //			if( prefCatch && oldVisi.contains( timelinePos ) && !newVisi.contains( timelinePos )) {
 //				AbstractApplication.getApplication().getUserPrefs().putBoolean( PrefsUtil.KEY_CATCH, false );
 //			}
-            doc.timeline.editScroll( adjustmentSource, newVisi );
+            doc.timeline.editScroll(adjustmentSource, newVisi);
         }
 
-        wasAdjusting	= isAdjusting;
+        wasAdjusting = isAdjusting;
     }
 }

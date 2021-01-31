@@ -2,7 +2,7 @@
  *  TimelineVisualEdit.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -33,7 +33,6 @@ import de.sciss.io.Span;
  *
  * @see        UndoManager
  */
-@SuppressWarnings("serial")
 public class TimelineVisualEdit extends BasicUndoableEdit {
 
     private final Session   doc;

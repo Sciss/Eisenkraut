@@ -2,7 +2,7 @@
  *  ConstQ.java
  *  Eisenkraut
  *
- *  Copyright (c) 2004-2020 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2021 Hanns Holger Rutz. All rights reserved.
  *
  *  This software is published under the GNU Affero General Public License v3+
  *
@@ -18,13 +18,13 @@ import java.util.prefs.Preferences;
 import de.sciss.util.Param;
 import de.sciss.util.ParamSpace;
 
-public class ConstQ
-{
-    public static final String KEY_MINFREQ		= "minfreq";		// Param (Hz)
-    public static final String KEY_MAXFREQ		= "maxfreq";		// Param (Hz)
-    public static final String KEY_BANDSPEROCT	= "bandsperoct";	// Param (none)
-    public static final String KEY_MAXTIMERES	= "maxtimeres" ;	// Param (ms)
-    public static final String KEY_MAXFFTSIZE	= "maxfftsize";		// Param (String fftSize)
+public class ConstQ {
+
+    public static final String KEY_MIN_FREQ         = "minfreq";		// Param (Hz)
+    public static final String KEY_MAX_FREQ         = "maxfreq";		// Param (Hz)
+    public static final String KEY_BANDS_PER_OCT    = "bandsperoct";	// Param (none)
+    public static final String KEY_MAX_TIME_RES     = "maxtimeres" ;	// Param (ms)
+    public static final String KEY_MAX_FFT_SIZE     = "maxfftsize";		// Param (String fftSize)
 
     private Kernel[]	kernels;
     private int			numKernels;
@@ -39,10 +39,6 @@ public class ConstQ
     private int			maxFFTSize	= 4096;	// 8192;
 
     private double		fs;
-
-//	private double		LNKORR_ADD; // = -2 * Math.log( fftSize );
-
-//	private static final double	TENBYLOG10				= 10 / MathUtil.LN10;
 
     public ConstQ() { /* empty */ }
 
@@ -61,8 +57,7 @@ public class ConstQ
         return fftBuf;
     }
 
-    public void setSampleRate( double fs )
-    {
+    public void setSampleRate(double fs) {
         this.fs = fs;
     }
 
@@ -71,9 +66,8 @@ public class ConstQ
         return fs;
     }
 
-    public void setMinFreq( float minFreq )
-    {
-        this.minFreq	= minFreq;
+    public void setMinFreq(float minFreq) {
+        this.minFreq = minFreq;
     }
 
     public float getMinFreq()
@@ -81,8 +75,7 @@ public class ConstQ
         return minFreq;
     }
 
-    public void setMaxFreq( float maxFreq )
-    {
+    public void setMaxFreq(float maxFreq) {
         this.maxFreq = maxFreq;
     }
 
@@ -91,9 +84,8 @@ public class ConstQ
         return maxFreq;
     }
 
-    public void setMaxTimeRes( float maxTimeRes )
-    {
-        this.maxTimeRes	= maxTimeRes;
+    public void setMaxTimeRes(float maxTimeRes) {
+        this.maxTimeRes = maxTimeRes;
     }
 
     public float getMaxTimeRes()
@@ -101,9 +93,8 @@ public class ConstQ
         return maxTimeRes;
     }
 
-    public void setMaxFFTSize( int maxFFTSize )
-    {
-        this.maxFFTSize	= maxFFTSize;
+    public void setMaxFFTSize(int maxFFTSize) {
+        this.maxFFTSize = maxFFTSize;
     }
 
     public float getMaxFFTSize()
@@ -111,8 +102,7 @@ public class ConstQ
         return maxFFTSize;
     }
 
-    public void setBandsPerOct( int bpo )
-    {
+    public void setBandsPerOct(int bpo) {
         this.bandsPerOct = bpo;
     }
 
@@ -121,45 +111,40 @@ public class ConstQ
         return bandsPerOct;
     }
 
-    public void readPrefs( Preferences prefs )
-    {
+    public void readPrefs(Preferences prefs) {
         Param p;
         String s;
 
-        p = Param.fromPrefs( prefs, KEY_MINFREQ, null );
-        if( p != null ) minFreq = Math.max( 1, (float) p.val );
-        p = Param.fromPrefs( prefs, KEY_MAXFREQ, null );
-        if( p != null ) maxFreq = Math.max( minFreq, (float) p.val );
-        p = Param.fromPrefs( prefs, KEY_BANDSPEROCT, null );
-        if( p != null ) bandsPerOct = Math.max( 1, (int) p.val );
-        p = Param.fromPrefs( prefs, KEY_MAXTIMERES, null );
-        if( p != null ) maxTimeRes = (float) p.val;
-        s = prefs.get( KEY_MAXFFTSIZE, null );
-        if( s != null ) {
+        p = Param.fromPrefs(prefs, KEY_MIN_FREQ, null);
+        if (p != null) minFreq = Math.max(1, (float) p.val);
+        p = Param.fromPrefs(prefs, KEY_MAX_FREQ, null);
+        if (p != null) maxFreq = Math.max(minFreq, (float) p.val);
+        p = Param.fromPrefs(prefs, KEY_BANDS_PER_OCT, null);
+        if (p != null) bandsPerOct = Math.max(1, (int) p.val);
+        p = Param.fromPrefs(prefs, KEY_MAX_TIME_RES, null);
+        if (p != null) maxTimeRes = (float) p.val;
+        s = prefs.get(KEY_MAX_FFT_SIZE, null);
+        if (s != null) {
             try {
-                int i = Integer.parseInt( s );
-                for( maxFFTSize = 256; maxFFTSize < i; maxFFTSize <<= 1 );
-            }
-            catch( NumberFormatException e1 ) { /* ignore */ }
+                int i = Integer.parseInt(s);
+                for (maxFFTSize = 256; maxFFTSize < i; maxFFTSize <<= 1) ;
+            } catch (NumberFormatException e1) { /* ignore */ }
         }
     }
 
-    public void writePrefs( Preferences prefs )
-    {
-        prefs.put( KEY_MINFREQ, new Param( minFreq, ParamSpace.FREQ | ParamSpace.HERTZ ).toString() );
-        prefs.put( KEY_MAXFREQ, new Param( maxFreq, ParamSpace.FREQ | ParamSpace.HERTZ ).toString() );
-        prefs.put( KEY_BANDSPEROCT, new Param( bandsPerOct, ParamSpace.NONE ).toString() );
-        prefs.put( KEY_MAXTIMERES, new Param( maxTimeRes, ParamSpace.TIME | ParamSpace.MILLI | ParamSpace.SECS ).toString() );
-        prefs.put( KEY_MAXFFTSIZE, String.valueOf( maxFFTSize ));
+    public void writePrefs(Preferences prefs) {
+        prefs.put(KEY_MIN_FREQ, new Param(minFreq, ParamSpace.FREQ | ParamSpace.HERTZ).toString());
+        prefs.put(KEY_MAX_FREQ, new Param(maxFreq, ParamSpace.FREQ | ParamSpace.HERTZ).toString());
+        prefs.put(KEY_BANDS_PER_OCT, new Param(bandsPerOct, ParamSpace.NONE).toString());
+        prefs.put(KEY_MAX_TIME_RES, new Param(maxTimeRes, ParamSpace.TIME | ParamSpace.MILLI | ParamSpace.SECS).toString());
+        prefs.put(KEY_MAX_FFT_SIZE, String.valueOf(maxFFTSize));
     }
 
-    public float getFrequency( int kernel )
-    {
-        return kernels[ kernel ].freq;
+    public float getFrequency(int kernel) {
+        return kernels[kernel].freq;
     }
 
-    public void createKernels()
-    {
+    public void createKernels() {
         final float		threshSqr, q;
         final double	maxKernLen;
         final int		fftSizeC;
@@ -200,13 +185,13 @@ public class ConstQ
 
 //		System.out.println( "cqKernelNum = " + cqKernelNum + "; maxKernLen = " + maxKernLen + "; fftSize = " + fftSize + "; threshSqr " + threshSqr );
 
-        for( int k = 0; k < numKernels; k++ ) {
-            theorKernLen = maxKernLen * (float) Math.pow( 2, (double) -k / bandsPerOct );
-            kernelLen	= Math.min( fftSize, (int) Math.ceil( theorKernLen ));
+        for (int k = 0; k < numKernels; k++) {
+            theorKernLen = maxKernLen * (float) Math.pow(2, (double) -k / bandsPerOct);
+            kernelLen	= Math.min(fftSize, (int) Math.ceil(theorKernLen));
             kernelLenE	= kernelLen & ~1;
-            win			= Filter.createFullWindow( kernelLen, Filter.WIN_HAMMING );
+            win			= Filter.createFullWindow(kernelLen, Filter.WIN_HAMMING);
 
-            centerFreq	= minFreq * Math.pow( 2, (float) k / bandsPerOct );
+            centerFreq	= minFreq * Math.pow(2, (float) k / bandsPerOct);
             centerFreqN	= centerFreq * -MathUtil.PI2 / fs;
 
 //			weight		= 1.0f / (kernelLen * fftSize);
@@ -215,8 +200,8 @@ public class ConstQ
             // with the same brightness over all frequencies)
             weight		= 6 / ((theorKernLen + kernelLen) * fftSize);
 //			weight		= 2 / ((theorKernLen + kernelLen) * Math.sqrt( fftSize ));
-            for( int m = kernelLenE, n = fftSizeC - kernelLenE; m < n; m++ ) {
-                fftBuf[ m ] = 0f;
+            for (int m = kernelLenE, n = fftSizeC - kernelLenE; m < n; m++) {
+                fftBuf[m] = 0f;
             }
 
             // note that we calculate the complex conjugation of
@@ -231,18 +216,18 @@ public class ConstQ
             // that already computes the conjugate spectrum (why??)
 //			for( int i = kernelLen - 1, j = fftSizeC - kernelLenE; i >= 0; i-- ) { ... }
 //			for( int i = 0, j = 0; /* fftSizeC - kernelLenE; */ i < kernelLen; i++ ) { ... }
-            for( int i = 0, j = fftSizeC - kernelLenE; i < kernelLen; i++ ) {
+            for (int i = 0, j = fftSizeC - kernelLenE; i < kernelLen; i++) {
                 // complex exponential of a purely imaginary number
                 // is cos( imag( n )) + i sin( imag( n ))
                 d1			= centerFreqN * i;
 //				d1			= centerFreqN * (i - kernelLenE);
-                cos			= Math.cos( d1 );
-                sin			= Math.sin( d1 ); // Math.sqrt( 1 - cos*cos );
-                d1			= win[ i ] * weight;
-                fftBuf[ j++ ] = (float) (d1 * cos);
+                cos			= Math.cos(d1);
+                sin			= Math.sin(d1); // Math.sqrt( 1 - cos*cos );
+                d1			= win[i] * weight;
+                fftBuf[j++] = (float) (d1 * cos);
 //				fftBuf[ j++ ] = -f1 * sin;  // conj!
-                fftBuf[ j++ ] = (float) (d1 * sin);  // NORM!
-                if( j == fftSizeC ) j = 0;
+                fftBuf[j++] = (float) (d1 * sin);  // NORM!
+                if (j == fftSizeC) j = 0;
             }
 
             // XXX to be honest, i don't get the point
@@ -253,19 +238,19 @@ public class ConstQ
             // (the fft of a hamming is a gaussian,
             // isn't it?)
 
-            Fourier.complexTransform( fftBuf, fftSize, Fourier.FORWARD );
+            Fourier.complexTransform(fftBuf, fftSize, Fourier.FORWARD);
             // with a "high" threshold like 0.0054, the
             // point it _not_ to create a sparse matrix by
             // gating the values. in fact we can locate
-            // the kernal spectrally, so all we need to do
+            // the kernel spectrally, so all we need to do
             // is to find the lower and upper frequency
             // of the transformed kernel! that makes things
             // a lot easier anyway since we don't need
             // to employ a special sparse matrix library.
-            for( specStart = 0; specStart <= fftSize; specStart += 2 ) {
-                f1 = fftBuf[ specStart ];
-                f2 = fftBuf[ specStart+1 ];
-                if( (f1 * f1 + f2 * f2) > threshSqr ) break;
+            for (specStart = 0; specStart <= fftSize; specStart += 2) {
+                f1 = fftBuf[specStart];
+                f2 = fftBuf[specStart + 1];
+                if ((f1 * f1 + f2 * f2) > threshSqr) break;
             }
             // final matrix product:
             // input chunk (fft'ed) is a row vector with n = fftSize
@@ -281,41 +266,16 @@ public class ConstQ
             // and we will cut the overlap off by limiting specStop
             // to fftSize instead of fftSize<<1 ...).
 
-            for( specStop = specStart; specStop <= fftSize; specStop += 2 ) {
-                f1 = fftBuf[ specStop ];
-                f2 = fftBuf[ specStop+1 ];
-                if( (f1 * f1 + f2 * f2) <= threshSqr ) break;
+            for (specStop = specStart; specStop <= fftSize; specStop += 2) {
+                f1 = fftBuf[specStop];
+                f2 = fftBuf[specStop + 1];
+                if ((f1 * f1 + f2 * f2) <= threshSqr) break;
             }
 
-//System.out.println( "Kernel k : specStart " + specStart + "; specStop " + specStop + "; centerFreq " + centerFreq );
-            kernels[ k ] = new Kernel( specStart, new float[ specStop - specStart ], (float) centerFreq );
-            System.arraycopy( fftBuf, specStart, kernels[ k ].data, 0, specStop - specStart );
+            kernels[k] = new Kernel(specStart, new float[specStop - specStart], (float) centerFreq);
+            System.arraycopy(fftBuf, specStart, kernels[k].data, 0, specStop - specStart);
         }
     }
-
-//	/**
-//	 * 	Helper method for SwingOSC
-//	 */
-//	public float[] createFloatArray( int size )
-//	{
-//		return new float[ size ];
-//	}
-//
-//	/**
-//	 * 	Helper method for SwingOSC
-//	 */
-//	public float[][] createFloatArray( int size1, int size2 )
-//	{
-//		return new float[ size1 ][ size2 ];
-//	}
-//	
-//	/**
-//	 * 	Helper method for SwingOSC
-//	 */
-//	public float[] getFloatArray( float[][] array2D, int dim )
-//	{
-//		return array2D[ dim ];
-//	}
 
     /**
      * 	Helper method for SwingOSC
@@ -323,11 +283,10 @@ public class ConstQ
      * 	@param data	the array of `Number` elements to convert
      * 	@return	the array with elements converted to primitive floats
      */
-    public float[] castToFloatArray( Object[] data )
-    {
-        final float[] buf = new float[ data.length ];
-        for( int i = 0; i < buf.length; i++ ) {
-            buf[ i ] = ((Number) data[ i ]).floatValue();
+    public float[] castToFloatArray(Object[] data) {
+        final float[] buf = new float[data.length];
+        for (int i = 0; i < buf.length; i++) {
+            buf[i] = ((Number) data[i]).floatValue();
         }
         return buf;
     }
@@ -339,9 +298,8 @@ public class ConstQ
      * 	@param idx	the index into the array
      * 	@return	the element of `data` at index `idx
      */
-    public float getArrayElement( float[] data, int idx )
-    {
-        return data[ idx ];
+    public float getArrayElement(float[] data, int idx) {
+        return data[idx];
     }
 
     /**
@@ -351,18 +309,17 @@ public class ConstQ
      * 	convolutions with the filter kernels, returning the magnitudes
      * 	of the filter outputs.
      */
-    public float[] convolve( float[] output, int outOff )
-    {
-        if( output == null ) output = new float[ numKernels ];
+    public float[] convolve(float[] output, int outOff) {
+        if (output == null) output = new float[numKernels];
 
         float[]	kern;
         float	f1, f2;
 
-        for( int k = 0; k < numKernels; k++, outOff++ ) {
-            kern	= kernels[ k ].data;
+        for (int k = 0; k < numKernels; k++, outOff++) {
+            kern	= kernels[k].data;
             f1		= 0f;
             f2		= 0f;
-            for( int i = kernels[ k ].offset, j = 0; j < kern.length; i += 2, j += 2 ) {
+            for (int i = kernels[k].offset, j = 0; j < kern.length; i += 2, j += 2) {
                 // complex mult: a * b =
                 // (re(a)re(b)-im(a)im(b))+i(re(a)im(b)+im(a)re(b))
                 // ; since we left out the conjugation of the kernel(!!)
@@ -370,8 +327,8 @@ public class ConstQ
                 // (re(a)re(b)+im(a)im(b))+i(im(a)re(b)-re(a)im(b))
                 // ; in fact this conjugation is unimportant for the
                 // calculation of the magnitudes...
-                f1 += fftBuf[ i ] * kern[ j ] - fftBuf[ i+1 ] * kern[ j+1 ];
-                f2 += fftBuf[ i ] * kern[ j+1 ] + fftBuf[ i+1 ] * kern[ j ];
+                f1 += fftBuf[i] * kern[j] - fftBuf[i + 1] * kern[j + 1];
+                f2 += fftBuf[i] * kern[j + 1] + fftBuf[i + 1] * kern[j];
             }
 //			cBuf[ k ] = ;  // squared magnitude
 //			f1 = (float) ((Math.log( f1 * f1 + f2 * f2 ) + LNKORR_ADD) * gain);
@@ -379,54 +336,52 @@ public class ConstQ
 
             // since we use constQ to decimate spectra, we actually
             // are going to store a "mean square" of the amplitudes
-            // so at the end of the decimation we'll have one squareroot,
+            // so at the end of the decimation we'll have one square root,
             // or even easier, when calculating the logarithm, the
             // multiplicator of the log just has to be divided by two.
             // hence we don't calc abs( f ) but abs( f )^2 !
 
-            output[ outOff ] = (f1 * f1 + f2 * f2);
+            output[outOff] = (f1 * f1 + f2 * f2);
         }
 
         return output;
     }
 
-    public float[] transform(float[] input, int inOff, int inLen, float[] output, int outOff )
-    {
-        if( output == null ) output = new float[ numKernels ];
+    public float[] transform(float[] input, int inOff, int inLen, float[] output, int outOff) {
+        if (output == null) output = new float[numKernels];
 
         final int off, num, num2;
 
 //		gain *= TENBYLOG10;
         off = fftSize >> 1;
-        num = Math.min( fftSize - off, inLen );
+        num = Math.min(fftSize - off, inLen);
 
 //System.out.println( "inOff " + inOff + "; num  " + num + " ; inOff + num " + (inOff + num) + "; input.length " + input.length + "; fftBuf.length " + fftBuf.length );
 
-        System.arraycopy( input, inOff, fftBuf, off, num );
-        for( int i = off + num; i < fftSize; i++ ) {
-            fftBuf[ i ] = 0f;
+        System.arraycopy(input, inOff, fftBuf, off, num);
+        for (int i = off + num; i < fftSize; i++) {
+            fftBuf[i] = 0f;
         }
-        num2 = Math.min( fftSize - num, inLen - num );
-        System.arraycopy( input, inOff + num, fftBuf, 0, num2 );
-        for( int i = num2; i < off; i++ ) {
-            fftBuf[ i ] = 0f;
+        num2 = Math.min(fftSize - num, inLen - num);
+        System.arraycopy(input, inOff + num, fftBuf, 0, num2);
+        for (int i = num2; i < off; i++) {
+            fftBuf[i] = 0f;
         }
 
         // XXX evtl., wenn inpWin weggelassen werden kann,
         // optimierte overlap-add fft
-        Fourier.realTransform( fftBuf, fftSize, Fourier.FORWARD );
+        Fourier.realTransform(fftBuf, fftSize, Fourier.FORWARD);
 
-        return convolve( output, outOff );
+        return convolve(output, outOff);
     }
 
-    private static class Kernel
-    {
+    private static class Kernel {
+
         protected final int			offset;
         protected final float[]		data;
         protected final float		freq;
 
-        protected Kernel( int offset, float[] data, float freq )
-        {
+        protected Kernel(int offset, float[] data, float freq) {
             this.offset	= offset;
             this.data	= data;
             this.freq	= freq;
