@@ -26,7 +26,7 @@ lazy val commonSettings = Seq(
   // note: --release cannot be used in conjunction with -source or -target (YEAH, GREAT THINKING THERE)
   javacOptions ++= (if (scala.util.Properties.isJavaAtLeast("9")) Seq("--release", "8") else basicJavaOpts ++ Seq("-target", "1.8")), // JDK >8 breaks API; skip scala-doc
   javacOptions in (Compile, doc) := basicJavaOpts,  // doesn't eat `-encoding`
-  scalaVersion     := "2.12.12", // not used
+  scalaVersion     := "2.13.5", // not used
   autoScalaLibrary := false,
   crossPaths       := false,
   mainClass        := Some("de.sciss.eisenkraut.Main"),

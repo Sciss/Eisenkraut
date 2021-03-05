@@ -68,6 +68,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.PreferenceChangeEvent;
@@ -79,7 +81,7 @@ public class RecorderDialog
         implements Constants, ServerListener, NodeListener, OSCRouter,
         PreferenceChangeListener {
 
-    private static final int DISKBUF_SIZE = 32768;    // buffer size in frames
+    private static final int DISK_BUF_SIZE = 32768;    // buffer size in frames
     private static final String NODE_CONF = PrefsUtil.NODE_INPUT_CONFIGS;
 
     private static final String KEY_CONFIG = "config";
@@ -155,13 +157,13 @@ public class RecorderDialog
         final InputMap      imap        = rp.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         final ActionMap     amap        = rp.getActionMap();
 
-        final SpringPanel recPane;
-        final JPanel butPane;
+        final SpringPanel   recPane;
+        final JPanel        butPane;
         final WindowAdapter winListener;
-        final JButton ggPeakReset;
-        final TimeLabel lbTime;
-        final Object[] peakArgs = new Object[1];
-        final JButton ggAbort, ggRecord, ggStop, ggClose;
+        final JButton       ggPeakReset;
+        final TimeLabel     lbTime;
+        final Object[]      peakArgs = new Object[1];
+        final JButton       ggAbort, ggRecord, ggStop, ggClose;
 
         final int myMeta = BasicMenuFactory.MENU_SHORTCUT == InputEvent.CTRL_MASK ?
                 InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK : BasicMenuFactory.MENU_SHORTCUT;    // META on Mac, CTRL+SHIFT on PC
@@ -173,16 +175,16 @@ public class RecorderDialog
         audioPrefs = app.getUserPrefs().node(PrefsUtil.NODE_AUDIO);
         classPrefs = app.getUserPrefs().node(className.substring(className.lastIndexOf('.') + 1));
 
-        recPane = new SpringPanel(4, 2, 4, 2);
-        ggRecordConfig = new PrefComboBox();
+        recPane         = new SpringPanel(4, 2, 4, 2);
+        ggRecordConfig  = new PrefComboBox();
         ggRecordConfig.setFocusable(false);
-        lbPeak = new JLabel();
-        colrPeakNorm = lbPeak.getForeground();
+        lbPeak          = new JLabel();
+        colrPeakNorm    = lbPeak.getForeground();
         actionPeakReset = new ActionPeakReset();
-        ggPeakReset = new JButton(actionPeakReset);
+        ggPeakReset     = new JButton(actionPeakReset);
         ggPeakReset.setFocusable(false);
-        lbTime = new TimeLabel();
-        ggMonitoring = new JToggleButton(new ActionMonitoring());
+        lbTime          = new TimeLabel();
+        ggMonitoring    = new JToggleButton(new ActionMonitoring());
         ggMonitoring.setFocusable(false);
         recPane.gridAdd(lbTime, 1, 0, /* -2 */ -1, 1);
         recPane.gridAdd(new JLabel(getResourceString("labelRecInputs"), SwingConstants.RIGHT), 0, 1);
@@ -198,12 +200,12 @@ public class RecorderDialog
 
         recPane.makeCompactGrid();
 
-        butPane = new JPanel(); // new FlowLayout( FlowLayout.TRAILING ));
+        butPane         = new JPanel(); // new FlowLayout( FlowLayout.TRAILING ));
         butPane.setLayout(new BoxLayout(butPane, BoxLayout.X_AXIS));
-        actionRecord = new ActionRecord();
-        actionStop = new ActionStop();
-        actionAbort = new ActionAbort();
-        actionClose = new ActionClose();
+        actionRecord    = new ActionRecord();
+        actionStop      = new ActionStop();
+        actionAbort     = new ActionAbort();
+        actionClose     = new ActionClose();
         try {
             butPane.add(new HelpButton(MenuFactory.helpFile("RecorderDialog")));
         } catch (MalformedURLException e) {
@@ -579,7 +581,7 @@ public class RecorderDialog
                 for (int i = 0; i < numConfigChannels; i++) {
                     synthsRoute[i] = Synth.basicNew("eisk-route", server);
                 }
-                bufDisk = Buffer.alloc(server, DISKBUF_SIZE, numConfigChannels);
+                bufDisk = Buffer.alloc(server, DISK_BUF_SIZE, numConfigChannels);
 
                 if( (bufDisk == null) || (busInternal == null) ) {
                     throw new IOException( "Server ran out of buffers or busses!" );
@@ -674,6 +676,9 @@ public class RecorderDialog
             setEnabled(false);
         }
 
+        private final SimpleDateFormat fmtMessageDate =
+                new SimpleDateFormat("'Record start: 'HH'h'mm'm'ss.SSS's'", Locale.US);
+
         public void actionPerformed(ActionEvent e) {
             if ((server == null) || !server.isRunning() || (ct == null)) return;
 
@@ -704,6 +709,8 @@ public class RecorderDialog
                     timeoutTimer.setActions(new Action[]{actionRecord});
                     timeoutTimer.start();
                     timeoutTimer.enable(false);
+                    System.out.println(fmtMessageDate.format(new Date()));
+
                 } else {
                     System.err.println("Failed to initialize recording buffer");
                 }

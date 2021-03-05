@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Eisenkraut
-Version=1.4.1
+Version=1.4.2-SNAPSHOT
 GenericName=Eisenkraut
 Comment=Eisenkraut Audio File Editor
 Exec=/usr/share/eisenkraut/bin/eisenkraut %F
