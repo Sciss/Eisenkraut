@@ -18,6 +18,14 @@ To contact the author, send an e-mail to `contact at sciss.de`. For project stat
 
 Please consider supporting this project through Liberapay (see badge above) – thank you!
 
+## basic properties
+
+- light-weight; uses SuperCollider instead of its own audio engine
+- supports multi-channel files and multi-mono files
+- simple destructive editing (overwrite upon save), no separate project files
+- cross-platform
+- no intention to [phone home](https://github.com/audacity/audacity/pull/835)
+
 ## downloading
 
 A binary version of Eisenkraut for all platforms is provided through
